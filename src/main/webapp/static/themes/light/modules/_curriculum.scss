@@ -421,11 +421,11 @@ a.o_validation_open_results {
 	}
 	
 	.o_curriculum_widget_members_status_overbooked {
-		color: $brand-danger;
+		color: o-state-color("danger", "text");
 	}
 	.o_curriculum_widget_members_status_fullybooked .o_icon:before,
 	.o_curriculum_widget_members_status_fewleft .o_icon:before {
-		color: $brand-warning;
+		color: o-state-color("warning", "text");
 	}
 }
 .o_indicators_key {
@@ -449,10 +449,10 @@ a.o_validation_open_results {
 }
 .o_members_widget_icon {
 	&.o_membership_status_active {
-		color: $brand-success;
+		color: o-state-color("success", "text");
 	}
 	&.o_membership_status_pending {
-		color: $brand-warning;
+		color: o-state-color("warning", "text");
 	}
 }
 .o_widget_implementation_row {

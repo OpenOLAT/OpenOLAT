@@ -128,10 +128,10 @@
 						padding-bottom: 5px;
 					}
 					&.o_widget_text_success {
-						color: $brand-success;
+						color: o-state-color("success", "text");
 					}
 					&.o_widget_text_danger {
-						color: $brand-danger;
+						color: o-state-color("danger", "text");
 					}
 				}
 				.o_widget_additional {

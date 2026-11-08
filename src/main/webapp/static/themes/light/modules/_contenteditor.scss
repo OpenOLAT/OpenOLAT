@@ -1786,21 +1786,21 @@ table.o_ce_table {
 				border-style: solid;
 
 				&.twentytwenty-before-label {
-					border-color: $brand-danger;
+					border-color: o-state-color("danger", "border");
 				}
 				&.twentytwenty-after-label {
-					border-color: $brand-success;
+					border-color: o-state-color("success", "border");
 				}
 			}
 		}
 
 		.twentytwenty-horizontal {
 			.twentytwenty-left-arrow {
-				border-right-color: $brand-success;
+				border-right-color: o-state-color("success", "border");
 			}
 
 			.twentytwenty-right-arrow {
-				border-left-color: $brand-danger;
+				border-left-color: o-state-color("danger", "border");
 			}
 
 			.twentytwenty-overlay {
@@ -1817,11 +1817,11 @@ table.o_ce_table {
 
 		.twentytwenty-vertical {
 			.twentytwenty-down-arrow {
-				border-top-color: $brand-danger;
+				border-top-color: o-state-color("danger", "border");
 			}
 
 			.twentytwenty-up-arrow {
-				border-bottom-color: $brand-success;
+				border-bottom-color: o-state-color("success", "border");
 			}
 
 			.twentytwenty-overlay {

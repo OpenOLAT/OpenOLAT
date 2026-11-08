@@ -3,9 +3,9 @@
 	/* badge color */
 	&.o_scorm_org {}
 	&.o_scorm_item {}
-	&.o_scorm_completed { background-color: $state-success-text; }
-	&.o_scorm_failed { background-color: $state-danger-text; }
-	&.o_scorm_incomplete { background-color: $state-warning-text; }
+	&.o_scorm_completed { @extend %o_state_success_solid; }
+	&.o_scorm_failed { @extend %o_state_danger_solid; }
+	&.o_scorm_incomplete { @extend %o_state_warning_solid; }
 	&.o_scorm_not_attempted { background: none; }
 }
 

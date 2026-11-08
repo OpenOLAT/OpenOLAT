@@ -70,7 +70,7 @@
 }
 
 .o_building_room_status_active {
-	color: $brand-success;
+	color: o-state-color("success", "text");
 }
 
 .o_building_room_status_inactive {

@@ -44,7 +44,7 @@
 	}
 	.o_newindicator {
 		font-size: ceil(($font-size-base * 0.7));
-		color: $brand-success;
+		color: o-state-color("success", "text");
 		text-transform: uppercase;
 		padding-left: 1em;
 		vertical-align: text-top;

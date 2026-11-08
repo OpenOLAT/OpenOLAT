@@ -1,10 +1,10 @@
 # OpenOlat Frontend Architecture Reference
 
-**Release:** OpenOlat 21.1.0 | **Last updated:** 2026-10-27 | **Companion pages:** `doc/openolat-frontend.html` (visual version with diagrams), `doc/component-library/index.html` (live component examples)
+**Release:** OpenOlat 21.1.0 | **Last updated:** 2026-11-08 | **Companion pages:** `doc/openolat-frontend.html` (visual version with diagrams), `doc/component-library/index.html` (live component examples)
 
 This Markdown file and the HTML version have the same 37 chapters with the same numbering and headings. The HTML version adds the SVG diagrams; the Markdown names them with their caption.
 
-Markers: `**New in 21.1.0**` under a heading and `**New in 21.1.0:**` / `**Changed in 21.1.0:**` at the start of a paragraph flag elements and behaviour that came with release 21.1.0. Changes that shipped in 21.0.x have no marker. `**Changed in 21.2.0:**` flags the focus changes of OO-9603 (development of 21.2.0). Chapter 37 lists all changes of this update.
+Markers: `**New in 21.1.0**` under a heading and `**New in 21.1.0:**` / `**Changed in 21.1.0:**` at the start of a paragraph flag elements and behaviour that came with release 21.1.0. Changes that shipped in 21.0.x have no marker. `**Changed in 21.2.0:**` flags the focus changes of OO-9603 and the colour changes of the epic OO-9989 (development of 21.2.0). Chapter 37 lists all changes of this update.
 
 ## 1. Architecture Overview
 
@@ -91,7 +91,7 @@ theme.scss (entry point for a custom theme)
   @import "mytheme_theme"        // CSS rule overrides LAST
 ```
 
-Compile: `./compiletheme.sh mytheme` (requires Dart Sass ≥ 1.33)
+Compile: `./compiletheme.sh mytheme` (requires Dart Sass ≥ 1.79.0)
 
 ## 5. Variables & Config
 
@@ -114,8 +114,8 @@ All OpenOlat-specific variables use the `$o-` prefix. Bootstrap variables are un
 | Category | Lines | Example Variables |
 |---|---|---|
 | Bootstrap overrides | 34–80 | `$btn-default-bg`, `$input-border`, `$text-color` |
-| Color system | 82–142 | `$o-labeled-{color}-{variant}-{property}` (8 colors × 3 variants) |
-| Brand colors | 150–175 | `$brand-info`, `$brand-warning`, `$brand-danger` |
+| Status colours | none | `$o-states` in `_palette.scss`, `$o-state-wiring` in `modules/_states.scss` (chapter 26) |
+| Brand colors | 73–96 | `$brand-info`, `$brand-warning`, `$brand-danger` |
 | Page layout | 273–286 | `$o-page-width-max`, `$o-main-*-bg` |
 | Navbar | 289–346 | `$o-navbar-height`, `$o-navbar-bg`, `$o-navbar-link-*` |
 | Toolbar | 380–424 | `$o-toolbar-bg-color`, `$o-toolbar-breadcrumb-*` |
@@ -173,7 +173,7 @@ Rules:
 - Chooser components read `var(--o-sw-*)`. They never carry a hex literal.
 - Stored legacy keys and classes (`o_color_lightblue`, `o_cal_blue`, `o_colcat_light_blue`, ...) stay valid: the alias map in `_palette.scss` extends them from the swatch classes, and `ColorService.resolve()` maps them in Java.
 - Java reads the palette from the compiled CSS. `Theme.init()` parses the `--o-{hue}-{step}` properties of the selected theme's `theme.css`, with fallback to `light/theme.css`, in the same way it loads `email.css`. `ColorService.getPalette()` returns the palette of the current GUI theme. There is no generated palette file, and `compiletheme.sh` writes nothing but CSS.
-- A client theme may override the values of `$o-palette` (declared `!default`). It must keep all 15 hue names, the alias tables need them. Its `theme.css` then carries the client values, and badges and report series follow.
+- A client theme may override the values of `$o-palette` (declared `!default`). It must keep all 14 hue names, the alias tables need them. Its `theme.css` then carries the client values, and badges and report series follow.
 - **Theme colours:** `light/_palette_theme.scss` (imported after `_config.scss`) generates 10 steps for each colour of `$o-theme-colors` (default `($brand-primary)`), in OKLCH with the luminance targets of the palette. The brand colour itself is the solid fill when a text colour reaches 4.5:1 on it, never lighter than step 300; otherwise the generated step 500 (400 for a light colour). Output: `--o-theme{n}-{step}`, `--o-theme{n}` (the solid fill), `.o_swatch_theme{n}`. Java: `Palette.getThemeColors()` / `ColorService.getThemeColors()` return only the colours the theme defines (`theme1` up to the first gap); `resolve("theme3")` falls back to `theme1`. The openolat theme defines 4 (Sea, Peach, Berry, Sprout). Needs Dart Sass 1.79.0 or later.
 - Live reference with contrast values: `doc/component-library/colors.html`.
 
@@ -1250,10 +1250,10 @@ Widgets are rendered in a responsive CSS Grid. Each widget is a card with a head
 
 | Class | Description |
 |---|---|
-| `o_passed` | Green text color for passed status |
-| `o_failed` | Red text color for failed status |
-| `o_unknown` | Yellow text color for unknown status |
-| `o_noinfo` | Muted text color for no-info status |
+| `o_passed` | Text colour of the success state (`$o-course-state-passed-color`) |
+| `o_failed` | Text colour of the danger state (`$o-course-state-failed-color`) |
+| `o_unknown` | Text colour of the warning state (`$o-course-state-unknown-color`) |
+| `o_noinfo` | Muted text colour (`$text-muted`) |
 
 ### 25.5 Learning Path Status
 
@@ -1273,6 +1273,8 @@ Widgets are rendered in a responsive CSS Grid. Each widget is a card with a head
 | `o_labeled.o_results_hidden` | Results hidden badge |
 | `o_labeled.o_evaluation_in_progress` | Evaluation in progress badge |
 | `o_labeled.o_evaluation_done` | Evaluation done badge |
+
+The colour of each badge comes from its state in `$o-state-wiring` ([Color System](#26-color-system)).
 
 ### 25.7 Repository Entry Status
 
@@ -1310,21 +1312,87 @@ Widgets are rendered in a responsive CSS Grid. Each widget is a card with a head
 
 ## 26. Color System
 
-OpenOlat defines a semantic color system with 8 base colors, each in 3 variants (solid, light/outline, mega/tinted):
+**Changed in 21.2.0:** The status colours come from 8 semantic states on the palette (OO-10042). The `$o-labeled-*` variables and the `%o_labeled_<colour>` placeholders are removed. The modules move to three token layers (OO-9994, OO-10043).
 
-*Figure 5: The labeled color system with 8 colors × 3 variants (solid, light/outline, mega/tinted background) (diagram in the HTML version)*
+### 26.1 Token Layers
 
-| Color | Base | Solid (labeled) | Light (outline) | Mega (tinted bg) |
+Every colour belongs to one of three layers. A module reads the semantic layer, and the component layer only for a colour that a client theme or the dark mode sets separately.
+
+*Figure 5: The three colour token layers: palette, semantic, component (diagram in the HTML version)*
+
+| Layer | Holds | Example | Defined in | Status |
 |---|---|---|---|---|
-| Blue | `#105CAD` | White on `#146DCC` | Blue on white, blue border | Blue on `#cde3f9` |
-| Green | `#268000` | White on `#37AD00` | Green on white, green border | Green on `#C4E6B8` |
-| Yellow |  | `#574000` on `#FBD774` | `#574000` on white | `#805e00` on `#fbe6a7` |
-| Orange | `#D17A00` | `#663B00` on `#F4AC47` | Orange on white | `#663B00` on `#FFDAA6` |
-| Red |  | White on `#b30018` | Red on white | Red on `#ffc9bd` |
-| Brown |  | White on `#804A33` | Brown on white | Brown on `#E7D2BC` |
-| Grey |  | White on `#595959` | Grey on white | `#342c24` on `#F6F6F6` |
+| Palette | 14 hues x 10 steps, the theme colours | `--o-yellow-400`, `--o-theme1` | `_palette.scss`, `modules/_palette_vars.scss` | done (OO-9991, OO-9993) |
+| Semantic | the meaning: text, surface, border, brand, link, focus, the 8 states with their roles | `--o-text-muted`, `--o-primary`, `--o-state-success-text` | `_tokens.scss` | states as Sass functions done (OO-10042); custom properties planned (OO-9994) |
+| Component | a colour of one component that a client theme or the dark mode sets separately | `--o-navbar-bg`, `--o-rating-star` | `_tokens.scss` | planned (OO-10043) |
 
-Variables: `$o-labeled-{color}-{variant}-{property}` where variant = (none)/light/mega and property = color/bg-color/border-color.
+Goal: the modules read every colour with `var(--o-*)`. A client theme changes a colour with one CSS line, a dark mode redefines the semantic tokens, and the removal of Bootstrap ports modules that already read tokens. Spec and module inventory: OO-10043.
+
+### 26.2 Semantic States
+
+`$o-states` in `_palette.scss` maps each state to a palette hue (`!default`, a client theme can change the hue of a state):
+
+| State | Hue | Meaning |
+|---|---|---|
+| `neutral` | blue | planned, in preparation, running, information |
+| `success` | green | done, valid, active, published |
+| `warning` | yellow | waits for an action: review, pending, ready |
+| `critical` | orange | needs attention: expired, late, declined, invalid |
+| `danger` | red | failed, revoked, rejected, locked |
+| `finished` | brown | finished, closed, kept for the record |
+| `inactive` | slate | inactive, cancelled, in the trash, deleted, not seen |
+| `highlight` | magenta | must stand out: AI, surplus |
+
+Each state has 5 styles. All foreground colours come from the swatch of the hue and reach 4.5:1; the compile fails otherwise.
+
+| Style | Look | Use |
+|---|---|---|
+| `solid` | fill of the hue, tested text colour | default status label |
+| `dark` | darker fill | stronger weight: counters (`o_mid*`), deleted entries |
+| `tint` | light fill, dark text | draft, preparation, provisional |
+| `light` | very light fill, dark text | not seen, in process |
+| `text` | white fill, text and border in the text colour of the hue | outline label (`o_labeled_light`) |
+
+Classes for new code:
+
+```html
+<span class="o_labeled o_state_success">Published</span>              <!-- solid -->
+<span class="o_labeled o_state_neutral o_state_tint">Draft</span>      <!-- tint -->
+<span class="o_labeled_light o_state_danger">Revoked</span>           <!-- text -->
+```
+
+The existing status classes keep their names. `$o-state-wiring` in `modules/_states.scss` assigns each of the 395 status classes (e.g. `o_repo_status_published`, `o_lp_in_progress`, `label-success`) a state and a style; the module `@extend`s the placeholder `%o_state_<state>_<style>`. The map is generated from the OO-colors mapping; do not edit it by hand. `_states.scss` is imported after all other modules. GUI demo: Colors > tab "Badges / Status".
+
+### 26.3 Status Colour Without a Label
+
+A component that shows a status without a label (icon, marker, progress bar, chart, timeline) takes the colour of the matching state with `o-state-color($state, $role, $style)`:
+
+| Role | Use |
+|---|---|
+| `text` | text and icons on white |
+| `bg`, `soft-bg` | fills |
+| `border` | borders, markers, chart lines and bars |
+| `fg`, `soft-fg`, `soft-border` | text on a fill, hover colour, light borders |
+
+```scss
+.o_icon_ok        { color: o-state-color("success", "text"); }
+.o_lectures_absent { color: o-state-color("danger", "text") !important; }
+.bar_green        { fill: o-state-color("success", "border"); }
+.o_badge_added    { @extend %o_state_success_solid; }
+```
+
+`o-swatch-color($hue, $role)` returns a swatch colour of a hue for a colour that is not a status. `o-palette($hue, $step)` returns a palette step.
+
+### 26.4 Rules for New Code
+
+1. A new status uses a state: `o_labeled o_state_<state>` in the template, or a status class added to `$o-state-wiring`. Do not set a colour on a status class in a module.
+2. Choose the state by the meaning (26.2), not by the colour.
+3. A status colour outside a label uses `o-state-color()`. Do not use `$brand-success`, `$brand-danger`, `$brand-warning`, `$brand-info` or `$state-*-text` for a status.
+4. A fixed colour that is not a status (rating stars, pen colours, chart series) comes from the palette (`o-palette()`), not from a hex value.
+5. Do not add a Sass colour variable. A new customization point is a CSS custom property (component token, OO-10043).
+6. Do not use colour maths (`darken()`, `lighten()`, `mix()`, `rgba($var)`) on a palette or state colour. Use a role (`soft-fg`, `dark-bg`) or another palette step.
+
+Buttons, alerts and form messages still read the Bootstrap colours `$brand-*`. OO-10043 moves them to the state tokens.
 
 ## 27. SCSS Module Index
 
@@ -1337,7 +1405,10 @@ Variables: `$o-labeled-{color}-{variant}-{property}` where variant = (none)/ligh
 | `_icons.scss` | Font Awesome 6 icon definitions |
 | `_helpers.scss` | Spacing, flex, scrolling, buttons, typography utilities |
 | `_fonts.scss` | Font imports and declarations |
-| `_colors.scss` | Labeled color classes |
+| `_colors.scss` | Colour classes of the colour chooser (`o_color_*`) on the swatch tokens |
+| `_swatches.scss` | Swatch classes `o_swatch_{hue}` with the tokens `--o-sw-*` |
+| `_palette_vars.scss` | Palette values as `--o-{hue}-{step}` on `:root` |
+| `_states.scss` | Semantic states: `o_state_*` classes and the wiring of the status classes (imported last) |
 | `_type.scss` | Typography and heading styles |
 
 ### 27.2 Layout Modules
@@ -1692,3 +1763,14 @@ Documented for the first time (shipped in 21.0.x, no marker): button and input b
 Also new in this update: chapter 35 (info page pattern) and chapter 36 (accessibility); the Markdown version follows the same 37-chapter structure.
 
 Corrections of earlier content: toolbar segment markup, modal markup (`o_layered_panel` + `<dialog class="dialog modal">`), FormToggle and date picker markup, widget type classes, JavaScript function names (`o_XHRFnCall`, `o_ffSetFormDirty` do not exist), `o_ce_` and `o_sel_` examples, `o_form_two_cols` breakpoint, `_config.scss` size and line numbers. Sections 31 to 34 bring content from the Markdown version that was missing here.
+
+### 37.2 21.2.0 (in development)
+
+Colour epic OO-9989:
+
+| Issue | Change | Section |
+|---|---|---|
+| OO-9991 | Palette of 14 hues x 10 steps, swatch tokens `--o-sw-*`, `--o-{hue}-{step}` on `:root` | [Colour Palette](#61-colour-palette-for-user-colour-choosers) |
+| OO-9992, OO-9993 | Colour choosers on the palette, theme colours `--o-theme{n}` | [Colour Palette](#61-colour-palette-for-user-colour-choosers) |
+| OO-10042 | 8 semantic states in 5 styles, `o_state_*` classes, `$o-state-wiring` for 395 status classes, `o-state-color()`, `o-swatch-color()`; `$o-labeled-*` removed | [Color System](#26-color-system) |
+| OO-9994, OO-10043 | Token layers palette, semantic, component; rules for new code (planned) | [Token Layers](#261-token-layers) |

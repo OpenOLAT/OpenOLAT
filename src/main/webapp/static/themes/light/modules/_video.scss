@@ -209,10 +209,10 @@
 		margin-right: 5px;
 
 		.o_icon_passed {
-			color: $brand-success;
+			color: o-state-color("success", "text");
 		}
 		.o_icon_failed {
-			color: $brand-danger;
+			color: o-state-color("danger", "text");
 		}
 	}
 }
@@ -998,7 +998,7 @@
 				height: 1em;
 				border-radius: 50%;
 				margin-right: 0.25em;
-				background-color: red;
+				background-color: o-state-color("danger", "border");
 				animation: ease pulse-background-color 2s infinite;
 			}
 
@@ -1006,31 +1006,31 @@
 				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
 				Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 				font-size: 0.75em;
-				color: red;
+				color: o-state-color("danger", "text");
 				animation: ease pulse-color 2s infinite;
 			}
 
 			@keyframes pulse-color {
 				0% {
-					color: red;
+					color: o-state-color("danger", "text");
 				}
 				50% {
-					color: #f88;
+					color: o-state-color("danger", "soft-border");
 				}
 				100% {
-					color: red;
+					color: o-state-color("danger", "text");
 				}
 			}
 
 			@keyframes pulse-background-color {
 				0% {
-					background-color: red;
+					background-color: o-state-color("danger", "border");
 				}
 				50% {
-					background-color: #f88;
+					background-color: o-state-color("danger", "soft-border");
 				}
 				100% {
-					background-color: red;
+					background-color: o-state-color("danger", "border");
 				}
 			}
 		}

@@ -222,7 +222,7 @@
 	&:after{
 		font-size: 20px;
 		line-height: 16px;
-		color: $brand-success;
+		color: o-state-color("success", "text");
 		background-color: white;
 		width: 16px;
 		height: 16px;
@@ -237,7 +237,7 @@
 }
 
 .o_videotask_marker.o_segment_marker_correct:before {
-	background-color: $brand-success !important;
+	background-color: o-state-color("success", "border") !important;
 }
 
 .o_videotask_marker.o_segment_marker_not_correct {
@@ -246,7 +246,7 @@
 	&:after{
 		font-size: 20px;
 		line-height: 16px;
-		color: $brand-danger;
+		color: o-state-color("danger", "text");
 		background-color: white;
 		width: 16px;
 		height: 16px;
@@ -261,7 +261,7 @@
 }
 
 .o_videotask_marker.o_segment_marker_not_correct:before {
-	background-color: $brand-danger !important;
+	background-color: o-state-color("danger", "border") !important;
 }
 
 .o_videotask_segment {
@@ -283,7 +283,7 @@
 	&:after{
 		font-size: 14px;
 		line-height: 12px;
-		color: $brand-success;
+		color: o-state-color("success", "text");
 		background-color: white;
 		width: 12px;
 		height: 12px;

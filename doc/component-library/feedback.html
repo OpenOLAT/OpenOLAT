@@ -481,55 +481,75 @@
 
   <div class="cl-component">
     <div class="cl-component-header">
-      <h3>Labeled Colors (Status-based)</h3>
-      <p>OpenOlat uses a labeled color system with 8 colors (blue, green, yellow, orange, red, brown, grey) x 3 variants (base, light, mega). Colors are applied via SASS placeholders (<code>%o_labeled_blue</code> etc.) and extended by concrete status classes. The <code>o_labeled</code> base class provides the pill shape; <code>o_labeled_light</code> provides a lighter variant.</p>
+      <h3>Semantic States (Status Labels)</h3>
+      <p>A status label shows a meaning, not a colour. 8 states take their hue from <code>$o-states</code> (<code>_palette.scss</code>): neutral blue, success green, warning yellow, critical orange, danger red, finished brown, inactive slate, highlight magenta. Each state has 5 styles: solid, dark, tint, light and text (outline). The foregrounds reach 4.5:1, checked at compile time. The existing status classes (e.g. <code>o_repo_status_published</code>) keep their names; <code>$o-state-wiring</code> in <code>modules/_states.scss</code> assigns each a state and a style. Rules: <code>doc/openolat-frontend.md</code>, chapter 26.</p>
       <div class="cl-classes">
-        <code>o_labeled</code> <code>o_labeled_light</code> + status modifier classes
+        <code>o_labeled</code> <code>o_labeled_light</code> <code>o_state_&lt;state&gt;</code> <code>o_state_dark</code> <code>o_state_tint</code> <code>o_state_light</code> <code>o-state-color($state, $role)</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
           <div class="cl-example-stack">
-            <p style="font-size:13px;color:#6c757d;margin-bottom:4px;">Base variant (<code>o_labeled</code>):</p>
+            <p style="font-size:13px;color:#6c757d;margin-bottom:4px;">Solid (<code>o_labeled o_state_&lt;state&gt;</code>):</p>
             <div class="cl-example-row">
-              <span class="o_labeled o_curriculum_status_active">Blue (active)</span>
-              <span class="o_labeled o_repo_status_published">Green (published)</span>
-              <span class="o_labeled o_repo_status_review">Yellow (review)</span>
-              <span class="o_labeled o_repo_status_closed">Grey (closed)</span>
-              <span class="o_labeled o_repo_status_deleted">Red (deleted)</span>
-              <span class="o_labeled o_repo_status_preparation">Yellow (preparation)</span>
+              <span class="o_labeled o_state_neutral">Planned</span>
+              <span class="o_labeled o_state_success">Published</span>
+              <span class="o_labeled o_state_warning">Review</span>
+              <span class="o_labeled o_state_critical">Expired</span>
+              <span class="o_labeled o_state_danger">Revoked</span>
+              <span class="o_labeled o_state_finished">Finished</span>
+              <span class="o_labeled o_state_inactive">Cancelled</span>
+              <span class="o_labeled o_state_highlight">AI draft</span>
             </div>
-            <p style="font-size:13px;color:#6c757d;margin-bottom:4px;margin-top:12px;">Light variant (<code>o_labeled_light</code>):</p>
+            <p style="font-size:13px;color:#6c757d;margin-bottom:4px;margin-top:12px;">Tint (<code>o_state_tint</code>), draft and preparation:</p>
             <div class="cl-example-row">
-              <span class="o_labeled_light o_curriculum_status_active">Blue (active)</span>
-              <span class="o_labeled_light o_repo_status_published">Green (published)</span>
-              <span class="o_labeled_light o_repo_status_review">Yellow (review)</span>
-              <span class="o_labeled_light o_repo_status_closed">Grey (closed)</span>
-              <span class="o_labeled_light o_repo_status_deleted">Red (deleted)</span>
-              <span class="o_labeled_light o_repo_status_preparation">Yellow (preparation)</span>
+              <span class="o_labeled o_state_neutral o_state_tint">Planned</span>
+              <span class="o_labeled o_state_success o_state_tint">Published</span>
+              <span class="o_labeled o_state_warning o_state_tint">Review</span>
+              <span class="o_labeled o_state_critical o_state_tint">Expired</span>
+              <span class="o_labeled o_state_danger o_state_tint">Revoked</span>
+              <span class="o_labeled o_state_finished o_state_tint">Finished</span>
+              <span class="o_labeled o_state_inactive o_state_tint">Cancelled</span>
+              <span class="o_labeled o_state_highlight o_state_tint">AI draft</span>
+            </div>
+            <p style="font-size:13px;color:#6c757d;margin-bottom:4px;margin-top:12px;">Text / outline (<code>o_labeled_light o_state_&lt;state&gt;</code>):</p>
+            <div class="cl-example-row">
+              <span class="o_labeled_light o_state_neutral">Planned</span>
+              <span class="o_labeled_light o_state_success">Published</span>
+              <span class="o_labeled_light o_state_warning">Review</span>
+              <span class="o_labeled_light o_state_critical">Expired</span>
+              <span class="o_labeled_light o_state_danger">Revoked</span>
+              <span class="o_labeled_light o_state_finished">Finished</span>
+              <span class="o_labeled_light o_state_inactive">Cancelled</span>
+              <span class="o_labeled_light o_state_highlight">AI draft</span>
+            </div>
+            <p style="font-size:13px;color:#6c757d;margin-bottom:4px;margin-top:12px;">Existing status classes, coloured by their state:</p>
+            <div class="cl-example-row">
+              <span class="o_labeled o_repo_status_preparation">Preparation</span>
+              <span class="o_labeled o_repo_status_review">Review</span>
+              <span class="o_labeled o_repo_status_published">Published</span>
+              <span class="o_labeled o_repo_status_closed">Finished</span>
+              <span class="o_labeled o_repo_status_trash">Trash</span>
+              <span class="o_labeled o_repo_status_deleted">Deleted</span>
             </div>
           </div>
         </div>
       </div>
       <div class="cl-code">
         <span class="cl-code-toggle">Show Code</span>
-        <pre>&lt;!-- Base labeled (o_labeled + status class) --&gt;
+        <pre>&lt;!-- New status: state class --&gt;
+&lt;span class="o_labeled o_state_success"&gt;Published&lt;/span&gt;
+&lt;span class="o_labeled o_state_neutral o_state_tint"&gt;Draft&lt;/span&gt;
+&lt;span class="o_labeled_light o_state_danger"&gt;Revoked&lt;/span&gt;
+
+&lt;!-- Existing status class: wired in modules/_states.scss --&gt;
 &lt;span class="o_labeled o_repo_status_published"&gt;Published&lt;/span&gt;
-&lt;span class="o_labeled o_repo_status_review"&gt;Review&lt;/span&gt;
 
-&lt;!-- Light labeled (o_labeled_light + status class) --&gt;
-&lt;span class="o_labeled_light o_repo_status_published"&gt;Published&lt;/span&gt;
-&lt;span class="o_labeled_light o_curriculum_status_active"&gt;Active&lt;/span&gt;
-
-&lt;!-- Colors are SASS placeholders extended by status classes:
-  %o_labeled_blue    → o_curriculum_status_active, o_ac_order_status_new
-  %o_labeled_green   → o_repo_status_published, o_curriculum_status_confirmed
-  %o_labeled_yellow  → o_repo_status_review, o_repo_status_preparation
-  %o_labeled_orange  → (QTI notAnswered)
-  %o_labeled_red     → o_repo_status_deleted, o_ac_order_status_error
-  %o_labeled_brown   → o_curriculum_status_cancelled
-  %o_labeled_grey    → o_repo_status_closed, o_curriculum_status_inactive --&gt;</pre>
+// SCSS: status colour without a label
+.o_icon_ok   { color: o-state-color("success", "text"); }
+.bar_green   { fill: o-state-color("success", "border"); }
+.o_my_badge  { @extend %o_state_success_solid; }</pre>
       </div>
     </div>
   </div>

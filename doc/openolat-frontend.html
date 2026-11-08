@@ -92,7 +92,7 @@ p>.version-badge:first-child,li>.version-badge:first-child{margin-left:0;margin-
   <div class="subtitle">CSS/SASS framework, DOM structure, component rendering, and theme customization for the OpenOlat LMS</div>
   <div class="meta">
     <span>Release 21.1.0</span>
-    <span>Updated 2026-10-27</span>
+    <span>Updated 2026-11-08</span>
     <span>Bootstrap 3.4.1</span>
     <span>SASS/SCSS</span>
     <span>Font Awesome 6.7.2</span>
@@ -428,7 +428,7 @@ p>.version-badge:first-child,li>.version-badge:first-child{margin-left:0;margin-
     @import "patches"
   @import "mytheme_theme"        <span style="color:#6c7086">// CSS rule overrides LAST</span></code></pre>
 
-<p>Compile: <code>./compiletheme.sh mytheme</code> (requires Dart Sass &ge; 1.33)</p>
+<p>Compile: <code>./compiletheme.sh mytheme</code> (requires Dart Sass &ge; 1.79.0)</p>
 
 <!-- ==================== SECTION 5: VARIABLES ==================== -->
 <h2 id="variables">5. Variables &amp; Config</h2>
@@ -449,8 +449,8 @@ $o-tree-link-color       : $navbar-default-link-color;</code></pre>
 <thead><tr><th>Category</th><th>Lines</th><th>Example Variables</th></tr></thead>
 <tbody>
 <tr><td>Bootstrap overrides</td><td>34&ndash;80</td><td><code>$btn-default-bg</code>, <code>$input-border</code>, <code>$text-color</code></td></tr>
-<tr><td>Color system</td><td>82&ndash;142</td><td><code>$o-labeled-{color}-{variant}-{property}</code> (8 colors &times; 3 variants)</td></tr>
-<tr><td>Brand colors</td><td>150&ndash;175</td><td><code>$brand-info</code>, <code>$brand-warning</code>, <code>$brand-danger</code></td></tr>
+<tr><td>Status colours</td><td>none</td><td><code>$o-states</code> in <code>_palette.scss</code>, <code>$o-state-wiring</code> in <code>modules/_states.scss</code> (<a href="#css-colors">chapter 26</a>)</td></tr>
+<tr><td>Brand colors</td><td>73&ndash;96</td><td><code>$brand-info</code>, <code>$brand-warning</code>, <code>$brand-danger</code></td></tr>
 <tr><td>Page layout</td><td>273&ndash;286</td><td><code>$o-page-width-max</code>, <code>$o-main-*-bg</code></td></tr>
 <tr><td>Navbar</td><td>289&ndash;346</td><td><code>$o-navbar-height</code>, <code>$o-navbar-bg</code>, <code>$o-navbar-link-*</code></td></tr>
 <tr><td>Toolbar</td><td>380&ndash;424</td><td><code>$o-toolbar-bg-color</code>, <code>$o-toolbar-breadcrumb-*</code></td></tr>
@@ -506,7 +506,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <li>Chooser components read <code>var(--o-sw-*)</code>. They never carry a hex literal.</li>
 <li>Stored legacy keys and classes (<code>o_color_lightblue</code>, <code>o_cal_blue</code>, <code>o_colcat_light_blue</code>, …) stay valid: the alias map in <code>_palette.scss</code> extends them from the swatch classes, and <code>ColorService.resolve()</code> maps them in Java.</li>
 <li>Java reads the palette from the compiled CSS. <code>Theme.init()</code> parses the <code>--o-{hue}-{step}</code> properties of the selected theme's <code>theme.css</code>, with fallback to <code>light/theme.css</code>, in the same way it loads <code>email.css</code>. <code>ColorService.getPalette()</code> returns the palette of the current GUI theme. There is no generated palette file, and <code>compiletheme.sh</code> writes nothing but CSS.</li>
-<li>A client theme may override the values of <code>$o-palette</code> (declared <code>!default</code>). It must keep all 15 hue names, the alias tables need them. Its <code>theme.css</code> then carries the client values, and badges and report series follow.</li>
+<li>A client theme may override the values of <code>$o-palette</code> (declared <code>!default</code>). It must keep all 14 hue names, the alias tables need them. Its <code>theme.css</code> then carries the client values, and badges and report series follow.</li>
 <li><strong>Theme colours:</strong> <code>light/_palette_theme.scss</code> (imported after <code>_config.scss</code>) generates 10 steps for each colour of <code>$o-theme-colors</code> (default <code>($brand-primary)</code>), in OKLCH with the luminance targets of the palette. The brand colour itself is the solid fill when a text colour reaches 4.5:1 on it, never lighter than step 300; otherwise the generated step 500 (400 for a light colour). Output: <code>--o-theme{n}-{step}</code>, <code>--o-theme{n}</code> (the solid fill), <code>.o_swatch_theme{n}</code>. Java: <code>Palette.getThemeColors()</code> / <code>ColorService.getThemeColors()</code> return only the colours the theme defines (<code>theme1</code> up to the first gap); <code>resolve("theme3")</code> falls back to <code>theme1</code>. The openolat theme defines 4 (Sea, Peach, Berry, Sprout). Needs Dart Sass 1.79.0 or later.</li>
 <li>Live reference with contrast values: <a href="component-library/colors.html">component-library/colors.html</a>.</li>
 </ul>
@@ -1788,10 +1788,10 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <table>
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
-<tr><td><code>o_passed</code></td><td>Green text color for passed status</td></tr>
-<tr><td><code>o_failed</code></td><td>Red text color for failed status</td></tr>
-<tr><td><code>o_unknown</code></td><td>Yellow text color for unknown status</td></tr>
-<tr><td><code>o_noinfo</code></td><td>Muted text color for no-info status</td></tr>
+<tr><td><code>o_passed</code></td><td>Text colour of the success state (<code>$o-course-state-passed-color</code>)</td></tr>
+<tr><td><code>o_failed</code></td><td>Text colour of the danger state (<code>$o-course-state-failed-color</code>)</td></tr>
+<tr><td><code>o_unknown</code></td><td>Text colour of the warning state (<code>$o-course-state-unknown-color</code>)</td></tr>
+<tr><td><code>o_noinfo</code></td><td>Muted text colour (<code>$text-muted</code>)</td></tr>
 </tbody>
 </table>
 
@@ -1817,6 +1817,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <tr><td><code>o_labeled.o_evaluation_done</code></td><td>Evaluation done badge</td></tr>
 </tbody>
 </table>
+<p>The colour of each badge comes from its state in <code>$o-state-wiring</code> (<a href="#css-colors">Color System</a>).</p>
 
 <h3>25.7 Repository Entry Status</h3>
 <table>
@@ -1861,97 +1862,138 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <!-- ==================== SECTION 26: COLORS ==================== -->
 <h2 id="css-colors">26. Color System</h2>
 
-<p>OpenOlat defines a semantic color system with 8 base colors, each in 3 variants (solid, light/outline, mega/tinted):</p>
+<p><span class="version-badge changed">Changed in 21.2.0</span> The status colours come from 8 semantic states on the palette (OO-10042). The <code>$o-labeled-*</code> variables and the <code>%o_labeled_&lt;colour&gt;</code> placeholders are removed. The modules move to three token layers (OO-9994, OO-10043).</p>
+
+<h3 id="token-layers">26.1 Token Layers</h3>
+
+<p>Every colour belongs to one of three layers. A module reads the semantic layer, and the component layer only for a colour that a client theme or the dark mode sets separately.</p>
 
 <div class="diagram-box">
-<svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
-  <text x="350" y="20" text-anchor="middle" font-size="13" font-weight="700" fill="#16797c">Labeled Color System</text>
+<svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+  <defs><marker id="tl-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#64748b"/></marker></defs>
+  <text x="350" y="20" text-anchor="middle" font-size="13" font-weight="700" fill="#16797c">Colour Token Layers</text>
 
-  <!-- Headers -->
-  <text x="100" y="50" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">SOLID</text>
-  <text x="280" y="50" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">LIGHT (outline)</text>
-  <text x="460" y="50" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">MEGA (tinted bg)</text>
-  <text x="620" y="50" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">VARIABLE</text>
+  <rect x="20" y="40" width="190" height="120" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="115" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Palette</text>
+  <text x="115" y="78" text-anchor="middle" font-size="9" fill="#475569">14 hues x 10 steps, theme colours</text>
+  <rect x="45" y="88" width="20" height="14" fill="#E4B132"/><rect x="65" y="88" width="20" height="14" fill="#0470D8"/><rect x="85" y="88" width="20" height="14" fill="#1F8320"/><rect x="105" y="88" width="20" height="14" fill="#D2343C"/><rect x="125" y="88" width="20" height="14" fill="#637286"/><rect x="145" y="88" width="20" height="14" fill="#BA37B4"/>
+  <text x="115" y="122" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-yellow-400</text>
+  <text x="115" y="136" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-theme1</text>
+  <text x="115" y="152" text-anchor="middle" font-size="8" fill="#64748b">_palette.scss, _palette_vars.scss</text>
 
-  <!-- Blue -->
-  <rect x="30" y="60" width="140" height="18" rx="3" fill="#146DCC"/>
-  <text x="100" y="73" text-anchor="middle" font-size="9" fill="#fff">Blue</text>
-  <rect x="210" y="60" width="140" height="18" rx="3" fill="#fff" stroke="#105CAD" stroke-width="1.5"/>
-  <text x="280" y="73" text-anchor="middle" font-size="9" fill="#105CAD">Blue light</text>
-  <rect x="390" y="60" width="140" height="18" rx="3" fill="#cde3f9"/>
-  <text x="460" y="73" text-anchor="middle" font-size="9" fill="#105CAD">Blue mega</text>
-  <text x="620" y="73" text-anchor="middle" font-size="8" fill="#475569">$o-labeled-blue-*</text>
+  <rect x="255" y="40" width="190" height="120" rx="6" fill="#f0fdfa" stroke="#16797c"/>
+  <text x="350" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#16797c">Semantic</text>
+  <text x="350" y="78" text-anchor="middle" font-size="9" fill="#475569">meaning: text, surface, border,</text>
+  <text x="350" y="90" text-anchor="middle" font-size="9" fill="#475569">brand, link, focus, 8 states</text>
+  <text x="350" y="110" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-text-muted</text>
+  <text x="350" y="124" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-primary</text>
+  <text x="350" y="138" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-state-success-text</text>
+  <text x="350" y="152" text-anchor="middle" font-size="8" fill="#64748b">_tokens.scss (OO-9994)</text>
 
-  <!-- Green -->
-  <rect x="30" y="82" width="140" height="18" rx="3" fill="#37AD00"/>
-  <text x="100" y="95" text-anchor="middle" font-size="9" fill="#fff">Green</text>
-  <rect x="210" y="82" width="140" height="18" rx="3" fill="#fff" stroke="#268000" stroke-width="1.5"/>
-  <text x="280" y="95" text-anchor="middle" font-size="9" fill="#268000">Green light</text>
-  <rect x="390" y="82" width="140" height="18" rx="3" fill="#C4E6B8"/>
-  <text x="460" y="95" text-anchor="middle" font-size="9" fill="#268000">Green mega</text>
-  <text x="620" y="95" text-anchor="middle" font-size="8" fill="#475569">$o-labeled-green-*</text>
+  <rect x="490" y="40" width="190" height="120" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="585" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Component</text>
+  <text x="585" y="78" text-anchor="middle" font-size="9" fill="#475569">only where a client theme or</text>
+  <text x="585" y="90" text-anchor="middle" font-size="9" fill="#475569">the dark mode sets it separately</text>
+  <text x="585" y="116" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-navbar-bg</text>
+  <text x="585" y="130" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-rating-star</text>
+  <text x="585" y="152" text-anchor="middle" font-size="8" fill="#64748b">_tokens.scss (OO-10043)</text>
 
-  <!-- Yellow -->
-  <rect x="30" y="104" width="140" height="18" rx="3" fill="#FBD774"/>
-  <text x="100" y="117" text-anchor="middle" font-size="9" fill="#574000">Yellow</text>
-  <rect x="210" y="104" width="140" height="18" rx="3" fill="#fff" stroke="#FCCA46" stroke-width="1.5"/>
-  <text x="280" y="117" text-anchor="middle" font-size="9" fill="#574000">Yellow light</text>
-  <rect x="390" y="104" width="140" height="18" rx="3" fill="#fbe6a7"/>
-  <text x="460" y="117" text-anchor="middle" font-size="9" fill="#805e00">Yellow mega</text>
-  <text x="620" y="117" text-anchor="middle" font-size="8" fill="#475569">$o-labeled-yellow-*</text>
+  <line x1="212" y1="100" x2="251" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <line x1="447" y1="100" x2="486" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
 
-  <!-- Orange -->
-  <rect x="30" y="126" width="140" height="18" rx="3" fill="#F4AC47"/>
-  <text x="100" y="139" text-anchor="middle" font-size="9" fill="#663B00">Orange</text>
-  <rect x="210" y="126" width="140" height="18" rx="3" fill="#fff" stroke="#D17A00" stroke-width="1.5"/>
-  <text x="280" y="139" text-anchor="middle" font-size="9" fill="#D17A00">Orange light</text>
-  <rect x="390" y="126" width="140" height="18" rx="3" fill="#FFDAA6"/>
-  <text x="460" y="139" text-anchor="middle" font-size="9" fill="#663B00">Orange mega</text>
-  <text x="620" y="139" text-anchor="middle" font-size="8" fill="#475569">$o-labeled-orange-*</text>
-
-  <!-- Red -->
-  <rect x="30" y="148" width="140" height="18" rx="3" fill="#b30018"/>
-  <text x="100" y="161" text-anchor="middle" font-size="9" fill="#fff">Red</text>
-  <rect x="210" y="148" width="140" height="18" rx="3" fill="#fff" stroke="#b30018" stroke-width="1.5"/>
-  <text x="280" y="161" text-anchor="middle" font-size="9" fill="#b30018">Red light</text>
-  <rect x="390" y="148" width="140" height="18" rx="3" fill="#ffc9bd"/>
-  <text x="460" y="161" text-anchor="middle" font-size="9" fill="#b30018">Red mega</text>
-  <text x="620" y="161" text-anchor="middle" font-size="8" fill="#475569">$o-labeled-red-*</text>
-
-  <!-- Grey -->
-  <rect x="30" y="170" width="140" height="18" rx="3" fill="#595959"/>
-  <text x="100" y="183" text-anchor="middle" font-size="9" fill="#fff">Grey</text>
-  <rect x="210" y="170" width="140" height="18" rx="3" fill="#fff" stroke="#454545" stroke-width="1.5"/>
-  <text x="280" y="183" text-anchor="middle" font-size="9" fill="#595959">Grey light</text>
-  <rect x="390" y="170" width="140" height="18" rx="3" fill="#F6F6F6"/>
-  <text x="460" y="183" text-anchor="middle" font-size="9" fill="#342c24">Grey mega</text>
-  <text x="620" y="183" text-anchor="middle" font-size="8" fill="#475569">$o-labeled-grey-*</text>
-
-  <!-- Brown -->
-  <rect x="30" y="192" width="140" height="18" rx="3" fill="#804A33"/>
-  <text x="100" y="205" text-anchor="middle" font-size="9" fill="#fff">Brown</text>
-  <rect x="210" y="192" width="140" height="18" rx="3" fill="#fff" stroke="#6D3F2C" stroke-width="1.5"/>
-  <text x="280" y="205" text-anchor="middle" font-size="9" fill="#804A33">Brown light</text>
-  <rect x="390" y="192" width="140" height="18" rx="3" fill="#E7D2BC"/>
-  <text x="460" y="205" text-anchor="middle" font-size="9" fill="#804A33">Brown mega</text>
-  <text x="620" y="205" text-anchor="middle" font-size="8" fill="#475569">$o-labeled-brown-*</text>
+  <rect x="200" y="195" width="300" height="34" rx="6" fill="#16797c"/>
+  <text x="350" y="216" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">Module: color: var(--o-*)</text>
+  <line x1="350" y1="162" x2="350" y2="191" stroke="#16797c" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <line x1="585" y1="162" x2="480" y2="191" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#tl-arrow)"/>
+  <text x="115" y="190" text-anchor="middle" font-size="8" fill="#64748b">set by $o-palette, $o-theme-colors</text>
+  <text x="595" y="190" text-anchor="middle" font-size="8" fill="#64748b">set by client theme, dark mode</text>
 </svg>
-<div class="diagram-caption">Figure 5: The labeled color system with 8 colors &times; 3 variants (solid, light/outline, mega/tinted background)</div>
+<div class="diagram-caption">Figure 5: The three colour token layers: palette, semantic, component</div>
 </div>
 
 <table>
-<thead><tr><th>Color</th><th>Base</th><th>Solid (labeled)</th><th>Light (outline)</th><th>Mega (tinted bg)</th></tr></thead>
+<thead><tr><th>Layer</th><th>Holds</th><th>Example</th><th>Defined in</th><th>Status</th></tr></thead>
 <tbody>
-<tr><td>Blue</td><td><code>#105CAD</code></td><td>White on <code>#146DCC</code></td><td>Blue on white, blue border</td><td>Blue on <code>#cde3f9</code></td></tr>
-<tr><td>Green</td><td><code>#268000</code></td><td>White on <code>#37AD00</code></td><td>Green on white, green border</td><td>Green on <code>#C4E6B8</code></td></tr>
-<tr><td>Yellow</td><td></td><td><code>#574000</code> on <code>#FBD774</code></td><td><code>#574000</code> on white</td><td><code>#805e00</code> on <code>#fbe6a7</code></td></tr>
-<tr><td>Orange</td><td><code>#D17A00</code></td><td><code>#663B00</code> on <code>#F4AC47</code></td><td>Orange on white</td><td><code>#663B00</code> on <code>#FFDAA6</code></td></tr>
-<tr><td>Red</td><td></td><td>White on <code>#b30018</code></td><td>Red on white</td><td>Red on <code>#ffc9bd</code></td></tr>
-<tr><td>Brown</td><td></td><td>White on <code>#804A33</code></td><td>Brown on white</td><td>Brown on <code>#E7D2BC</code></td></tr>
-<tr><td>Grey</td><td></td><td>White on <code>#595959</code></td><td>Grey on white</td><td><code>#342c24</code> on <code>#F6F6F6</code></td></tr>
+<tr><td>Palette</td><td>14 hues x 10 steps, the theme colours</td><td><code>--o-yellow-400</code>, <code>--o-theme1</code></td><td><code>_palette.scss</code>, <code>modules/_palette_vars.scss</code></td><td>done (OO-9991, OO-9993)</td></tr>
+<tr><td>Semantic</td><td>the meaning: text, surface, border, brand, link, focus, the 8 states with their roles</td><td><code>--o-text-muted</code>, <code>--o-primary</code>, <code>--o-state-success-text</code></td><td><code>_tokens.scss</code></td><td>states as Sass functions done (OO-10042); custom properties planned (OO-9994)</td></tr>
+<tr><td>Component</td><td>a colour of one component that a client theme or the dark mode sets separately</td><td><code>--o-navbar-bg</code>, <code>--o-rating-star</code></td><td><code>_tokens.scss</code></td><td>planned (OO-10043)</td></tr>
 </tbody>
 </table>
-<p>Variables: <code>$o-labeled-{color}-{variant}-{property}</code> where variant = (none)/light/mega and property = color/bg-color/border-color.</p>
+
+<p>Goal: the modules read every colour with <code>var(--o-*)</code>. A client theme changes a colour with one CSS line, a dark mode redefines the semantic tokens, and the removal of Bootstrap ports modules that already read tokens. Spec and module inventory: OO-10043.</p>
+
+<h3 id="semantic-states">26.2 Semantic States</h3>
+
+<p><code>$o-states</code> in <code>_palette.scss</code> maps each state to a palette hue (<code>!default</code>, a client theme can change the hue of a state):</p>
+
+<table>
+<thead><tr><th>State</th><th>Hue</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>neutral</code></td><td><span class="swatch" style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;background:#0470D8"></span> blue</td><td>planned, in preparation, running, information</td></tr>
+<tr><td><code>success</code></td><td><span class="swatch" style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;background:#1F8320"></span> green</td><td>done, valid, active, published</td></tr>
+<tr><td><code>warning</code></td><td><span class="swatch" style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;background:#E4B132"></span> yellow</td><td>waits for an action: review, pending, ready</td></tr>
+<tr><td><code>critical</code></td><td><span class="swatch" style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;background:#B55604"></span> orange</td><td>needs attention: expired, late, declined, invalid</td></tr>
+<tr><td><code>danger</code></td><td><span class="swatch" style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;background:#D2343C"></span> red</td><td>failed, revoked, rejected, locked</td></tr>
+<tr><td><code>finished</code></td><td><span class="swatch" style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;background:#93674C"></span> brown</td><td>finished, closed, kept for the record</td></tr>
+<tr><td><code>inactive</code></td><td><span class="swatch" style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;background:#637286"></span> slate</td><td>inactive, cancelled, in the trash, deleted, not seen</td></tr>
+<tr><td><code>highlight</code></td><td><span class="swatch" style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:middle;background:#BA37B4"></span> magenta</td><td>must stand out: AI, surplus</td></tr>
+</tbody>
+</table>
+
+<p>Each state has 5 styles. All foreground colours come from the swatch of the hue and reach 4.5:1; the compile fails otherwise.</p>
+
+<table>
+<thead><tr><th>Style</th><th>Look</th><th>Use</th></tr></thead>
+<tbody>
+<tr><td><code>solid</code></td><td>fill of the hue, tested text colour</td><td>default status label</td></tr>
+<tr><td><code>dark</code></td><td>darker fill</td><td>stronger weight: counters (<code>o_mid*</code>), deleted entries</td></tr>
+<tr><td><code>tint</code></td><td>light fill, dark text</td><td>draft, preparation, provisional</td></tr>
+<tr><td><code>light</code></td><td>very light fill, dark text</td><td>not seen, in process</td></tr>
+<tr><td><code>text</code></td><td>white fill, text and border in the text colour of the hue</td><td>outline label (<code>o_labeled_light</code>)</td></tr>
+</tbody>
+</table>
+
+<p>Classes for new code:</p>
+
+<pre><code>&lt;span class="o_labeled o_state_success"&gt;Published&lt;/span&gt;              <span style="color:#6c7086">&lt;!-- solid --&gt;</span>
+&lt;span class="o_labeled o_state_neutral o_state_tint"&gt;Draft&lt;/span&gt;      <span style="color:#6c7086">&lt;!-- tint --&gt;</span>
+&lt;span class="o_labeled_light o_state_danger"&gt;Revoked&lt;/span&gt;           <span style="color:#6c7086">&lt;!-- text --&gt;</span></code></pre>
+
+<p>The existing status classes keep their names. <code>$o-state-wiring</code> in <code>modules/_states.scss</code> assigns each of the 395 status classes (e.g. <code>o_repo_status_published</code>, <code>o_lp_in_progress</code>, <code>label-success</code>) a state and a style; the module <code>@extend</code>s the placeholder <code>%o_state_&lt;state&gt;_&lt;style&gt;</code>. The map is generated from the OO-colors mapping; do not edit it by hand. <code>_states.scss</code> is imported after all other modules. GUI demo: Colors &gt; tab "Badges / Status".</p>
+
+<h3 id="status-colour-no-label">26.3 Status Colour Without a Label</h3>
+
+<p>A component that shows a status without a label (icon, marker, progress bar, chart, timeline) takes the colour of the matching state with <code>o-state-color($state, $role, $style)</code>:</p>
+
+<table>
+<thead><tr><th>Role</th><th>Use</th></tr></thead>
+<tbody>
+<tr><td><code>text</code></td><td>text and icons on white</td></tr>
+<tr><td><code>bg</code>, <code>soft-bg</code></td><td>fills</td></tr>
+<tr><td><code>border</code></td><td>borders, markers, chart lines and bars</td></tr>
+<tr><td><code>fg</code>, <code>soft-fg</code>, <code>soft-border</code></td><td>text on a fill, hover colour, light borders</td></tr>
+</tbody>
+</table>
+
+<pre><code>.o_icon_ok         { color: o-state-color("success", "text"); }
+.o_lectures_absent { color: o-state-color("danger", "text") !important; }
+.bar_green         { fill: o-state-color("success", "border"); }
+.o_badge_added     { @extend %o_state_success_solid; }</code></pre>
+
+<p><code>o-swatch-color($hue, $role)</code> returns a swatch colour of a hue for a colour that is not a status. <code>o-palette($hue, $step)</code> returns a palette step.</p>
+
+<h3 id="color-rules">26.4 Rules for New Code</h3>
+
+<ol>
+<li>A new status uses a state: <code>o_labeled o_state_&lt;state&gt;</code> in the template, or a status class added to <code>$o-state-wiring</code>. Do not set a colour on a status class in a module.</li>
+<li>Choose the state by the meaning (26.2), not by the colour.</li>
+<li>A status colour outside a label uses <code>o-state-color()</code>. Do not use <code>$brand-success</code>, <code>$brand-danger</code>, <code>$brand-warning</code>, <code>$brand-info</code> or <code>$state-*-text</code> for a status.</li>
+<li>A fixed colour that is not a status (rating stars, pen colours, chart series) comes from the palette (<code>o-palette()</code>), not from a hex value.</li>
+<li>Do not add a Sass colour variable. A new customization point is a CSS custom property (component token, OO-10043).</li>
+<li>Do not use colour maths (<code>darken()</code>, <code>lighten()</code>, <code>mix()</code>, <code>rgba($var)</code>) on a palette or state colour. Use a role (<code>soft-fg</code>, <code>dark-bg</code>) or another palette step.</li>
+</ol>
+
+<p>Buttons, alerts and form messages still read the Bootstrap colours <code>$brand-*</code>. OO-10043 moves them to the state tokens.</p>
 
 <!-- ==================== SECTION 27: SCSS MODULES ==================== -->
 <h2 id="scss-modules">27. SCSS Module Index</h2>
@@ -1965,7 +2007,10 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <tr><td><code>_icons.scss</code></td><td>Font Awesome 6 icon definitions</td></tr>
 <tr><td><code>_helpers.scss</code></td><td>Spacing, flex, scrolling, buttons, typography utilities</td></tr>
 <tr><td><code>_fonts.scss</code></td><td>Font imports and declarations</td></tr>
-<tr><td><code>_colors.scss</code></td><td>Labeled color classes</td></tr>
+<tr><td><code>_colors.scss</code></td><td>Colour classes of the colour chooser (<code>o_color_*</code>) on the swatch tokens</td></tr>
+<tr><td><code>_swatches.scss</code></td><td>Swatch classes <code>o_swatch_{hue}</code> with the tokens <code>--o-sw-*</code></td></tr>
+<tr><td><code>_palette_vars.scss</code></td><td>Palette values as <code>--o-{hue}-{step}</code> on <code>:root</code></td></tr>
+<tr><td><code>_states.scss</code></td><td>Semantic states: <code>o_state_*</code> classes and the wiring of the status classes (imported last)</td></tr>
 <tr><td><code>_type.scss</code></td><td>Typography and heading styles</td></tr>
 </tbody>
 </table>
@@ -2402,9 +2447,21 @@ if (itemDeleted) {
 <p>Also new in this update: chapter 35 (info page pattern) and chapter 36 (accessibility); the Markdown version follows the same 37-chapter structure.</p>
 <p>Corrections of earlier content: toolbar segment markup, modal markup (<code>o_layered_panel</code> + <code>&lt;dialog class="dialog modal"&gt;</code>), FormToggle and date picker markup, widget type classes, JavaScript function names (<code>o_XHRFnCall</code>, <code>o_ffSetFormDirty</code> do not exist), <code>o_ce_</code> and <code>o_sel_</code> examples, <code>o_form_two_cols</code> breakpoint, <code>_config.scss</code> size and line numbers. Sections 31 to 34 bring content from the Markdown version that was missing here.</p>
 
+<h3>37.2 21.2.0 (in development)</h3>
+<p>Colour epic OO-9989:</p>
+<table>
+<thead><tr><th>Issue</th><th>Change</th><th>Section</th></tr></thead>
+<tbody>
+<tr><td>OO-9991</td><td>Palette of 14 hues x 10 steps, swatch tokens <code>--o-sw-*</code>, <code>--o-{hue}-{step}</code> on <code>:root</code></td><td><a href="#palette">Colour Palette</a></td></tr>
+<tr><td>OO-9992, OO-9993</td><td>Colour choosers on the palette, theme colours <code>--o-theme{n}</code></td><td><a href="#palette">Colour Palette</a></td></tr>
+<tr><td>OO-10042</td><td>8 semantic states in 5 styles, <code>o_state_*</code> classes, <code>$o-state-wiring</code> for 395 status classes, <code>o-state-color()</code>, <code>o-swatch-color()</code>; <code>$o-labeled-*</code> removed</td><td><a href="#css-colors">Color System</a></td></tr>
+<tr><td>OO-9994, OO-10043</td><td>Token layers palette, semantic, component; rules for new code (planned)</td><td><a href="#token-layers">Token Layers</a></td></tr>
+</tbody>
+</table>
+
 <hr>
 
-<p style="color:#64748b;font-size:12px;margin-top:40px">Generated for the OpenOlat project &mdash; frentix GmbH, Z&uuml;rich, Switzerland. Release 21.1.0, updated 2026-09-25.</p>
+<p style="color:#64748b;font-size:12px;margin-top:40px">Generated for the OpenOlat project &mdash; frentix GmbH, Z&uuml;rich, Switzerland. Release 21.1.0, updated 2026-11-08.</p>
 
 </main>
 </div>

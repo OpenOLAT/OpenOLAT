@@ -1,6 +1,5 @@
+// Answer feedback: colours of the semantic states (o-state-color, OO-10042)
 $brand-primary-bg : rgba($brand-primary, 0.1);
-$brand-success-bg : rgba($brand-success, 0.1);
-$brand-danger-bg  : rgba($brand-danger, 0.1);
 
 
 .o_page_layout.o_apply_background_color {
@@ -56,11 +55,11 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 		padding: 12px 20px 20px 20px;
 
 		&.o_correct {
-			border-color: $brand-success;
+			border-color: o-state-color("success", "border");
 		}
 
 		&.o_incorrect {
-			border-color: $brand-danger;
+			border-color: o-state-color("danger", "border");
 		}
 
 		.o_quiz_progress_label {
@@ -99,7 +98,7 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 
 						&:after {
 							margin-left: -24px;
-							color: $brand-success;
+							color: o-state-color("success", "text");
 							background-color: white;
 						}
 					}
@@ -110,7 +109,7 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 
 						&:after {
 							margin-left: -24px;
-							color: $brand-danger;
+							color: o-state-color("danger", "text");
 							background-color: white;
 						}
 					}
@@ -127,11 +126,11 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 						-webkit-appearance: none;
 
 						&.o_correct {
-							border-color: $brand-success;
+							border-color: o-state-color("success", "border");
 						}
 
 						&.o_incorrect {
-							border-color: $brand-danger;
+							border-color: o-state-color("danger", "border");
 						}
 					}
 				}
@@ -147,11 +146,11 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 						-webkit-appearance: none;
 
 						&.o_correct {
-							border-color: $brand-success;
+							border-color: o-state-color("success", "border");
 						}
 
 						&.o_incorrect {
-							border-color: $brand-danger;
+							border-color: o-state-color("danger", "border");
 						}
 					}
 				}
@@ -195,22 +194,22 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 					}
 
 					&.o_correct {
-						background-color: $brand-success-bg;
-						color: $brand-success;
-						border-color: $brand-success;
+						background-color: o-state-color("success", "soft-bg");
+						color: o-state-color("success", "text");
+						border-color: o-state-color("success", "border");
 
 						i:before {
-							color: $brand-success;
+							color: o-state-color("success", "text");
 						}
 					}
 
 					&.o_incorrect {
-						background-color: $brand-danger-bg;
-						color: $brand-danger;
-						border-color: $brand-danger;
+						background-color: o-state-color("danger", "soft-bg");
+						color: o-state-color("danger", "text");
+						border-color: o-state-color("danger", "border");
 
 						i:before {
-							color: $brand-danger;
+							color: o-state-color("danger", "text");
 						}
 					}
 
@@ -277,13 +276,13 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 
 							&.o_correct td {
 								&.choiceInteraction {
-									background-color: $brand-success-bg;
+									background-color: o-state-color("success", "soft-bg");
 								}
 							}
 
 							&.o_incorrect td {
 								&.choiceInteraction {
-									background-color: $brand-danger-bg;
+									background-color: o-state-color("danger", "soft-bg");
 								}
 							}
 						}
@@ -345,25 +344,25 @@ $brand-danger-bg  : rgba($brand-danger, 0.1);
 
 				&.o_correct td {
 					&.control, &.choiceInteraction {
-						background-color: $brand-success-bg;
-						color: $brand-success;
-						border-color: $brand-success;
+						background-color: o-state-color("success", "soft-bg");
+						color: o-state-color("success", "text");
+						border-color: o-state-color("success", "border");
 					}
 
 					i:before {
-						color: $brand-success;
+						color: o-state-color("success", "text");
 					}
 				}
 
 				&.o_incorrect td {
 					&.control, &.choiceInteraction {
-						background-color: $brand-danger-bg;
-						color: $brand-danger;
-						border-color: $brand-danger;
+						background-color: o-state-color("danger", "soft-bg");
+						color: o-state-color("danger", "text");
+						border-color: o-state-color("danger", "border");
 					}
 
 					i:before {
-						color: $brand-danger;
+						color: o-state-color("danger", "text");
 					}
 				}
 

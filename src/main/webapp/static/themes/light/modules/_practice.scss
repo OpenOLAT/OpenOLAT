@@ -337,7 +337,7 @@ svg {
 	}
 	
 	.o_practice_data_correct {
-		color: $brand-success;
+		color: o-state-color("success", "text");
 	}
 	
 	>fieldset {

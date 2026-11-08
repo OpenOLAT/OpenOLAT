@@ -13,7 +13,7 @@
 - **Apache Velocity**: server-side HTML templating (`.html` files in `_content/`)
 - **Java ComponentRenderers** (~540 classes): programmatic HTML generation
 - **Custom SASS** (~100 modules): OpenOlat-specific styling
-- **Dart Sass >= 1.33**: compilation via `compiletheme.sh`
+- **Dart Sass >= 1.79.0**: compilation via `compiletheme.sh`
 - **TinyMCE 6.8.6** (folder `js/tinymce4/`): rich text editing
 - **FullCalendar 6.1.15**: calendar widget
 - **Vanilla JS Datepicker 1.3.4** (`js/datepicker/`): date picker
@@ -40,7 +40,7 @@ src/main/webapp/static/
       oo-docs.scss              # Icons only → oo-docs.css for the user manual
       _config.scss              # ALL variables (~2000 lines, !default)
       _functions.scss           # luminance(), contrast(), o-a11y-color(), o-on-color()
-      _palette.scss             # Colour palette: $o-palette (15 hues x 10 steps), $o-swatches, aliases
+      _palette.scss             # Colour palette: $o-palette (14 hues x 10 steps), $o-swatches, aliases
       _palette_theme.scss       # Theme colours theme1..N from $o-theme-colors (brand colours)
       _modules.scss             # Import manifest (~100 modules)
       modules/                  # SCSS partials by feature
@@ -75,8 +75,8 @@ Variables with `!default` are only set if not already defined. Custom themes imp
 | Section | Lines | Examples |
 |---------|-------|---------|
 | Bootstrap overrides | 34-80 | `$btn-default-bg`, `$btn-default-border`, `$input-border` |
-| Color system | 82-142 | `$o-labeled-{color}-{variant}-{property}` |
-| Brand colors | 150-175 | `$o-color-info`, `$o-color-warning` |
+| Status colours | none | `$o-states` (`_palette.scss`), `$o-state-wiring` (`modules/_states.scss`) |
+| Brand colors | 73-96 | `$brand-primary`, `$brand-info`, `$brand-warning`, `$brand-danger`, `$brand-success` |
 | Layout | 273-286 | `$o-page-width-max`, `$o-main-*-bg` |
 | Navbar | 289-346 | `$o-navbar-height`, `$o-navbar-bg` |
 | Toolbar | 380-424 | `$o-toolbar-bg-color`, `$o-toolbar-breadcrumb-*` |
@@ -287,25 +287,20 @@ Widget content types: `.o_widget_main.o_widget_main_figure` (figure), `.o_widget
 .o_scrollable            // inner scrollable area
 ```
 
-## 6. Labeled Color System
+## 6. Status Colours and Token Layers
 
-8 colors x 3 variants: solid (default), light/outline, mega/tinted.
+Status colours: 8 semantic states in `$o-states` (`_palette.scss`): neutral blue, success green, warning yellow, critical orange, danger red, finished brown, inactive slate, highlight magenta. 5 styles: solid (default), dark (counters, deleted), tint (draft, preparation), light (not seen), text (outline, `o_labeled_light`). All foregrounds reach 4.5:1, checked at compile time.
 
-| Color | Solid bg | Light | Mega bg |
-|-------|----------|-------|---------|
-| Blue | `#146DCC` | blue border, white bg | `#cde3f9` |
-| Green | `#37AD00` | green border, white bg | `#C4E6B8` |
-| Yellow | `#FBD774` | yellow border, white bg | `#fbe6a7` |
-| Orange | `#F4AC47` | orange border, white bg | `#FFDAA6` |
-| Red | `#b30018` | red border, white bg | `#ffc9bd` |
-| Brown | `#804A33` | brown border, white bg | `#E7D2BC` |
-| Grey | `#595959` | grey border, white bg | `#F6F6F6` |
-
-Variables: `$o-labeled-{color}-{variant}-{property}` (color/bg-color/border-color)
+- New status: `<span class="o_labeled o_state_success">`, modifiers `o_state_dark` / `o_state_tint` / `o_state_light`, outline `o_labeled_light o_state_<state>`. Or add the status class to `$o-state-wiring` in `modules/_states.scss` (395 classes, generated, `@extend %o_state_<state>_<style>`, imported last). Never set a colour on a status class in a module.
+- Status colour without a label (icon, marker, bar, chart): `o-state-color($state, $role)`, roles `text` (text, icons), `bg` / `soft-bg` (fills), `border` (borders, markers, chart lines), `fg` / `soft-fg` / `soft-border`. Not `$brand-success|danger|warning|info` or `$state-*-text`.
+- Fixed colour without a meaning (stars, pen colours): `o-palette($hue, $step)`. Swatch role of a hue: `o-swatch-color($hue, $role)`.
+- No new Sass colour variable, no `darken()`/`lighten()`/`rgba($var)` on palette or state colours.
+- Token layers (target, OO-9994 / OO-10043): palette `--o-{hue}-{step}` -> semantic `--o-text`, `--o-primary`, `--o-state-{state}-{role}` -> component `--o-{component}-{part}` only where a client theme or the dark mode sets it. Modules will read only `var(--o-*)`.
+- Buttons, alerts and form messages still read `$brand-*` (until OO-10043).
 
 ## 6a. Colour Palette (user colour choosers)
 
-One palette in `_palette.scss`: `$o-palette` with 15 hues (red, orange, yellow, lime, green, teal, cyan, blue, indigo, violet, magenta, pink, brown, slate, gray) × 10 steps (50 to 900), plus the theme colours `theme1` … `themeN` from `$o-theme-colors` (`_palette_theme.scss`, default `$brand-primary`, Dart Sass >= 1.79). Emitted as `--o-{hue}-{step}` on `:root` in `theme.css` and `content.css`, not in `email.css`.
+One palette in `_palette.scss`: `$o-palette` with 14 hues (red, orange, yellow, lime, green, teal, cyan, blue, violet, magenta, pink, brown, slate, gray) × 10 steps (50 to 900), plus the theme colours `theme1` … `themeN` from `$o-theme-colors` (`_palette_theme.scss`, default `$brand-primary`, Dart Sass >= 1.79). Emitted as `--o-{hue}-{step}` on `:root` in `theme.css` and `content.css`, not in `email.css`.
 
 - `$o-swatches`: per hue the roles `bg`, `fg`, `border`, `soft-bg`, `soft-fg`, `soft-border`, `text`, tint and dark variants. Foreground chosen by `o-on-color()` at compile time (4.5:1 enforced).
 - `modules/_swatches.scss`: `.o_swatch_{hue}`, `.o_swatch_tint`, `.o_swatch_dark` set `--o-sw-*`. Chooser components (`_colors`, `_cal`, `_course`, `_video*`, `_projects`, `_user`, `_room_management`, `_contenteditor`) read `var(--o-sw-*)`. Legacy classes (`o_color_*`, `o_cal_*`, `o_colcat_*`, ...) extend the swatch classes via the alias map.

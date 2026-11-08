@@ -108,7 +108,7 @@
 		font-style: italic;
 		color: $text-muted;
 		text-decoration: line-through;
-		text-decoration-color: $brand-danger;
+		text-decoration-color: o-state-color("danger", "border");
 	}
 
 	.table {

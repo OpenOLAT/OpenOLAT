@@ -29,7 +29,7 @@ State of this skill: release 21.1.0 (2026-09-25). `**New in 21.1.0:**` marks cha
 - **Apache Velocity** — server-side `.html` templates in `_content/` dirs
 - **~540 Java ComponentRenderers** — programmatic HTML generation
 - **~100 SASS modules** — OpenOlat-specific styling in `themes/light/modules/`
-- **Dart Sass >= 1.33** — compilation via `compiletheme.sh`
+- **Dart Sass >= 1.79.0** — compilation via `compiletheme.sh`
 - **No client-side framework** — all UI state lives on the server
 
 ## Key Files
@@ -38,7 +38,7 @@ State of this skill: release 21.1.0 (2026-09-25). `**New in 21.1.0:**` marks cha
 |------|---------|
 | `src/main/webapp/static/themes/light/_config.scss` | ALL variables (~2000 lines) |
 | `src/main/webapp/static/themes/light/_functions.scss` | a11y functions: `luminance()`, `contrast()`, `o-a11y-color()`, `o-on-color()` |
-| `src/main/webapp/static/themes/light/_palette.scss` | Colour palette: `$o-palette` (15 hues × 10 steps), `$o-swatches` roles, legacy key aliases; theme colours in `_palette_theme.scss` |
+| `src/main/webapp/static/themes/light/_palette.scss` | Colour palette: `$o-palette` (14 hues × 10 steps), `$o-swatches` roles, legacy key aliases; theme colours in `_palette_theme.scss` |
 | `src/main/webapp/static/themes/light/_modules.scss` | Import manifest for ~100 modules |
 | `src/main/webapp/static/themes/light/modules/` | SCSS partials by feature |
 | `src/main/webapp/static/themes/openolat/` | Default product theme (example of customization) |
@@ -103,18 +103,26 @@ Column visibility via: `.o_hide_main_left`, `.o_hide_main_right` on `#o_main`.
 **Messages:** `o_info`, `o_note`, `o_tip`, `o_important`, `o_success`, `o_warning`, `o_error`
 **Scrolling:** `o_scrollblock`, `o_scrollable_wrapper`, `o_scrollable`
 
-## Labeled Color System
+## Status Colours and Token Layers
 
-8 colors (blue, green, yellow, orange, red, brown, grey) x 3 variants (solid, light/outline, mega/tinted).
-Variables: `$o-labeled-{color}-{variant}-{property}` where variant = (none)/light/mega, property = color/bg-color/border-color.
+Status colours: 8 semantic states in `$o-states` (`_palette.scss`): neutral blue, success green, warning yellow, critical orange, danger red, finished brown, inactive slate, highlight magenta. 5 styles: solid (default), dark (counters, deleted), tint (draft, preparation), light (not seen), text (outline, `o_labeled_light`). All foregrounds reach 4.5:1, checked at compile time.
+
+- New status: `<span class="o_labeled o_state_success">`, modifiers `o_state_dark` / `o_state_tint` / `o_state_light`, outline `o_labeled_light o_state_<state>`. Or add the status class to `$o-state-wiring` in `modules/_states.scss` (395 classes, generated, `@extend %o_state_<state>_<style>`, imported last). Never set a colour on a status class in a module.
+- Status colour without a label (icon, marker, bar, chart): `o-state-color($state, $role)`, roles `text` (text, icons), `bg` / `soft-bg` (fills), `border` (borders, markers, chart lines), `fg` / `soft-fg` / `soft-border`. Not `$brand-success|danger|warning|info` or `$state-*-text`.
+- Fixed colour without a meaning (stars, pen colours): `o-palette($hue, $step)`. Swatch role of a hue: `o-swatch-color($hue, $role)`.
+- No new Sass colour variable, no `darken()`/`lighten()`/`rgba($var)` on palette or state colours.
+- Token layers (target, OO-9994 / OO-10043): palette `--o-{hue}-{step}` -> semantic `--o-text`, `--o-primary`, `--o-state-{state}-{role}` -> component `--o-{component}-{part}` only where a client theme or the dark mode sets it. Modules will read only `var(--o-*)`.
+- Buttons, alerts and form messages still read `$brand-*` (until OO-10043).
+
+Details: `doc/openolat-frontend.md` chapter 26.
 
 ## Colour Palette (user colour choosers)
 
-All user-chosen colours (calendar, course element category, video markers, project avatar, user initials, rooms, page editor blocks, badges, report series) come from one palette in `_palette.scss`: 15 hues (red, orange, yellow, lime, green, teal, cyan, blue, indigo, violet, magenta, pink, brown, slate, gray) × 10 steps (50 to 900), plus the theme colours `theme1` … `themeN` (brand colours of the theme, `$o-theme-colors` in `_palette_theme.scss`, default `$brand-primary`). The theme emits every value as `--o-{hue}-{step}` on `:root` in `theme.css` and `content.css`.
+All user-chosen colours (calendar, course element category, video markers, project avatar, user initials, rooms, page editor blocks, badges, report series) come from one palette in `_palette.scss`: 14 hues (red, orange, yellow, lime, green, teal, cyan, blue, violet, magenta, pink, brown, slate, gray) × 10 steps (50 to 900), plus the theme colours `theme1` … `themeN` (brand colours of the theme, `$o-theme-colors` in `_palette_theme.scss`, default `$brand-primary`). The theme emits every value as `--o-{hue}-{step}` on `:root` in `theme.css` and `content.css`.
 
 - **Swatches:** `$o-swatches` gives each hue the roles `bg`, `fg`, `border`, `soft-bg`, `soft-fg`, `text`, plus tint and dark variants. `o-on-color()` picks the foreground and fails the compile below 4.5:1. The class `.o_swatch_{hue}` sets `--o-sw-*`; components read `var(--o-sw-bg)` etc. Never add a hex literal for a chooser colour.
 - **Legacy keys:** stored values (`o_color_lightblue`, `o_cal_blue`, `o_colcat_light_blue`, ...) stay valid through the alias map in `_palette.scss` and `ColorService.resolve()` in Java.
-- **Java:** `Theme.init()` reads the `--o-{hue}-{step}` properties from the selected theme's compiled `theme.css` (fallback `light`) into a `Palette`; `ColorService.getPalette()` returns it. No generated palette file exists. A client theme may override the values of `$o-palette` (keep the 15 hue names) and Java follows. `Palette.getThemeColors()` / `ColorService.getThemeColors()` return only the theme colours the theme defines; a stored `theme{n}` above that count resolves to `theme1`.
+- **Java:** `Theme.init()` reads the `--o-{hue}-{step}` properties from the selected theme's compiled `theme.css` (fallback `light`) into a `Palette`; `ColorService.getPalette()` returns it. No generated palette file exists. A client theme may override the values of `$o-palette` (keep the 14 hue names) and Java follows. `Palette.getThemeColors()` / `ColorService.getThemeColors()` return only the theme colours the theme defines; a stored `theme{n}` above that count resolves to `theme1`.
 - Live reference with contrast values: `doc/component-library/colors.html`.
 
 ## Component DOM Patterns

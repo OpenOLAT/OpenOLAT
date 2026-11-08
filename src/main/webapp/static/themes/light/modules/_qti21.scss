@@ -71,13 +71,14 @@ ul.sessionControl {
 }
 	
 .o_group_colors {
-	.black .o_icon:before { color:#000000;  }
-	.white .o_icon:before { color:#FFFFFF; }
-	.blue .o_icon:before { color:#0000FF;  } 
-	.green .o_icon:before { color:#008000;  } 
-	.yellow .o_icon:before { color:#FFFF00;  }
-	.red .o_icon:before { color:#FF0000;  } 
-	.purple .o_icon:before { color:#800080; }
+	// pen colours of the drawing interaction, the same values as data-color in drawingInteraction.html
+	.black .o_icon:before { color: o-palette("gray", 900); }
+	.white .o_icon:before { color: #FFFFFF; }
+	.blue .o_icon:before { color: o-palette("blue", 500); }
+	.green .o_icon:before { color: o-palette("green", 500); }
+	.yellow .o_icon:before { color: o-palette("yellow", 400); }
+	.red .o_icon:before { color: o-palette("red", 500); }
+	.purple .o_icon:before { color: o-palette("violet", 500); }
 }
 
 .white.btn>i.o_icon_circle_color:before {
@@ -267,14 +268,15 @@ img.o_hotspot_responsive[usemap] {
 	border-radius: $border-radius-base;
 	padding: 2px 5px;
 	
+	// answer feedback: soft fill of the state (OO-10042)
 	&.success {
-		background-color: $state-success-bg;
-		border: 1px solid $state-success-bg;
+		background-color: o-state-color("success", "soft-bg");
+		border: 1px solid o-state-color("success", "soft-border");
 	}
 	
 	&.danger {
-		background-color: $state-danger-bg;
-		border: 1px solid $state-danger-bg;
+		background-color: o-state-color("danger", "soft-bg");
+		border: 1px solid o-state-color("danger", "soft-border");
 	}
 }
 
@@ -465,7 +467,7 @@ span.o_qti_gaptext_score_alternative {
 		border-radius: 5px;
 
 		&.o_assessment_status_several {
-			border-color: $brand-warning;
+			border-color: o-state-color("warning", "border");
 		}
 
 		&.o_assessment_status_none {
@@ -1059,11 +1061,11 @@ tr.choiceinteraction {
 	
 	&.has-error input,
 	&.has-error span.o_correction_value {
-		border-color: $state-danger-text;
+		border-color: o-state-color("danger", "border");
 	}
 	&.has-success input,
 	&.has-success span.o_correction_value {
-		border-color: $state-success-text;
+		border-color: o-state-color("success", "border");
 	}
 }
 
@@ -1072,7 +1074,7 @@ tr.choiceinteraction {
 	&.has-feedback {
 		padding-right: 5px;
 		display: inline-block;
-		border: 1px solid $state-success-text;
+		border: 1px solid o-state-color("success", "border");
 		border-radius: $input-border-radius;
 	}
 	&.has-feedback span.o_correction_value {
@@ -1082,10 +1084,10 @@ tr.choiceinteraction {
 	}
 	
 	&.has-error {
-		border-color: $state-danger-text;
+		border-color: o-state-color("danger", "border");
 	}
 	&.has-success {
-		border-color: $state-success-text;
+		border-color: o-state-color("success", "border");
 	}
 	
 	.o_feedback_right {
@@ -1136,7 +1138,7 @@ table.o_qti_item_kprim {
 	div.bar_red { background-color: $o-qti-bar-red; }
 	
 	.has-success input {
-		border-color: $brand-success;
+		border-color: o-state-color("success", "border");
 	}
 }
 
@@ -2136,9 +2138,9 @@ div.o_qti_statistics {
 		border: 1px solid $table-border-color;
 		border-radius: $panel-border-radius;
 		ul li {
-			.bar_green { background-color:#9dd53a; }
-			.bar_red { background-color:#f85032; }
-			.bar_grey { background-color:lightgrey; }
+			.bar_green { background-color: o-state-color("success", "border"); }
+			.bar_red { background-color: o-state-color("danger", "border"); }
+			.bar_grey { background-color: o-state-color("inactive", "soft-border"); }
 			
 			.bar_color_legend {
 				display: inline-block;

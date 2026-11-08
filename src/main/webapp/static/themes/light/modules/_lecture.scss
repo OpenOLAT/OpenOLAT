@@ -99,7 +99,7 @@
 .o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning,
 .o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning>td.o_col_sticky_left,
 .o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning>td.o_col_sticky_right {
-	background-color: $alert-warning-bg !important;
+	background-color: o-state-color("warning", "soft-bg") !important;
 }
 
 .o_labeled {

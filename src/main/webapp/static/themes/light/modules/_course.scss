@@ -506,7 +506,7 @@
 .o_passed {
 	color: $o-course-state-passed-color;
 	a:hover {
-	    color: darken($o-course-state-passed-color, 10%);
+	    color: o-state-color("success", "soft-fg");
 	}					
 	th {
 		color: $text-color		
@@ -515,16 +515,16 @@
 .o_failed {
 	color: $o-course-state-failed-color;
 	a:hover {
-	    color: darken($o-course-state-failed-color, 10%);
+	    color: o-state-color("danger", "soft-fg");
 	}				
 	th {
 		color: $text-color		
 	}
 }
 .o_unknown {
-	color: $state-warning-text;
+	color: $o-course-state-unknown-color;
 	a:hover {
-	    color: darken($o-course-state-unknown-color, 10%);
+	    color: o-state-color("warning", "soft-fg");
 	}				
 	th {
 		color: $text-color		

@@ -54,10 +54,10 @@
 	
 	.badge {
 		&.o_notification_request {
-			background-color: $state-danger-text;
+			@extend %o_state_danger_solid;
 		}
 		&.o_notification_unread {
-			background-color: $state-warning-text;
+			@extend %o_state_warning_solid;
 		}
 	}
 }

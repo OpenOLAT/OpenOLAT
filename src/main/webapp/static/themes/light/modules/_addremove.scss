@@ -15,9 +15,9 @@
 }
 
 .o_badge_added {
-	background-color: $state-success-text;
+	@extend %o_state_success_solid;
 }
 
 .o_badge_removed {
-	background-color: $state-danger-text;
+	@extend %o_state_danger_solid;
 }
