@@ -19,6 +19,25 @@ STYLE=compressed
 #STYLE=compact
 #default update command for sass
 UPDATECMD="--update"
+# Minimum Dart Sass version: the theme colours use the colour space functions (OO-10000)
+SASS_MIN_VERSION="1.79.0"
+
+# Stop when sass is missing or older than SASS_MIN_VERSION
+checkSassVersion () {
+	if ! command -v sass >/dev/null 2>&1;
+	then
+		echo "sass not found. Dart Sass $SASS_MIN_VERSION or later required, see themes.README" >&2
+		exit 1
+	fi
+	SASS_VERSION=$(sass --version | awk '{print $1}')
+	LOWEST=$(printf '%s\n%s\n' "$SASS_MIN_VERSION" "$SASS_VERSION" | sort -V | head -n 1)
+	if [ "$LOWEST" != "$SASS_MIN_VERSION" ];
+	then
+		echo "Dart Sass $SASS_MIN_VERSION or later required, installed: $SASS_VERSION, see themes.README" >&2
+		exit 1
+	fi
+	echo "Dart Sass $SASS_VERSION"
+}
 
 # Helper method to add theme to array
 searchThemes () {
@@ -47,7 +66,6 @@ doCompile () {
 	if [[ "--watch" == $UPDATECMD && ! -z $THEMES ]]; then UPDATE="--update"; fi
 	fi
 	echo "Compiling SASS: $TARGET $STYLE"
-	sass --version
 	sass --style $STYLE $UPDATE $TARGET:$TARGET --load-path light light/modules
 	echo "sass --style $STYLE $UPDATE $TARGET:$TARGET --load-path light light/modules"
 	echo "done"
@@ -80,6 +98,8 @@ THEMES=$1
 
 # handle ctrl-c
 trap control_c SIGINT
+
+checkSassVersion
 
 # Add themes to compile from given path
 doCompile ".";
