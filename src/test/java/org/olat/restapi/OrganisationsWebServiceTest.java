@@ -25,19 +25,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.jgroups.util.UUID;
 import org.junit.Assert;
@@ -53,7 +47,6 @@ import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -65,9 +58,6 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * 
  * Initial date: 14 mai 2018<br>
@@ -75,8 +65,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public class OrganisationsWebServiceTest extends OlatRestTestCase {
-	
-	private static final Logger log = Tracing.createLoggerFor(OrganisationsWebServiceTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -89,17 +77,17 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getOrganisations()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation organisation = organisationService.createOrganisation("REST Organisation", "REST-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<OrganisationVO> organisationVoes = parseOrganisationArray(response.getEntity());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<OrganisationVO> organisationVoes = conn.parseList(response, OrganisationVO.class);
 		
 		boolean found = false;
 		for(OrganisationVO organisationVo:organisationVoes) {
@@ -108,11 +96,12 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 			}
 		}
 		Assert.assertTrue(found);
+		conn.close();
 	}
 	
 	@Test
 	public void getOrganisationsByExternalId()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		String externalId = UUID.randomUUID().toString();
 		Organisation organisation = organisationService.createOrganisation("REST Organisation-ext", "REST-organisation-ext", "", null, null, JunitTestHelper.getDefaultActor());
 		organisation.setExternalId(externalId);
@@ -123,37 +112,39 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations")
 				.queryParam("externalId", externalId).build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<OrganisationVO> organisationVoes = parseOrganisationArray(response.getEntity());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<OrganisationVO> organisationVoes = conn.parseList(response, OrganisationVO.class);
 		
 		Assert.assertNotNull(organisationVoes);
 		Assert.assertEquals(1, organisationVoes.size());
 		Assert.assertEquals(organisation.getKey(), organisationVoes.get(0).getKey());
+		conn.close();
 	}
 	
 	@Test
 	public void getOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 5", "REST-5-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		OrganisationVO organisationVo = conn.parse(response, OrganisationVO.class);
 		Assert.assertNotNull(organisationVo);
 		Assert.assertEquals(organisation.getKey(), organisationVo.getKey());
 		Assert.assertEquals("REST-5-organisation", organisationVo.getIdentifier());
+		conn.close();
 	}
 	
 	@Test
 	public void createOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation", "REST-p-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -171,11 +162,10 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		vo.setParentOrganisationKey(parentOrganisation.getKey());
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, vo);
+		HttpRequest method = conn.createPut(request, vo, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -206,11 +196,12 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(parentOrganisation, savedOrganisation.getParent());
 		Assert.assertEquals(parentOrganisation, savedOrganisation.getRoot());
 		Assert.assertEquals(type, savedOrganisation.getType());
+		conn.close();
 	}
 	
 	@Test
 	public void updateOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 2 ", "REST-p-2-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -230,11 +221,9 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		vo.setParentOrganisationKey(parentOrganisation.getKey());
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, vo);
-		
-		HttpResponse response = conn.execute(method);
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		HttpRequest method = conn.createPut(request, vo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -264,11 +253,12 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(parentOrganisation, savedOrganisation.getParent());
 		Assert.assertEquals(parentOrganisation, savedOrganisation.getRoot());
 		Assert.assertEquals(type, savedOrganisation.getType());
+		conn.close();
 	}
 	
 	@Test
 	public void updateOrganisationWithKey()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 6", "REST-p-6-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -282,11 +272,9 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		vo.setManagedFlagsString("move");
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, vo);
-		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPost(request, vo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -307,11 +295,12 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(savedOrganisation.getManagedFlags());
 		Assert.assertEquals(1, savedOrganisation.getManagedFlags().length);
 		Assert.assertEquals(OrganisationManagedFlag.move, savedOrganisation.getManagedFlags()[0]);
+		conn.close();
 	}
 	
 	@Test
 	public void updateAndMoveOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4 ", "REST-p-4-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -324,11 +313,9 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		vo.setParentOrganisationKey(organisation2.getKey());
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, vo);
-		
-		HttpResponse response = conn.execute(method);
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		HttpRequest method = conn.createPut(request, vo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -343,11 +330,12 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(savedVo.getKey(), savedOrganisation.getKey());
 		Assert.assertEquals(organisation2, savedOrganisation.getParent());
 		Assert.assertEquals(parentOrganisation, savedOrganisation.getRoot());
+		conn.close();
 	}
 	
 	@Test
 	public void updateAndMoveOrganisation_members()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -370,11 +358,9 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		organisationVo2.setParentOrganisationKey(organisation1.getKey());
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, organisationVo2);
-		
-		HttpResponse response = conn.execute(method);
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		HttpRequest method = conn.createPut(request, organisationVo2, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -425,11 +411,12 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		GroupMembership user22Membership = groupDao.getMembership(organisation2.getGroup(), user2, OrganisationRoles.user.name());
 		Assert.assertNotNull(user22Membership);
 		Assert.assertEquals(GroupMembershipInheritance.none, user22Membership.getInheritanceMode());
+		conn.close();
 	}
 	
 	@Test
 	public void updateAndMoveRootOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation rootOrganisation = organisationService.createOrganisation("ROOT Organisation 10", "REST-p-10-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -440,11 +427,9 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		vo.setParentOrganisationKey(rootOrganisation.getKey());
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, vo);
-		
-		HttpResponse response = conn.execute(method);
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		HttpRequest method = conn.createPut(request, vo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 		
 		// checked VO
 		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
@@ -459,11 +444,12 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(savedVo.getKey(), savedOrganisation.getKey());
 		Assert.assertEquals(rootOrganisation, savedOrganisation.getParent());
 		Assert.assertEquals(rootOrganisation, savedOrganisation.getRoot());
+		conn.close();
 	}
 	
 	@Test
 	public void deleteOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin admin = JunitTestHelper.createAndPersistRndUser("org-del-admin");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 51", "REST-51-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		organisationService.addMember(organisation, admin.getIdentity(), OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
@@ -472,55 +458,58 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 		
 		Organisation deletedOrganisation = organisationService.getOrganisation(organisation);
 		Assert.assertNull(deletedOrganisation);
+		conn.close();
 	}
 	
 	@Test
 	public void deleteOrganisationDefaultForbidden()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(409, response.statusCode());
+		RestConnection.consume(response);
 		
 		Organisation defOrganisation = organisationService.getOrganisation(organisation);
 		Assert.assertNotNull(defOrganisation);
 		Assert.assertEquals(organisation, defOrganisation);
+		conn.close();
 	}
 	
 	@Test
 	public void deleteOrganisationForbidden()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 53", "REST-53-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		RestConnection.consume(response);
 		
 		Organisation deletedOrganisation = organisationService.getOrganisation(organisation);
 		Assert.assertNotNull(deletedOrganisation);
+		conn.close();
 	}
 	
 	@Test
 	public void getMembers_users()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-11");
@@ -530,19 +519,20 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
 				.path("users").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<UserVO> users = parseUserArray(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<UserVO> users = conn.parseList(response, UserVO.class);
 		Assert.assertNotNull(users);
 		Assert.assertEquals(1, users.size());
 		Assert.assertEquals(member.getKey(), users.get(0).getKey());
+		conn.close();
 	}
 	
 	@Test
 	public void addMember_principal()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-12");
@@ -551,21 +541,22 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
 				.path("principals").path(member.getKey().toString()).build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpRequest method = conn.createPut(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 		
 		List<Identity> principals = organisationService.getMembersIdentity(organisation, OrganisationRoles.principal);
 		Assert.assertNotNull(principals);
 		Assert.assertEquals(1, principals.size());
 		Assert.assertEquals(member, principals.get(0));
+		conn.close();
 	}
 	
 	@Test
 	public void addMembers_author()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-14");
@@ -580,21 +571,20 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 			};
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
 				.path("authors").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, authors);
-		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createPut(request, authors, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 		
 		List<Identity> authorList = organisationService.getMembersIdentity(organisation, OrganisationRoles.author);
 		Assert.assertNotNull(authorList);
 		Assert.assertEquals(2, authorList.size());
+		conn.close();
 	}
 	
 	@Test
 	public void removeMember_administrator()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-13");
@@ -604,20 +594,21 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
 				.path("administrators").path(member.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpRequest method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 		
 		List<Identity> administators = organisationService.getMembersIdentity(organisation, OrganisationRoles.administrator);
 		Assert.assertNotNull(administators);
 		Assert.assertTrue(administators.isEmpty());
+		conn.close();
 	}
 	
 	@Test
 	public void getRepositoryEntries()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-13");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 8", "REST-p-8-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -631,19 +622,20 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
 				.path("entries").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<RepositoryEntryVO> entries = parseRepositoryEntryArray(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<RepositoryEntryVO> entries = conn.parseList(response, RepositoryEntryVO.class);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(course.getKey(), entries.get(0).getKey());
+		conn.close();
 	}
 	
 	@Test
 	public void getMemberships()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-14");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 9", "REST-p-9-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -654,14 +646,15 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
 				.path("user").path(member.getKey().toString()).build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<OrganisationVO> organisations = parseOrganisationArray(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<OrganisationVO> organisations = conn.parseList(response, OrganisationVO.class);
 		Assert.assertNotNull(organisations);
 		Assert.assertEquals(1, organisations.size());
 		Assert.assertEquals(organisationService.getDefaultOrganisation().getKey(), organisations.get(0).getKey());
+		conn.close();
 	}
 	
 	/**
@@ -672,7 +665,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void getMemberships_usermanager()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-16");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 14", "REST-p-14-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -686,19 +679,20 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
 				.path("rolesmanager").path(member.getKey().toString()).build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<OrganisationVO> organisations = parseOrganisationArray(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<OrganisationVO> organisations = conn.parseList(response, OrganisationVO.class);
 		assertThat(organisations)
 			.extracting(OrganisationVO::getKey)
 			.containsExactlyInAnyOrder(organisation.getKey(), otherOrganisation.getKey(), subOrganisation.getKey());
+		conn.close();
 	}
 	
 	@Test
 	public void getMemberships_usermanager_withInheritance()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-17");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 16", "REST-p-16-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -712,19 +706,20 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
 				.path("usermanager").path(member.getKey().toString()).build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<OrganisationVO> organisations = parseOrganisationArray(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<OrganisationVO> organisations = conn.parseList(response, OrganisationVO.class);
 		assertThat(organisations)
 			.extracting(OrganisationVO::getKey)
 			.containsExactlyInAnyOrder(organisation.getKey(), otherOrganisation.getKey(), subOrganisation.getKey());
+		conn.close();
 	}
 	
 	@Test
 	public void getMemberships_usermanager_notInherited()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-15");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 10", "REST-p-10-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -739,44 +734,15 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
 				.path("usermanager").path(member.getKey().toString())
 				.queryParam("withInheritance", "false").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<OrganisationVO> organisations = parseOrganisationArray(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<OrganisationVO> organisations = conn.parseList(response, OrganisationVO.class);
 		assertThat(organisations)
 			.extracting(OrganisationVO::getKey)
 			.containsExactlyInAnyOrder(organisation.getKey(), otherOrganisation.getKey())
 			.doesNotContain(subOrganisation.getKey());
-	}
-	
-	protected List<UserVO> parseUserArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	protected List<OrganisationVO> parseOrganisationArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<OrganisationVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	protected List<RepositoryEntryVO> parseRepositoryEntryArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<RepositoryEntryVO>>(){/* */});
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+		conn.close();
 	}
 }

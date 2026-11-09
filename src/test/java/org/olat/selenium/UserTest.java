@@ -98,7 +98,7 @@ public class UserTest extends Deployments {
 	 */
 	@Test
 	public void resumeCourseAutomatically()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
@@ -169,7 +169,7 @@ public class UserTest extends Deployments {
 	 */
 	@Test
 	public void resumeCourseOnDemand()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
@@ -237,7 +237,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void resumeDisabled()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl)
@@ -279,7 +279,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void loginInHomeWithLandingPage()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		//create a random user
 		UserRestClient userClient = new UserRestClient(deploymentUrl);
 		UserVO user = userClient.createAuthor();
@@ -318,7 +318,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void loginInHomeWithRestUrl()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		//create a random user
 		UserRestClient userClient = new UserRestClient(deploymentUrl);
 		UserVO user = userClient.createRandomUser();
@@ -356,7 +356,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void passkeyRegistration()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// Firefox doesn't implement passkey and Safari not several browsers
 		Assume.assumeTrue(browser instanceof ChromeDriver);
 
@@ -410,7 +410,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void passkeyRecoveryKey()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// Firefox doesn't implement passkey and Safari not several browsers
 		Assume.assumeTrue(browser instanceof ChromeDriver);
 
@@ -466,7 +466,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void restUrlAfterLogin()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		//create a random user
 		UserRestClient userClient = new UserRestClient(deploymentUrl);
 		UserVO user = userClient.createRandomUser("Kanu");
@@ -530,7 +530,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userSwitchLanguageSwitchToEnglish()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -592,7 +592,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userChangeItsPassword()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -629,7 +629,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userChangeItsPasswordWithRESTLink()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserRestClient userWebService = new UserRestClient(deploymentUrl);
 		UserVO user = userWebService.createRandomUser();
 		String pwChangeLink = userWebService.createPasswordChangeLink(user);
@@ -670,7 +670,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userChangeItsPasswordWithChangePwLink()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserRestClient userWebService = new UserRestClient(deploymentUrl);
 		UserVO user = userWebService.createRandomUser();
 		
@@ -709,7 +709,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userChangeItsPasswordWithLinkWithEmail()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserRestClient userWebService = new UserRestClient(deploymentUrl);
 		UserVO user = userWebService.createRandomUser();
 		
@@ -749,7 +749,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userChangePasswordForbiden()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserRestClient userWebService = new UserRestClient(deploymentUrl);
 		UserVO user = userWebService.createRandomUserWithoutPassword("Alicia");
 		
@@ -774,7 +774,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userChangeItsPasswordWithAdminLink()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserRestClient userWebService = new UserRestClient(deploymentUrl);
 		UserVO user = userWebService.createRandomUserWithoutPassword("Joe");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
@@ -839,7 +839,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userChangeItsEmail()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -889,7 +889,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void userResetItsPreferences()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -919,7 +919,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void portletDeactivateActivate()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -956,7 +956,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void movePortletToTheTop()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -999,7 +999,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void browserBack()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 	
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -1037,7 +1037,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createUser()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//login
@@ -1089,7 +1089,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void deleteUser()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver userBrowser = getWebDriver(1);
 		
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
@@ -1159,7 +1159,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void importUsers()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//login
@@ -1213,7 +1213,7 @@ public class UserTest extends Deployments {
 	@Test 
 	@RunAsClient
 	public void importExistingUsers()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 
 		UserVO user1 = new UserRestClient(deploymentUrl).createRandomUser("tsukune");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
@@ -1279,7 +1279,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void modifyUserStatusBatch()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Katherin");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
@@ -1319,7 +1319,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void modifyUserAttributesBatch()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Jun");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
@@ -1367,7 +1367,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void contactTracingAsGuest()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// configure the lectures module
@@ -1409,7 +1409,7 @@ public class UserTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void contactTracingWithLogin()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("carole");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		

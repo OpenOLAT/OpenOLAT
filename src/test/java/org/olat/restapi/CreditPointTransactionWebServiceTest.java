@@ -20,16 +20,17 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPut;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +76,7 @@ public class CreditPointTransactionWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void addDeposit()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// Make a curriculum manager
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("ooc-transaction-1");
 		
@@ -94,17 +95,16 @@ public class CreditPointTransactionWebServiceTest extends OlatRestTestCase {
 				.path("system").path(system.getKey().toString())
 				.path("transactions").path(user.getKey().toString())
 				.build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, depositTransaction);
-		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(request, depositTransaction, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.OK.getStatusCode(), response.statusCode());
 		CreditPointTransactionVO result = conn.parse(response, CreditPointTransactionVO.class);
 		Assert.assertNotNull(result);
 		Assert.assertEquals("deposit", result.getType());
 		Assert.assertNotNull(result.getAmount());
 		Assert.assertTrue(new BigDecimal("100").compareTo(result.getAmount()) == 0);
 		Assert.assertEquals("Initial deposit", result.getNote());
+		conn.close();
 	}
 	
 }

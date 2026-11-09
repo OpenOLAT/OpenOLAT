@@ -78,7 +78,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_noParts_noFeedbacks()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -121,7 +121,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_noParts_withFeedbacks()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -172,7 +172,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_noParts_feedbacksAndResults()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -226,7 +226,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_parts_noFeedbacksButResults()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -283,7 +283,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_parts_feedbacks()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -336,7 +336,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_parts_noFeedbacks_lastPartLinear()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -396,7 +396,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_timeLimits()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -435,7 +435,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_timeLimits_results()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -490,7 +490,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21Course_dateTest()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
@@ -599,7 +599,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21TestFlow_suspend()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -709,7 +709,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21Course()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -810,7 +810,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21Course_lmsHidden_results()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -924,7 +924,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21Course_suspend()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -1067,7 +1067,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21CourseTestCockpitProgress()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1196,7 +1196,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21CourseTestCorrectionWorkflow()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1334,7 +1334,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21CourseTestGradingWorkflow()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver participantBrowser = getWebDriver(1);
 		WebDriver graderBrowser = getWebDriver(2);
 		
@@ -1515,7 +1515,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21CourseTestGradingAfterwardsAssignment()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver participantBrowser = getWebDriver(1);
 		WebDriver graderBrowser = getWebDriver(2);
 		
@@ -1701,7 +1701,7 @@ public class ImsQTI21Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21Course_selfTest()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");

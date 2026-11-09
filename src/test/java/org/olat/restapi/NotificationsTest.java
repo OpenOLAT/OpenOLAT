@@ -36,6 +36,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -47,11 +49,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
@@ -94,9 +91,6 @@ import org.olat.user.notification.UsersSubscriptionManager;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * 
  * <h3>Description:</h3>
@@ -125,7 +119,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	private UsersSubscriptionManager usersSubscriptionManager;
 	
 	@Test
-	public void subscribe() throws IOException, URISyntaxException {
+	public void subscribe() throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin userSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-4");
 		
 		//create a forum
@@ -147,21 +141,19 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").path("subscribers");
-		HttpPut method = conn.createPut(request.build(), MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, publisher);
-		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createPut(request.build(), publisher, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 		
 		Subscriber subscription = notificationManager.getSubscriber(userSubscriberId.getIdentity(), forumSubContext);
 		Assert.assertNotNull(subscription);
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	@Test
-	public void subscribeInitial() throws IOException, URISyntaxException {
+	public void subscribeInitial() throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin userSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-8");
 		
 		//create a forum
@@ -183,12 +175,10 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").path("subscribers").path("initial");
-		HttpPut method = conn.createPut(request.build(), MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, publisher);
-		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createPut(request.build(), publisher, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 		
 		Subscriber subscription = notificationManager.getSubscriber(userSubscriberId.getIdentity(), forumSubContext);
 		Assert.assertNotNull(subscription);
@@ -203,24 +193,22 @@ public class NotificationsTest extends OlatRestTestCase {
 		
 		
 		UriBuilder updateRequest = UriBuilder.fromUri(getContextURI()).path("notifications").path("subscribers").path("initial");
-		HttpPut updateMethod = conn.createPut(updateRequest.build(), MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(updateMethod, publisher);
-		
-		HttpResponse updateResponse = conn.execute(updateMethod);
-		Assert.assertEquals(200, updateResponse.getStatusLine().getStatusCode());
-		EntityUtils.consume(updateResponse.getEntity());
+		HttpRequest updateMethod = conn.createPut(updateRequest.build(), publisher, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> updateResponse = conn.execute(updateMethod);
+		Assert.assertEquals(200, updateResponse.statusCode());
+		RestConnection.consume(updateResponse);
 		
 		disabledSubscription = notificationManager.getSubscriber(userSubscriberId.getIdentity(), forumSubContext);
 		Assert.assertNotNull(disabledSubscription);
 		Assert.assertFalse(disabledSubscription.isEnabled());
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	
 	
 	@Test
-	public void getNotifications() throws IOException, URISyntaxException {
+	public void getNotifications() throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin userSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-1");
 		organisationService.addMember(userSubscriberId.getIdentity(), OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		
@@ -231,10 +219,10 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(userSubscriberId);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("notifications").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		
 		assertNotNull(infos);
 		assertFalse(infos.isEmpty());
@@ -246,12 +234,12 @@ public class NotificationsTest extends OlatRestTestCase {
 		assertNotNull(infoVO.getTitle());
 		assertNotNull(infoVO.getItems());
 		assertFalse(infoVO.getItems().isEmpty());
+		conn.close();
 
-		conn.shutdown();
 	}
 	
 	@Test
-	public void getUserNotifications() throws IOException, URISyntaxException {
+	public void getUserNotifications() throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin userSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-2");
 		organisationService.addMember(userSubscriberId.getIdentity(), OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		
@@ -262,10 +250,10 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(userSubscriberId);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "User");
-		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(request.build(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		
 		assertNotNull(infos);
 		assertFalse(infos.isEmpty());
@@ -277,12 +265,12 @@ public class NotificationsTest extends OlatRestTestCase {
 		assertNotNull(infoVO.getTitle());
 		assertNotNull(infoVO.getItems());
 		assertFalse(infoVO.getItems().isEmpty());
+		conn.close();
 
-		conn.shutdown();
 	}
 	
 	@Test
-	public void getUserForumNotifications() throws URISyntaxException, IOException {
+	public void getUserForumNotifications() throws URISyntaxException, IOException, InterruptedException {
 		IdentityWithLogin userAndForumSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-6");
 		
 		//create a forum
@@ -304,19 +292,19 @@ public class NotificationsTest extends OlatRestTestCase {
 		String date = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.S").format(cal.getTime());
 
 		URI uri = conn.getContextURI().path("notifications").queryParam("date", date).build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		Assert.assertEquals("Forum", infos.get(0).getType());
+		conn.close();
 
-		conn.shutdown();
 	}
 	
 	@Test
-	public void getUserForumNotificationsByType() throws IOException, URISyntaxException {
+	public void getUserForumNotificationsByType() throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin userAndForumSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-4");
 		
 		//create a forum
@@ -333,10 +321,10 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(userAndForumSubscriberId);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "Forum");
-		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(request.build(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
@@ -348,30 +336,30 @@ public class NotificationsTest extends OlatRestTestCase {
 		Assert.assertNotNull(infoVO.getTitle());
 		Assert.assertNotNull(infoVO.getItems());
 		Assert.assertFalse(infoVO.getItems().isEmpty());
+		conn.close();
 
-		conn.shutdown();
 	}
 	
 	@Test
-	public void getNoNotifications() throws IOException, URISyntaxException {
+	public void getNoNotifications() throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin id3 = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-5");
 		
 		RestConnection conn = new RestConnection(id3);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/notifications").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		
 		assertNotNull(infos);
 		assertTrue(infos.isEmpty());
+		conn.close();
 
-		conn.shutdown();
 	}
 	
 	@Test
-	public void getBusinessGroupForumNotifications() throws IOException, URISyntaxException {
+	public void getBusinessGroupForumNotifications() throws IOException, URISyntaxException, InterruptedException {
 		//create a business group with forum notifications
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-not-4-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(id.getIdentity(), "Notifications 1", "REST forum notifications for group",
@@ -395,10 +383,10 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(id);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
-		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(request.build(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		SubscriptionInfoVO infoVO = infos.get(0);
@@ -408,10 +396,11 @@ public class NotificationsTest extends OlatRestTestCase {
 		Assert.assertNotNull(itemVO);
 		Assert.assertEquals(group.getKey(), itemVO.getGroupKey());
 		Assert.assertEquals(message.getKey(), itemVO.getMessageKey());
+		conn.close();
 	}
 	
 	@Test
-	public void getBusinessGroupFolderNotifications() throws IOException, URISyntaxException {
+	public void getBusinessGroupFolderNotifications() throws IOException, URISyntaxException, InterruptedException {
 		//create a business group with folder notifications
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-not-5-");
 		BusinessGroup group = businessGroupService.createBusinessGroup(id.getIdentity(), "Notifications 2", "REST folder notifications for group",
@@ -438,10 +427,10 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(id);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
-		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(request.build(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		SubscriptionInfoVO infoVO = infos.get(0);
@@ -451,10 +440,11 @@ public class NotificationsTest extends OlatRestTestCase {
 		Assert.assertNotNull(itemVO);
 		Assert.assertEquals(group.getKey(), itemVO.getGroupKey());
 		Assert.assertEquals("/" + filename, itemVO.getPath());
+		conn.close();
 	}
 	
 	@Test
-	public void getCourseForumNotifications() throws IOException, URISyntaxException {
+	public void getCourseForumNotifications() throws IOException, URISyntaxException, InterruptedException {
 		//create a course with a forum
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndAuthor("rest-not-6-");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id.getIdentity());
@@ -486,10 +476,10 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(id);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
-		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(request.build(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		SubscriptionInfoVO infoVO = infos.get(0);
@@ -500,10 +490,11 @@ public class NotificationsTest extends OlatRestTestCase {
 		Assert.assertEquals(course.getResourceableId(), itemVO.getCourseKey());
 		Assert.assertEquals(forumNode.getIdent(), itemVO.getCourseNodeId());
 		Assert.assertEquals(message.getKey(), itemVO.getMessageKey());
+		conn.close();
 	}
 	
 	@Test
-	public void getCourseFolderNotifications() throws IOException, URISyntaxException {
+	public void getCourseFolderNotifications() throws IOException, URISyntaxException, InterruptedException {
 		//create a course with a forum
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndAuthor("rest-not-7-");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(id.getIdentity());
@@ -535,10 +526,10 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(id);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
-		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<SubscriptionInfoVO> infos = parseUserArray(response.getEntity());
+		HttpRequest method = conn.createGet(request.build(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<SubscriptionInfoVO> infos = conn.parseList(response, SubscriptionInfoVO.class);
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		SubscriptionInfoVO infoVO = infos.get(0);
@@ -549,10 +540,11 @@ public class NotificationsTest extends OlatRestTestCase {
 		Assert.assertEquals(course.getResourceableId(), itemVO.getCourseKey());
 		Assert.assertEquals(folderNode.getIdent(), itemVO.getCourseNodeId());
 		Assert.assertEquals("/" + filename, itemVO.getPath());
+		conn.close();
 	}
 	
 	@Test
-	public void getPublisher() throws IOException, URISyntaxException {
+	public void getPublisher() throws IOException, URISyntaxException, InterruptedException {
 		//create a business group with forum notifications
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-not-9");
 		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 1", "REST forum notifications for group",
@@ -574,9 +566,9 @@ public class NotificationsTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications/publisher/BusinessGroup/" + group.getKey() + "/toolforum");
-		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request.build(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
 		PublisherVO publisher = conn.parse(response, PublisherVO.class);
 		Assert.assertNotNull(publisher);
 		Assert.assertEquals("BusinessGroup", publisher.getResName());
@@ -584,6 +576,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		Assert.assertEquals("toolforum", publisher.getSubidentifier());
 		Assert.assertEquals("Forum", publisher.getType());
 		Assert.assertEquals(groupForum.getKey().toString(), publisher.getData());
+		conn.close();
 	}
 	
 	private String addFile(VFSContainer folder) throws IOException {
@@ -604,15 +597,5 @@ public class NotificationsTest extends OlatRestTestCase {
 		m1.setBody("Body of Thread-1");
 		forumManager.addTopMessage(m1);
 		return m1;
-	}
-	
-	protected List<SubscriptionInfoVO> parseUserArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<SubscriptionInfoVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
 	}
 }

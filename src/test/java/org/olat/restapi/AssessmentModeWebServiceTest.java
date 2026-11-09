@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -33,12 +35,6 @@ import java.util.UUID;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
@@ -87,7 +83,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getAssessmentModes()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
@@ -102,23 +98,22 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response.getEntity());
+		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response);
 		assertThat(modeVoes)
 			.isNotNull()
 			.isNotEmpty()
 			.extracting(vo -> vo.getKey())
 			.containsAnyOf(savedMode.getKey());
-		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void getAssessmentModeByKey()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
@@ -138,21 +133,20 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("assessmentmodes").path(savedMode.getKey().toString())
 				.build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
-		AssessmentModeVO modeVo = conn.parse(response.getEntity(), AssessmentModeVO.class);
+		AssessmentModeVO modeVo = conn.parse(response, AssessmentModeVO.class);
 		Assert.assertNotNull(modeVo);
 		Assert.assertEquals(savedMode.getKey(), modeVo.getKey());
 		Assert.assertEquals("Get assessment", modeVo.getName());
-
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void findAssessmentModesByExternalId()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
@@ -174,11 +168,11 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes")
 				.queryParam("externalId", externalId)
 				.build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response.getEntity());
+		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response);
 		assertThat(modeVoes)
 			.isNotNull()
 			.isNotEmpty()
@@ -189,20 +183,19 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		URI nothingRequest = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes")
 				.queryParam("externalId", "this is not an external id")
 				.build();
-		HttpGet nothingMethod = conn.createGet(nothingRequest, MediaType.APPLICATION_JSON, true);
-		HttpResponse nothingResponse = conn.execute(nothingMethod);
-		Assert.assertEquals(200, nothingResponse.getStatusLine().getStatusCode());
-		List<AssessmentModeVO> emptyVoes = parseAssessmentModeArray(nothingResponse.getEntity());
+		HttpRequest nothingMethod = conn.createGet(nothingRequest, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> nothingResponse = conn.execute(nothingMethod);
+		Assert.assertEquals(200, nothingResponse.statusCode());
+		List<AssessmentModeVO> emptyVoes = parseAssessmentModeArray(nothingResponse);
 		assertThat(emptyVoes)
 			.isNotNull()
 			.isEmpty();
-
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void findAssessmentModesByManaged()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
@@ -222,11 +215,11 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes")
 				.queryParam("managed", "true")
 				.build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response.getEntity());
+		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response);
 		// Is our assessment mode in the list?
 		assertThat(modeVoes)
 			.isNotNull()
@@ -238,13 +231,12 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		for(AssessmentModeVO modeVo:modeVoes) {
 			Assert.assertTrue(StringHelper.containsNonWhitespace(modeVo.getManagedFlagsString()));
 		}
-
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void findAssessmentModesByDates()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode futureMode = assessmentModeMgr.createAssessmentMode(entry);
@@ -272,11 +264,11 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 				.queryParam("from", ObjectFactory.formatDate(DateUtils.addDays(new Date(), 10)))
 				.queryParam("to", ObjectFactory.formatDate(DateUtils.addDays(new Date(), 14)))
 				.build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response.getEntity());
+		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response);
 		// Is our assessment mode in the list?
 		assertThat(modeVoes)
 			.isNotNull()
@@ -284,14 +276,12 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 			.extracting(vo -> vo.getKey())
 			.containsAnyOf(futureMode.getKey())
 			.doesNotContain(pastMode.getKey());
-		
-
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void createAssessmentMode()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
@@ -310,10 +300,9 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, assessmentModeVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		AssessmentModeVO savedAssessmentModeVo = conn.parse(response, AssessmentModeVO.class);
 		Assert.assertNotNull(savedAssessmentModeVo);
@@ -333,13 +322,12 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		
 		Assert.assertEquals(externalId, savedAssessmentMode.getExternalId());
 		Assert.assertEquals("all", savedAssessmentMode.getManagedFlagsString());
-		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void createAssessmentModeWithCurriculumElements()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
@@ -374,10 +362,9 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, assessmentModeVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		AssessmentModeVO savedAssessmentModeVo = conn.parse(response, AssessmentModeVO.class);
 		Assert.assertNotNull(savedAssessmentModeVo);
@@ -395,13 +382,12 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 			.extracting(savedElement -> savedElement.getCurriculumElement())
 			.extracting(el -> el.getKey())
 			.containsExactlyInAnyOrder(element1.getKey(), element2.getKey());
-		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void updateAssessmentMode()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
@@ -431,10 +417,9 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, assessmentModeVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPost(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		AssessmentModeVO updatedAssessmentModeVo = conn.parse(response, AssessmentModeVO.class);
 		Assert.assertNotNull(updatedAssessmentModeVo);
@@ -454,13 +439,12 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		
 		Assert.assertEquals(externalId, updatedAssessmentMode.getExternalId());
 		Assert.assertEquals("general", updatedAssessmentMode.getManagedFlagsString());
-		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void deleteAssessmentMode()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException, InterruptedException {
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
@@ -478,16 +462,17 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("assessmentmodes").path(savedMode.getKey().toString())
 				.build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		AssessmentMode deletedMode = assessmentModeMgr.getAssessmentModeById(savedMode.getKey());
 		Assert.assertNull(deletedMode);
+		conn.close();
 	}
 	
-	protected List<AssessmentModeVO> parseAssessmentModeArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
+	protected List<AssessmentModeVO> parseAssessmentModeArray(HttpResponse<InputStream> entity) {
+		try(InputStream in=entity.body()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory);
 			return mapper.readValue(in, new TypeReference<List<AssessmentModeVO>>(){/* */});
 		} catch (Exception e) {

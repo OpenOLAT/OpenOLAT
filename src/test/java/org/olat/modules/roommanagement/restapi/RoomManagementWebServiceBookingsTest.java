@@ -20,8 +20,10 @@
 package org.olat.modules.roommanagement.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,8 +33,6 @@ import java.util.stream.Collectors;
 
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
 import org.hibernate.stat.Statistics;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,6 +41,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.Building;
@@ -110,7 +111,7 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 
 	@Test
 	public void getBookings_threeBlocks_fiveBookings_groupedByLectureBlockKey()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		Building building = roomManagementService.createBuilding("BldHappy_" + UUID.randomUUID(), admin.getIdentity());
 
@@ -135,9 +136,9 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 		String keysParam = block3.getKey() + "," + block1.getKey() + "," + block2.getKey();
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, keysParam);
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomBookingVO[] vos = conn.parse(response, RoomBookingVO[].class);
 		Assert.assertNotNull(vos);
 		Assert.assertEquals(5, vos.length);
@@ -154,11 +155,12 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 		List<Long> sorted = new ArrayList<>(lectureBlockKeyOrder);
 		sorted.sort(Long::compareTo);
 		Assert.assertEquals(sorted, lectureBlockKeyOrder);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_order_stableAcrossMixedInputOrder()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		Building building = roomManagementService.createBuilding("BldOrder_" + UUID.randomUUID(), admin.getIdentity());
 
@@ -177,53 +179,57 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, String.valueOf(block.getKey()));
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomBookingVO[] vos = conn.parse(response, RoomBookingVO[].class);
 		Assert.assertEquals(2, vos.length);
 		Assert.assertEquals(List.of(roomA.getKey(), roomB.getKey()),
 				List.of(vos).stream().map(RoomBookingVO::getRoomKey).toList());
+		conn.close();
 	}
 
 	// ---------- Parameter validation ----------
 
 	@Test
 	public void getBookings_missingParameter_returns400()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, null);
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(400, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_blankParameter_returns400()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, "   ");
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(400, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_fullyUnparsableParameter_returns400()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, "abc");
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(400, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_partiallyUnparsableParameter_returnsBookingsOfValidKeys()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		Building building = roomManagementService.createBuilding("BldPartial_" + UUID.randomUUID(), admin.getIdentity());
 		LectureBlock block1 = createLectureBlock(entry);
@@ -237,18 +243,19 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 		String keysParam = block1.getKey() + ",abc," + block2.getKey();
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, keysParam);
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomBookingVO[] vos = conn.parse(response, RoomBookingVO[].class);
 		Assert.assertEquals(2, vos.length);
+		conn.close();
 	}
 
 	// ---------- Unknown / duplicate keys ----------
 
 	@Test
 	public void getBookings_unknownKey_ignoredSilently()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		Building building = roomManagementService.createBuilding("BldUnknown_" + UUID.randomUUID(), admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
@@ -259,16 +266,17 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 		String keysParam = block.getKey() + ",999999999";
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, keysParam);
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomBookingVO[] vos = conn.parse(response, RoomBookingVO[].class);
 		Assert.assertEquals(1, vos.length);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_duplicateKey_doesNotDuplicateRows()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		Building building = roomManagementService.createBuilding("BldDup_" + UUID.randomUUID(), admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
@@ -279,18 +287,19 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 		String keysParam = block.getKey() + "," + block.getKey();
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, keysParam);
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomBookingVO[] vos = conn.parse(response, RoomBookingVO[].class);
 		Assert.assertEquals(1, vos.length);
+		conn.close();
 	}
 
 	// ---------- Cap ----------
 
 	@Test
 	public void getBookings_500Keys_pass()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		List<Long> keys = new ArrayList<>();
 		for (long i = 1; i <= 500; i++) {
 			keys.add(i);
@@ -299,15 +308,16 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, keysParam);
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_501Keys_returns400TooMany()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		List<Long> keys = new ArrayList<>();
 		for (long i = 1; i <= 501; i++) {
 			keys.add(i);
@@ -316,46 +326,49 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, keysParam);
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(400, response.statusCode());
 		Map<?, ?> body = conn.parse(response, Map.class);
 		Assert.assertEquals("lectureBlockKeys.tooMany", body.get("code"));
 		Assert.assertEquals(500, ((Number) body.get("max")).intValue());
+		conn.close();
 	}
 
 	// ---------- Empty result ----------
 
 	@Test
 	public void getBookings_validKeysWithoutBookings_returnsEmptyArray()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, String.valueOf(block.getKey()));
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomBookingVO[] vos = conn.parse(response, RoomBookingVO[].class);
 		Assert.assertNotNull(vos);
 		Assert.assertEquals(0, vos.length);
+		conn.close();
 	}
 
 	// ---------- Module ----------
 
 	@Test
 	public void getBookings_moduleDisabled_returns404()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		roomManagementModule.setEnabled(false);
 		try {
 			RestConnection conn = new RestConnection(admin);
 			URI request = buildBookingsUri(admin, "1");
-			HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+			HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-			Assert.assertEquals(404, response.getStatusLine().getStatusCode());
-			EntityUtils.consume(response.getEntity());
+			Assert.assertEquals(404, response.statusCode());
+			ConnectionUtilities.consume(response);
+			conn.close();
 		} finally {
 			roomManagementModule.setEnabled(true);
 		}
@@ -365,18 +378,19 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 
 	@Test
 	public void getBookings_administrator_isAuthorised()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(admin);
 		URI request = buildBookingsUri(admin, "1");
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_lectureManager_isAuthorised()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin lectureManager = JunitTestHelper.createAndPersistRndUser("rm-bk-lm-" + UUID.randomUUID());
 		organisationService.addMember(organisationService.getDefaultOrganisation(),
 				lectureManager.getIdentity(), OrganisationRoles.lecturemanager, admin.getIdentity());
@@ -384,29 +398,31 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(lectureManager);
 		URI request = buildBookingsUri(lectureManager, "1");
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_author_returns403()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("rm-bk-author-" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(author);
 		URI request = buildBookingsUri(author, "1");
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_learnResourceManager_returns403()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin lrm = JunitTestHelper.createAndPersistRndUser("rm-bk-lrm-" + UUID.randomUUID());
 		organisationService.addMember(organisationService.getDefaultOrganisation(),
 				lrm.getIdentity(), OrganisationRoles.learnresourcemanager, admin.getIdentity());
@@ -414,28 +430,30 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(lrm);
 		URI request = buildBookingsUri(lrm, "1");
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void getBookings_plainUser_returns403()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(plainUser);
 		URI request = buildBookingsUri(plainUser, "1");
-		HttpResponse response = conn.execute(conn.createGet(request, "application/json", true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(request, "application/json"));
 
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	// ---------- Visibility ----------
 
 	@Test
 	public void getBookings_foreignOrgBuilding_omittedForOrgAdmin_returnedForSysAdmin()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 
@@ -461,18 +479,20 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 		URI request = buildBookingsUri(orgAdmin, String.valueOf(block.getKey()));
 
 		RestConnection orgAdminConn = new RestConnection(orgAdmin);
-		HttpResponse orgAdminResponse = orgAdminConn.execute(orgAdminConn.createGet(request, "application/json", true));
-		Assert.assertEquals(200, orgAdminResponse.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> orgAdminResponse = orgAdminConn.execute(orgAdminConn.createGet(request, "application/json"));
+		Assert.assertEquals(200, orgAdminResponse.statusCode());
 		RoomBookingVO[] orgAdminVos = orgAdminConn.parse(orgAdminResponse, RoomBookingVO[].class);
 		Assert.assertEquals("Booking in a foreign-org-restricted building must be omitted for an org admin",
 				0, orgAdminVos.length);
 
 		RestConnection sysAdminConn = new RestConnection(sysAdmin);
-		HttpResponse sysAdminResponse = sysAdminConn.execute(sysAdminConn.createGet(request, "application/json", true));
-		Assert.assertEquals(200, sysAdminResponse.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> sysAdminResponse = sysAdminConn.execute(sysAdminConn.createGet(request, "application/json"));
+		Assert.assertEquals(200, sysAdminResponse.statusCode());
 		RoomBookingVO[] sysAdminVos = sysAdminConn.parse(sysAdminResponse, RoomBookingVO[].class);
 		Assert.assertEquals("A system administrator must see the booking regardless of the building's organisation",
 				1, sysAdminVos.length);
+		orgAdminConn.close();
+		sysAdminConn.close();
 	}
 
 	// ---------- Query count ----------
@@ -491,10 +511,11 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 	 * an exact count would be fragile, so this asserts what the DAO's fetch-joined
 	 * query (Phase 2) actually guarantees: the statement count does not scale
 	 * with the number of lecture block keys.
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getBookings_20Keys_doesNotScaleWithKeyCount()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		Building building = roomManagementService.createBuilding("BldQueryCount_" + UUID.randomUUID(), admin.getIdentity());
 
@@ -517,16 +538,16 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 		// here and must not be mistaken for the booking query itself.
 		URI oneKeyRequest = buildBookingsUri(admin, String.valueOf(keys.get(0)));
 		statistics.clear();
-		HttpResponse oneKeyResponse = conn.execute(conn.createGet(oneKeyRequest, "application/json", true));
-		Assert.assertEquals(200, oneKeyResponse.getStatusLine().getStatusCode());
-		EntityUtils.consume(oneKeyResponse.getEntity());
+		HttpResponse<InputStream> oneKeyResponse = conn.execute(conn.createGet(oneKeyRequest, "application/json"));
+		Assert.assertEquals(200, oneKeyResponse.statusCode());
+		ConnectionUtilities.consume(oneKeyResponse);
 		long statementsForOneKey = statistics.getPrepareStatementCount();
 
 		String keysParam = keys.stream().map(String::valueOf).collect(Collectors.joining(","));
 		URI twentyKeysRequest = buildBookingsUri(admin, keysParam);
 		statistics.clear();
-		HttpResponse twentyKeysResponse = conn.execute(conn.createGet(twentyKeysRequest, "application/json", true));
-		Assert.assertEquals(200, twentyKeysResponse.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> twentyKeysResponse = conn.execute(conn.createGet(twentyKeysRequest, "application/json"));
+		Assert.assertEquals(200, twentyKeysResponse.statusCode());
 		RoomBookingVO[] vos = conn.parse(twentyKeysResponse, RoomBookingVO[].class);
 		Assert.assertEquals(20, vos.length);
 		long statementsForTwentyKeys = statistics.getPrepareStatementCount();
@@ -537,5 +558,6 @@ public class RoomManagementWebServiceBookingsTest extends OlatRestTestCase {
 		long delta = statementsForTwentyKeys - statementsForOneKey;
 		Assert.assertTrue("Expected the statement count not to scale with key count (1 key: "
 				+ statementsForOneKey + ", 20 keys: " + statementsForTwentyKeys + ")", delta < 10);
+		conn.close();
 	}
 }

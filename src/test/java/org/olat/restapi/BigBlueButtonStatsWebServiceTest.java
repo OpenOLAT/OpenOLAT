@@ -20,14 +20,15 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.restapi.system.vo.BigBlueButtonStatisticsVO;
@@ -45,14 +46,14 @@ public class BigBlueButtonStatsWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void bigbluebuttonStatistics()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("system").path("monitoring").path("bigbluebutton").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 				
 		BigBlueButtonStatisticsVO bigBlueButtonStatisticsVO = conn.parse(response, BigBlueButtonStatisticsVO.class);		
 		
@@ -61,5 +62,6 @@ public class BigBlueButtonStatsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(0, bigBlueButtonStatisticsVO.getMeetingsCount());
 		Assert.assertEquals(0, bigBlueButtonStatisticsVO.getRecordingCount());
 		Assert.assertEquals(0, bigBlueButtonStatisticsVO.getVideoCount());
+		conn.close();
 	}	
 }

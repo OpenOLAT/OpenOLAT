@@ -90,7 +90,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void createSimpleBinder() 
-			throws IOException, URISyntaxException {
+			throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -131,7 +131,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void createTemplate()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 
@@ -228,7 +228,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void collectForumMediaInCourse()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -292,7 +292,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void collectWikiMediaInWikiResource()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -348,7 +348,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void collectBlogEntryMediaInBlogResource()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
@@ -427,7 +427,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void collectEfficiencyStatement()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -536,7 +536,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void binderInvitation()
-			throws IOException, URISyntaxException {
+			throws IOException, URISyntaxException, InterruptedException {
 		WebDriver inviteeBrowser = getWebDriver(1);
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
 
@@ -634,7 +634,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void binderAssessment()
-			throws IOException, URISyntaxException {
+			throws IOException, URISyntaxException, InterruptedException {
 		WebDriver reiBrowser = getWebDriver(1);
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");
@@ -804,7 +804,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void editPage() 
-			throws IOException, URISyntaxException {
+			throws IOException, URISyntaxException, InterruptedException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("rei");
 		LoginPage
 			.load(browser, deploymentUrl)
@@ -882,7 +882,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void deletePage()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
 
 		LoginPage
@@ -967,7 +967,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void deleteBinder()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
 
 		LoginPage
@@ -1048,7 +1048,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void shareImageInMediaCenter()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Sahra");
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Debora");
@@ -1090,7 +1090,7 @@ public class PortfolioV2Test extends Deployments {
 	@Test
 	@RunAsClient
 	public void addDocumentWithVersionToMediaCenter()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("rei");
 		LoginPage
 			.load(browser, deploymentUrl)

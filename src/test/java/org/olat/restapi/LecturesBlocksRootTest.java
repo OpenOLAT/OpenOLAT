@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
@@ -33,9 +35,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupMembershipInheritance;
@@ -60,9 +59,6 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -89,7 +85,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void getLecturesBlock_administrator()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-all");
 		
 		RepositoryEntry entry = deployCourseWithLecturesEnabled(author);
@@ -101,11 +97,11 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity().getContent());
+		Assert.assertEquals(200, response.statusCode());
+		List<LectureBlockVO> voList = conn.parseList(response, LectureBlockVO.class);
 		Assert.assertNotNull(voList);
 		Assert.assertFalse(voList.isEmpty());
 		
@@ -119,6 +115,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		Assert.assertNotNull(lectureBlockVo);
 		Assert.assertEquals(block.getKey(), lectureBlockVo.getKey());
 		Assert.assertEquals(entry.getKey(), lectureBlockVo.getRepoEntryKey());
+		conn.close();
 	}
 	
 	/**
@@ -129,7 +126,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void getLecturesBlock_permissionDenied()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-all");
 		IdentityWithLogin user = JunitTestHelper.createAndPersistRndAuthor("lect-root-hacker");
 		
@@ -142,15 +139,16 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(user);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
-		EntityUtils.consumeQuietly(response.getEntity());
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.statusCode());
+		RestConnection.consume(response);
+		conn.close();
 	}
 	
 	@Test
 	public void getLecturesBlock_date()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-1");
 		RepositoryEntry entry = deployCourseWithLecturesEnabled(author);
 		LectureBlock block = createLectureBlock(entry);
@@ -162,11 +160,11 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 
 		String date = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").format(new Date());
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").queryParam("date", date).build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity().getContent());
+		Assert.assertEquals(200, response.statusCode());
+		List<LectureBlockVO> voList = conn.parseList(response, LectureBlockVO.class);
 		Assert.assertNotNull(voList);
 		Assert.assertFalse(voList.isEmpty());
 		
@@ -180,6 +178,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		Assert.assertNotNull(lectureBlockVo);
 		Assert.assertEquals(block.getKey(), lectureBlockVo.getKey());
 		Assert.assertEquals(entry.getKey(), lectureBlockVo.getRepoEntryKey());
+		conn.close();
 	}
 	
 	/**
@@ -188,10 +187,11 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 	 *
 	 * @throws IOException
 	 * @throws URISyntaxException
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getLecturesBlock_curriculumElementWithoutCourse()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("lect-root-cur", "Lecture root curriculum REST", "",
 				false, JunitTestHelper.getDefaultOrganisation());
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("lect-root-cur-el",
@@ -204,11 +204,11 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity().getContent());
+		Assert.assertEquals(200, response.statusCode());
+		List<LectureBlockVO> voList = conn.parseList(response, LectureBlockVO.class);
 		Assert.assertNotNull(voList);
 
 		LectureBlockVO lectureBlockVo = null;
@@ -221,90 +221,107 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		Assert.assertNotNull("Lecture block on a curriculum element without a course must be returned", lectureBlockVo);
 		Assert.assertEquals(block.getKey(), lectureBlockVo.getKey());
 		Assert.assertEquals(curriculumElement.getKey(), lectureBlockVo.getCurriculumElementKey());
+		conn.close();
 	}
 
 	/**
 	 * A lecture manager sees the lecture blocks of the curricula of his organisation.
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getLecturesBlock_lectureManager_curriculumOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation organisation = createOrganisation(null);
 		LectureBlock block = createLectureBlock(createCurriculumElement(organisation));
 		IdentityWithLogin manager = createLectureManager(organisation, GroupMembershipInheritance.none);
 
-		List<Long> keys = getLectureBlockKeys(new RestConnection(manager), null);
+		RestConnection conn = new RestConnection(manager);
+		List<Long> keys = getLectureBlockKeys(conn, null);
 		Assert.assertTrue(keys.contains(block.getKey()));
+		conn.close();
 	}
 
 	/**
 	 * A lecture manager doesn't see the lecture blocks of the curricula of other organisations.
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getLecturesBlock_lectureManager_otherOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation organisation = createOrganisation(null);
 		Organisation otherOrganisation = createOrganisation(null);
 		LectureBlock block = createLectureBlock(createCurriculumElement(organisation));
 		IdentityWithLogin manager = createLectureManager(otherOrganisation, GroupMembershipInheritance.root);
 
-		List<Long> keys = getLectureBlockKeys(new RestConnection(manager), null);
+		RestConnection conn = new RestConnection(manager);
+		List<Long> keys = getLectureBlockKeys(conn, null);
 		Assert.assertFalse(keys.contains(block.getKey()));
+		conn.close();
 	}
 
 	/**
 	 * A lecture manager of the parent organisation sees the lecture blocks of the curricula
 	 * of the child organisation.
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getLecturesBlock_lectureManager_parentOrganisation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation parentOrganisation = createOrganisation(null);
 		Organisation childOrganisation = createOrganisation(parentOrganisation);
 		LectureBlock block = createLectureBlock(createCurriculumElement(childOrganisation));
 		IdentityWithLogin manager = createLectureManager(parentOrganisation, GroupMembershipInheritance.root);
 
-		List<Long> keys = getLectureBlockKeys(new RestConnection(manager), null);
+		RestConnection conn = new RestConnection(manager);
+		List<Long> keys = getLectureBlockKeys(conn, null);
 		Assert.assertTrue(keys.contains(block.getKey()));
+		conn.close();
 	}
 
 	/**
 	 * The lecture blocks of a course with lectures disabled are not returned.
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getLecturesBlock_courseWithLecturesDisabled()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lect-root-dis");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
-		List<Long> keys = getLectureBlockKeys(new RestConnection("administrator", "openolat"), null);
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		List<Long> keys = getLectureBlockKeys(conn, null);
 		Assert.assertFalse(keys.contains(block.getKey()));
+		conn.close();
 	}
 
 	/**
 	 * The lecture blocks of a deleted curriculum element are not returned.
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getLecturesBlock_deletedCurriculumElement()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		CurriculumElement element = createCurriculumElement(JunitTestHelper.getDefaultOrganisation());
 		LectureBlock block = createLectureBlock(element);
 		curriculumService.updateCurriculumElementStatus(JunitTestHelper.getDefaultActor(), element,
 				CurriculumElementStatus.deleted, false, null);
 		dbInstance.commitAndCloseSession();
 
-		List<Long> keys = getLectureBlockKeys(new RestConnection("administrator", "openolat"), null);
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		List<Long> keys = getLectureBlockKeys(conn, null);
 		Assert.assertFalse(keys.contains(block.getKey()));
+		conn.close();
 	}
 
 	/**
 	 * The date parameter accepts an ISO date without time.
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getLecturesBlock_isoDate()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		LectureBlock block = createLectureBlock(createCurriculumElement(JunitTestHelper.getDefaultOrganisation()));
 		dbInstance.commitAndCloseSession();
 
@@ -314,18 +331,19 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 
 		List<Long> keysOtherDay = getLectureBlockKeys(conn, LocalDate.now().plusDays(3).toString());
 		Assert.assertFalse(keysOtherDay.contains(block.getKey()));
+		conn.close();
 	}
 
 	private List<Long> getLectureBlockKeys(RestConnection conn, String date)
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UriBuilder builder = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures");
 		if(date != null) {
 			builder = builder.queryParam("date", date);
 		}
-		HttpGet method = conn.createGet(builder.build(), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity().getContent());
+		HttpRequest method = conn.createGet(builder.build(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<LectureBlockVO> voList = conn.parseList(response, LectureBlockVO.class);
 		return voList.stream().map(LectureBlockVO::getKey).toList();
 	}
 
@@ -381,15 +399,5 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		lectureBlock.setTitle("Hello curriculum lecturers");
 		lectureBlock.setPlannedLecturesNumber(4);
 		return lectureService.save(lectureBlock, null);
-	}
-
-	protected List<LectureBlockVO> parseLectureBlockArray(InputStream body) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<LectureBlockVO>>(){/* */});
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 }

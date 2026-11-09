@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -33,10 +35,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
@@ -90,7 +88,7 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getAssessmentModes()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(courseEntry);
 		mode.setName("Assessment to load");
@@ -105,11 +103,11 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseEntry.getOlatResource().getResourceableId().toString())
 				.path("assessmentmodes").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response.getEntity());
+		List<AssessmentModeVO> modeVoes = conn.parseList(response, AssessmentModeVO.class);
 		assertThat(modeVoes)
 			.isNotNull()
 			.isNotEmpty()
@@ -119,11 +117,12 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		for(AssessmentModeVO modeVo:modeVoes) {
 			Assert.assertEquals(courseEntry.getKey(), modeVo.getRepositoryEntryKey());
 		}
+		conn.close();
 	}
 	
 	@Test
 	public void getAssessmentModeByKey()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(courseEntry);
 		mode.setName("Get course assessment");
@@ -142,21 +141,21 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 				.path(courseEntry.getOlatResource().getResourceableId().toString())
 				.path("assessmentmodes").path(savedMode.getKey().toString())
 				.build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
-		AssessmentModeVO modeVo = conn.parse(response.getEntity(), AssessmentModeVO.class);
+		AssessmentModeVO modeVo = conn.parse(response, AssessmentModeVO.class);
 		Assert.assertNotNull(modeVo);
 		Assert.assertEquals(savedMode.getKey(), modeVo.getKey());
 		Assert.assertEquals("Get course assessment", modeVo.getName());
+		conn.close();
 
-		conn.shutdown();
 	}
 	
 	@Test
 	public void createAssessmentMode()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 
 		AssessmentModeVO assessmentModeVo = new AssessmentModeVO();
 		assessmentModeVo.setRepositoryEntryKey(courseEntry.getKey());
@@ -180,10 +179,9 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(courseEntry.getOlatResource().getResourceableId().toString())
 				.path("assessmentmodes").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, assessmentModeVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		AssessmentModeVO savedAssessmentModeVo = conn.parse(response, AssessmentModeVO.class);
 		Assert.assertNotNull(savedAssessmentModeVo);
@@ -206,13 +204,13 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		
 		Assert.assertTrue(savedAssessmentMode.isRestrictAccessIps());
 		Assert.assertEquals("192.168.1.1", savedAssessmentMode.getIpList());
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	@Test
 	public void updateAssessmentMode()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(courseEntry);
 		mode.setName("Course assessment to update");
@@ -245,10 +243,9 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, assessmentModeVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPost(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		AssessmentModeVO updatedAssessmentModeVo = conn.parse(response, AssessmentModeVO.class);
 		Assert.assertNotNull(updatedAssessmentModeVo);
@@ -272,8 +269,8 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(updatedAssessmentMode.isRestrictAccessElements());
 		Assert.assertEquals("90604173081887,90604173081892", updatedAssessmentMode.getElementList());
 		Assert.assertEquals("90604173081892", updatedAssessmentMode.getStartElement());
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 
 	

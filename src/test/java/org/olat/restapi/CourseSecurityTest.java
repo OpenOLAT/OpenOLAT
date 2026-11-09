@@ -29,16 +29,17 @@ package org.olat.restapi;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Collections;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,6 +48,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
@@ -106,7 +108,7 @@ public class CourseSecurityTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testAdminCanEditCourse() throws IOException, URISyntaxException {
+	public void testAdminCanEditCourse() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an structure node
@@ -115,15 +117,16 @@ public class CourseSecurityTest extends OlatRestTestCase {
 				.queryParam("shortTitle", "Structure-admin-0")
 				.queryParam("longTitle", "Structure-long-admin-0")
 				.queryParam("objectives", "Structure-objectives-admin-0").build();
-		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		
-		conn.shutdown();
+		HttpRequest method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.close();
 	}
 	
 	@Test
-	public void testIdCannotEditCourse() throws IOException, URISyntaxException {
+	public void testIdCannotEditCourse() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("id-c-s-0", "A6B7C8");
 		
 		//create an structure node
@@ -132,15 +135,16 @@ public class CourseSecurityTest extends OlatRestTestCase {
 				.queryParam("shortTitle", "Structure-id-0")
 				.queryParam("longTitle", "Structure-long-id-0")
 				.queryParam("objectives", "Structure-objectives-id-0").build();
-		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
-		
-		conn.shutdown();
+		HttpRequest method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.close();
 	}
 	
 	@Test
-	public void testAuthorCannotEditCourse() throws IOException, URISyntaxException {
+	public void testAuthorCannotEditCourse() throws IOException, URISyntaxException, InterruptedException {
 		//author but not owner
 		RestConnection conn = new RestConnection("id-c-s-1", "A6B7C8");
 		
@@ -150,15 +154,16 @@ public class CourseSecurityTest extends OlatRestTestCase {
 				.queryParam("shortTitle", "Structure-id-0")
 				.queryParam("longTitle", "Structure-long-id-0")
 				.queryParam("objectives", "Structure-objectives-id-0").build();
-		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
-		
-		conn.shutdown();
+		HttpRequest method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(Status.FORBIDDEN.getStatusCode(), response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.close();
 	}
 	
 	@Test
-	public void testAuthorCanEditCourse() throws IOException, URISyntaxException {
+	public void testAuthorCanEditCourse() throws IOException, URISyntaxException, InterruptedException {
 		//author and owner
 		RestConnection conn = new RestConnection("id-c-s-2", "A6B7C8");
 		
@@ -168,15 +173,17 @@ public class CourseSecurityTest extends OlatRestTestCase {
 				.queryParam("shortTitle", "Structure-id-0")
 				.queryParam("longTitle", "Structure-long-id-0")
 				.queryParam("objectives", "Structure-objectives-id-0").build();
-		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.OK.getStatusCode(), response.statusCode());
+		ConnectionUtilities.consume(response);
 		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
-	public void authorCannotCopyCourse() throws IOException, URISyntaxException {
+	public void authorCannotCopyCourse()
+	throws IOException, URISyntaxException, InterruptedException {
 		//author and owner
 		Identity author = JunitTestHelper.getDefaultAuthor();
 		RestConnection conn = new RestConnection(author.getUser().getNickName(), "A6B7C8");
@@ -188,11 +195,12 @@ public class CourseSecurityTest extends OlatRestTestCase {
 				.queryParam("copyFrom", course.getResourceableId())
 				.build();
 		
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
 		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	private UriBuilder getCoursesUri() {

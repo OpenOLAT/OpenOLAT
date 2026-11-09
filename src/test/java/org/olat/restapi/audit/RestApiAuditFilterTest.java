@@ -20,21 +20,22 @@
 package org.olat.restapi.audit;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.audit.manager.ApiAuditLogDAO;
@@ -58,14 +59,15 @@ public class RestApiAuditFilterTest extends OlatRestTestCase {
 	private ApiAuditLogDAO auditLogDao;
 	
 	@Test
-	public void unauthorizedGetWritesRowWithoutIdentity() throws IOException, URISyntaxException {
+	public void unauthorizedGetWritesRowWithoutIdentity()
+	throws IOException, URISyntaxException, InterruptedException {
 		String marker = "audit-no-auth-" + UUID.randomUUID();
 		RestConnection conn = new RestConnection();
 		URI uri = conn.getContextURI().path("users").path(marker).build();
-		HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, false));
-		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		conn.shutdown();
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(401, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 		dbInstance.commitAndCloseSession();
 		
 		List<ApiAuditLog> rows = rowsFor(marker);
@@ -81,14 +83,18 @@ public class RestApiAuditFilterTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void failedBasicAuthStoresLoginAttemptNotPassword() throws IOException, URISyntaxException {
+	public void failedBasicAuthStoresLoginAttemptNotPassword() throws IOException, URISyntaxException, InterruptedException {
 		String login = "audit-wrong-" + UUID.randomUUID().toString().substring(0, 8);
 		String marker = "audit-basic-fail-" + UUID.randomUUID();
 		RestConnection conn = new RestConnection(login, "wrong-password-xyz");
 		URI uri = conn.getContextURI().path("users").path(marker).build();
-		HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		
+		IOException exception = Assert.assertThrows(IOException.class, () -> {
+			conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+	    });
+		
+		Assert.assertTrue(exception.getMessage().contains("too many authentication attempts"));
+		
 		conn.shutdown();
 		dbInstance.commitAndCloseSession();
 		
@@ -109,17 +115,17 @@ public class RestApiAuditFilterTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void moduleDisabledWritesForbiddenRow() throws IOException, URISyntaxException {
+	public void moduleDisabledWritesForbiddenRow() throws IOException, URISyntaxException, InterruptedException {
 		String marker = "audit-disabled-" + UUID.randomUUID();
 		restModule.setEnabled(false);
 		waitMessageAreConsumed();
 		
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI uri = conn.getContextURI().path("users").path(marker).build();
-		HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		conn.shutdown();
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 
 		List<ApiAuditLog> rows = rowsFor(marker);
 		Assertions.assertThat(rows).isEmpty();
@@ -129,17 +135,17 @@ public class RestApiAuditFilterTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void auditDisabledWritesNoRow() throws IOException, URISyntaxException {
+	public void auditDisabledWritesNoRow() throws IOException, URISyntaxException, InterruptedException {
 		String marker = "audit-off-" + UUID.randomUUID();
 		restModule.setAuditLogEnabled(false);
 		waitMessageAreConsumed();
 		
 		RestConnection conn = new RestConnection();
 		URI uri = conn.getContextURI().path("users").path(marker).build();
-		HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, false));
-		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		conn.shutdown();
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(401, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 		
 		List<ApiAuditLog> rows = rowsFor(marker);
 		Assertions.assertThat(rows).isEmpty();

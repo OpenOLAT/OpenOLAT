@@ -20,17 +20,18 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Optional;
 
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
@@ -78,7 +79,7 @@ public class CreditPointSystemWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCreditPointSystems()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// Make a curriculum manager
 		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("coins-1");
 		organisationService.addMember(defaultUnitTestOrganisation, user.getIdentity(), OrganisationRoles.curriculummanager,
@@ -91,10 +92,10 @@ public class CreditPointSystemWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(user);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("creditpoints").path("system").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.OK.getStatusCode(), response.statusCode());
 		List<CreditPointSystemVO> systems = conn.parseList(response, CreditPointSystemVO.class);
 		Assert.assertNotNull(systems);
 		Assertions.assertThat(systems)
@@ -111,5 +112,6 @@ public class CreditPointSystemWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(CreditPointSystemStatus.active.name(), loadedSystem.get().getStatus());
 		Assert.assertEquals(Boolean.FALSE, loadedSystem.get().getRolesRestrictions());
 		Assert.assertEquals(Boolean.FALSE, loadedSystem.get().getOrganisationsRestrictions());
+		conn.close();
 	}
 }

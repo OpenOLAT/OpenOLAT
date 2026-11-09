@@ -20,16 +20,17 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -74,7 +75,7 @@ public class RepositoryEntryAbsenceNoticesWebServiceTest extends OlatRestTestCas
 	
 	@Test
 	public void getAbsenceNoticesByIdentity()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
 		Identity notifier = JunitTestHelper.createAndPersistIdentityAsRndUser("notifier-1");
 		Identity authorizer = JunitTestHelper.createAndPersistIdentityAsRndUser("authorizer-1");
@@ -103,10 +104,10 @@ public class RepositoryEntryAbsenceNoticesWebServiceTest extends OlatRestTestCas
 		
 		RestConnection conn = new RestConnection("administrator", "openolat");
 
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<AbsenceNoticeVO> notices = conn.parseList(response, AbsenceNoticeVO.class);
 		Assertions.assertThat(notices)
 			.isNotNull()
@@ -114,6 +115,8 @@ public class RepositoryEntryAbsenceNoticesWebServiceTest extends OlatRestTestCas
 		
 		AbsenceNoticeVO noticeVo = notices.get(0);
 		Assert.assertEquals(notice.getKey(), noticeVo.getKey());
+		
+		conn.close();
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry, Date start, Date end) {

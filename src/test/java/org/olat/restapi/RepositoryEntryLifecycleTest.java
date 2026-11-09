@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -33,22 +35,14 @@ import java.util.List;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.Tracing;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -58,15 +52,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class RepositoryEntryLifecycleTest extends OlatRestTestCase  {
 	
-	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryLifecycleTest.class);
-	
 	@Autowired
 	private RepositoryEntryLifecycleDAO reLifeCycleDao;
 	@Autowired
 	private DB dbInstance;
 	
 	@Test
-	public void testGetEntries() throws IOException, URISyntaxException {
+	public void testGetEntries() throws IOException, URISyntaxException, InterruptedException {
 		// create a public life cycle
 		RepositoryEntryLifecycle reLifeCycle = reLifeCycleDao.create("REST life cycle", "Unique", false, null, null);
 		Calendar cal = Calendar.getInstance();
@@ -82,10 +74,10 @@ public class RepositoryEntryLifecycleTest extends OlatRestTestCase  {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/lifecycle").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<RepositoryEntryLifecycleVO> entryVoes = parseRepoArray(response.getEntity());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<RepositoryEntryLifecycleVO> entryVoes = conn.parseList(response, RepositoryEntryLifecycleVO.class);
 		assertNotNull(entryVoes);
 		
 		int found = 0;
@@ -97,18 +89,7 @@ public class RepositoryEntryLifecycleTest extends OlatRestTestCase  {
 			}
 		}
 
-		conn.shutdown();
 		Assert.assertEquals(2, found);
-	}
-
-
-	private List<RepositoryEntryLifecycleVO> parseRepoArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<RepositoryEntryLifecycleVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
+		conn.close();
 	}
 }

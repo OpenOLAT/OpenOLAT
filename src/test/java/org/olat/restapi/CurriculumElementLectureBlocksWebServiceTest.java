@@ -20,18 +20,17 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +39,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -95,7 +95,7 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 	
 	@Test
 	public void getLectureBlock()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -112,11 +112,11 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element.getKey().toString())
 				.path("lectureblocks").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
 		// check the response
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<LectureBlockVO> blockVoes = conn.parseList(response, LectureBlockVO.class);
 		Assertions.assertThat(blockVoes)
 			.hasSize(1)
@@ -125,11 +125,12 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		
 		Assert.assertEquals(element.getKey(), blockVoes.get(0).getCurriculumElementKey());
 		Assert.assertEquals("Hello lecturers", blockVoes.get(0).getTitle());
+		conn.close();
 	}
 	
 	@Test
 	public void createLectureBlock()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum 1", "Element for with course and lecture",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -150,14 +151,13 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, lectureBlockVo);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri, lectureBlockVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
 		// check the response
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 
-		LectureBlockVO blockVo = conn.parse(response.getEntity(), LectureBlockVO.class);
+		LectureBlockVO blockVo = conn.parse(response, LectureBlockVO.class);
 		Assert.assertNotNull(blockVo);
 		Assert.assertNotNull(blockVo.getKey());
 		Assert.assertEquals(entry.getKey(), blockVo.getRepoEntryKey());
@@ -169,11 +169,12 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		Assert.assertEquals("Block 1 in curriculum", dbBlock.getTitle());
 		Assert.assertEquals(element, dbBlock.getCurriculumElement());
 		Assert.assertEquals(entry, dbBlock.getEntry());
+		conn.close();
 	}
 	
 	@Test
 	public void createLectureBlockEmptyElement()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures but no courses", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum 2", "Element with a lecture and no course",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -192,14 +193,13 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, lectureBlockVo);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri, lectureBlockVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
 		// check the response
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 
-		LectureBlockVO blockVo = conn.parse(response.getEntity(), LectureBlockVO.class);
+		LectureBlockVO blockVo = conn.parse(response, LectureBlockVO.class);
 		Assert.assertNotNull(blockVo);
 		Assert.assertNotNull(blockVo.getKey());
 		Assert.assertNull(blockVo.getRepoEntryKey());
@@ -211,11 +211,12 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		Assert.assertEquals("Block 1 in curriculum", dbBlock.getTitle());
 		Assert.assertEquals(element, dbBlock.getCurriculumElement());
 		Assert.assertNull(dbBlock.getEntry());
+		conn.close();
 	}
 	
 	@Test
 	public void createLectureBlockWithCourse()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum 3", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -239,14 +240,13 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, lectureBlockVo);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri, lectureBlockVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
 		// check the response
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 
-		LectureBlockVO blockVo = conn.parse(response.getEntity(), LectureBlockVO.class);
+		LectureBlockVO blockVo = conn.parse(response, LectureBlockVO.class);
 		Assert.assertNotNull(blockVo);
 		Assert.assertNotNull(blockVo.getKey());
 		Assert.assertEquals(entry.getKey(), blockVo.getRepoEntryKey());
@@ -268,11 +268,12 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		List<LectureBlock> otherBlocks = lectureService.getLectureBlocks(otherEntry);
 		Assertions.assertThat(otherBlocks)
 			.isEmpty();
+		conn.close();
 	}
 	
 	@Test
 	public void updateLectureBlock()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum 7", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -300,12 +301,12 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, lectureBlockVo);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri, lectureBlockVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		ConnectionUtilities.consume(response);
 		
 		// check the response
-		Assertions.assertThat(response.getStatusLine().getStatusCode())
+		Assertions.assertThat(response.statusCode())
 			.isEqualTo(200);
 		
 		// check the database
@@ -314,11 +315,12 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		Assert.assertEquals("Block 7 in curriculum", dbBlock.getTitle());
 		Assert.assertEquals(element, dbBlock.getCurriculumElement());
 		Assert.assertEquals("Under my element", dbBlock.getDescription());
+		conn.close();
 	}
 	
 	@Test
 	public void createFailedLectureBlockWithCourses()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum 4", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -341,18 +343,19 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, lectureBlockVo);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri,lectureBlockVo, MediaType.APPLICATION_JSON );
+		HttpResponse<InputStream> response = conn.execute(method);
 		
 		// check the response
-		Assertions.assertThat(response.getStatusLine().getStatusCode())
+		Assertions.assertThat(response.statusCode())
 			.isEqualTo(409);
+		
+		conn.close();
 	}
 	
 	@Test
 	public void createFailedLectureBlockWithNotLinkedCourses()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum 5", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -373,18 +376,18 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, lectureBlockVo);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri, lectureBlockVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
 		// check the response
-		Assertions.assertThat(response.getStatusLine().getStatusCode())
+		Assertions.assertThat(response.statusCode())
 			.isEqualTo(409);
+		conn.close();
 	}
 	
 	@Test
 	public void addTeacherToLectureBlock()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1", defaultUnitTestOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum 6", "Element for lecture with teachers",
@@ -404,11 +407,12 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 				.path(element.getKey().toString())
 				.path("lectureblocks").path(lectureBlock.getKey().toString())
 				.path("teachers").path(teacher.getKey().toString()).build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		// check the response
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 		
 		//check the database
 		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
@@ -417,7 +421,7 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 	
 	@Test
 	public void updateLectureBlockWithInconsistency()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-blocks-cur", "Curriculum with lectures", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Block to curriculum 6", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -441,12 +445,11 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element1.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, lectureBlockVo);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri, lectureBlockVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
 		// check the response
-		Assertions.assertThat(response.getStatusLine().getStatusCode())
+		Assertions.assertThat(response.statusCode())
 			.isEqualTo(200);
 		
 		LectureBlockVO savedLectureBlock = conn.parse(response, LectureBlockVO.class);
@@ -457,12 +460,11 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI updateUri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString()).path("elements")
 				.path(element2.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut updateMethod = conn.createPut(updateUri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(updateMethod, savedLectureBlock);
-		HttpResponse updateResponse = conn.execute(updateMethod);
+		HttpRequest updateMethod = conn.createPut(updateUri, savedLectureBlock, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> updateResponse = conn.execute(updateMethod);
 
 		// No lecture block with this key found under element 2 (used in URI)
-		Assertions.assertThat(updateResponse.getStatusLine().getStatusCode())
+		Assertions.assertThat(updateResponse.statusCode())
 			.isEqualTo(404);
 		
 		// check the database
@@ -471,12 +473,14 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		Assert.assertEquals("Block 6 in curriculum", dbBlock.getTitle());
 		Assert.assertEquals(element1, dbBlock.getCurriculumElement());
 		Assert.assertEquals("Under my element", dbBlock.getDescription());
+		
+		conn.close();
 	}
 	
 	
 	@Test
 	public void updateLectureBlockWithSwap()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Curriculum curriculum1 = curriculumService.createCurriculum("Lectures-blocks-cur-8", "Curriculum with lectures 8", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Block to curriculum 8", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -513,18 +517,20 @@ public class CurriculumElementLectureBlocksWebServiceTest extends OlatRestTestCa
 		URI uri = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum2.getKey().toString()).path("elements")
 				.path(element2.getKey().toString())
 				.path("lectureblocks").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, lectureBlockVo);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createPut(uri, lectureBlockVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 		
 		// Try to update a block in the wrong curriculum
-		Assertions.assertThat(response.getStatusLine().getStatusCode())
+		Assertions.assertThat(response.statusCode())
 			.isEqualTo(404);
+		ConnectionUtilities.consume(response);
 		
 		// check the database
 		LectureBlock dbBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(lectureBlock.getKey()));
 		Assert.assertNotNull(dbBlock);
 		Assert.assertEquals("Hello block 7", dbBlock.getTitle());
 		Assert.assertEquals(element1, dbBlock.getCurriculumElement());
+		
+		conn.close();
 	}
 }

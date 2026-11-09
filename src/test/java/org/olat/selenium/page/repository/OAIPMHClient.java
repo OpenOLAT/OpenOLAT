@@ -20,20 +20,22 @@
 package org.olat.selenium.page.repository;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilderException;
+
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.olat.core.logging.Tracing;
@@ -43,9 +45,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriBuilderException;
 
 /**
  * 
@@ -64,33 +63,31 @@ public class OAIPMHClient {
 	}
 	
 	public String getOAIPMHIndex() {
-		try {
+		try(RestConnection restConnection = new RestConnection(deploymentUrl)) {
 			URI url = getOaiPmhURIBuilder()
 					.queryParam("verb", "listRecords")
 					.queryParam("metadataprefix", "oai_dc")
 					.build();
 
-			RestConnection restConnection = new RestConnection(deploymentUrl);
-			HttpGet method = restConnection.createGet(url, "application/xml", false);
-			HttpResponse response = restConnection.execute(method);
-			Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-			return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-		} catch (IllegalArgumentException | UriBuilderException | URISyntaxException | IOException e) {
+			HttpRequest method = restConnection.createGet(url, "application/xml");
+			HttpResponse<InputStream> response = restConnection.execute(method);
+			Assert.assertEquals(200, response.statusCode());
+			return RestConnection.toString(response);
+		} catch (IllegalArgumentException | UriBuilderException | URISyntaxException | IOException | InterruptedException e) {
 			log.error("", e);
 			return null;
 		}
 	}
 	
 	public String getSitemap() {
-		try {
+		try(RestConnection restConnection = new RestConnection(deploymentUrl)) {
 			URI url = getResourceInfoURIBuilder()
 					.path("sitemap.xml").build();
-			RestConnection restConnection = new RestConnection(deploymentUrl);
-			HttpGet method = restConnection.createGet(url, "application/xml", false);
-			HttpResponse response = restConnection.execute(method);
-			Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-			return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-		} catch (IllegalArgumentException | UriBuilderException | URISyntaxException | IOException e) {
+			HttpRequest method = restConnection.createGet(url, "application/xml");
+			HttpResponse<InputStream> response = restConnection.execute(method);
+			Assert.assertEquals(200, response.statusCode());
+			return RestConnection.toString(response);
+		} catch (IllegalArgumentException | UriBuilderException | URISyntaxException | IOException | InterruptedException e) {
 			log.error("", e);
 			return null;
 		}

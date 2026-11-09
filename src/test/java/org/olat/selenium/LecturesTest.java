@@ -77,7 +77,7 @@ public class LecturesTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void lecturesRollCall_authorizedAbsence()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		WebDriver coachBrowser = getWebDriver(1);
@@ -224,7 +224,7 @@ public class LecturesTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void lectureMobileRollCall_authorizedAbsence()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver coachBrowser = getWebDriver(1);
 		WebDriver participantBrowser = getWebDriver(2);
 		
@@ -371,7 +371,7 @@ public class LecturesTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void lecturesRollCall()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// configure the lectures module
@@ -494,7 +494,7 @@ public class LecturesTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void lecturesRollCall_defaultAuthorizedAbsence()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		// configure the lectures module
@@ -632,7 +632,7 @@ public class LecturesTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void importLectures()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		

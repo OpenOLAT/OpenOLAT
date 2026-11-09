@@ -22,15 +22,16 @@ package org.olat.restapi;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -62,7 +63,7 @@ public class DocEditorWebServiceTest extends OlatRestTestCase {
 
 	@Test
 	public void docEditorSessionQuery()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
@@ -77,14 +78,15 @@ public class DocEditorWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(access2);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("system").path("monitoring").path("doceditor").path("sessions").path(randomAppName).build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		DocEditorStatisticsVO docEditorStatisticsVO = conn.parse(response, DocEditorStatisticsVO.class);
 		
 		Assert.assertEquals(1, docEditorStatisticsVO.getOpenDocumentsRead());
 		Assert.assertEquals(1, docEditorStatisticsVO.getOpenDocumentsWrite());
+		conn.close();
 	}
 	
 	private VFSMetadata randomMetadata() {

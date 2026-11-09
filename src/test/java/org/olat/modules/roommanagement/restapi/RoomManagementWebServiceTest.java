@@ -20,8 +20,11 @@
 package org.olat.modules.roommanagement.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
@@ -30,8 +33,6 @@ import java.util.UUID;
 
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +89,7 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 
 	@Test
 	public void getBuildings_sysadmin_returnsAll()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		String uniqueName = "TestBldSysAdmin_" + UUID.randomUUID();
 		Building building = roomManagementService.createBuilding(uniqueName, admin.getIdentity());
 		dbInstance.commitAndCloseSession();
@@ -96,32 +97,34 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
 				.queryParam("search", uniqueName).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		BuildingVO[] vos = conn.parse(response, BuildingVO[].class);
 		Assert.assertNotNull(vos);
 		boolean found = Arrays.stream(vos).anyMatch(v -> uniqueName.equals(v.getName()));
 		Assert.assertTrue("Expected to find building with name " + uniqueName, found);
 
 		Assert.assertNotNull(building);
+		conn.close();
 	}
 
 	@Test
 	public void getBuildings_plainUser_returns403()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(plainUser);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings").build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(403, response.statusCode());
+		conn.close();
 	}
 
 	@Test
 	public void getBuilding_returns200()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		String uniqueName = "TestBldDetail_" + UUID.randomUUID();
 		Building building = roomManagementService.createBuilding(uniqueName, admin.getIdentity());
 		dbInstance.commitAndCloseSession();
@@ -129,30 +132,32 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
 				.path(building.getKey().toString()).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		BuildingVO vo = conn.parse(response, BuildingVO.class);
 		Assert.assertNotNull(vo);
 		Assert.assertEquals(building.getKey(), vo.getKey());
+		conn.close();
 	}
 
 	@Test
 	public void getBuilding_unknownKey_returns404()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(admin);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
 				.path("9999999").build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(404, response.statusCode());
+		conn.close();
 	}
 
 	@Test
 	public void getBuilding_notInScope_returns404()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation orgB = organisationService.createOrganisation(
 				"OrgB-" + UUID.randomUUID(), "OrgB-" + UUID.randomUUID(), "",
 				null, null, admin.getIdentity());
@@ -167,15 +172,16 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(author2);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
 				.path(building.getKey().toString()).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(404, response.statusCode());
+		conn.close();
 	}
 
 	@Test
 	public void getBuildings_author_scopedToOwnOrg()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation orgC = organisationService.createOrganisation(
 				"OrgC-" + UUID.randomUUID(), "OrgC-" + UUID.randomUUID(), "",
 				null, null, admin.getIdentity());
@@ -200,10 +206,10 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(author3);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
 				.queryParam("search", prefix).queryParam("pageSize", 200).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		BuildingVO[] vos = conn.parse(response, BuildingVO[].class);
 		Assert.assertNotNull(vos);
 
@@ -211,11 +217,12 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue("buildingInOrgC should be visible", keys.contains(buildingInOrgC.getKey()));
 		Assert.assertTrue("buildingInDefaultOrg should be visible", keys.contains(buildingInDefaultOrg.getKey()));
 		Assert.assertFalse("buildingInOnlyOtherOrg should not be visible", keys.contains(buildingInOnlyOtherOrg.getKey()));
+		conn.close();
 	}
 
 	@Test
 	public void getBuildings_author_scopedToOwnOrg_authorRole()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation orgC2 = organisationService.createOrganisation(
 				"OrgC2-" + UUID.randomUUID(), "OrgC2-" + UUID.randomUUID(), "",
 				null, null, admin.getIdentity());
@@ -240,10 +247,10 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(author4);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
 				.queryParam("search", prefix).queryParam("pageSize", 200).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		BuildingVO[] vos = conn.parse(response, BuildingVO[].class);
 		Assert.assertNotNull(vos);
 
@@ -251,11 +258,12 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue("buildingInDefaultOrg2 should be visible", keys.contains(buildingInDefaultOrg2.getKey()));
 		Assert.assertTrue("buildingInOrgC2 should be visible to author with author role in orgC2", keys.contains(buildingInOrgC2.getKey()));
 		Assert.assertFalse("buildingInOnlyOrgD2 should not be visible", keys.contains(buildingInOnlyOrgD2.getKey()));
+		conn.close();
 	}
 
 	@Test
 	public void getBuildings_lectureManager_scopedToOwnOrg()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation orgE = organisationService.createOrganisation(
 				"OrgE-" + UUID.randomUUID(), "OrgE-" + UUID.randomUUID(), "",
 				null, null, admin.getIdentity());
@@ -282,10 +290,10 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(lectureManager);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("buildings")
 				.queryParam("search", prefix).queryParam("pageSize", 200).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		BuildingVO[] vos = conn.parse(response, BuildingVO[].class);
 		Assert.assertNotNull(vos);
 
@@ -293,11 +301,12 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue("buildingInOrgE should be visible to lecture manager in orgE", keys.contains(buildingInOrgE.getKey()));
 		Assert.assertTrue("buildingInDefaultOrg should be visible", keys.contains(buildingInDefaultOrg.getKey()));
 		Assert.assertFalse("buildingInOnlyOrgF should not be visible", keys.contains(buildingInOnlyOrgF.getKey()));
+		conn.close();
 	}
 
 	@Test
 	public void getBuildings_paged()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		String prefix = "PagedBld_" + UUID.randomUUID() + "_";
 		roomManagementService.createBuilding(prefix + "A", admin.getIdentity());
 		roomManagementService.createBuilding(prefix + "B", admin.getIdentity());
@@ -309,21 +318,22 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 				.queryParam("pageSize", 2)
 				.queryParam("search", prefix)
 				.build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		BuildingVO[] vos = conn.parse(response, BuildingVO[].class);
 		Assert.assertNotNull(vos);
 		Assert.assertEquals(2, vos.length);
 
-		String totalCount = response.getFirstHeader("X-Total-Count").getValue();
+		String totalCount = response.headers().firstValue("X-Total-Count").orElse(null);
 		Assert.assertEquals("3", totalCount);
+		conn.close();
 	}
 
 	@Test
 	public void getRooms_sysadmin_returnsAll()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Building building = roomManagementService.createBuilding("BldForRoomSysAdmin_" + UUID.randomUUID(), admin.getIdentity());
 		String uniqueName = "TestRoomSysAdmin_" + UUID.randomUUID();
 		Room room = roomManagementService.createRoom(building, uniqueName, admin.getIdentity());
@@ -332,30 +342,32 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
 				.queryParam("search", uniqueName).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomVO[] vos = conn.parse(response, RoomVO[].class);
 		Assert.assertNotNull(vos);
 		boolean found = Arrays.stream(vos).anyMatch(v -> room.getKey().equals(v.getKey()));
 		Assert.assertTrue("Expected to find room with key " + room.getKey(), found);
+		conn.close();
 	}
 
 	@Test
 	public void getRooms_planUser_returns403()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(plainUser);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms").build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(403, response.statusCode());
+		conn.close();
 	}
 
 	@Test
 	public void getRooms_scopedByParentBuilding()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation orgRoomA = organisationService.createOrganisation(
 				"OrgRoomA-" + UUID.randomUUID(), "OrgRoomA-" + UUID.randomUUID(), "",
 				null, null, admin.getIdentity());
@@ -381,9 +393,9 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		// Filter by orgA building — author is in orgA, so the room should be returned
 		URI requestA = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
 				.queryParam("buildingKey", buildingInOrgA.getKey()).build();
-		HttpGet methodA = conn.createGet(requestA, "application/json", true);
-		HttpResponse responseA = conn.execute(methodA);
-		Assert.assertEquals(200, responseA.getStatusLine().getStatusCode());
+		HttpRequest methodA = conn.createGet(requestA, "application/json");
+		HttpResponse<InputStream> responseA = conn.execute(methodA);
+		Assert.assertEquals(200, responseA.statusCode());
 		RoomVO[] vosA = conn.parse(responseA, RoomVO[].class);
 		List<Long> keysA = Arrays.stream(vosA).map(RoomVO::getKey).toList();
 		Assert.assertTrue("Room in orgA building should be visible", keysA.contains(roomInOrgA.getKey()));
@@ -391,17 +403,18 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		// Filter by orgB building — author is NOT in orgB, so org-scoping applies even with explicit buildingKey
 		URI requestB = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
 				.queryParam("buildingKey", buildingInOrgB.getKey()).build();
-		HttpGet methodB = conn.createGet(requestB, "application/json", true);
-		HttpResponse responseB = conn.execute(methodB);
-		Assert.assertEquals(200, responseB.getStatusLine().getStatusCode());
+		HttpRequest methodB = conn.createGet(requestB, "application/json");
+		HttpResponse<InputStream> responseB = conn.execute(methodB);
+		Assert.assertEquals(200, responseB.statusCode());
 		RoomVO[] vosB = conn.parse(responseB, RoomVO[].class);
 		List<Long> keysB = Arrays.stream(vosB).map(RoomVO::getKey).toList();
 		Assert.assertFalse("Room in orgB building should not be visible to author outside orgB", keysB.contains(roomInOrgB.getKey()));
+		conn.close();
 	}
 
 	@Test
 	public void getRooms_availableFromTo_excludesHardOverlaps()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Building building = roomManagementService.createBuilding("BldAvail_" + UUID.randomUUID(), admin.getIdentity());
 		Room bookedRoom = roomManagementService.createRoom(building, "RoomAvailBooked_" + UUID.randomUUID(), admin.getIdentity());
 		Room freeRoom = roomManagementService.createRoom(building, "RoomAvailFree_" + UUID.randomUUID(), admin.getIdentity());
@@ -430,21 +443,22 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 				.queryParam("availableFrom", queryFrom.toString())
 				.queryParam("availableTo", queryTo.toString())
 				.build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomVO[] vos = conn.parse(response, RoomVO[].class);
 		Assert.assertNotNull(vos);
 
 		List<Long> keys = Arrays.stream(vos).map(RoomVO::getKey).toList();
 		Assert.assertFalse("Booked room should be excluded from availability window", keys.contains(bookedRoom.getKey()));
 		Assert.assertTrue("Free room should be included in availability window", keys.contains(freeRoom.getKey()));
+		conn.close();
 	}
 
 	@Test
 	public void getRoom_returns200()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Building building = roomManagementService.createBuilding("BldForRoomDetail_" + UUID.randomUUID(), admin.getIdentity());
 		Room room = roomManagementService.createRoom(building, "TestRoomDetail_" + UUID.randomUUID(), admin.getIdentity());
 		dbInstance.commitAndCloseSession();
@@ -452,30 +466,32 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
 				.path(room.getKey().toString()).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		RoomVO vo = conn.parse(response, RoomVO.class);
 		Assert.assertNotNull(vo);
 		Assert.assertEquals(room.getKey(), vo.getKey());
+		conn.close();
 	}
 
 	@Test
 	public void getRoom_unknownKey_returns404()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection(admin);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
 				.path("9999999").build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(404, response.statusCode());
+		conn.close();
 	}
 
 	@Test
 	public void getRoom_notInScope_returns404()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Organisation orgRoom = organisationService.createOrganisation(
 				"OrgRoom-" + UUID.randomUUID(), "OrgRoom-" + UUID.randomUUID(), "",
 				null, null, admin.getIdentity());
@@ -491,15 +507,16 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(outsideAuthor);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
 				.path(room.getKey().toString()).build();
-		HttpGet method = conn.createGet(request, "application/json", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(request, "application/json");
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(404, response.statusCode());
+		conn.close();
 	}
 
 	@Test
 	public void getRooms_adminInfoMasked_forNonAdmin()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Building building = roomManagementService.createBuilding("BldForAdminInfo_" + UUID.randomUUID(), admin.getIdentity());
 		Room room = roomManagementService.createRoom(building, "RoomAdminInfo_" + UUID.randomUUID(), admin.getIdentity());
 		room.setAdminInfo("secret-admin-info");
@@ -509,25 +526,27 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection adminConn = new RestConnection(admin);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
 				.path(room.getKey().toString()).build();
-		HttpGet adminMethod = adminConn.createGet(request, "application/json", true);
-		HttpResponse adminResponse = adminConn.execute(adminMethod);
-		Assert.assertEquals(200, adminResponse.getStatusLine().getStatusCode());
+		HttpRequest adminMethod = adminConn.createGet(request, "application/json");
+		HttpResponse<InputStream> adminResponse = adminConn.execute(adminMethod);
+		Assert.assertEquals(200, adminResponse.statusCode());
 		RoomVO adminVo = adminConn.parse(adminResponse, RoomVO.class);
 		Assert.assertNotNull(adminVo);
 		Assert.assertNotNull("Admin should see adminInfo", adminVo.getAdminInfo());
 
 		RestConnection authorConn = new RestConnection(author);
-		HttpGet authorMethod = authorConn.createGet(request, "application/json", true);
-		HttpResponse authorResponse = authorConn.execute(authorMethod);
-		Assert.assertEquals(200, authorResponse.getStatusLine().getStatusCode());
+		HttpRequest authorMethod = authorConn.createGet(request, "application/json");
+		HttpResponse<InputStream> authorResponse = authorConn.execute(authorMethod);
+		Assert.assertEquals(200, authorResponse.statusCode());
 		RoomVO authorVo = authorConn.parse(authorResponse, RoomVO.class);
 		Assert.assertNotNull(authorVo);
 		Assert.assertNull("Author should NOT see adminInfo", authorVo.getAdminInfo());
+		adminConn.close();
+		authorConn.close();
 	}
 
 	@Test
 	public void getRooms_externalIdMasked_forNonAdmin()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Building building = roomManagementService.createBuilding("BldForExtId_" + UUID.randomUUID(), admin.getIdentity());
 		Room room = roomManagementService.createRoom(building, "RoomExtId_" + UUID.randomUUID(), admin.getIdentity());
 		room.setExternalId("ext-id-secret-" + UUID.randomUUID());
@@ -537,19 +556,21 @@ public class RoomManagementWebServiceTest extends OlatRestTestCase {
 		RestConnection adminConn = new RestConnection(admin);
 		URI request = UriBuilder.fromUri(getContextURI()).path("rm").path("rooms")
 				.path(room.getKey().toString()).build();
-		HttpGet adminMethod = adminConn.createGet(request, "application/json", true);
-		HttpResponse adminResponse = adminConn.execute(adminMethod);
-		Assert.assertEquals(200, adminResponse.getStatusLine().getStatusCode());
+		HttpRequest adminMethod = adminConn.createGet(request, "application/json");
+		HttpResponse<InputStream> adminResponse = adminConn.execute(adminMethod);
+		Assert.assertEquals(200, adminResponse.statusCode());
 		RoomVO adminVo = adminConn.parse(adminResponse, RoomVO.class);
 		Assert.assertNotNull(adminVo);
 		Assert.assertNotNull("Admin should see externalId", adminVo.getExternalId());
 
 		RestConnection authorConn = new RestConnection(author);
-		HttpGet authorMethod = authorConn.createGet(request, "application/json", true);
-		HttpResponse authorResponse = authorConn.execute(authorMethod);
-		Assert.assertEquals(200, authorResponse.getStatusLine().getStatusCode());
+		HttpRequest authorMethod = authorConn.createGet(request, "application/json");
+		HttpResponse<InputStream> authorResponse = authorConn.execute(authorMethod);
+		Assert.assertEquals(200, authorResponse.statusCode());
 		RoomVO authorVo = authorConn.parse(authorResponse, RoomVO.class);
 		Assert.assertNotNull(authorVo);
 		Assert.assertNull("Author should NOT see externalId", authorVo.getExternalId());
+		adminConn.close();
+		authorConn.close();
 	}
 }

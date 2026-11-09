@@ -21,17 +21,16 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Locale;
 
 import jakarta.ws.rs.core.MediaType;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Authentication;
@@ -68,7 +67,7 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void changePasswordAsAdmin() throws IOException, URISyntaxException {
+	public void changePasswordAsAdmin() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pwchange-1-", Locale.ENGLISH);
@@ -78,9 +77,9 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(authentications.isEmpty());
 		
 		URI uri = conn.getContextURI().path("pwchange").queryParam("identityKey", id.getKey()).build();
-		HttpPut put = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(put);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest put = conn.createPut(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(put);
+		Assert.assertEquals(200, response.statusCode());
 		
 		TemporaryKeyVO tk = conn.parse(response, TemporaryKeyVO.class);
 		Assert.assertNotNull(tk);
@@ -89,8 +88,8 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(RegistrationManager.PW_CHANGE, tk.getRegAction());
 		Assert.assertEquals(id.getUser().getProperty(UserConstants.EMAIL, null), tk.getEmailAddress());
 		Assert.assertFalse(tk.isMailSent());
+		conn.close();
 
-		conn.shutdown();
 	}
 	
 	/**
@@ -100,19 +99,19 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void changePasswordAsMe() throws IOException, URISyntaxException {
+	public void changePasswordAsMe() throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("pwchange-1-");
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection(id);
 
 		URI uri = conn.getContextURI().path("pwchange").queryParam("identityKey", id.getKey()).build();
-		HttpPut put = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(put);
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consumeQuietly(response.getEntity());
+		HttpRequest put = conn.createPut(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(put);
+		Assert.assertEquals(403, response.statusCode());
+		RestConnection.consume(response);
+		conn.close();
 
-		conn.shutdown();
 	}
 	
 	/**
@@ -122,7 +121,7 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void hasChangePasswordAsAdmin() throws IOException, URISyntaxException {
+	public void hasChangePasswordAsAdmin() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pwchange-1-", Locale.ENGLISH);
@@ -133,9 +132,9 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(authentications.isEmpty());
 		
 		URI uri = conn.getContextURI().path("pwchange").queryParam("identityKey", id.getKey()).build();
-		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(get);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest get = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(get);
+		Assert.assertEquals(200, response.statusCode());
 		
 		TemporaryKeyVO tk = conn.parse(response, TemporaryKeyVO.class);
 		Assert.assertNotNull(tk);
@@ -143,7 +142,7 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(tk.getUrl());
 		Assert.assertEquals(RegistrationManager.PW_CHANGE, tk.getRegAction());
 		Assert.assertEquals(id.getUser().getEmail(), tk.getEmailAddress());
+		conn.close();
 
-		conn.shutdown();
 	}
 }

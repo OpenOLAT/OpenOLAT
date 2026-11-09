@@ -25,21 +25,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.Tracing;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.restapi.AssessmentEntryVO;
@@ -55,9 +52,6 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * 
  * Initial date: 8 juil. 2020<br>
@@ -65,8 +59,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public class GradingWebServiceTest extends OlatRestTestCase {
-	
-	private static final Logger log = Tracing.createLoggerFor(GradingWebServiceTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -78,22 +70,20 @@ public class GradingWebServiceTest extends OlatRestTestCase {
 	private GradingAssignmentDAO gradingAssignmentDao;
 	
 	@Test
-	public void testWithGrading() throws IOException, URISyntaxException {
+	public void testWithGrading() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getGradingUriBuilder().path("assignments").path("tests").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<RepositoryEntryVO> entriesVo = parseRepoArray(response.getEntity());
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<RepositoryEntryVO> entriesVo = conn.parseList(response, RepositoryEntryVO.class);
 		Assert.assertNotNull(entriesVo);
-		
-		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
-	public void testAssignmentInfos() throws IOException, URISyntaxException {
+	public void testAssignmentInfos() throws IOException, URISyntaxException, InterruptedException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author1");
 		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-2");
 		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-3");
@@ -106,10 +96,10 @@ public class GradingWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getGradingUriBuilder().path("test").path(entry.getKey().toString()).path("assignments").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		List<GradingAssignmentWithInfosVO> infosVoes = parseInfosArray(response.getEntity());
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		List<GradingAssignmentWithInfosVO> infosVoes = conn.parseList(response, GradingAssignmentWithInfosVO.class);
 		Assert.assertNotNull(infosVoes);
 		Assert.assertEquals(1, infosVoes.size());
 		
@@ -126,12 +116,11 @@ public class GradingWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(entry.getKey(), assessmentEntryVo.getReferenceEntryKey());
 		Assert.assertEquals(entry.getKey(), assessmentEntryVo.getRepositoryEntryKey());
 		Assert.assertNotNull(infoVo.getAssessmentEntry());
-		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
-	public void getTestUserVisibility() throws IOException, URISyntaxException {
+	public void getTestUserVisibility() throws IOException, URISyntaxException, InterruptedException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author1");
 		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-2");
 		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-3");
@@ -145,68 +134,16 @@ public class GradingWebServiceTest extends OlatRestTestCase {
 		
 		URI uri = getGradingUriBuilder().path("test").path(entry.getKey().toString()).path("assignments")
 				.path(assignment.getKey().toString()).path("uservisibility").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		GradingAssignmentUserVisibilityVO userVisibility = conn.parse(response.getEntity(), GradingAssignmentUserVisibilityVO.class);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		GradingAssignmentUserVisibilityVO userVisibility = conn.parse(response, GradingAssignmentUserVisibilityVO.class);
 		Assert.assertNotNull(userVisibility);
 		Assert.assertEquals(assignment.getKey(), userVisibility.getAssignmentKey());
-		conn.shutdown();
+		conn.close();
 	}
-	
-	/*
-	@Test
-	public void postTestUserVisibility() throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-author1");
-		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-grader-2");
-		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assignment-student-3");
-		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
-		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, grader);	
-		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
-		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment, new Date(), new Date());
-		dbInstance.commit();
-		
-		GradingAssignmentUserVisibilityVO userVisibility = new GradingAssignmentUserVisibilityVO();
-		userVisibility.setUserVisibility(Boolean.TRUE);
-		userVisibility.setAssignmentKey(assignment.getKey());
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		
-		URI uri = getGradingUriBuilder().path("test").path(entry.getKey().toString()).path("assignments")
-				.path(assignment.getKey().toString()).path("uservisibility").build();
-		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, userVisibility);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		
-		conn.shutdown();
-	}
-	*/
 	
 	private UriBuilder getGradingUriBuilder() {
 		return UriBuilder.fromUri(getContextURI()).path("grading");
 	}
-	
-	private List<GradingAssignmentWithInfosVO> parseInfosArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<GradingAssignmentWithInfosVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	private List<RepositoryEntryVO> parseRepoArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<RepositoryEntryVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
-	}
-
 }

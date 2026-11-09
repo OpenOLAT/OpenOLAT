@@ -20,22 +20,22 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Roles;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.course.CourseFactory;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
@@ -66,16 +66,16 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 
 	@Test
 	public void getDisclaimer()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-1");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
 		initDisclaimer(courseEntry);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(owner);
-		HttpGet method = conn.createGet(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
 		CourseDisclaimerVO disclaimerVo = conn.parse(response, CourseDisclaimerVO.class);
 		Assert.assertNotNull(disclaimerVo);
@@ -87,12 +87,12 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		Assert.assertEquals(Long.valueOf(0), disclaimerVo.getConsentCount());
 		Assert.assertNotNull(disclaimerVo.getModuleEnabled());
 
-		conn.shutdown();
+		conn.close();
 	}
 
 	@Test
 	public void getDisclaimerForbidden()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-2");
 		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("rest-disc-3");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
@@ -100,32 +100,30 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(participant);
-		HttpGet method = conn.createGet(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createGet(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
 
-		HttpPut putMethod = conn.createPut(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(putMethod, createDisclaimerVO());
-		HttpResponse putResponse = conn.execute(putMethod);
-		Assert.assertEquals(403, putResponse.getStatusLine().getStatusCode());
-		EntityUtils.consume(putResponse.getEntity());
+		HttpRequest putMethod = conn.createPut(getDisclaimerUri(courseEntry), createDisclaimerVO(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> putResponse = conn.execute(putMethod);
+		Assert.assertEquals(403, putResponse.statusCode());
+		ConnectionUtilities.consume(putResponse);
 
-		conn.shutdown();
+		conn.close();
 	}
 
 	@Test
 	public void putDisclaimer()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-4");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(owner);
-		HttpPut method = conn.createPut(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, createDisclaimerVO());
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(getDisclaimerUri(courseEntry), createDisclaimerVO(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
 		CourseDisclaimerVO savedVo = conn.parse(response, CourseDisclaimerVO.class);
 		Assert.assertEquals(Boolean.TRUE, savedVo.getTermsOfUse().getEnabled());
@@ -142,19 +140,19 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		Assert.assertEquals("I really accept", config.getDisclaimerLabel(1, 2));
 
 		// round trip
-		HttpGet getMethod = conn.createGet(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-		HttpResponse getResponse = conn.execute(getMethod);
-		Assert.assertEquals(200, getResponse.getStatusLine().getStatusCode());
+		HttpRequest getMethod = conn.createGet(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> getResponse = conn.execute(getMethod);
+		Assert.assertEquals(200, getResponse.statusCode());
 		CourseDisclaimerVO disclaimerVo = conn.parse(getResponse, CourseDisclaimerVO.class);
 		Assert.assertEquals("REST terms of use", disclaimerVo.getTermsOfUse().getTitle());
 		Assert.assertEquals("<p>Terms</p>", disclaimerVo.getTermsOfUse().getTerms());
 
-		conn.shutdown();
+		conn.close();
 	}
 
 	@Test
 	public void putDisclaimerMissingTitle()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-6");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
 		dbInstance.commitAndCloseSession();
@@ -163,10 +161,9 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		disclaimerVo.getTermsOfUse().setTitle(null);
 
 		RestConnection conn = new RestConnection(owner);
-		HttpPut method = conn.createPut(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, disclaimerVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(getDisclaimerUri(courseEntry), disclaimerVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(400, response.statusCode());
 
 		List<ErrorVO> errors = conn.parseList(response, ErrorVO.class);
 		Assert.assertEquals(1, errors.size());
@@ -175,51 +172,49 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		CourseConfig config = CourseFactory.loadCourse(courseEntry).getCourseEnvironment().getCourseConfig();
 		Assert.assertFalse(config.isDisclaimerEnabled());
 
-		conn.shutdown();
+		conn.close();
 	}
 
 	@Test
 	public void putDisclaimerUnknownConsents()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-7");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(owner);
 		URI uri = UriBuilder.fromUri(getDisclaimerUri(courseEntry)).queryParam("consents", "forget").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, createDisclaimerVO());
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createPut(uri, createDisclaimerVO(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(400, response.statusCode());
+		ConnectionUtilities.consume(response);
 
-		conn.shutdown();
+		conn.close();
 	}
 
 	@Test
 	public void putDisclaimerRemoveWhileEnabled()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-8");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(owner);
 		URI uri = UriBuilder.fromUri(getDisclaimerUri(courseEntry)).queryParam("consents", "remove").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, createDisclaimerVO());
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(uri, createDisclaimerVO(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(400, response.statusCode());
 
 		List<ErrorVO> errors = conn.parseList(response, ErrorVO.class);
 		Assert.assertEquals(1, errors.size());
 		Assert.assertEquals("consents", errors.get(0).getCode());
 
-		conn.shutdown();
+		conn.close();
 	}
 
 	@Test
 	public void putDisclaimerRevokeConsents()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-9");
 		IdentityWithLogin participant = JunitTestHelper.createAndPersistRndUser("rest-disc-10");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
@@ -232,10 +227,9 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(owner);
 		URI uri = UriBuilder.fromUri(getDisclaimerUri(courseEntry)).queryParam("consents", "revoke").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, createDisclaimerVO());
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(uri, createDisclaimerVO(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
 		// revoked consents are still counted
 		CourseDisclaimerVO savedVo = conn.parse(response, CourseDisclaimerVO.class);
@@ -243,12 +237,12 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertFalse(courseDisclaimerManager.isAccessGranted(courseEntry, participant.getIdentity(), participantRoles));
 
-		conn.shutdown();
+		conn.close();
 	}
 
 	@Test
 	public void putDisclaimerKeepsMissingText()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-11");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
 		initDisclaimer(courseEntry);
@@ -258,11 +252,10 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		disclaimerVo.setDataProtection(createTextVO("Data protection"));
 
 		RestConnection conn = new RestConnection(owner);
-		HttpPut method = conn.createPut(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, disclaimerVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createPut(getDisclaimerUri(courseEntry), disclaimerVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
 
 		CourseConfig config = CourseFactory.loadCourse(courseEntry).getCourseEnvironment().getCourseConfig();
 		Assert.assertTrue(config.isDisclaimerEnabled(1));
@@ -270,12 +263,12 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		Assert.assertTrue(config.isDisclaimerEnabled(2));
 		Assert.assertEquals("Data protection", config.getDisclaimerTitel(2));
 
-		conn.shutdown();
+		conn.close();
 	}
 
 	@Test
 	public void putDisclaimerKeepsEnabled()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-13");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
 		initDisclaimer(courseEntry);
@@ -287,22 +280,21 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		disclaimerVo.setTermsOfUse(termsOfUseVo);
 		
 		RestConnection conn = new RestConnection(owner);
-		HttpPut method = conn.createPut(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, disclaimerVo);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createPut(getDisclaimerUri(courseEntry), disclaimerVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
 		
 		CourseConfig config = CourseFactory.loadCourse(courseEntry).getCourseEnvironment().getCourseConfig();
 		Assert.assertTrue(config.isDisclaimerEnabled(1));
 		Assert.assertEquals("Changed title", config.getDisclaimerTitel(1));
 		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
 	public void putDisclaimerLocked()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-disc-12");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
 		dbInstance.commitAndCloseSession();
@@ -311,12 +303,11 @@ public class CourseDisclaimerTest extends OlatRestTestCase {
 		CourseFactory.openCourseEditSession(courseResId);
 		try {
 			RestConnection conn = new RestConnection(owner);
-			HttpPut method = conn.createPut(getDisclaimerUri(courseEntry), MediaType.APPLICATION_JSON, true);
-			conn.addJsonEntity(method, createDisclaimerVO());
-			HttpResponse response = conn.execute(method);
-			Assert.assertEquals(409, response.getStatusLine().getStatusCode());
-			EntityUtils.consume(response.getEntity());
-			conn.shutdown();
+			HttpRequest method = conn.createPut(getDisclaimerUri(courseEntry), createDisclaimerVO(), MediaType.APPLICATION_JSON);
+			HttpResponse<InputStream> response = conn.execute(method);
+			Assert.assertEquals(409, response.statusCode());
+			ConnectionUtilities.consume(response);
+			conn.close();
 		} finally {
 			CourseFactory.closeCourseEditSession(courseResId, true);
 		}

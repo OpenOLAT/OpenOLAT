@@ -31,16 +31,17 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,6 +50,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.restapi.RestConnection.Header;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
@@ -73,36 +75,33 @@ public class AuthenticationTest extends OlatRestTestCase {
 	private BaseSecurity securityManager;
 	
 	@Test
-	public void testBasicAuthentication() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
+	public void testBasicAuthentication() throws IOException, URISyntaxException, InterruptedException {
+		RestConnection conn = new RestConnection(false);
 		
 		//path is protected
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path("version").build();
-		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
-		method.setHeader("Authorization", "Basic " + StringHelper.encodeBase64("administrator:openolat"));
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(uri, MediaType.TEXT_PLAIN, new Header("Authorization", "Basic " + StringHelper.encodeBase64("administrator:openolat")));
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
 		String securityToken = conn.getSecurityToken(response);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
-		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
-	public void testWebStandardAuthentication() throws IOException, URISyntaxException {
+	public void testWebStandardAuthentication() throws IOException, URISyntaxException, InterruptedException {
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path("version").build();
 		RestConnection conn = new RestConnection(uri.toURL(), "administrator", "openolat");
-		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(uri, MediaType.TEXT_PLAIN);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
 		String securityToken = conn.getSecurityToken(response);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
-		
-		conn.shutdown();
+		conn.close();
 	}
 	
 	@Test
-	public void testAuthenticationDenied() throws IOException, URISyntaxException {
+	public void testAuthenticationDenied() throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-denied");
 		dbInstance.commitAndCloseSession();
 		
@@ -111,13 +110,12 @@ public class AuthenticationTest extends OlatRestTestCase {
 		Assert.assertNotNull(savedIdentity);
 		
 		// User try to see its profile
-		RestConnection conn = new RestConnection(id.getLogin(), id.getPassword());
+		RestConnection conn = new RestConnection(false);
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/me").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(401, response.getStatusLine().getStatusCode());
-		
-		conn.shutdown();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON, conn.autorizationheader(id.getLogin(), id.getPassword()));
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(401, response.statusCode());
+		conn.close();
 	}
 	
 	@Test
@@ -170,10 +168,9 @@ public class AuthenticationTest extends OlatRestTestCase {
 				
 				//path is protected
 				URI uri = UriBuilder.fromUri(getContextURI()).path("users").path("version").build();
-				HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
-				method.setHeader("Authorization", "Basic " + StringHelper.encodeBase64("administrator:openolat"));
-				HttpResponse response = conn.execute(method);
-				if(200 != response.getStatusLine().getStatusCode()) {
+				HttpRequest method = conn.createGet(uri, MediaType.TEXT_PLAIN, new Header("Authorization", "Basic " + StringHelper.encodeBase64("administrator:openolat")));
+				HttpResponse<InputStream> response = conn.execute(method);
+				if(200 != response.statusCode()) {
 					errorCount++;
 				} else if(!StringHelper.containsNonWhitespace(conn.getSecurityToken(response))) {
 					errorCount++;
@@ -182,8 +179,8 @@ public class AuthenticationTest extends OlatRestTestCase {
 				log.error("", e);
 				errorCount++;
 			} finally {
+				conn.close();
 				doneSignal.countDown();
-				conn.shutdown();
 			}
 		}
 	}

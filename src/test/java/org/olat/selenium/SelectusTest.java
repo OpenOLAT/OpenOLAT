@@ -60,10 +60,12 @@ public class SelectusTest extends Deployments {
 	 * @param applicantBrowser
 	 * @throws URISyntaxException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
 	@Test
 	@RunAsClient
-	public void applicationWizard() throws IOException, URISyntaxException {
+	public void applicationWizard()
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).createSelectusManager("Selecta", true);
 		
 		WebDriver applicantBrowser = getWebDriver(1);
@@ -138,10 +140,12 @@ public class SelectusTest extends Deployments {
 	 * @param loginPage
 	 * @throws URISyntaxException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
 	@Test
 	@RunAsClient
-	public void createApplicationSelectusManager() throws IOException, URISyntaxException {
+	public void createApplicationSelectusManager()
+	throws IOException, URISyntaxException, InterruptedException {
 
 		UserVO user = new UserRestClient(deploymentUrl).createSelectusManager("Leonhard", false);// "fritz", "Fritz", "Haber", "Frt01#Secured"
 
@@ -197,10 +201,12 @@ public class SelectusTest extends Deployments {
 	 * @param applicant3Browser
 	 * @throws URISyntaxException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
 	@Test
 	@RunAsClient
-	public void concurrentApplicationWizard() throws IOException, URISyntaxException {
+	public void concurrentApplicationWizard()
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).createSelectusManager("Selecta-2", true);
 		
 		WebDriver applicant1Browser = getWebDriver(1);
@@ -341,10 +347,12 @@ public class SelectusTest extends Deployments {
 	 * @param loginPage
 	 * @throws URISyntaxException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
 	@Test
 	@RunAsClient
-	public void manageCommitteeAddHead() throws IOException, URISyntaxException {
+	public void manageCommitteeAddHead()
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO committeeMember = new UserRestClient(deploymentUrl).createRandomUser("Richard");// "richard", "Richard", "Ernst", "Rich#2478268"
 		UserVO selectusManager = new UserRestClient(deploymentUrl).createSelectusManager("Leonhard", false);// "fritz", "Fritz", "Haber", "Frt#z01Sured"
@@ -395,10 +403,12 @@ public class SelectusTest extends Deployments {
 	 * @param loginPage
 	 * @throws URISyntaxException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
 	@Test
 	@RunAsClient
-	public void rejectionProcess() throws IOException, URISyntaxException {
+	public void rejectionProcess()
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).createSelectusManager("Selecta-3", true);
 		
 		LoginPage.load(browser, deploymentUrl)
@@ -480,10 +490,12 @@ public class SelectusTest extends Deployments {
 	 * @param committeeBrowser The browser for the committee member
 	 * @throws URISyntaxException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
 	@Test
 	@RunAsClient
-	public void positionWithRubrics() throws IOException, URISyntaxException {
+	public void positionWithRubrics()
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver committeeBrowser = getWebDriver(1);
 		
 		UserVO committeeMember = new UserRestClient(deploymentUrl).createRandomUser("Daniel");// "daniel", "Daniel", "Mieville", "Miver#01Closed"
@@ -648,10 +660,12 @@ public class SelectusTest extends Deployments {
 	 * @param loginPage
 	 * @throws URISyntaxException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
 	@Test
 	@RunAsClient
-	public void businessPaths() throws IOException, URISyntaxException {
+	public void businessPaths()
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).createSelectusManager("Selecta-4", true);
 		
 		WebDriver applicantBrowser = getWebDriver(1);
@@ -716,10 +730,12 @@ public class SelectusTest extends Deployments {
 	 * The administrator delete all positions but one.
 	 * @throws URISyntaxException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
 	@Test
 	@RunAsClient
-	public void deletePositions() throws IOException, URISyntaxException {
+	public void deletePositions() 
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).createSelectusManager("Selecta-5", true);
 		
 		LoginPage.load(browser, deploymentUrl)

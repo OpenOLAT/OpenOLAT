@@ -113,7 +113,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createCourse()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -178,7 +178,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createCourseGuestAccess()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -259,7 +259,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createCourseWithSpecialCharacters()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -311,7 +311,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createCourseWithClassicWizard()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -378,7 +378,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createCourseWithExamWizard()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO student = new UserRestClient(deploymentUrl).createRandomUser("Samuel");
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -481,7 +481,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void concurrentEditCourse()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver coAuthorBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -584,7 +584,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void concurrentVisitAndPublish()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -684,7 +684,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseRename()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -752,7 +752,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void catalogRoundTrip()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO administrator = new UserRestClient(deploymentUrl).createAdministrator();
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -862,7 +862,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createCourseWithCalendar()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -966,7 +966,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createCourseWithCalendar_alt()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -1053,7 +1053,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createCourseWithCalendar_singleToRecurrent()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -1137,7 +1137,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseBooking()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1234,7 +1234,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseFreeBooking()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver userBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1317,7 +1317,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseReminders()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		//configure at least a license
@@ -1443,7 +1443,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void coursePassword()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1560,7 +1560,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseDeleteCourseElement()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 
@@ -1624,7 +1624,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseAccessRules()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver reiBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1775,7 +1775,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void confirmMembershipForCourse()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver authorBrowser = getWebDriver(1);
 		WebDriver participantBrowser = getWebDriver(2);
 		
@@ -1893,7 +1893,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createContentPackage()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -1980,7 +1980,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void modifyOwnerCourseBatch()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Lisa");
@@ -2056,7 +2056,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void modifyStatusCourseBatch()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -2109,7 +2109,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseInvitation()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -2203,7 +2203,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseInvitationRestExternalUser()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver externalUserBrowser = getWebDriver(1);
 		
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
@@ -2315,7 +2315,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void importCourseWithSoftKey()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Suleika");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
@@ -2406,7 +2406,7 @@ public class CourseTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void tryImportOfWindowsZip()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);

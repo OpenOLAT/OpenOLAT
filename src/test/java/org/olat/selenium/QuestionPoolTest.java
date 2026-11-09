@@ -66,7 +66,7 @@ public class QuestionPoolTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void questionPool()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Lili");
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -98,7 +98,7 @@ public class QuestionPoolTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void reviewProcess()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 
 		UserVO reviewer = new UserRestClient(deploymentUrl).createAuthor("Albert");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
@@ -181,7 +181,7 @@ public class QuestionPoolTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void questionPoolGeneralMetadata()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
@@ -255,7 +255,7 @@ public class QuestionPoolTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void questionPoolItemAnalyseMetadata()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// The author create a new question with metadata
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Lili");
 

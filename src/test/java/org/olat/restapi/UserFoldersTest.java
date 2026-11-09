@@ -29,15 +29,16 @@ package org.olat.restapi;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,9 +91,10 @@ public class UserFoldersTest extends OlatRestTestCase {
 	 * Test retrieve the folder which the user subscribe in a course.
 	 * @throws IOException
 	 * @throws URISyntaxException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void myFolders() throws IOException, URISyntaxException {
+	public void myFolders() throws IOException, URISyntaxException, InterruptedException, InterruptedException {
 		final IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("my");
 		dbInstance.commitAndCloseSession();
 		
@@ -101,10 +103,10 @@ public class UserFoldersTest extends OlatRestTestCase {
 		
 		//subscribed to nothing
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString()).path("folders").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		FolderVOes folders = conn.parse(response.getEntity(), FolderVOes.class);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
+		FolderVOes folders = conn.parse(response, FolderVOes.class);
 		Assert.assertNotNull(folders);
 		Assert.assertNotNull(folders.getFolders());
 		Assert.assertEquals(0, folders.getFolders().length);
@@ -124,12 +126,13 @@ public class UserFoldersTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve my folders
-		HttpGet method2 = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response2 = conn.execute(method2);
-		assertEquals(200, response2.getStatusLine().getStatusCode());
-		FolderVOes folders2 = conn.parse(response2.getEntity(), FolderVOes.class);
+		HttpRequest method2 = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response2 = conn.execute(method2);
+		assertEquals(200, response2.statusCode());
+		FolderVOes folders2 = conn.parse(response2, FolderVOes.class);
 		Assert.assertNotNull(folders2);
 		Assert.assertNotNull(folders2.getFolders());
 		Assert.assertEquals(1, folders2.getFolders().length);
+		conn.close();
 	}
 }

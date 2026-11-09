@@ -21,17 +21,16 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.UUID;
 
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -50,36 +49,34 @@ import org.olat.test.OlatRestTestCase;
 public class RegistrationTest extends OlatRestTestCase {
 	
 	@Test
-	public void testRegistration() throws IOException, URISyntaxException {
+	public void testRegistration() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection();
 
 		String randomEmail = UUID.randomUUID().toString().replace("-", "") + "@frentix.com";
 		URI uri = conn.getContextURI().path("registration").queryParam("email", randomEmail).build();
-		HttpPut put = conn.createPut(uri, "*/*", "de", true);
+		HttpRequest put = conn.createPut(uri, "*/*", "de");
 		
-		HttpResponse response = conn.execute(put);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		
-		conn.shutdown();
+		HttpResponse<InputStream> response = conn.execute(put);
+		assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
+		conn.close();
+
 	}
 	
 	@Test
-	public void testRedirectRegistration() throws IOException, URISyntaxException {
+	public void testRedirectRegistration() throws IOException, URISyntaxException, InterruptedException {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("rest-reg");
 		
 		RestConnection conn = new RestConnection();
 
 		URI uri = conn.getContextURI().path("registration")
 				.queryParam("email", id.getUser().getProperty(UserConstants.EMAIL, null)).build();
-		HttpPut put = conn.createPut(uri, "*/*", "de", true);
+		HttpRequest put = conn.createPut(uri, "*/*", "de");
 
-		HttpResponse response = conn.execute(put);
-		assertEquals(304, response.getStatusLine().getStatusCode());
-		Header locationHeader = response.getFirstHeader("location");
-		assertNotNull(locationHeader);
-		assertNotNull(locationHeader.getValue());
-		
-		conn.shutdown();
+		HttpResponse<InputStream> response = conn.execute(put);
+		assertEquals(304, response.statusCode());
+		String locationHeader = response.headers().firstValue("location").orElse(null);
+		Assert.assertNotNull(locationHeader);
+		conn.close();
 	}
 }

@@ -36,16 +36,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +60,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.LinkVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
+import org.wildfly.common.Assert;
 
 public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 	
@@ -100,60 +100,55 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testGetFiles() throws IOException, URISyntaxException {
+	public void testGetFiles() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
 		
-		List<LinkVO> links = parseLinkArray(response.getEntity());
+		List<LinkVO> links = parseLinkArray(response);
 		assertNotNull(links);
 		assertEquals(3, links.size());
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	@Test
-	public void testGetFilesDeeper() throws IOException, URISyntaxException {
+	public void testGetFilesDeeper() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).path("SubDir").path("SubSubDir").path("SubSubSubDir").build();
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
 		
-		List<LinkVO> links = parseLinkArray(response.getEntity());
+		List<LinkVO> links = parseLinkArray(response);
 		assertNotNull(links);
 		assertEquals(1, links.size());
 		assertEquals("3_singlepage.html", links.get(0).getTitle());
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	@Test
-	public void testGetFileDeep() throws IOException, URISyntaxException {
+	public void testGetFileDeep() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).path("SubDir").path("SubSubDir").path("SubSubSubDir")
 			.path("3_singlepage.html").build();
-		HttpGet method = conn.createGet(uri, "*/*", true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(uri, "*/*");
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertEquals(200, response.statusCode());
 		
-		String body = EntityUtils.toString(response.getEntity());
+		String body = RestConnection.toString(response);
 		assertNotNull(body);
 		assertTrue(body.startsWith("<html>"));
 		
-		String contentType = null;
-		for(Header header:response.getAllHeaders()){
-			if("Content-Type".equals(header.getName())) {
-				contentType = header.getValue();
-				break;
-			}
-		}
-		assertNotNull(contentType);
-		conn.shutdown();
+		Map<String,List<String>> headers=response.headers().map();
+		Assert.assertTrue(headers.containsKey("Content-Type"));
+		Assert.assertFalse(headers.get("Content-Type").isEmpty());
+		conn.close();
 	}
 	
 	private URI getCourseFolderURI() {

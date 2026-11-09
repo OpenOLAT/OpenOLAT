@@ -20,8 +20,10 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -29,13 +31,12 @@ import java.util.List;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.core.util.ratelimit.manager.RequestRateLimiterImpl;
 import org.olat.restapi.audit.ApiAuditChannel;
 import org.olat.restapi.audit.ApiAuditLog;
@@ -67,7 +68,7 @@ public class RestApiRateLimitTest extends OlatRestTestCase {
 	private ApiAuditLogDAO auditLogDao;
 
 	@Test
-	public void burstOverLimit() throws IOException, URISyntaxException {
+	public void burstOverLimit() throws IOException, URISyntaxException, InterruptedException {
 		int currentRateLimit = restModule.getRateLimitRequestsPerMinute();
 		final int LIMIT = 5;
 		final int REJECTED = 65;
@@ -80,22 +81,22 @@ public class RestApiRateLimitTest extends OlatRestTestCase {
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path("me").build();
 
 		for(int i=1; i<=LIMIT; i++) {
-			HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-			Assert.assertEquals("Request " + i, 200, response.getStatusLine().getStatusCode());
-			Assert.assertEquals(Integer.toString(LIMIT), response.getFirstHeader(RestApiLoginFilter.HEADER_RATELIMIT_LIMIT).getValue());
-			Assert.assertEquals(Integer.toString(LIMIT - i), response.getFirstHeader(RestApiLoginFilter.HEADER_RATELIMIT_REMAINING).getValue());
-			EntityUtils.consume(response.getEntity());
+			HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+			Assert.assertEquals("Request " + i, 200, response.statusCode());
+			Assert.assertEquals(Integer.toString(LIMIT), response.headers().firstValue(RestApiLoginFilter.HEADER_RATELIMIT_LIMIT).orElse(null));
+			Assert.assertEquals(Integer.toString(LIMIT - i), response.headers().firstValue(RestApiLoginFilter.HEADER_RATELIMIT_REMAINING).orElse(null));
+			ConnectionUtilities.consume(response);
 		}
 
 		for(int i=0; i<REJECTED; i++) {
-			HttpResponse rejected = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-			Assert.assertEquals(SC_TOO_MANY_REQUESTS, rejected.getStatusLine().getStatusCode());
-			Assert.assertNotNull(rejected.getFirstHeader(RestApiLoginFilter.HEADER_RETRY_AFTER));
-			Assert.assertEquals("0", rejected.getFirstHeader(RestApiLoginFilter.HEADER_RATELIMIT_REMAINING).getValue());
-			Assertions.assertThat(rejected.getFirstHeader("Content-Type").getValue()).startsWith("application/json");
-			Assertions.assertThat(EntityUtils.toString(rejected.getEntity())).contains("\"code\":429");
+			HttpResponse<InputStream> rejected = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+			Assert.assertEquals(SC_TOO_MANY_REQUESTS, rejected.statusCode());
+			Assert.assertNotNull(rejected.headers().firstValue(RestApiLoginFilter.HEADER_RETRY_AFTER).orElse(null));
+			Assert.assertEquals("0", rejected.headers().firstValue(RestApiLoginFilter.HEADER_RATELIMIT_REMAINING).orElse(""));
+			Assertions.assertThat(rejected.headers().firstValue("Content-Type").orElse("")).startsWith("application/json");
+			Assertions.assertThat(ConnectionUtilities.toString(rejected)).contains("\"code\":429");
 		}
-		conn.shutdown();
+		conn.close();
 		dbInstance.commitAndCloseSession();
 
 		// only the first rejected request of the window is audited
@@ -114,7 +115,7 @@ public class RestApiRateLimitTest extends OlatRestTestCase {
 	}
 
 	@Test
-	public void otherIdentityNotLimited() throws IOException, URISyntaxException {
+	public void otherIdentityNotLimited() throws IOException, URISyntaxException, InterruptedException {
 		int currentRateLimit = restModule.getRateLimitRequestsPerMinute();
 		final int LIMIT = 5;
 		restModule.setRateLimitRequestsPerMinute(LIMIT);
@@ -128,26 +129,26 @@ public class RestApiRateLimitTest extends OlatRestTestCase {
 		RestConnection conn1 = new RestConnection(id1);
 		int lastStatus = -1;
 		for(int i=0; i<=LIMIT; i++) {
-			HttpResponse response = conn1.execute(conn1.createGet(uri, MediaType.APPLICATION_JSON, true));
-			lastStatus = response.getStatusLine().getStatusCode();
-			EntityUtils.consume(response.getEntity());
+			HttpResponse<InputStream> response = conn1.execute(conn1.createGet(uri, MediaType.APPLICATION_JSON));
+			lastStatus = response.statusCode();
+			ConnectionUtilities.consume(response);
 		}
 		Assert.assertEquals(SC_TOO_MANY_REQUESTS, lastStatus);
-		conn1.shutdown();
+		conn1.close();
 
 		RestConnection conn2 = new RestConnection(id2);
-		HttpResponse response = conn2.execute(conn2.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		Assert.assertEquals(Integer.toString(LIMIT - 1), response.getFirstHeader(RestApiLoginFilter.HEADER_RATELIMIT_REMAINING).getValue());
-		EntityUtils.consume(response.getEntity());
-		conn2.shutdown();
+		HttpResponse<InputStream> response = conn2.execute(conn2.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(200, response.statusCode());
+		Assert.assertEquals(Integer.toString(LIMIT - 1), response.headers().firstValue(RestApiLoginFilter.HEADER_RATELIMIT_REMAINING).orElse(null));
+		ConnectionUtilities.consume(response);
+		conn2.close();
 		
 		restModule.setRateLimitRequestsPerMinute(currentRateLimit);
 		waitMessageAreConsumed();
 	}
 
 	@Test
-	public void pingIsExempt() throws IOException, URISyntaxException {
+	public void pingIsExempt() throws IOException, URISyntaxException, InterruptedException {
 		int currentAnonymousRateLimit = restModule.getRateLimitAnonymousRequestsPerMinute();
 		restModule.setRateLimitAnonymousRequestsPerMinute(2);
 		waitMessageAreConsumed();
@@ -156,12 +157,12 @@ public class RestApiRateLimitTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		URI uri = UriBuilder.fromUri(getContextURI()).path("ping").build();
 		for(int i=0; i<5; i++) {
-			HttpResponse response = conn.execute(conn.createGet(uri, MediaType.TEXT_PLAIN, false));
-			Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-			Assert.assertNull(response.getFirstHeader(RestApiLoginFilter.HEADER_RATELIMIT_LIMIT));
-			EntityUtils.consume(response.getEntity());
+			HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.TEXT_PLAIN));
+			Assert.assertEquals(200, response.statusCode());
+			Assert.assertNull(response.headers().firstValue(RestApiLoginFilter.HEADER_RATELIMIT_LIMIT).orElse(null));
+			ConnectionUtilities.consume(response);
 		}
-		conn.shutdown();
+		conn.close();
 		
 		restModule.setRateLimitAnonymousRequestsPerMinute(currentAnonymousRateLimit);
 		waitMessageAreConsumed();

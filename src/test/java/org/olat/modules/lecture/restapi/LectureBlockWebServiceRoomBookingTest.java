@@ -20,8 +20,11 @@
 package org.olat.modules.lecture.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -30,15 +33,11 @@ import java.util.UUID;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.roommanagement.Building;
@@ -46,9 +45,9 @@ import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
-import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.RoomModuleLog;
 import org.olat.modules.roommanagement.RoomModuleLogAction;
+import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.RoomModuleLogSearchParameters;
 import org.olat.modules.roommanagement.restapi.RoomBookingVO;
 import org.olat.repository.RepositoryEntry;
@@ -107,11 +106,11 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 	 * Wraps the given bookings in a JSON array and sends them as the body of a
 	 * {@code PUT .../room}. An empty varargs list produces {@code []}, which
 	 * clears all bookings of the block.
+	 * @throws InterruptedException 
 	 */
-	private HttpResponse putBookings(RestConnection conn, URI uri, RoomBookingVO... vos)
-	throws IOException, URISyntaxException {
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, vos);
+	private HttpResponse<InputStream> putBookings(RestConnection conn, URI uri, RoomBookingVO... vos)
+	throws IOException, URISyntaxException, InterruptedException {
+		HttpRequest method = conn.createPut(uri, vos, MediaType.APPLICATION_JSON);
 		return conn.execute(method);
 	}
 
@@ -125,25 +124,26 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 	@Test
 	public void getRoom_noBooking_returnsEmptyArray()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> bookings = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertNotNull(bookings);
 		Assert.assertTrue(bookings.isEmpty());
+		conn.close();
 	}
 
 	@Test
 	public void getRoom_withBooking_returnsVO_withBuffers()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldGetRoom_" + UUID.randomUUID(), admin.getIdentity());
@@ -158,10 +158,10 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> bookings = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(1, bookings.size());
 		RoomBookingVO vo = bookings.get(0);
@@ -170,11 +170,12 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		Assert.assertEquals(room.getKey(), vo.getRoomKey());
 		Assert.assertEquals(room.getExternalId(), vo.getExternalId());
 		Assert.assertEquals(room.getExternalRef(), vo.getExternalRef());
+		conn.close();
 	}
 
 	@Test
 	public void getRoom_threeBookings_returnsAllInStableOrder()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldThree_" + UUID.randomUUID(), admin.getIdentity());
@@ -200,12 +201,12 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
 
-		HttpResponse response1 = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(200, response1.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> response1 = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(200, response1.statusCode());
 		List<RoomBookingVO> first = conn.parseList(response1, RoomBookingVO.class);
 
-		HttpResponse response2 = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(200, response2.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> response2 = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(200, response2.statusCode());
 		List<RoomBookingVO> second = conn.parseList(response2, RoomBookingVO.class);
 
 		Assert.assertEquals(3, first.size());
@@ -214,11 +215,12 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		Assert.assertEquals(
 				first.stream().map(RoomBookingVO::getRoomKey).toList(),
 				second.stream().map(RoomBookingVO::getRoomKey).toList());
+		conn.close();
 	}
 
 	@Test
 	public void getRoom_moduleDisabled_returns404()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
@@ -227,10 +229,11 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		try {
 			RestConnection conn = new RestConnection(admin);
 			URI uri = buildRoomUri(entry, block);
-			HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
+			HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
 
-			Assert.assertEquals(404, response.getStatusLine().getStatusCode());
-			EntityUtils.consume(response.getEntity());
+			Assert.assertEquals(404, response.statusCode());
+			ConnectionUtilities.consume(response);
+			conn.close();
 		} finally {
 			roomManagementModule.setEnabled(true);
 		}
@@ -238,24 +241,25 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 	@Test
 	public void getRoom_callerWithoutBlockEditRights_returns403()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(plainUser);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
 
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	// ---------- PUT .../room : add ----------
 
 	@Test
 	public void putRoom_byInternalKey_createsBooking()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldPutKey_" + UUID.randomUUID(), admin.getIdentity());
@@ -269,17 +273,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(1, result.size());
 		Assert.assertEquals(room.getKey(), result.get(0).getRoomKey());
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_byExternalId_createsBooking()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldPutExtId_" + UUID.randomUUID(), admin.getIdentity());
@@ -295,17 +300,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(1, result.size());
 		Assert.assertEquals(room.getKey(), result.get(0).getRoomKey());
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_byUniqueExternalRef_createsBooking()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldPutExtRef_" + UUID.randomUUID(), admin.getIdentity());
@@ -321,17 +327,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(1, result.size());
 		Assert.assertEquals(room.getKey(), result.get(0).getRoomKey());
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_emptyBlock_twoRooms_createsBothBookings()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldTwoNew_" + UUID.randomUUID(), admin.getIdentity());
@@ -346,19 +353,20 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, vo1, vo2);
+		HttpResponse<InputStream> response = putBookings(conn, uri, vo1, vo2);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(2, result.size());
 		List<Long> roomKeys = result.stream().map(RoomBookingVO::getRoomKey).toList();
 		Assert.assertTrue(roomKeys.contains(room1.getKey()));
 		Assert.assertTrue(roomKeys.contains(room2.getKey()));
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_mixedIdentifierTypes_createsAllBookings()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldMixed_" + UUID.randomUUID(), admin.getIdentity());
@@ -383,22 +391,23 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, voKey, voExtId, voExtRef);
+		HttpResponse<InputStream> response = putBookings(conn, uri, voKey, voExtId, voExtRef);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(3, result.size());
 		List<Long> roomKeys = result.stream().map(RoomBookingVO::getRoomKey).toList();
 		Assert.assertTrue(roomKeys.contains(roomByKey.getKey()));
 		Assert.assertTrue(roomKeys.contains(roomByExtId.getKey()));
 		Assert.assertTrue(roomKeys.contains(roomByExtRef.getKey()));
+		conn.close();
 	}
 
 	// ---------- PUT .../room : keep / no-op ----------
 
 	@Test
 	public void putRoom_sameArrayTwice_isNoOp_noNewLogRows()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldNoOp_" + UUID.randomUUID(), admin.getIdentity());
@@ -413,24 +422,25 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
 
-		HttpResponse response1 = putBookings(conn, uri, vo);
-		Assert.assertEquals(200, response1.getStatusLine().getStatusCode());
-		EntityUtils.consume(response1.getEntity());
+		HttpResponse<InputStream> response1 = putBookings(conn, uri, vo);
+		Assert.assertEquals(200, response1.statusCode());
+		ConnectionUtilities.consume(response1);
 		int logCountAfterFirst = countLogsForRoom(room);
 
-		HttpResponse response2 = putBookings(conn, uri, vo);
-		Assert.assertEquals(200, response2.getStatusLine().getStatusCode());
-		EntityUtils.consume(response2.getEntity());
+		HttpResponse<InputStream> response2 = putBookings(conn, uri, vo);
+		Assert.assertEquals(200, response2.statusCode());
+		ConnectionUtilities.consume(response2);
 		int logCountAfterSecond = countLogsForRoom(room);
 
 		Assert.assertEquals("An identical PUT must not write a new log row", logCountAfterFirst, logCountAfterSecond);
+		conn.close();
 	}
 
 	// ---------- PUT .../room : replace ----------
 
 	@Test
 	public void putRoom_replaceTwoRoomsWithTwoOtherRooms()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldRepl2to2_" + UUID.randomUUID(), admin.getIdentity());
@@ -449,9 +459,9 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, vo1, vo2);
+		HttpResponse<InputStream> response = putBookings(conn, uri, vo1, vo2);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		List<Long> roomKeys = result.stream().map(RoomBookingVO::getRoomKey).toList();
 		Assert.assertEquals(2, result.size());
@@ -459,11 +469,12 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		Assert.assertTrue(roomKeys.contains(newRoom2.getKey()));
 		Assert.assertFalse(roomKeys.contains(oldRoom1.getKey()));
 		Assert.assertFalse(roomKeys.contains(oldRoom2.getKey()));
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_replaceTwoRoomsWithOne()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldRepl2to1_" + UUID.randomUUID(), admin.getIdentity());
@@ -478,17 +489,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, vo1);
+		HttpResponse<InputStream> response = putBookings(conn, uri, vo1);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(1, result.size());
 		Assert.assertEquals(oldRoom1.getKey(), result.get(0).getRoomKey());
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_replaceOneRoomWithThree()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldRepl1to3_" + UUID.randomUUID(), admin.getIdentity());
@@ -508,9 +520,9 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, vo1, vo2, vo3);
+		HttpResponse<InputStream> response = putBookings(conn, uri, vo1, vo2, vo3);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		List<Long> roomKeys = result.stream().map(RoomBookingVO::getRoomKey).toList();
 		Assert.assertEquals(3, result.size());
@@ -518,11 +530,12 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		Assert.assertTrue(roomKeys.contains(newRoom2.getKey()));
 		Assert.assertTrue(roomKeys.contains(newRoom3.getKey()));
 		Assert.assertFalse(roomKeys.contains(oldRoom.getKey()));
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_replacesExistingBooking()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldPutReplace_" + UUID.randomUUID(), admin.getIdentity());
@@ -537,9 +550,9 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response1 = putBookings(conn, uri, bookingVO1);
+		HttpResponse<InputStream> response1 = putBookings(conn, uri, bookingVO1);
 
-		Assert.assertEquals(200, response1.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response1.statusCode());
 		List<RoomBookingVO> result1 = conn.parseList(response1, RoomBookingVO.class);
 		Assert.assertEquals(1, result1.size());
 		Long bookingKey = result1.get(0).getKey();
@@ -550,25 +563,26 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		bookingVO2.setBufferBeforeMin(99);
 		bookingVO2.setBufferAfterMin(10);
 
-		HttpResponse response2 = putBookings(conn, uri, bookingVO2);
-		Assert.assertEquals(200, response2.getStatusLine().getStatusCode());
-		EntityUtils.consume(response2.getEntity());
+		HttpResponse<InputStream> response2 = putBookings(conn, uri, bookingVO2);
+		Assert.assertEquals(200, response2.statusCode());
+		ConnectionUtilities.consume(response2);
 
 		// GET to verify updated buffer
-		HttpGet getMethod = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
-		HttpResponse getResponse = conn.execute(getMethod);
-		Assert.assertEquals(200, getResponse.getStatusLine().getStatusCode());
+		HttpRequest getMethod = conn.createGet(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> getResponse = conn.execute(getMethod);
+		Assert.assertEquals(200, getResponse.statusCode());
 		List<RoomBookingVO> getResult = conn.parseList(getResponse, RoomBookingVO.class);
 		Assert.assertEquals(1, getResult.size());
 		Assert.assertEquals(Integer.valueOf(99), getResult.get(0).getBufferBeforeMin());
 		Assert.assertEquals(bookingKey, getResult.get(0).getKey());
+		conn.close();
 	}
 
 	// ---------- PUT .../room : remove ----------
 
 	@Test
 	public void putRoom_emptyArray_clearsAllBookings()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldClearPut_" + UUID.randomUUID(), admin.getIdentity());
@@ -578,19 +592,20 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri);
+		HttpResponse<InputStream> response = putBookings(conn, uri);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertTrue(result.isEmpty());
 		Assert.assertTrue(roomManagementService.getBookings(block).isEmpty());
+		conn.close();
 	}
 
 	// ---------- PUT .../room : atomicity ----------
 
 	@Test
 	public void putRoom_atomicity_unknownRoomInMiddle_abortsWithoutWrites()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldAtomic_" + UUID.randomUUID(), admin.getIdentity());
@@ -615,10 +630,10 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, voA, voB, voUnknown, voC);
+		HttpResponse<InputStream> response = putBookings(conn, uri, voA, voB, voUnknown, voC);
 
-		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(404, response.statusCode());
+		ConnectionUtilities.consume(response);
 
 		List<RoomBooking> bookingsAfter = roomManagementService.getBookings(block);
 		Assert.assertEquals(2, bookingsAfter.size());
@@ -628,13 +643,14 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		int logCountAfter = countLogsForRoom(roomA) + countLogsForRoom(roomB) + countLogsForRoom(roomC);
 		Assert.assertEquals("An aborted PUT must not write any log row", logCountBefore, logCountAfter);
+		conn.close();
 	}
 
 	// ---------- PUT .../room : duplicates ----------
 
 	@Test
 	public void putRoom_duplicateRoomKeyTwice_returns409()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldDup_" + UUID.randomUUID(), admin.getIdentity());
@@ -648,17 +664,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, vo1, vo2);
+		HttpResponse<InputStream> response = putBookings(conn, uri, vo1, vo2);
 
-		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(409, response.statusCode());
 		Map<?, ?> body = conn.parse(response, Map.class);
 		Assert.assertEquals("room.duplicate", body.get("code"));
 		Assert.assertEquals(room.getKey().intValue(), ((Number) body.get("room")).intValue());
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_duplicateRoomKeyAndMatchingExternalId_returns409()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldDupExt_" + UUID.randomUUID(), admin.getIdentity());
@@ -674,18 +691,19 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, byKey, byExtId);
+		HttpResponse<InputStream> response = putBookings(conn, uri, byKey, byExtId);
 
-		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(409, response.statusCode());
 		Map<?, ?> body = conn.parse(response, Map.class);
 		Assert.assertEquals("room.duplicate", body.get("code"));
+		conn.close();
 	}
 
 	// ---------- PUT .../room : errors ----------
 
 	@Test
 	public void putRoom_byAmbiguousExternalRef_returns422()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldPutAmbig_" + UUID.randomUUID(), admin.getIdentity());
@@ -703,17 +721,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(422, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(422, response.statusCode());
 		Map<?, ?> body = conn.parse(response, Map.class);
 		Assert.assertEquals("room.ambiguousExternalRef", body.get("code"));
 		Assert.assertEquals(2, ((Number) body.get("matches")).intValue());
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_noIdentifier_returns400()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
@@ -723,15 +742,16 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(400, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(400, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_unknownExternalId_returns404()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
@@ -741,15 +761,16 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(404, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_unknownRoomKey_returns404()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
@@ -759,15 +780,16 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(404, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_inactiveRoom_byKey_returns409()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldInactiveKey_" + UUID.randomUUID(), admin.getIdentity());
@@ -781,16 +803,17 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(409, response.statusCode());
 		Map<?, ?> body = conn.parse(response, Map.class);
 		Assert.assertEquals("room.inactive", body.get("code"));
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_inactiveRoom_byExternalId_returns409()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldInactiveExtId_" + UUID.randomUUID(), admin.getIdentity());
@@ -805,16 +828,17 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(409, response.statusCode());
 		Map<?, ?> body = conn.parse(response, Map.class);
 		Assert.assertEquals("room.inactive", body.get("code"));
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_inactiveRoom_byExternalRef_returns409()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldInactiveExtRef_" + UUID.randomUUID(), admin.getIdentity());
@@ -829,16 +853,17 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(409, response.statusCode());
 		Map<?, ?> body = conn.parse(response, Map.class);
 		Assert.assertEquals("room.inactive", body.get("code"));
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_roundTripOfGetBody_withExistingBookingInInactiveRoom_isNoOp()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldInactiveExisting_" + UUID.randomUUID(), admin.getIdentity());
@@ -855,15 +880,15 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
 
-		HttpResponse getResponse = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(200, getResponse.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> getResponse = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(200, getResponse.statusCode());
 		List<RoomBookingVO> body = conn.parseList(getResponse, RoomBookingVO.class);
 		Assert.assertEquals(2, body.size());
 
 		int logCountBefore = countLogsForRoom(roomToDeactivate);
 
-		HttpResponse putResponse = putBookings(conn, uri, body.toArray(new RoomBookingVO[0]));
-		Assert.assertEquals(200, putResponse.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> putResponse = putBookings(conn, uri, body.toArray(new RoomBookingVO[0]));
+		Assert.assertEquals(200, putResponse.statusCode());
 		List<RoomBookingVO> result = conn.parseList(putResponse, RoomBookingVO.class);
 		List<Long> roomKeys = result.stream().map(RoomBookingVO::getRoomKey).toList();
 		Assert.assertEquals(2, result.size());
@@ -873,13 +898,14 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		int logCountAfter = countLogsForRoom(roomToDeactivate);
 		Assert.assertEquals("An unchanged round trip including an existing booking in a now-inactive room must not write a new log row",
 				logCountBefore, logCountAfter);
+		conn.close();
 	}
 
 	// ---------- PUT .../room : buffers ----------
 
 	@Test
 	public void putRoom_absentBuffersOnCreate_defaultToZero()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldZeroCreate_" + UUID.randomUUID(), admin.getIdentity());
@@ -891,17 +917,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, vo);
+		HttpResponse<InputStream> response = putBookings(conn, uri, vo);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(Integer.valueOf(0), result.get(0).getBufferBeforeMin());
 		Assert.assertEquals(Integer.valueOf(0), result.get(0).getBufferAfterMin());
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_absentBuffersOnUpdate_keepsStoredValue()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldKeepBuf_" + UUID.randomUUID(), admin.getIdentity());
@@ -915,17 +942,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, vo);
+		HttpResponse<InputStream> response = putBookings(conn, uri, vo);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(Integer.valueOf(5), result.get(0).getBufferBeforeMin());
 		Assert.assertEquals(Integer.valueOf(10), result.get(0).getBufferAfterMin());
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_explicitZeroBuffer_setsZero()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldExplicitZero_" + UUID.randomUUID(), admin.getIdentity());
@@ -940,19 +968,20 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, vo);
+		HttpResponse<InputStream> response = putBookings(conn, uri, vo);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.statusCode());
 		List<RoomBookingVO> result = conn.parseList(response, RoomBookingVO.class);
 		Assert.assertEquals(Integer.valueOf(0), result.get(0).getBufferBeforeMin());
 		Assert.assertEquals(Integer.valueOf(0), result.get(0).getBufferAfterMin());
+		conn.close();
 	}
 
 	// ---------- PUT .../room : round trip ----------
 
 	@Test
 	public void putRoom_roundTripOfGetBody_isNoOp_noNewLogRows()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldRoundTrip_" + UUID.randomUUID(), admin.getIdentity());
@@ -966,15 +995,15 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
 
-		HttpResponse getResponse = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(200, getResponse.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> getResponse = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(200, getResponse.statusCode());
 		List<RoomBookingVO> body = conn.parseList(getResponse, RoomBookingVO.class);
 		Assert.assertEquals(1, body.size());
 
 		int logCountBefore = countLogsForRoom(room);
 
-		HttpResponse putResponse = putBookings(conn, uri, body.toArray(new RoomBookingVO[0]));
-		Assert.assertEquals(200, putResponse.getStatusLine().getStatusCode());
+		HttpResponse<InputStream> putResponse = putBookings(conn, uri, body.toArray(new RoomBookingVO[0]));
+		Assert.assertEquals(200, putResponse.statusCode());
 		List<RoomBookingVO> result = conn.parseList(putResponse, RoomBookingVO.class);
 		Assert.assertEquals(1, result.size());
 		Assert.assertEquals(room.getKey(), result.get(0).getRoomKey());
@@ -984,13 +1013,14 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		int logCountAfter = countLogsForRoom(room);
 		Assert.assertEquals("A round-tripped GET body sent as PUT must not write a new log row",
 				logCountBefore, logCountAfter);
+		conn.close();
 	}
 
 	// ---------- PUT .../room : managed flag / access ----------
 
 	@Test
 	public void putRoom_onBlockWithManagedFlagRoom_stillSucceeds()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		block.setManagedFlagsString("room");
@@ -1006,15 +1036,16 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void putRoom_callerWithoutBlockEditRights_returns403()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldPutNoRights_" + UUID.randomUUID(), admin.getIdentity());
@@ -1028,17 +1059,18 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(plainUser);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = putBookings(conn, uri, bookingVO);
+		HttpResponse<InputStream> response = putBookings(conn, uri, bookingVO);
 
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	// ---------- DELETE .../room ----------
 
 	@Test
 	public void deleteRoom_existingBooking_returns204_andLogs()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldDel_" + UUID.randomUUID(), admin.getIdentity());
@@ -1048,11 +1080,11 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(204, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(204, response.statusCode());
+		ConnectionUtilities.consume(response);
 
 		// Verify log entry
 		RoomModuleLogSearchParameters logParams = new RoomModuleLogSearchParameters();
@@ -1060,11 +1092,12 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 		List<RoomModuleLog> logs = roomManagementService.searchLogs(logParams);
 		boolean hasDeleteLog = logs.stream().anyMatch(l -> l.getAction() == RoomModuleLogAction.booking_delete);
 		Assert.assertTrue("Expected a booking_delete log entry", hasDeleteLog);
+		conn.close();
 	}
 
 	@Test
 	public void deleteRoom_multipleBookings_clearsAll()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldDelMulti_" + UUID.randomUUID(), admin.getIdentity());
@@ -1076,32 +1109,34 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpResponse response = conn.execute(conn.createDelete(uri, MediaType.APPLICATION_JSON));
+		HttpResponse<InputStream> response = conn.execute(conn.createDelete(uri, MediaType.APPLICATION_JSON));
 
-		Assert.assertEquals(204, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(204, response.statusCode());
+		ConnectionUtilities.consume(response);
 		Assert.assertTrue(roomManagementService.getBookings(block).isEmpty());
+		conn.close();
 	}
 
 	@Test
 	public void deleteRoom_noBooking_returns204()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(admin);
 		URI uri = buildRoomUri(entry, block);
-		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(204, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(204, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 
 	@Test
 	public void deleteRoom_callerWithoutBlockEditRights_returns403()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin.getIdentity());
 		LectureBlock block = createLectureBlock(entry);
 		Building building = roomManagementService.createBuilding("BldDelNoRights_" + UUID.randomUUID(), admin.getIdentity());
@@ -1111,10 +1146,11 @@ public class LectureBlockWebServiceRoomBookingTest extends OlatRestTestCase {
 
 		RestConnection conn = new RestConnection(plainUser);
 		URI uri = buildRoomUri(entry, block);
-		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
 
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 	}
 }

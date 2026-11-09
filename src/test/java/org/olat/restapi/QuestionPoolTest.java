@@ -27,6 +27,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -34,15 +36,6 @@ import java.util.Locale;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -85,7 +78,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 
 	@Test
 	public void importQuestion()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		URL itemUrl = QuestionPoolTest.class.getResource("multiple_choice_per_answer.zip");
 		assertNotNull(itemUrl);
 		File itemFile = new File(itemUrl.toURI());
@@ -93,16 +86,9 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("qpool/items").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		HttpEntity entity = MultipartEntityBuilder.create()
-				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-				.addBinaryBody("file", itemFile, ContentType.APPLICATION_OCTET_STREAM, itemFile.getName())
-				.addTextBody("filename", "multiple_choice_per_answer.zip")
-				.build();
-		method.setEntity(entity);
-		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(request, itemFile, "multiple_choice_per_answer.zip", List.of(), MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 
 		QuestionItemVOes voes = conn.parse(response, QuestionItemVOes.class);
 		Assert.assertNotNull(voes);
@@ -111,10 +97,11 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		Assert.assertEquals(1, voArray.length);
 		QuestionItemVO vo = voArray[0];
 		Assert.assertNotNull(vo);
+		conn.close();
 	}
 
 	@Test
-	public void getAuthors() throws IOException, URISyntaxException {
+	public void getAuthors() throws IOException, URISyntaxException, InterruptedException {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
 		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
@@ -123,18 +110,19 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/qpool/items/" + item.getKey() + "/authors/").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<UserVO> users = parseUserArray(response.getEntity().getContent());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<UserVO> users = conn.parseList(response, UserVO.class);
 		//check
 		Assert.assertNotNull(users);
 		Assert.assertEquals(1, users.size());
 		Assert.assertTrue(author.getKey().equals(users.get(0).getKey()));
+		conn.close();
 	}
 	
 	@Test
-	public void getAuthor() throws IOException, URISyntaxException {
+	public void getAuthor() throws IOException, URISyntaxException, InterruptedException {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-2");
 		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
@@ -143,17 +131,18 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/qpool/items/" + item.getKey() + "/authors/" + author.getKey()).build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		UserVO user = conn.parse(response.getEntity(), UserVO.class);
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		UserVO user = conn.parse(response, UserVO.class);
 		//check
 		Assert.assertNotNull(user);
 		Assert.assertTrue(author.getKey().equals(user.getKey()));
+		conn.close();
 	}
 	
 	@Test
-	public void addAuthor() throws IOException, URISyntaxException {
+	public void addAuthor() throws IOException, URISyntaxException, InterruptedException {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
 		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
@@ -162,10 +151,10 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/qpool/items/" + item.getKey() + "/authors/" + coAuthor.getKey()).build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createPut(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 
 		//check
 		List<Identity> authors = qpoolService.getAuthors(item);
@@ -173,10 +162,11 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		Assert.assertEquals(2, authors.size());
 		Assert.assertTrue(authors.contains(author));
 		Assert.assertTrue(authors.contains(coAuthor));
+		conn.close();
 	}
 	
 	@Test
-	public void removeAuthor() throws IOException, URISyntaxException {
+	public void removeAuthor() throws IOException, URISyntaxException, InterruptedException {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
 		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
@@ -188,10 +178,10 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/qpool/items/" + item.getKey() + "/authors/" + coAuthor.getKey()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpRequest method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 
 		//check
 		List<Identity> itemsAuthors = qpoolService.getAuthors(item);
@@ -199,6 +189,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		Assert.assertEquals(1, itemsAuthors.size());
 		Assert.assertTrue(itemsAuthors.contains(author));
 		Assert.assertFalse(itemsAuthors.contains(coAuthor));
+		conn.close();
 	}
 
 	protected List<UserVO> parseUserArray(InputStream body) {

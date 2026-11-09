@@ -80,7 +80,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21HotspotInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -128,7 +128,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21AssociateInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -181,7 +181,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21GraphicAssociateInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -232,7 +232,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21MatchInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -284,7 +284,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21OrderInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -334,7 +334,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21EndInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -399,7 +399,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21GraphicGapInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -449,7 +449,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21SelectPointInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -497,7 +497,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21GraphicOrderInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -549,7 +549,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21PositionObjectInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -600,7 +600,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21InlineChoiceInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -648,7 +648,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21SliderInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -697,7 +697,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21GapMatchInteraction()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -746,7 +746,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void qti21MultipleInput()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());

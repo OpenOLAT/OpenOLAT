@@ -22,16 +22,16 @@ package org.olat.restapi;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Locale;
 
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -66,7 +66,7 @@ public class QualityWebServiceTest extends OlatRestTestCase {
 	private EvaluationFormHandler evaluationFormHandler;
 	
 	@Test
-	public void getAnalysisReport_noAnalysisRigths() throws IOException, URISyntaxException {
+	public void getAnalysisReport_noAnalysisRigths() throws IOException, URISyntaxException, InterruptedException {
 		String userName = random();
 		String userPw = random();
 		JunitTestHelper.createAndPersistIdentityAsUser(userName, userPw);
@@ -79,13 +79,14 @@ public class QualityWebServiceTest extends OlatRestTestCase {
 				.path("analysis")
 				.path("1")
 				.build();
-		HttpGet method = conn.createGet(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		conn.close();
 	}
 	
 	@Test
-	public void getAnalysisReport_formNotFound() throws IOException, URISyntaxException {
+	public void getAnalysisReport_formNotFound() throws IOException, URISyntaxException, InterruptedException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI())
@@ -93,13 +94,14 @@ public class QualityWebServiceTest extends OlatRestTestCase {
 				.path("analysis")
 				.path("-1")
 				.build();
-		HttpGet method = conn.createGet(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(404, response.statusCode());
+		conn.close();
 	}
 	
 	@Test
-	public void getAnalysisReport() throws IOException, URISyntaxException {
+	public void getAnalysisReport() throws IOException, URISyntaxException, InterruptedException {
 		Identity administrator = JunitTestHelper.getDefaultAdministrator();
 		Identity executor = JunitTestHelper.getDefaultActor();
 		RepositoryEntry formEntry = evaluationFormHandler.createResource(administrator, random(), null, null, JunitTestHelper.getDefaultOrganisation(), Locale.ENGLISH);
@@ -119,12 +121,13 @@ public class QualityWebServiceTest extends OlatRestTestCase {
 				.path("analysis")
 				.path(formEntry.getKey().toString())
 				.build();
-		HttpGet method = conn.createGet(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", true);
-		HttpResponse response = conn.execute(method);
+		HttpRequest method = conn.createGet(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		HttpResponse<InputStream> response = conn.execute(method);
 		
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		String content = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+		Assert.assertEquals(200, response.statusCode());
+		String content = RestConnection.toString(response);
 		Assert.assertFalse(content.isEmpty());
+		conn.close();
 	}
 
 }

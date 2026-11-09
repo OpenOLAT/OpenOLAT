@@ -83,7 +83,7 @@ public class CourseLearnPathTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void learnPathConfirmationAndVisitedFlow()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("kanu");
@@ -211,7 +211,7 @@ public class CourseLearnPathTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void taskLearnPathSolutionsOnly()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("kanu");
@@ -312,7 +312,7 @@ public class CourseLearnPathTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseExamWizard()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO student = new UserRestClient(deploymentUrl).createRandomUser("Jeremy");
 		UserVO coach = new UserRestClient(deploymentUrl).createRandomUser("Jessica");
 		
@@ -428,7 +428,7 @@ public class CourseLearnPathTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseWithRootExclusion()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
 
@@ -511,7 +511,7 @@ public class CourseLearnPathTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void courseWithConfirmationFirstNode()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
 

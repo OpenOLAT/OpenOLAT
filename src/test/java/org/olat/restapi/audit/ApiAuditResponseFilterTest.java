@@ -20,24 +20,24 @@
 package org.olat.restapi.audit;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.audit.manager.ApiAuditLogDAO;
@@ -66,7 +66,7 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 	
 	@Test
 	public void putUserWritesOneRowWithResourceAndMaskedBody()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		boolean currentBodySetting = restModule.isAuditLogBody();
 		restModule.setAuditLogBody(true);
 		waitMessageAreConsumed();
@@ -83,12 +83,11 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 		user.setPassword("Secret-Audit-1!");
 		
 		URI uri = conn.getContextURI().path("users").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, user);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		conn.shutdown();
+		HttpRequest method = conn.createPut(uri, user, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 		dbInstance.commitAndCloseSession();
 		
 		List<ApiAuditLog> rows = rowsOf(admin);
@@ -112,7 +111,7 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void getWritesNoRowByDefault() throws IOException, URISyntaxException {
+	public void getWritesNoRowByDefault() throws IOException, URISyntaxException, InterruptedException {
 		boolean currentReadSetting = restModule.isAuditLogReads();
 		restModule.setAuditLogReads(false);
 		waitMessageAreConsumed();
@@ -122,10 +121,10 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 		int before = rowsOf(admin).size();
 		
 		URI uri = conn.getContextURI().path("users").path(admin.getKey().toString()).build();
-		HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		conn.shutdown();
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertEquals(before, rowsOf(admin).size());
@@ -135,7 +134,8 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void getWritesRowWhenReadsEnabled() throws IOException, URISyntaxException {
+	public void getWritesRowWhenReadsEnabled()
+	throws IOException, URISyntaxException, InterruptedException {
 		boolean currentReadSetting = restModule.isAuditLogReads();
 		restModule.setAuditLogReads(true);
 		waitMessageAreConsumed();
@@ -145,10 +145,10 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 		int before = rowsOf(admin).size();
 		
 		URI uri = conn.getContextURI().path("users").path(admin.getKey().toString()).build();
-		HttpResponse response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON, true));
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		conn.shutdown();
+		HttpResponse<InputStream> response = conn.execute(conn.createGet(uri, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 		dbInstance.commitAndCloseSession();
 		
 		List<ApiAuditLog> rows = rowsOf(admin);
@@ -165,7 +165,8 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void forbiddenPostWritesRowWithResource() throws IOException, URISyntaxException {
+	public void forbiddenPostWritesRowWithResource()
+	throws IOException, URISyntaxException, InterruptedException {
 		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("audit-forbidden");
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		dbInstance.commitAndCloseSession();
@@ -175,12 +176,11 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 		roles.setAuthor(true);
 		
 		URI uri = conn.getContextURI().path("users").path(admin.getKey().toString()).path("roles").build();
-		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, roles);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		conn.shutdown();
+		HttpRequest method = conn.createPost(uri, roles, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 		dbInstance.commitAndCloseSession();
 		
 		List<ApiAuditLog> rows = rowsOf(user.getIdentity());
@@ -192,7 +192,8 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void bodyDisabledStoresNoBody() throws IOException, URISyntaxException {
+	public void bodyDisabledStoresNoBody()
+	throws IOException, URISyntaxException, InterruptedException {
 		boolean currentBodySetting = restModule.isAuditLogBody();
 		restModule.setAuditLogBody(false);
 		waitMessageAreConsumed();
@@ -208,12 +209,11 @@ public class ApiAuditResponseFilterTest extends OlatRestTestCase {
 		user.setPassword("Secret-Audit-2!");
 		
 		URI uri = conn.getContextURI().path("users").build();
-		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, user);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
-		conn.shutdown();
+		HttpRequest method = conn.createPut(uri, user, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNull(rowsOf(admin).get(0).getRequestBody());

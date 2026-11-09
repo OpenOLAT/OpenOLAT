@@ -84,7 +84,7 @@ public class VariousTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void projectCreate()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		//create a random user
 		UserRestClient userClient = new UserRestClient(deploymentUrl);
 		UserVO user = userClient.createAuthor();
@@ -125,7 +125,7 @@ public class VariousTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void projectTodos()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserRestClient userClient = new UserRestClient(deploymentUrl);
 		UserVO user = userClient.createAuthor();
 
@@ -166,7 +166,7 @@ public class VariousTest extends Deployments {
 	 */
 	@Test
 	public void library()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		
@@ -222,7 +222,7 @@ public class VariousTest extends Deployments {
 	 */
 	@Test
 	public void libraryApprovalWorkflow()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
@@ -292,7 +292,7 @@ public class VariousTest extends Deployments {
 	 */
 	@Test
 	public void libraryDirectUpload()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -354,7 +354,7 @@ public class VariousTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void indexOAIPMH()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -439,7 +439,7 @@ public class VariousTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void indexSitemap()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());

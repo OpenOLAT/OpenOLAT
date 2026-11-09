@@ -24,9 +24,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,15 +37,8 @@ import java.util.UUID;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.ConnectionUtilities.NameValuePair;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
@@ -96,7 +92,7 @@ public class RepositoryRestClient {
 	}
 	
 	public CourseVO deployDemoCourse()
-	throws URISyntaxException, IOException {
+	throws URISyntaxException, IOException, InterruptedException {
 		URL url = ArquillianDeployments.class.getResource("file_resources/Demo-Kurs-16.0.zip");
 		File archive = new File(url.toURI());
 		
@@ -115,110 +111,94 @@ public class RepositoryRestClient {
 	 * @return The repository entry
 	 * @throws URISyntaxException
 	 * @throws IOException
+	 * @throws InterruptedException 
 	 */
 	public RepositoryEntryVO deployResourceBySoftKey(File archive, String displayname, String softKey)
-	throws URISyntaxException, IOException {
+	throws URISyntaxException, IOException, InterruptedException {
 		RestConnection conn = new RestConnection(deploymentUrl, username, password);
 		
 		// Check first if ressource already exists
 		List<RepositoryEntryVO> entries = getResourceByExternalId(conn, softKey);
 		if(entries != null && entries.size() == 1) {
+			conn.close();
 			return entries.get(0);
 		}
 
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo").path("entries").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		HttpEntity entity = MultipartEntityBuilder.create()
-				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-				.addBinaryBody("file", archive, ContentType.APPLICATION_OCTET_STREAM, archive.getName())
-				.addTextBody("filename", archive.getName())
-				.addTextBody("resourcename", "-")
-				.addTextBody("displayname", displayname)
-				.addTextBody("softkey", softKey)
-				.addTextBody("externalId", softKey)
-				.addTextBody("withLinkedReferences", RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY.name())
-				.build();
-		method.setEntity(entity);
-		
-		HttpResponse response = conn.execute(method);
-		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		List<NameValuePair> formParameters = List.of(
+				new NameValuePair("resourcename", "-"),
+				new NameValuePair("displayname", displayname),
+				new NameValuePair("softkey", softKey),
+				new NameValuePair("externalId", softKey),
+				new NameValuePair("withLinkedReferences", RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY.name()));
+		HttpRequest method = conn.createPut(request, archive, archive.getName(), formParameters, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertTrue(response.statusCode() == 200 || response.statusCode() == 201);
 		
 		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		assertNotNull(vo.getDisplayname());
 		assertNotNull(vo.getKey());
-		conn.shutdown();
+		conn.close();
 		return vo;
 	}
 	
 	private List<RepositoryEntryVO> getResourceByExternalId(RestConnection conn, String externalId)
-	throws URISyntaxException, IOException {
+	throws URISyntaxException, IOException, InterruptedException {
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo").path("entries")
 				.queryParam("externalId", externalId).build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		if(response.getStatusLine().getStatusCode() == 200) {
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		if(response.statusCode() == 200) {
 			return conn.parseList(response, RepositoryEntryVO.class);
 		}
 		return new ArrayList<>();
 	}
 	
 	public RepositoryEntryVO deployResource(File archive, String resourcename, String displayname)
-	throws URISyntaxException, IOException {
+	throws URISyntaxException, IOException, InterruptedException {
 		RestConnection conn = new RestConnection(deploymentUrl, username, password);
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo").path("entries").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		String softKey = UUID.randomUUID().toString();
-		HttpEntity entity = MultipartEntityBuilder.create()
-				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-				.addBinaryBody("file", archive, ContentType.APPLICATION_OCTET_STREAM, archive.getName())
-				.addTextBody("filename", archive.getName())
-				.addTextBody("resourcename", resourcename)
-				.addTextBody("displayname", displayname)
-				.addTextBody("access", "3")
-				.addTextBody("softkey", softKey)
-				.build();
-		method.setEntity(entity);
-		
-		HttpResponse response = conn.execute(method);
-		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		List<NameValuePair> formParameters = List.of(
+				new NameValuePair("resourcename", resourcename),
+				new NameValuePair("displayname", displayname),
+				new NameValuePair("access", "3"),
+				new NameValuePair("softkey", softKey));
+		HttpRequest method = conn.createPut(request, archive, archive.getName(), formParameters, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertTrue(response.statusCode() == 200 || response.statusCode() == 201);
 		
 		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		assertNotNull(vo.getDisplayname());
 		assertNotNull(vo.getKey());
-		conn.shutdown();
+		conn.close();
 		return vo;
 	}
 	
 	public CourseVO deployCourse(File archive, String resourcename, String displayname)
-	throws URISyntaxException, IOException {
+	throws URISyntaxException, IOException, InterruptedException {
 		
 		RestConnection conn = new RestConnection(deploymentUrl, username, password);
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/courses").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		String softKey = UUID.randomUUID().toString();
-		HttpEntity entity = MultipartEntityBuilder.create()
-				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-				.addBinaryBody("file", archive, ContentType.APPLICATION_OCTET_STREAM, archive.getName())
-				.addTextBody("filename", archive.getName())
-				.addTextBody("resourcename", resourcename)
-				.addTextBody("displayname", displayname)
-				.addTextBody("access", "3")
-				.addTextBody("softkey", softKey)
-				.build();
-		method.setEntity(entity);
-		
-		HttpResponse response = conn.execute(method);
-		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		List<NameValuePair> formParameters = List.of(
+				new NameValuePair("resourcename", resourcename),
+				new NameValuePair("displayname", displayname),
+				new NameValuePair("access", "3"),
+				new NameValuePair("softkey", softKey));
+		HttpRequest method = conn.createPost(request, archive, archive.getName(), formParameters, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertTrue(response.statusCode() == 200 || response.statusCode() == 201);
 		
 		CourseVO vo = conn.parse(response, CourseVO.class);
 		assertNotNull(vo);
 		assertNotNull(vo.getRepoEntryKey());
 		assertNotNull(vo.getKey());
-		conn.shutdown();
+		conn.close();
 		return vo;
 	}
 }

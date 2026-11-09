@@ -20,17 +20,18 @@
 package org.olat.restapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
@@ -79,7 +80,7 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCreditPointWallets()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		// Make an administrator
 		IdentityWithLogin user1 = JunitTestHelper.createAndPersistRndUser("wallet-1");
 		IdentityWithLogin user2 = JunitTestHelper.createAndPersistRndUser("wallet-2");
@@ -97,9 +98,9 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 				.path("system").path(system.getKey().toString())
 				.path("wallets")
 				.build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.OK.getStatusCode(), response.statusCode());
 		
 		List<CreditPointWalletVO> wallets = conn.parseList(response, CreditPointWalletVO.class);
 		Assert.assertNotNull(wallets);
@@ -108,11 +109,12 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 			.allMatch(w -> BigDecimal.ZERO.compareTo(w.getBalance()) == 0)
 			.map(CreditPointWalletVO::getKey)
 			.containsExactlyInAnyOrder(wallet1.getKey(), wallet2.getKey());
+		conn.close();
 	}
 	
 	@Test
 	public void getCreditPointWalletByIdentity()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-3");
 
 		// Create a credit point system
@@ -130,9 +132,9 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 				.path("system").path(system.getKey().toString())
 				.path("wallets").path(user.getKey().toString())
 				.build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.OK.getStatusCode(), response.statusCode());
 		
 		CreditPointWalletVO walletVo = conn.parse(response, CreditPointWalletVO.class);
 		Assert.assertNotNull(walletVo);
@@ -141,6 +143,7 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(system.getKey(), walletVo.getCreditPointSystemKey());
 		Assert.assertNotNull(walletVo.getBalance());
 		Assert.assertTrue(new BigDecimal("100").compareTo(walletVo.getBalance()) == 0);
+		conn.close();
 	}
 	
 	/**
@@ -149,10 +152,11 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 	 * 
 	 * @throws IOException
 	 * @throws URISyntaxException
+	 * @throws InterruptedException 
 	 */
 	@Test
 	public void getCreditPointWalletForNonUser()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-4");
 
 		// Create a credit point system
@@ -165,9 +169,9 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 				.path("system").path(system.getKey().toString())
 				.path("wallets").path(user.getKey().toString())
 				.build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.OK.getStatusCode(), response.statusCode());
 		
 		CreditPointWalletVO walletVo = conn.parse(response, CreditPointWalletVO.class);
 		Assert.assertNotNull(walletVo);
@@ -176,5 +180,6 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(system.getKey(), walletVo.getCreditPointSystemKey());
 		Assert.assertNotNull(walletVo.getBalance());
 		Assert.assertTrue(BigDecimal.ZERO.compareTo(walletVo.getBalance()) == 0);
+		conn.close();
 	}
 }

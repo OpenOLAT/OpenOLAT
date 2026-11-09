@@ -76,7 +76,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createDeleteBusinessGroup()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -111,7 +111,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void groupMembersVisibility()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
@@ -170,7 +170,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void collaborativeTools()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -273,7 +273,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void createGroupWithWaitingList()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
@@ -374,7 +374,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void confirmMembershipByGroup()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		WebDriver participantBrowser = getWebDriver(2);
 		WebDriver reiBrowser = getWebDriver(3);
@@ -468,7 +468,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void groupChat()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver kanuBrowser = getWebDriver(1);
 		WebDriver ryomouBrowser = getWebDriver(2);
 		
@@ -574,7 +574,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void groupCalendar_addEditEvent()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO coach = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
@@ -625,7 +625,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void groupCalendar_recurringEvent()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		UserVO coach = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
@@ -694,7 +694,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void enrollmentWithWaitingList()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		WebDriver reiBrowser = getWebDriver(2);
 		WebDriver kanuBrowser = getWebDriver(3);
@@ -812,7 +812,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void enrollmentWithMultiEnrollment()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -913,7 +913,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void enrollment()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		WebDriver reiBrowser = getWebDriver(2);
 		WebDriver kanuBrowser = getWebDriver(3);
@@ -1047,7 +1047,7 @@ public class BusinessGroupTest extends Deployments {
 	@Test
 	@RunAsClient
 	public void enrollmentWithUnlimitedBusinessGroups()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		WebDriver reiBrowser = getWebDriver(2);
 		WebDriver kanuBrowser = getWebDriver(3);

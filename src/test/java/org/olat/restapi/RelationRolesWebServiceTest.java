@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,12 +34,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -70,7 +66,7 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getRelationRoles()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		String role = UUID.randomUUID().toString();
 		List<RelationRight> rights = identityRelationshipService.getAvailableRights();
 		RelationRole relationRole = identityRelationshipService.createRole(role, rights);
@@ -80,10 +76,10 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations").path("roles").build();
-		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		List<RelationRoleVO> relationRoleVoes = parseRelationRoleArray(response.getEntity());
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<RelationRoleVO> relationRoleVoes = conn.parseList(response, RelationRoleVO.class);
 		Assert.assertNotNull(relationRoleVoes);
 		Assert.assertFalse(relationRoleVoes.isEmpty());
 		
@@ -95,13 +91,13 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		}
 
 		Assert.assertTrue(found);
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	@Test
 	public void createRelationRole()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		RelationRoleVO vo = new RelationRoleVO();
 		vo.setRole("REST role");
 		vo.setExternalId("REST-RO-1");
@@ -112,11 +108,9 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations").path("roles").build();
-		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-		conn.addJsonEntity(method, vo);
-		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPut(request, vo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		// checked VO
 		RelationRoleVO savedVo = conn.parse(response, RelationRoleVO.class);
@@ -145,13 +139,13 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(roleToRights);
 		Assert.assertEquals(1, roleToRights.size());
 		Assert.assertEquals(CourseRightsEnum.viewCourseCalendar.name(), roleToRights.iterator().next().getRelationRight().getRight());
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	@Test
 	public void updateRelationRole() 
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		String role = UUID.randomUUID().toString();
 		List<RelationRight> rights = identityRelationshipService.getAvailableRights();
 		RelationRole relationRole = identityRelationshipService.createRole(role, rights);
@@ -170,11 +164,9 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations")
 				.path("roles").build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, vo);
-		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpRequest method = conn.createPost(request, vo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
 		
 		// checked VO
 		RelationRoleVO savedVo = conn.parse(response, RelationRoleVO.class);
@@ -203,13 +195,13 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(roleToRights);
 		Assert.assertEquals(1, roleToRights.size());
 		Assert.assertEquals(CourseRightsEnum.viewEfficiencyStatement.name(), roleToRights.iterator().next().getRelationRight().getRight());
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	@Test
 	public void updateRelationRole_withKey() 
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		String role = UUID.randomUUID().toString();
 		List<RelationRight> rights = identityRelationshipService.getAvailableRights();
 		RelationRole relationRole = identityRelationshipService.createRole(role, rights);
@@ -227,11 +219,9 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations")
 				.path("roles").path(relationRole.getKey().toString()).build();
-		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
-		conn.addJsonEntity(method, vo);
-		
-		HttpResponse response = conn.execute(method);
-		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		HttpRequest method = conn.createPost(request, vo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assertions.assertThat(response.statusCode()).isIn(200, 201);
 		
 		// checked VO
 		RelationRoleVO savedVo = conn.parse(response, RelationRoleVO.class);
@@ -260,13 +250,13 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(roleToRights);
 		Assert.assertEquals(1, roleToRights.size());
 		Assert.assertEquals(CourseRightsEnum.viewEfficiencyStatement.name(), roleToRights.iterator().next().getRelationRight().getRight());
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	@Test
 	public void deleteRelationRole()
-	throws IOException, URISyntaxException {
+	throws IOException, URISyntaxException, InterruptedException {
 		String role = UUID.randomUUID().toString();
 		List<RelationRight> rights = identityRelationshipService.getAvailableRights();
 		RelationRole relationRole = identityRelationshipService.createRole(role, rights);
@@ -277,16 +267,16 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations")
 				.path("roles").path(relationRole.getKey().toString()).build();
-		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpRequest method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		
-		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		EntityUtils.consume(response.getEntity());
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		RestConnection.consume(response);
 		
 		RelationRole deletedRole = identityRelationshipService.getRole(relationRole.getKey());
 		Assert.assertNull(deletedRole);
-		
-		conn.shutdown();
+		conn.close();
+
 	}
 	
 	protected List<RelationRoleVO> parseRelationRoleArray(HttpEntity body) {
