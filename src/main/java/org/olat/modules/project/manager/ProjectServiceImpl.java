@@ -2217,15 +2217,6 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		}
 	}
 
-	@Override
-	public void deleteAppointmentSoftly(Identity doer, ProjAppointmentRef appointment) {
-		ProjAppointment reloadedAppointment = getAppointment(appointment, true);
-		if (reloadedAppointment == null) {
-			return;
-		}
-		deleteReloadedAppointmentSoftly(doer, reloadedAppointment);
-	}
-
 	private void deleteReloadedAppointmentSoftly(Identity doer, ProjAppointment reloadedAppointment) {
 		String before = ProjectXStream.toXml(reloadedAppointment);
 		

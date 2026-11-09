@@ -239,9 +239,9 @@ public class ProjAppointmentDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoad_filter_status() {
 		ProjAppointment appointment1 = createRandomAppointment();
-		projectService.deleteAppointmentSoftly(appointment1.getArtefact().getCreator(), appointment1);
+		projectService.deleteAppointmentSoftly(appointment1.getArtefact().getCreator(), new ProjectBCFactory(), appointment1.getIdentifier(), null);
 		ProjAppointment appointment2 = createRandomAppointment();
-		projectService.deleteAppointmentSoftly(appointment2.getArtefact().getCreator(), appointment2);
+		projectService.deleteAppointmentSoftly(appointment2.getArtefact().getCreator(), new ProjectBCFactory(), appointment2.getIdentifier(), null);
 		ProjAppointment appointment3 = createRandomAppointment();
 		
 		ProjAppointmentSearchParams params = new ProjAppointmentSearchParams();

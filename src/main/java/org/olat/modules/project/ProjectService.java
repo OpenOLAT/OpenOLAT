@@ -280,8 +280,6 @@ public interface ProjectService {
 	public void addAppointmentExclusion(Identity doer, ProjectBCFactory bcFactory, String identifier, Date exclusionDate, boolean single);
 
 	public void deleteAppointmentSoftly(Identity doer, ProjectBCFactory bcFactory, String identifier, Date occurenceDate);
-
-	public void deleteAppointmentSoftly(Identity doer, ProjAppointmentRef appointment);
 	
 	public ProjAppointment getAppointment(ProjAppointmentRef appointment);
 

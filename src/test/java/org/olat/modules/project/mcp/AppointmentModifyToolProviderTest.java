@@ -654,7 +654,7 @@ public class AppointmentModifyToolProviderTest extends OlatTestCase {
 		projectService.updateMember(owner, new ProjectBCFactory(), project, client, Set.of(ProjectRole.client), null);
 		ProjAppointment appointment = createAppointment(owner, project, "Kickoff", at(2030, 3, 5, 10), at(2030, 3, 5, 11));
 		ProjAppointment deleted = createAppointment(owner, project, "Deleted", at(2030, 3, 5, 10), at(2030, 3, 5, 11));
-		projectService.deleteAppointmentSoftly(owner, deleted);
+		projectService.deleteAppointmentSoftly(owner, new ProjectBCFactory(), deleted.getIdentifier(), null);
 		dbInstance.commitAndCloseSession();
 
 		try {

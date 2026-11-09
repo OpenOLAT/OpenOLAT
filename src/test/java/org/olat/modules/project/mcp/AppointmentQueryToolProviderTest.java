@@ -235,7 +235,7 @@ public class AppointmentQueryToolProviderTest extends OlatTestCase {
 		ProjAppointment mine = createAppointment(owner, project, "Mine", at(2030, 3, 2, 9), at(2030, 3, 2, 10));
 		ProjAppointment theirs = createAppointment(participant, project, "Theirs", at(2030, 3, 3, 9), at(2030, 3, 3, 10));
 		ProjAppointment deleted = createAppointment(owner, project, "Deleted", at(2030, 3, 4, 9), at(2030, 3, 4, 10));
-		projectService.deleteAppointmentSoftly(owner, deleted);
+		projectService.deleteAppointmentSoftly(owner, new ProjectBCFactory(), deleted.getIdentifier(), null);
 		dbInstance.commitAndCloseSession();
 
 		Map<String,Object> window = Map.of("projectKey", project.getKey(), "from", "2030-03-01", "to", "2030-03-10");
