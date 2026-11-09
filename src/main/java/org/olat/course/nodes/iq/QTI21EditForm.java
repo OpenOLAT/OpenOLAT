@@ -418,6 +418,7 @@ public class QTI21EditForm extends FormBasicController {
 		correctionModeEl.addActionListener(FormEvent.ONCHANGE);
 		correctionModeEl.setHelpText(translate("correction.mode.help"));
 		correctionModeEl.setHelpUrlForManualPage("manual_user/learningresources/Course_Element_Test/Test_Setup/#section_correction");
+		correctionModeEl.setVisible(!selfAssessment);
 
 		boolean selected = false;
 		for(String correctionModeKey:correctionKeyValues.keys()) {
