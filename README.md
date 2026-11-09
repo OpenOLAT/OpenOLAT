@@ -419,20 +419,6 @@ mvn clean test -Dwith-postgresql -Dtest.env.db.postgresql.pass=serial -Dtest=org
 ```
 
 
-**For MySQL**
-
-```bash
-mvn clean test -Dwith-mysql -Ptomcat
-```
-
-The following options are available to configure the database connection:
-
-```bash  
--Dtest.env.db.user=root
--Dtest.env.db.pass=serial
-```
-
-
 **For Oracle**
 
 Setup manually the user and the database schema. Start with a clean setup, drop the user before create a clean new one.

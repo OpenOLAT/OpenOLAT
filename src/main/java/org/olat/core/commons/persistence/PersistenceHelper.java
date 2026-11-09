@@ -22,8 +22,7 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.  
 * <p>
-*/ 
-
+*/
 package org.olat.core.commons.persistence;
 
 import java.io.IOException;
@@ -35,7 +34,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -44,9 +42,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 
 /**
  * Description:<BR>
@@ -59,67 +55,11 @@ import org.olat.core.util.filter.FilterFactory;
 public class PersistenceHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(PersistenceHelper.class);
-	private static boolean charCountNativeUTF8 = true;
+
 	private static final int DEFAULT_CHUNK_SIZE = 16384;
 	
-	/**
-	 * Spring only constructor. Use static methods to access the helper
-	 * @param firstKeyValues init properties from spring
-	 */
-	public PersistenceHelper(Properties firstKeyValues) {
-		// OLAT-6439 Init flag to know if the database understands native UTF-8 
-		// Only necessary for old MySQL database of UZH
-		if (firstKeyValues != null) {
-			String dbvendor = firstKeyValues.getProperty("dbvendor");
-			String dboptions = firstKeyValues.getProperty("mysqloptions");
-			if ("mysql".equals(dbvendor) && dboptions != null && dboptions.contains("characterEncoding=UTF-8") && dboptions.contains("useOldUTF8Behavior=true")) {
-				charCountNativeUTF8 = false; 
-			}		
-		}
-	}
-
-	/**
-	 * Truncate the given original string to the defined max length. The method
-	 * does also check if some legacy UTF-8 conversion is done by the database
-	 * driver and shortens the allowed length to two third to be on the save
-	 * side
-	 * 
-	 * @param original
-	 *            The original String
-	 * @param maxLength
-	 *            The max length allowed by the database schema
-	 * @param showThreeDots
-	 *            Replace the last three characters with ... to indicate that
-	 *            the string has been truncated
-	 * @return The truncated string
-	 */
-	public static String truncateStringDbSave(final String original, int maxLength, final boolean showThreeDots) {
-		if (original == null) {
-			return null;
-		}  
-		if (!charCountNativeUTF8) {
-			// When using legacy UTF-8 conversion we have actually no idea how
-			// long the string can be since this is a hidden information to
-			// MySQL. In that case we subtract 1/3 and cross our fingers
-			maxLength = maxLength - (maxLength/3);
-		}
-		// Check if too long
-		int length = original.length();
-		if (length <= maxLength) {
-			return original;
-		}
-		// 1) Remove all HTML markup first as truncating could lead to invalid HTML code. 
-		String result = FilterFactory.getHtmlTagAndDescapingFilter().filter(original);
-		if (length <= maxLength) {
-			return original;
-		}
-		// 2) Truncate to maxLength
-		if (showThreeDots) {
-			result = Formatter.truncate(result, maxLength);			
-		} else {
-			result = Formatter.truncateOnly(result, maxLength);
-		}
-		return result;
+	private PersistenceHelper() {
+		//
 	}
 	
 	public static boolean appendAnd(StringBuilder sb, boolean where) {
@@ -142,13 +82,8 @@ public class PersistenceHelper {
 	
 	public static final void appendFuzzyLike(Appendable sb, String field, String key, String dbVendor) {
 		try {
-			if(dbVendor.equals("mysql")) {
-				sb.append(" ").append(field).append(" like :").append(key);
-			} else {
-				sb.append(" lower(").append(field).append(") like :").append(key);
-			}
-			// Hibernate disables the default escape of MySQL with escape '', set it explicitly
-			if(dbVendor.equals("oracle") || dbVendor.equals("mysql")) {
+			sb.append(" lower(").append(field).append(") like :").append(key);
+			if(dbVendor.equals("oracle")) {
 				sb.append(" escape '\\'");
 			}
 		} catch (IOException e) {
@@ -158,14 +93,9 @@ public class PersistenceHelper {
 	
 	public static final void appendFuzzyNotLike(Appendable sb, String field, String key, String dbVendor) {
 		try {
-			sb.append("(").append(field).append(" is null or ");
-			if(dbVendor.equals("mysql")) {
-				sb.append(" ").append(field).append(" not like :").append(key);
-			} else {
-				sb.append(" lower(").append(field).append(") not like :").append(key);
-			}
-			// Hibernate disables the default escape of MySQL with escape '', set it explicitly
-			if(dbVendor.equals("oracle") || dbVendor.equals("mysql")) {
+			sb.append("(").append(field).append(" is null or ")
+			  .append(" lower(").append(field).append(") not like :").append(key);
+			if(dbVendor.equals("oracle")) {
 				sb.append(" escape '\\'");
 			}
 			sb.append(")");
@@ -197,7 +127,7 @@ public class PersistenceHelper {
 		}
 		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
 		// To test for literal instances of '_', we have to escape it.
-		if(DBFactory.getInstance().isMySQL() || DBFactory.getInstance().isOracle()) {
+		if(DBFactory.getInstance().isOracle()) {
 			string = string.replace("_", "\\_");
 		}
 		return string.toLowerCase();
@@ -212,7 +142,7 @@ public class PersistenceHelper {
 		string = string + "%";
 		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
 		// To test for literal instances of '_', we have to escape it.
-		if(DBFactory.getInstance().isMySQL() || DBFactory.getInstance().isOracle()) {
+		if(DBFactory.getInstance().isOracle()) {
 			string = string.replace("_", "\\_");
 		}
 		return string.toLowerCase();
@@ -235,8 +165,6 @@ public class PersistenceHelper {
 	public static String getOrderByRandom(DB dbInstance) {
 		if (dbInstance.isPostgreSQL()){
 			return "random()";
-		} else if (dbInstance.isMySQL()){
-			return "rand()";
 		} else if (dbInstance.isOracle()) {
 			return "DBMS_RANDOM.VALUE()";
 		}
@@ -512,19 +440,6 @@ public class PersistenceHelper {
 			return DateUtils.toDate(ld);
 		}
 		return null;
-	}
-	
-	public static final String convert(String content) {
-		if(StringHelper.containsNonWhitespace(content)) {
-			StringBuilder sb = new StringBuilder(content.length() + 100);
-			for(char ch : content.toCharArray()) {
-				if(ch < 55000) {
-					sb.append(ch);
-				}
-			}
-			return sb.toString();
-		}
-		return content;
 	}
 	
 	/*

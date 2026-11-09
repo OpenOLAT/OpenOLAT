@@ -10,40 +10,6 @@
 		<property name="dbVendor" value="${db.vendor}" />
 	</bean>
 
-	<bean id="persistenceHelper" class="org.olat.core.commons.persistence.PersistenceHelper">
-		<constructor-arg>
-			<props>
-				<prop key="dbvendor">${db.vendor}</prop>
-		        <prop key="mysqloptions">${db.url.options.mysql}</prop>
-		    </props>
-		</constructor-arg>
-	</bean>
-	
-	<bean id="mysql_local_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
-		<constructor-arg>
-			<props>
-			     <!-- Using datasource of hibernate -->
-				<prop key="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</prop>
-		        <prop key="hibernate.connection.url">jdbc:mysql://${db.host}:${db.host.port}/${db.name}${db.url.options.mysql}</prop>
-		        <prop key="hibernate.connection.username">${db.user}</prop>
-		        <prop key="hibernate.connection.password">${db.pass}</prop>
-		        <prop key="hibernate.dialect.storage_engine">innodb</prop>
-	        </props>            
-		</constructor-arg>
-		<property name="addMoreProperties" ref="hikariHibernateProperties" />
-	</bean>
-	
-	<bean id="mysql_jndi_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
-		<constructor-arg>
-			<props>
-		     	<!-- Using datasource of hibernate -->
-				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
-		        <prop key="hibernate.dialect.storage_engine">innodb</prop>
-        	</props>            
-		</constructor-arg>
-		<property name="addMoreProperties" ref="hibernateProps" />
-	</bean>
-
 	<bean id="postgresql_local_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
 			<props>
@@ -167,7 +133,7 @@
 		<constructor-arg>
 			<props>
 	            <prop key="hibernate.connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</prop>
-	            <!-- Max pool size , mysql-default value is 100, If you need to support more connections, you should set a larger value for this variable in mysql config -->
+	            <!-- Max pool size , PostgreSQL default value is 100, If you need to support more connections, you should set a larger value for this variable in config -->
 	            <prop key="hibernate.hikari.maximumPoolSize">${db.hibernate.hikari.maxsize}</prop>
 	            <prop key="hibernate.hikari.minimumIdle">4</prop>
 	            <prop key="hibernate.hikari.idleTimeout">1800000</prop>
@@ -182,20 +148,6 @@
 
 	<!-- The following dataresources are referenced from the statisticContext.xml and upgradeContext.xml, but are not used in the SessionFactory!
 		 The SessionFactory's DB Connection is configured with the bean "${db.vendor}HibernateProperties".-->
-
-	<!-- The mysql datasource checks upon startup whether the tables are of type InnoDB, if not it will not start. If you have an other type of transactional tables just switch back the spring config
-	to the normal  org.springframework.jdbc.datasource.DriverManagerDataSource and the check is gone.-->                  
-	<bean id="mysql_local_DataSource" class="org.olat.core.commons.persistence.InnoDBAwareDriverManagerDataSource" lazy-init="true" init-method="init">
-		<property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
-		<property name="url"><value>jdbc:mysql://${db.host}:${db.host.port}/${db.name}${db.url.options.mysql}</value></property>
-		<property name="username" value="${db.user}" />
-		<property name="password" value="${db.pass}" />
-		<property name="dbVendor" value="${db.vendor}" />
-	</bean>
-	
-	<bean id="mysql_jndi_DataSource" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-		<property name="jndiName" value="${db.jndi}"/>
-	</bean>
 
 	<bean id="postgresql_local_DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" lazy-init="true">
 		<property name="driverClassName"><value>org.postgresql.Driver</value></property>

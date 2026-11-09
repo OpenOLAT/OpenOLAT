@@ -401,7 +401,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 </tr>
 </tbody>
 </table>
-<p>A dimension change drops and re-creates the column only in a full reindex (<code>allowRebuild=true</code>). The setup scripts do not create <code>t_vector</code>. MySQL and Oracle always use the in-memory search.</p>
+<p>A dimension change drops and re-creates the column only in a full reindex (<code>allowRebuild=true</code>). The setup scripts do not create <code>t_vector</code>. Oracle always uses the in-memory search.</p>
 <p>Unique index <code>idx_tax_emb_unique</code> on <code>(fk_level, t_locale, t_model_id, t_text_variant)</code>.</p>
 <hr />
 <h2 id="embedding-providers">4. Embedding Providers</h2>

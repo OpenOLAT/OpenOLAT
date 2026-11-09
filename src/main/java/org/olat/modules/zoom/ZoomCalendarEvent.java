@@ -19,9 +19,9 @@
  */
 package org.olat.modules.zoom;
 
-import com.mysql.cj.util.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -77,7 +77,7 @@ public class ZoomCalendarEvent {
         if (meetingIdMatcher.find()) {
             meetingId = meetingIdMatcher.group(1);
         }
-        if (StringUtils.isEmptyOrWhitespaceOnly(meetingId)) {
+        if (!StringHelper.containsNonWhitespace(meetingId)) {
             log.warn("Cannot extract Meeting ID from Zoom description");
         }
         printDebugOutput();

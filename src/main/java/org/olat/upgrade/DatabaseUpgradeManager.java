@@ -121,9 +121,8 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	
 	private void runSetupDbStatements() {
 		Dialect dialect;
-		//only run upgrades on mysql or postgresql
-		if (getDbVendor().contains("mysql")) dialect = Dialect.mysql;
-		else if (getDbVendor().contains("postgresql")) dialect = Dialect.postgresql;
+		//only run upgrades on postgresql
+		if (getDbVendor().contains("postgresql")) dialect = Dialect.postgresql;
 		else return;
 
 		try(Connection connection=getDataSource().getConnection();
@@ -151,9 +150,8 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 
 	private void runAlterDbStatements() {
 		Dialect dialect;
-		//only run upgrades on mysql or postgresql
-		if (getDbVendor().contains("mysql")) dialect = Dialect.mysql;
-		else if (getDbVendor().contains("postgresql")) dialect = Dialect.postgresql;
+		//only run upgrades on postgresql
+		if (getDbVendor().contains("postgresql")) dialect = Dialect.postgresql;
 		else return;
 
 		try(Connection connection=getDataSource().getConnection();
@@ -259,17 +257,10 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	}
 	
 	private boolean isErrorFatal(Dialect dialect, String sql, SQLException e) {
-		if(dialect == Dialect.mysql) {
-			return isMysqlErrorFatal(sql, e);
-		} else if(dialect == Dialect.postgresql) {
+		if(dialect == Dialect.postgresql) {
 			return isPostgresqlErrorFatal(sql, e);
 		}
 		return false;	
-	}
-	
-	private boolean isMysqlErrorFatal(String sql, SQLException e) {
-		log.error("Error while trying to upgrade the database with:("+sql+"). We will continue with upgrading but check the errors manually! Error says:", e);
-		return false;
 	}
 	
 	private boolean isPostgresqlErrorFatal(String sql, SQLException e) {
@@ -332,7 +323,6 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	}
 	
 	private enum Dialect {
-		mysql,
 		postgresql
 	}
 }

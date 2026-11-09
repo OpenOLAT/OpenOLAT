@@ -64,7 +64,7 @@ public class StatisticResult implements TableDataModel {
 	private Map<CourseNode,Map<String,Integer>> statistic_ = new HashMap<>();
 	
 	/**
-	 * mysql> select businesspath,day,value from o_stat_dayofweek where businesspath like '[RepositoryEntry:393216]%';
+	 * psql> select businesspath,day,value from o_stat_dayofweek where businesspath like '[RepositoryEntry:393216]%';
 +-----------------------------------------------------+-----+-------+
 | businesspath                                        | day | value |
 +-----------------------------------------------------+-----+-------+

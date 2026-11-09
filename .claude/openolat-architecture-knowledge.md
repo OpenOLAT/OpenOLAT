@@ -242,7 +242,7 @@ Serializable path like `[RepositoryEntry:123][CourseNode:456]` for bookmarks, de
 
 Two-phase migration system for version upgrades:
 
-1. **Database schema upgrades:** `DatabaseUpgradeManager` runs SQL ALTER scripts from `src/main/resources/database/{mysql,postgresql,oracle}/alter_*.sql` (e.g. `alter_21_0_x_to_21_1_0.sql`, registered as `DatabaseUpgrade` in `databaseUpgradeContext.xml`) early during Spring init, before modules start.
+1. **Database schema upgrades:** `DatabaseUpgradeManager` runs SQL ALTER scripts from `src/main/resources/database/{postgresql,oracle}/alter_*.sql` (e.g. `alter_21_0_x_to_21_1_0.sql`, registered as `DatabaseUpgrade` in `databaseUpgradeContext.xml`) early during Spring init, before modules start.
 2. **Post-system-init upgrades** — `UpgradeManager` listens for `FrameworkStartedEvent`, then runs data migrations in a background thread via `TaskExecutorManager`. Can `@Autowired` any service.
 
 Key classes: `OLATUpgrade` (base class), `UpgradeHistoryData` (persistent state), `UpgradesDefinitions` (ordered list in Spring XML). Registration in `org/olat/upgrade/_spring/upgradeContext.xml`. Naming: `OLATUpgrade_XX_Y_Z`, version constant `OLAT_XX.Y.Z`. Old table layouts: upgrade-private entities in `org.olat.upgrade.model`, registered in `persistence.xml`.

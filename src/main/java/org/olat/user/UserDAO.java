@@ -45,13 +45,9 @@ public class UserDAO {
 		StringBuilder query = new StringBuilder(255)
 				.append("select identity from ").append(IdentityImpl.class.getName()).append(" identity")
 				.append(" inner join fetch identity.user user")
-				.append(" where");
-		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
-		if(mysql) {
-			query.append(" user.").append(UserConstants.EMAIL).append("=:email or user.").append(UserConstants.INSTITUTIONALEMAIL).append("=:email");
-		} else {
-			query.append(" lower(user.").append(UserConstants.EMAIL).append(")=:email or lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(")=:email");
-		}
+				.append(" where")
+				.append(" lower(user.").append(UserConstants.EMAIL).append(")=:email or lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(")=:email");
+
 		try {
 			return dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Identity.class)
@@ -67,14 +63,8 @@ public class UserDAO {
 		
 		StringBuilder query = new StringBuilder(255)
 				.append("select count(*) from ").append(UserImpl.class.getName()).append(" user")
-				.append(" where");
-		
-		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
-		if(mysql) {
-			query.append(" user.").append(UserConstants.EMAIL).append("=:email or user.").append(UserConstants.INSTITUTIONALEMAIL).append("=:email");
-		} else {
-			query.append(" lower(user.").append(UserConstants.EMAIL).append(")=:email or lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(")=:email");
-		}
+				.append(" where")
+				.append(" lower(user.").append(UserConstants.EMAIL).append(")=:email or lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(")=:email");
 		
 		Long numberOfUsers = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Long.class)

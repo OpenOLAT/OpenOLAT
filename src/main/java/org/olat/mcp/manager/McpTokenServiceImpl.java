@@ -181,7 +181,7 @@ public class McpTokenServiceImpl implements McpTokenService {
 
 	/**
 	 * The unique constraint on (provider, issuer, authusername) is case
-	 * insensitive on MySQL, the check is case insensitive everywhere.
+	 * insensitive, the check is case insensitive everywhere.
 	 */
 	private boolean tokenIdExists(String tokenId) {
 		return !authenticationDao.getAuthenticationsByAuthusername(tokenId, MCP_AUTH_PROVIDER).isEmpty();

@@ -594,11 +594,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	}
 	
 	private void appendUserLike(QueryBuilder sb, String key, String valueKey) {
-		if(dbInstance.isMySQL()) {
-			sb.append(" user.").append(key).append(" like :").append(key).append("_value");
-		} else {
-			sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value");
-		}
+		sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value");
 		if(valueKey != null) {
 			sb.append("_").append(valueKey);
 		}
@@ -877,7 +873,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		}
 		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
 		// To test for literal instances of '_', we have to escape it.
-		if(dbInstance.isMySQL() || dbInstance.isOracle()) {
+		if(dbInstance.isOracle()) {
 			string = string.replace("_", "\\_");
 		}
 		return string;

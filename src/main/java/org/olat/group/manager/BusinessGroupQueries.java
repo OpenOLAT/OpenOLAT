@@ -897,26 +897,18 @@ public class BusinessGroupQueries {
 	}
 	
 	private QueryBuilder searchLikeOwnerUserProperty(QueryBuilder sb, String key, String parameter) {
-		if(dbInstance.getDbVendor().equals("mysql")) {
-			sb.append(" ownerUser.").append(key).append(" like :").append(parameter);
-		} else {
-			sb.append(" lower(ownerUser.").append(key).append(") like :").append(parameter);
-			if(dbInstance.getDbVendor().equals("oracle")) {
-	 	 		sb.append(" escape '\\'");
-	 	 	}
-		}
+		sb.append(" lower(ownerUser.").append(key).append(") like :").append(parameter);
+		if(dbInstance.getDbVendor().equals("oracle")) {
+ 	 		sb.append(" escape '\\'");
+ 	 	}
 		return sb;
 	}
 	
 	private QueryBuilder searchLikeAttribute(QueryBuilder sb, String objName, String attribute, String parameter) {
-		if(dbInstance.getDbVendor().equals("mysql")) {
-			sb.append(" ").append(objName).append(".").append(attribute).append(" like :").append(parameter);
-		} else {
-			sb.append(" lower(").append(objName).append(".").append(attribute).append(") like :").append(parameter);
-			if(dbInstance.getDbVendor().equals("oracle")) {
-	 	 		sb.append(" escape '\\'");
-	 	 	}
-		}
+		sb.append(" lower(").append(objName).append(".").append(attribute).append(") like :").append(parameter);
+		if(dbInstance.getDbVendor().equals("oracle")) {
+ 	 		sb.append(" escape '\\'");
+ 	 	}
 		return sb;
 	}
 	

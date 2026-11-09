@@ -282,15 +282,9 @@ public class RepositoryEntryQueries {
 		boolean offerValidAtUsed = false;
 		boolean offerOrganisationsUsed = false;
 		
-		if(dbInstance.isMySQL()) {
-			sb.append(" where (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("    and ");
-		} else {
-			sb.append(" where (exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("    and ");
-		}
+		sb.append(" where (exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
+		  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+		  .append("    and ");
 
 		if(onlyExplicitMember) {
 			sb.append("(")

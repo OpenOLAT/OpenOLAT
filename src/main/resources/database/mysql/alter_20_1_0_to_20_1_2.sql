@@ -1,1 +1,0 @@
-alter table o_re_to_group add column r_defelement boolean default false not null;

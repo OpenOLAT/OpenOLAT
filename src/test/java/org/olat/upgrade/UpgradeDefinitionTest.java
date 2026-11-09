@@ -49,11 +49,6 @@ public class UpgradeDefinitionTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testFileResourceFromClasspathMySQL() {
-		testFileResourceFromClasspath("mysql");
-	}
-	
-	@Test
 	public void testFileResourceFromClasspathOracle() {
 		testFileResourceFromClasspath("oracle");
 	}

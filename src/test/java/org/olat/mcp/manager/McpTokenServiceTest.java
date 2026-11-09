@@ -415,7 +415,6 @@ public class McpTokenServiceTest extends OlatTestCase {
 		Assert.assertEquals(creation.token().key(), token.key());
 		Assert.assertEquals("Load me", token.label());
 		Assert.assertEquals(id, token.identity());
-		// MySQL doesn't save milliseconds
 		Assert.assertTrue(Math.abs(creation.token().expirationDate().getTime() - token.expirationDate().getTime()) <= 1500);
 
 		Assert.assertNull(tokenService.getToken("t_unknown"));

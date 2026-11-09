@@ -360,7 +360,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <li><strong>Templating</strong>: Apache Velocity (server-side rendering)</li>
 <li><strong>Frontend</strong>: Server-rendered HTML + custom AJAX partial update protocol</li>
 <li><strong>CSS</strong>: SASS-based theming with Bootstrap integration</li>
-<li><strong>Databases</strong>: MySQL, PostgreSQL, Oracle</li>
+<li><strong>Databases</strong>: PostgreSQL, Oracle</li>
 <li><strong>AI</strong>: LangChain4j (chat and embedding models, see <a href="#spring">section 19</a>)</li>
 </ul>
 
@@ -379,7 +379,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 <tr><td>LangChain4j</td><td>1.20.0</td><td><code>dev.langchain4j</code></td></tr>
 <tr><td>Log4j2 / SLF4J</td><td>2.26.1 / 2.0.20</td><td><code>apache.log4j</code> / <code>org.slf4j</code></td></tr>
 <tr><td>Velocity / Quartz / XStream</td><td>2.4.1 / 2.5.2 / 1.4.21</td><td>inline versions</td></tr>
-<tr><td>PostgreSQL / MySQL JDBC</td><td>42.7.13 / 26.7.0</td><td><code>org.postgresql.version</code> / <code>com.mysql.version</code></td></tr>
+<tr><td>PostgreSQL</td><td>42.7.13</td><td><code>org.postgresql.version</code></td></tr>
 </tbody>
 </table>
 
@@ -2509,7 +2509,7 @@ calloutCtrl = <span class="kw">new</span> CloseableCalloutWindowController(ureq,
 }</code></pre>
 
 <h3>Entity Mapping</h3>
-<p>All entities use JPA annotations and are registered in <code>src/main/resources/META-INF/persistence.xml</code> (443 <code>&lt;class&gt;</code> entries on 21.1.0). Infrastructure: HikariCP connection pooling (<code>hibernate-hikaricp</code>), Infinispan L2 cache, MySQL/PostgreSQL/Oracle support.</p>
+<p>All entities use JPA annotations and are registered in <code>src/main/resources/META-INF/persistence.xml</code> (443 <code>&lt;class&gt;</code> entries on 21.1.0). Infrastructure: HikariCP connection pooling (<code>hibernate-hikaricp</code>), Infinispan L2 cache, PostgreSQL/Oracle support.</p>
 
 <p><code>PersistenceHelper</code> has static helpers for JPQL results and query building.</p>
 
@@ -3086,7 +3086,7 @@ taskExecutorManager.execute(<span class="kw">new</span> MyExportTask(export.getK
 <p>The upgrade system operates in two distinct phases:</p>
 
 <ol>
-<li><strong>Database schema upgrades:</strong> Executed early during Spring context initialization by the <code>DatabaseUpgradeManager</code>. These run SQL ALTER scripts (located in <code>src/main/resources/database/mysql/</code>, <code>.../postgresql/</code> and <code>.../oracle/</code>, for example <code>alter_21_0_x_to_21_1_0.sql</code>) to bring the database schema up to date. This happens <em>before</em> most services and modules are initialized, ensuring the schema is ready for application code.</li>
+<li><strong>Database schema upgrades:</strong> Executed early during Spring context initialization by the <code>DatabaseUpgradeManager</code>. These run SQL ALTER scripts (located in <code>src/main/resources/database/postgresql/</code> and <code>.../oracle/</code>, for example <code>alter_21_0_x_to_21_1_0.sql</code>) to bring the database schema up to date. This happens <em>before</em> most services and modules are initialized, ensuring the schema is ready for application code.</li>
 <li><strong>Post-system-init upgrades</strong> &mdash; Executed after the entire application (all Spring beans, modules, and services) has fully initialized. The <code>UpgradeManager</code> listens for the <code>FrameworkStartedEvent</code> and then runs data migration logic in a background thread via <code>TaskExecutorManager</code>. These upgrades can use any service or manager through <code>@Autowired</code> injection.</li>
 </ol>
 
@@ -3197,7 +3197,7 @@ taskExecutorManager.execute(<span class="kw">new</span> MyExportTask(export.getK
 <li><strong>Service injection</strong> &mdash; Upgrades are Spring beans and can <code>@Autowired</code> any service.</li>
 <li><strong>Batch processing</strong> &mdash; Large data migrations should process in batches with <code>intermediateCommit()</code>.</li>
 <li><strong>Version constant</strong> &mdash; Format is <code>OLAT_XX.Y.Z</code> (e.g., <code>OLAT_20.3.0</code>).</li>
-<li><strong>Schema script per dialect:</strong> Add the same change to the MySQL, PostgreSQL and Oracle script. Register a <code>DatabaseUpgrade</code> bean with <code>alterDbStatements</code> in <code>databaseUpgradeContext.xml</code>.</li>
+<li><strong>Schema script per dialect:</strong> Add the same change to the PostgreSQL and Oracle script. Register a <code>DatabaseUpgrade</code> bean with <code>alterDbStatements</code> in <code>databaseUpgradeContext.xml</code>.</li>
 <li><strong>Upgrade-private entities:</strong> An upgrade that needs an old table layout maps it with its own entity in <code>org.olat.upgrade.model</code> (for example <code>UpgradeOrganisationUnitMembershipImpl</code>). Register the class in <code>persistence.xml</code>.</li>
 </ul>
 

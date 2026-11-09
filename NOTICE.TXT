@@ -188,10 +188,6 @@ This product uses software in the public domain
 * XML Pull (Public Domain) [http://www.xmlpull.org]
 
 -----------------------------------------------------------------------
-This product uses software based on the General Public License (GPL)
-* Connector/J	(GNU General Public License, Version 2) [http://www.mysql.com/downloads/connector/j/]
-
------------------------------------------------------------------------
 This product uses software based on the CDDL
 * jsr311-api (CDDL License) [http://jsr311.java.net]
 * jaxws (CDDL) [https://jax-ws.java.net]

@@ -1461,11 +1461,7 @@ public class RepositoryManager {
 		if (StringHelper.containsNonWhitespace(displayName)) {
 			displayName = displayName.replace('*','%');
 			displayName = '%' + displayName + '%';
-			if(dbInstance.isMySQL()) {
-				sb.append(" and v.displayname like :displayname");
-			} else {
-				sb.append(" and lower(v.displayname) like :displayname");
-			}
+			sb.append(" and lower(v.displayname) like :displayname");
 		}
 		// restrict on resource description
 		if (StringHelper.containsNonWhitespace(desc)) {
@@ -2128,15 +2124,10 @@ public class RepositoryManager {
 	public List<RepositoryEntry> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry as v")
-		  .append(" inner join fetch v.olatResource as res");
-		if(dbInstance.isMySQL()) {
-			sb.append(" where v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("   where rel.group.key=membership.group.key and membership.identity.key=:identityKey");
-		} else {
-			sb.append(" where exists (select rel from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("   where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey");
-		}
-		sb.append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" inner join fetch v.olatResource as res")
+		  .append(" where exists (select rel from repoentrytogroup as rel, bgroupmember as membership")
+		  .append("   where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+		  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" )")
 		  .append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 		

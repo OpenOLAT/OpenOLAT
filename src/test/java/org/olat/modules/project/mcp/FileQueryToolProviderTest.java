@@ -166,7 +166,7 @@ public class FileQueryToolProviderTest extends OlatTestCase {
 		projectService.updateFile(owner, first, null, "First title", "First description");
 		dbInstance.commit();
 		
-		// MySQL doesn't save milliseconds, we need a bigger time difference to make the order works
+		// Prevent flaky test on fast CI
 		dbInstance.getCurrentEntityManager()
 	        .createQuery("update projartefact set contentModifiedDate=:date where key=:key")
 	        .setParameter("date", DateUtils.addMinutes(new Date(), -1))

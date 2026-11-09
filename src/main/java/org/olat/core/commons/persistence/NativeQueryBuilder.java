@@ -22,7 +22,7 @@ package org.olat.core.commons.persistence;
 import java.util.Set;
 
 /**
- * Provide some help to build native SQL queries for Oracle, MySQL and PostreSQL.
+ * Provide some help to build native SQL queries for Oracle and PostreSQL.
  * 
  * Initial date: 02.02.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -81,7 +81,7 @@ public class NativeQueryBuilder {
 	}
 	
 	/**
-	 * Append true as boolean for PostgreSQL, 1 for Oracle and MySQL.
+	 * Append true as boolean for PostgreSQL, 1 for Oracle.
 	 * @return
 	 */
 	public NativeQueryBuilder appendTrue() {
@@ -94,7 +94,7 @@ public class NativeQueryBuilder {
 	}
 	
 	/**
-	 * Append false as boolean for PostgreSQL, 0 for Oracle and MySQL.
+	 * Append false as boolean for PostgreSQL, 0 for Oracle.
 	 * @return
 	 */
 	public NativeQueryBuilder appendFalse() {
@@ -107,7 +107,7 @@ public class NativeQueryBuilder {
 	}
 	
 	/**
-	 * Append an "as" for MySQL and PostgreSQL but not Oracle.
+	 * Append an "as" for PostgreSQL but not Oracle.
 	 * @return
 	 */
 	public NativeQueryBuilder appendAs() {
@@ -120,9 +120,7 @@ public class NativeQueryBuilder {
 	}
 	
 	public NativeQueryBuilder appendToArray(String var) {
-		if(dbInstance.isMySQL()) {
-			sb.append(" group_concat(").append(var).append(")");
-		} else if(dbInstance.isPostgreSQL()) {
+		if(dbInstance.isPostgreSQL()) {
 			sb.append(" array_to_string(array_agg(").append(var).append("),',')");
 		} else if(dbInstance.isOracle()) {
 			sb.append(" listagg(").append(var).append(",',') within group (order by ").append(var).append(") ");

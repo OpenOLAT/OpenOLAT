@@ -1652,8 +1652,6 @@ public class CoachingDAO {
 			if (login.contains("_") && dbInstance.isOracle()) {
 				//oracle needs special ESCAPE sequence to search for escaped strings
 				sb.append(" lower(id_participant.name) like :login ESCAPE '\\'");
-			} else if (dbInstance.isMySQL()) {
-				sb.append(" id_participant.name like :login");
 			} else {
 				sb.append(" lower(id_participant.name) like :login");
 			}
@@ -1661,8 +1659,6 @@ public class CoachingDAO {
 			if (login.contains("_") && dbInstance.isOracle()) {
 				//oracle needs special ESCAPE sequence to search for escaped strings
 				sb.append(" lower(user_participant.u_nickname) like :login ESCAPE '\\'");
-			} else if (dbInstance.isMySQL()) {
-				sb.append(" user_participant.u_nickname like :login");
 			} else {
 				sb.append(" lower(user_participant.u_nickname) like :login");
 			}
@@ -1729,14 +1725,10 @@ public class CoachingDAO {
 	private void appendUsersStatisticsSearchParams(UserPropertyHandler handler, String qName, String propValue, String operand,
 			Map<String,Object> queryParams, NativeQueryBuilder sb) {
 		
-		sb.append(" ").append(operand).append(" ");
-		if(dbInstance.isMySQL()) {
-			sb.append("user_participant.").append(handler.getDatabaseColumnName()).append(" like :").append(qName);
-		} else {
-			sb.append("lower(user_participant.").append(handler.getDatabaseColumnName()).append(") like :").append(qName);
-			if(dbInstance.isOracle()) {
-				sb.append(" escape '\\'");
-			}
+		sb.append(" ").append(operand).append(" ")
+		  .append("lower(user_participant.").append(handler.getDatabaseColumnName()).append(") like :").append(qName);
+		if(dbInstance.isOracle()) {
+			sb.append(" escape '\\'");
 		}
 		queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
 	}

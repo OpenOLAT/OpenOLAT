@@ -118,7 +118,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 						CertificationProgramMailType.certificate_issued, CertificationProgramLogAction.issue_certificate, doer);
 				certificationProgramLogDao.createLog(certificate, certificationProgram, CertificationProgramLogAction.add_membership,
 						null, null, "certified", null, null, null, doer);
-				dbInstance.commit();// Prevent deadlock with MySQL
+				dbInstance.commit();
 				accepted = true;
 				
 				if(requestMode != RequestMode.AUTOMATIC) {
@@ -187,7 +187,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			certificationProgramLogDao.createLog(newCertificate, certificationProgram, action,
 					beforeStatus, null, "certified", null, null, null, doer);
 		}
-		dbInstance.commit();// Prevent deadlock with MySQL
+		dbInstance.commit();
 		
 		if(requestMode != RequestMode.AUTOMATIC) {
 			certificatesManager.triggerGenerationJob();
@@ -312,7 +312,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_ISSUED, requestMode, actor);
 		certificationProgramLogDao.createLog(certificate, certificationProgram, logAction,
 				null, null, CertificationStatus.VALID.name(), null, null, null, actor);
-		dbInstance.commit();// Prevent deadlock with MySQL
+		dbInstance.commit();
 		
 		return certificate;
 	}

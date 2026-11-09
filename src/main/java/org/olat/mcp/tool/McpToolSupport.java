@@ -173,8 +173,7 @@ public final class McpToolSupport {
 	 * The TagService does not match case-insensitively:
 	 * TagService.getOrCreateTags looks the display names up with an exact
 	 * <code>in</code> query, so on PostgreSQL "urgent" creates a new tag next
-	 * to "Urgent", and on MySQL the case-insensitive collation returns
-	 * "Urgent" twice. The caller must therefore map the result to the tags
+	 * to "Urgent". The caller must therefore map the result to the tags
 	 * of the context with {@link #matchTags(List, Collection)} before it
 	 * writes, as the UI does (TagSelectionController.isTagExists).
 	 *

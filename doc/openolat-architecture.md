@@ -20,7 +20,7 @@ This design has significant implications. Every user interaction — a button cl
 - **Templating**: Apache Velocity (server-side rendering)
 - **Frontend**: Server-rendered HTML + custom AJAX partial update protocol
 - **CSS**: SASS-based theming with Bootstrap integration
-- **Databases**: MySQL, PostgreSQL, Oracle
+- **Databases**: PostgreSQL, Oracle
 - **AI**: LangChain4j (chat and embedding models, see section 19)
 
 Key library versions on the 21.1.0 code line (from `pom.xml` properties):
@@ -37,7 +37,7 @@ Key library versions on the 21.1.0 code line (from `pom.xml` properties):
 | LangChain4j | 1.20.0 | `dev.langchain4j` |
 | Log4j2 / SLF4J | 2.26.1 / 2.0.20 | `apache.log4j` / `org.slf4j` |
 | Velocity / Quartz / XStream | 2.4.1 / 2.5.2 / 1.4.21 | inline versions |
-| PostgreSQL / MySQL JDBC | 42.7.13 / 26.7.0 | `org.postgresql.version` / `com.mysql.version` |
+| PostgreSQL | 42.7.13 | `org.postgresql.version` |
 
 These versions come from the regular dependency updates (OO-9367, OO-9656). The 21.0 branch carries the same versions. The Maxima CAS integration and the Nashorn engine are removed (OO-9587, OO-9637).
 
@@ -1360,7 +1360,7 @@ public void save(MyEntity entity) {
 
 ### Entity Mapping
 
-All entities use JPA annotations and are registered in `src/main/resources/META-INF/persistence.xml` (443 `<class>` entries on 21.1.0). Infrastructure: HikariCP connection pooling (`hibernate-hikaricp`), Infinispan L2 cache, MySQL/PostgreSQL/Oracle support.
+All entities use JPA annotations and are registered in `src/main/resources/META-INF/persistence.xml` (443 `<class>` entries on 21.1.0). Infrastructure: HikariCP connection pooling (`hibernate-hikaricp`), Infinispan L2 cache, PostgreSQL/Oracle support.
 
 `PersistenceHelper` has static helpers for JPQL results and query building.
 
@@ -1774,7 +1774,7 @@ OpenOlat includes a built-in migration framework in the `org.olat.upgrade` packa
 
 The upgrade system operates in two distinct phases:
 
-1. **Database schema upgrades:** Executed early during Spring context initialization by the `DatabaseUpgradeManager`. These run SQL ALTER scripts (located in `src/main/resources/database/mysql/`, `.../postgresql/` and `.../oracle/`, for example `alter_21_0_x_to_21_1_0.sql`) to bring the database schema up to date. This happens *before* most services and modules are initialized, ensuring the schema is ready for application code.
+1. **Database schema upgrades:** Executed early during Spring context initialization by the `DatabaseUpgradeManager`. These run SQL ALTER scripts (located in `src/main/resources/database/postgresql/` and `.../oracle/`, for example `alter_21_0_x_to_21_1_0.sql`) to bring the database schema up to date. This happens *before* most services and modules are initialized, ensuring the schema is ready for application code.
 
 2. **Post-system-init upgrades** — Executed after the entire application (all Spring beans, modules, and services) has fully initialized. The `UpgradeManager` listens for the `FrameworkStartedEvent` and then runs data migration logic in a background thread via `TaskExecutorManager`. These upgrades can use any service or manager through `@Autowired` injection.
 
@@ -1885,7 +1885,7 @@ Key patterns:
 - **Service injection** — Upgrades are Spring beans and can `@Autowired` any service.
 - **Batch processing** — Large data migrations should process in batches with `intermediateCommit()`.
 - **Version constant** — Format is `OLAT_XX.Y.Z` (e.g., `OLAT_20.3.0`).
-- **Schema script per dialect:** Add the same change to the MySQL, PostgreSQL and Oracle script. Register a `DatabaseUpgrade` bean with `alterDbStatements` in `databaseUpgradeContext.xml`.
+- **Schema script per dialect:** Add the same change to the PostgreSQL and Oracle script. Register a `DatabaseUpgrade` bean with `alterDbStatements` in `databaseUpgradeContext.xml`.
 - **Upgrade-private entities:** An upgrade that needs an old table layout maps it with its own entity in `org.olat.upgrade.model` (for example `UpgradeOrganisationUnitMembershipImpl`). Register the class in `persistence.xml`.
 
 **New in 21.1.0:** `OLATUpgrade_21_1_0` shows how to introduce a secure default without a change of behaviour for existing instances. A new instance gets `http.ssrf.protection.enabled=true`. The upgrade switches the protection off on an existing instance, unless the key is set in `olat.local.properties` or as a system property (`isExplicitlyConfigured()`). The same upgrade adds the new user property `customerNumber` to the usage contexts of instances with a customized user property configuration.

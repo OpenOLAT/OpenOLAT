@@ -25,7 +25,6 @@
 */
 package org.olat.instantMessaging.ui;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,7 +37,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.instantMessaging.ui.event.StartMeetingEvent;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,9 +53,6 @@ public class SendMessageForm extends FormBasicController {
 	private FormLink submit;
 	private final String panelId;
 	private final ChatViewConfig chatViewConfig;
-	
-	@Autowired
-	private DB dbInstance;
 
 	public SendMessageForm(UserRequest ureq, WindowControl wControl, ChatViewConfig chatViewConfig, String panelId) {
 		super(ureq, wControl, "sendMessageForm");
@@ -138,11 +133,7 @@ public class SendMessageForm extends FormBasicController {
 	}
 	
 	public void setErrorTextField() {
-		if(dbInstance.isMySQL()) {
-			msg.setErrorKey("error.message.mysql");
-		} else {
-			msg.setErrorKey("error.message");
-		}
+		msg.setErrorKey("error.message");
 	}
 	
 	public void resetTextField() {

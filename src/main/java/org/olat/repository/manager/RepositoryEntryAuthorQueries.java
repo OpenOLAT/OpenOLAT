@@ -496,15 +496,10 @@ public class RepositoryEntryAuthorQueries {
 			sb.in(statusOrDefault(params, RepositoryEntryStatusEnum.preparationToClosed()));
 			sb.append(") or ");
 		}
-		
-		if(dbInstance.isMySQL()) {
-			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("   where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
-		} else {
-			sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("   where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
-		}
-		
+
+		sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+		  .append("   where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+
 		Roles roles = params.getRoles();
 		if(roles == null) {
 			sb.append(" and membership.role ").in( GroupRoles.owner)
@@ -601,16 +596,12 @@ public class RepositoryEntryAuthorQueries {
 		}
 
 		if (params.isOwned()) {
-			if (dbInstance.isMySQL()) {
-				sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-						.append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
-			} else {
-				sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-						.append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
-			}
-			sb.append(" and membership.role='").append(GroupRoles.owner.name()).append("')");
-
-			sb.append(" and v.status");
+			
+			sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
+			  .append(" and membership.role='").append(GroupRoles.owner.name()).append("')")
+			  .append(" and v.status");
+			
 			if (params.getStatus() != null) {
 				sb.in(params.getStatus());
 			} else {
@@ -623,15 +614,9 @@ public class RepositoryEntryAuthorQueries {
 		}
 
 		if (params.isShared()) {
-			if(dbInstance.isMySQL()) {
-				sb.append(" v.key not in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-						.append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
-			} else {
-				sb.append(" not exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-						.append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
-			}
-
-			sb.append(" and membership.role='").append(GroupRoles.owner.name()).append("')");
+			sb.append(" not exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
+			  .append(" and membership.role='").append(GroupRoles.owner.name()).append("')");
 					
 			if (params.isSharedOrganisationsDefined()) {
 				sb.append(" and exists (select reToOrg.key from repoentrytoorganisation as reToOrg")

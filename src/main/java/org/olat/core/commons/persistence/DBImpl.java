@@ -96,11 +96,6 @@ public class DBImpl implements DB, Destroyable {
 	}
 
 	@Override
-	public boolean isMySQL() {
-		return "mysql".equals(dbVendor);
-	}
-
-	@Override
 	public boolean isPostgreSQL() {
 		return "postgresql".equals(dbVendor);
 	}
@@ -573,7 +568,7 @@ public class DBImpl implements DB, Destroyable {
 	@Override
 	public void destroy() {
 		//clean up registered drivers to prevent messages like
-		// The web application [/olat] registered the JBDC driver [com.mysql.Driver] but failed to unregister...
+		// The web application [/olat] registered the JBDC driver but failed to unregister...
 		Enumeration<Driver> registeredDrivers = DriverManager.getDrivers();
 		while(registeredDrivers.hasMoreElements()) {
 			try {

@@ -299,7 +299,7 @@ public class McpProfileImpl implements McpProfile, Persistable {
 
 ### DDL (PostgreSQL)
 
-From `src/main/resources/database/postgresql/alter_21_1_x_to_21_2_0.sql`. The MySQL and Oracle files and the three `setupDatabase.sql` files hold the same tables.
+From `src/main/resources/database/postgresql/alter_21_1_x_to_21_2_0.sql`. The Oracle files and the three `setupDatabase.sql` files hold the same tables.
 
 ```sql
 create table o_mcp_profile (

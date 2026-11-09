@@ -32,8 +32,6 @@ import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -117,8 +115,6 @@ public class FeedManagerImpl extends FeedManager {
 	private OLATResourceManager resourceManager;
 	private FileResourceManager fileResourceManager;
 
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private FeedDAO feedDAO;
 	@Autowired
@@ -537,9 +533,6 @@ public class FeedManagerImpl extends FeedManager {
 					externalItem.setPublishDate(now);
 				}
 				
-				if(dbInstance.isMySQL()) {
-					mysqlCleanUp(externalItem);
-				}
 				itemDAO.createItem(feed, externalItem);
 			} else {
 				// Do not overwrite initial values
@@ -556,18 +549,9 @@ public class FeedManagerImpl extends FeedManager {
 				reloaded.setContent(externalItem.getContent());
 				reloaded.setEnclosure(externalItem.getEnclosure());
 				
-				if(dbInstance.isMySQL()) {
-					mysqlCleanUp(reloaded);
-				}
 				itemDAO.updateItem(reloaded);
 			}
 		}
-	}
-	
-	private void mysqlCleanUp(Item item) {
-		item.setTitle(PersistenceHelper.convert(item.getTitle()));
-		item.setContent(PersistenceHelper.convert(item.getContent()));
-		item.setDescription(PersistenceHelper.convert(item.getDescription()));
 	}
 
 	private void markPublisherNews(Feed feed) {
@@ -982,13 +966,6 @@ public class FeedManagerImpl extends FeedManager {
 
 		if (feed != null) {
 			List<Item> itemsFromXml = feedFileStorage.loadItemsFromXML(ores);
-			
-			// clean up for MySQL
-			if(dbInstance.isMySQL()) {
-				for (Item itemFromXml : itemsFromXml) {
-					mysqlCleanUp(itemFromXml);
-				}
-			}
 			
 			itemsFromXml = fixFeedVersionIssues(feedFromXml, itemsFromXml);
 			for (Item itemFromXml : itemsFromXml) {

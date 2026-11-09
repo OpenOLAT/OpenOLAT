@@ -607,13 +607,7 @@ public class PropertyManager implements UserDataDeletable {
 	
 	public void appendTextProperty(Identity identity, BusinessGroup grp,
 			OLATResourceable resourceable, String category, String name, String textValue) {
-		if(DBFactory.getInstance().isMySQL()) {
-			synchronized(this) {// without produce dead lock in MySQL
-				executeAppendTextProperty(identity, grp, resourceable,  category, name, textValue);
-			}
-		} else {
-			executeAppendTextProperty(identity, grp, resourceable,  category, name, textValue);
-		}
+		executeAppendTextProperty(identity, grp, resourceable,  category, name, textValue);
 	}
 	
 	private void executeAppendTextProperty(Identity identity, BusinessGroup grp,

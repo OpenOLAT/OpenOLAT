@@ -218,36 +218,23 @@ public class QueryBuilder implements Appendable {
 	
 	/**
 	 * Optimize the lower function in an equality. Use the lower
-	 * function for PostgreSQL and Oracle but omit it for MySQL where
-	 * the = is case insensitive.
+	 * function for PostgreSQL and Oracle
 	 * 
 	 * @param field The field of the object
 	 * @return Itself
 	 */
 	public QueryBuilder lowerEqual(String field) {
-		if(dbInstance.isMySQL()) {
-			append(" ").append(field).append("=");
-		} else {
-			append(" lower(").append(field).append(")=");
-		}
+		append(" lower(").append(field).append(")=");
 		return this;
 	}
 	
 	public QueryBuilder lowerIn(String field) {
-		if(dbInstance.isMySQL()) {
-			append(" ").append(field).append(" in ");
-		} else {
-			append(" lower(").append(field).append(") in ");
-		}
+		append(" lower(").append(field).append(") in ");
 		return this;
 	}
 	
 	public QueryBuilder likeFuzzy(String field, String key) {
-		if(dbInstance.isMySQL()) {
-			append(" ").append(field).append(" like :").append(key);
-		} else {
-			append(" lower(").append(field).append(") like :").append(key);
-		}
+		append(" lower(").append(field).append(") like :").append(key);
 		if(dbInstance.isOracle()) {
 			append(" escape '\\'");
 		}

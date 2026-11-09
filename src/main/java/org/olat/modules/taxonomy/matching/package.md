@@ -104,7 +104,7 @@ The package has no `ui/` sub-package. The configuration form lives in the AI adm
 | 2001 to 4000 | `halfvec(dim)` | HNSW with `halfvec_cosine_ops` |
 | more than 4000 | `halfvec(dim)` | no index, exact sequential scan |
 
-A dimension change drops and re-creates the column only in a full reindex (`allowRebuild=true`). The setup scripts do not create `t_vector`. MySQL and Oracle always use the in-memory search.
+A dimension change drops and re-creates the column only in a full reindex (`allowRebuild=true`). The setup scripts do not create `t_vector`. Oracle always uses the in-memory search.
 
 Unique index `idx_tax_emb_unique` on `(fk_level, t_locale, t_model_id, t_text_variant)`.
 

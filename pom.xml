@@ -82,7 +82,6 @@
 		<jackson.version>2.22.4</jackson.version>
 		<jackson.annotations.version>2.22</jackson.annotations.version>
 		<swagger.ui.version>5.34.1</swagger.ui.version>
-		<com.mysql.version>26.10.0</com.mysql.version>
 		<org.postgresql.version>42.7.14</org.postgresql.version>
 		<org.infinispan.version>16.3.1</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
@@ -99,13 +98,9 @@
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
 	    <!-- properties to define the testing environment -->
-	    <test.env>mysql</test.env>
+	    <test.env>postgresql</test.env>
 	    <!-- olat.local.properties to distinguish multiple single and cluster olat instances on a single machine-->
 	    <test.env.db.name>olattest</test.env.db.name>
-	    <test.env.db.user>olat</test.env.db.user>
-	    <test.env.db.pass>olat</test.env.db.pass>
-	    <test.env.db.host>localhost</test.env.db.host>
-	    <test.env.db.host.port>3306</test.env.db.host.port>
 	    <test.env.db.postgresql.user>postgres</test.env.db.postgresql.user>
 	    <test.env.db.postgresql.pass>postgres</test.env.db.postgresql.pass>
 	    <test.env.db.postgresql.host>localhost</test.env.db.postgresql.host>
@@ -432,11 +427,6 @@
 				</dependency>
 		
 				<dependency>
-					<groupId>com.mysql</groupId>
-					<artifactId>mysql-connector-j</artifactId>
-					<version>${com.mysql.version}</version>
-				</dependency>
-				<dependency>
 					<groupId>org.postgresql</groupId>
 					<artifactId>postgresql</artifactId>
 					<version>${org.postgresql.version}</version>
@@ -705,12 +695,6 @@
 				</dependency>
 		
 				<dependency>
-					<groupId>com.mysql</groupId>
-					<artifactId>mysql-connector-j</artifactId>
-					<version>${com.mysql.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
 					<groupId>org.postgresql</groupId>
 					<artifactId>postgresql</artifactId>
 					<version>${org.postgresql.version}</version>
@@ -734,196 +718,7 @@
 				</plugins>
 			</build>
 		</profile>
-	
-		<profile>
-			<id>mysqlunittests</id>
-			<activation>
-				<property>
-					<name>with-mysql</name>
-				</property>
-			</activation>
-			<properties>
-				<testFailureIgnore>false</testFailureIgnore>
-				<test.env>mysql</test.env>
-				<skipTests>false</skipTests>
-			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-resources-plugin</artifactId>
-						<version>2.4.3</version>
-						<executions>
-							<execution>
-								<id>copy-resources-4-mysqlunittests</id>
-								<phase>generate-test-resources</phase>
-								<goals>
-									<goal>copy-resources</goal>
-								</goals>
-								<configuration>
-									<outputDirectory>${basedir}/target/test-classes</outputDirectory>
-									<resources>
-										<resource>
-											<!-- place resources you like to get filtered an copied -->
-											<directory>src/test/profile/${test.env}</directory>
-											<includes>
-												<include>olat.local.properties</include>
-											</includes>
-											<filtering>true</filtering>
-										</resource>
-										<resource>
-											<!-- place resources you like to get filtered an copied -->
-											<directory>src/main/resources/database/mysql</directory>
-											<includes>
-												<include>setupDatabase.sql</include>
-											</includes>
-											<filtering>false</filtering>
-										</resource>
-									</resources>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>sql-maven-plugin</artifactId>
-						<version>1.5</version>
-						<dependencies>
-							<dependency>
-								<groupId>com.mysql</groupId>
-								<artifactId>mysql-connector-j</artifactId>
-								<version>${com.mysql.version}</version>
-							</dependency>
-						</dependencies>
-	
-						<!-- common configuration shared by all executions -->
-						<configuration>
-							<driver>com.mysql.cj.jdbc.Driver</driver>
-							<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/${test.env.db.name}</url>
-							<username>${test.env.db.user}</username>
-							<password>${test.env.db.pass}</password>
-						</configuration>
-	
-						<executions>
-							<execution>
-								<id>drop-mysql-db-before-test</id>
-								<phase>process-test-resources</phase>
-								<goals>
-									<goal>execute</goal>
-								</goals>
-								<configuration>
-									<!-- need another database to drop the targeted one -->
-									<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/olat</url>
-									<autocommit>true</autocommit>
-									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
-									<!-- ignore error when database is not avaiable -->
-									<onError>continue</onError>
-								</configuration>
-							</execution>
-	
-							<execution>
-								<id>create-mysql-db</id>
-								<phase>process-test-resources</phase>
-								<goals>
-									<goal>execute</goal>
-								</goals>
-								<configuration>
-									<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/olat</url>
-									<!-- no transaction -->
-									<autocommit>true</autocommit>
-									<sqlCommand>create database ${test.env.db.name} default character set utf8</sqlCommand>
-								</configuration>
-							</execution>
-	
-							<execution>
-								<id>create-mysql-schema</id>
-								<phase>process-test-resources</phase>
-								<goals>
-									<goal>execute</goal>
-								</goals>
-								<configuration>
-									<autocommit>true</autocommit>
-									<srcFiles>
-										<srcFile>target/test-classes/setupDatabase.sql</srcFile>
-									</srcFiles>
-								</configuration>
-							</execution>
-							<!-- drop db after test -->
-							<execution>
-								<id>drop-mysql-db-after-test</id>
-								<!-- there is no post-test phase, the next phase after "test" is "prepare-package" 
-									for integration tests running against mysql generated via setupDatabase.sql 
-									there is need to bind a similar drop/create/schema/drop to pre-integration-test 
-									and post-integration-test -->
-								<phase>prepare-package</phase>
-								<goals>
-									<goal>execute</goal>
-								</goals>
-								<configuration>
-									<autocommit>true</autocommit>
-									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
-								</configuration>
-							</execution>
-							
-							<!-- Same for integration-test -->
-							<execution>
-								<id>drop-mysql-db-before-integration</id>
-								<phase>pre-integration-test</phase>
-								<goals>
-									<goal>execute</goal>
-								</goals>
-								<configuration>
-									<!-- need another database to drop the targeted one -->
-									<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/olat</url>
-									<autocommit>true</autocommit>
-									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
-									<!-- ignore error when database is not avaiable -->
-									<onError>continue</onError>
-								</configuration>
-							</execution>
-							<execution>
-								<id>create-mysql-db-before-integration-test</id>
-								<phase>pre-integration-test</phase>
-								<goals>
-									<goal>execute</goal>
-								</goals>
-								<configuration>
-									<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/olat</url>
-									<!-- no transaction -->
-									<autocommit>true</autocommit>
-									<sqlCommand>create database ${test.env.db.name} default character set utf8</sqlCommand>
-								</configuration>
-							</execution>
-							<execution>
-								<id>create-mysql-schema-before-integration-test</id>
-								<phase>pre-integration-test</phase>
-								<goals>
-									<goal>execute</goal>
-								</goals>
-								<configuration>
-									<autocommit>true</autocommit>
-									<srcFiles>
-										<srcFile>target/test-classes/setupDatabase.sql</srcFile>
-									</srcFiles>
-								</configuration>
-							</execution>
-							<!-- drop db after test -->
-							<execution>
-								<id>drop-mysql-db-after-integration-test</id>
-								<phase>post-integration-test</phase>
-								<goals>
-									<goal>execute</goal>
-								</goals>
-								<configuration>
-									<autocommit>true</autocommit>
-									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	
+
 		<profile>
 			<id>postgresqlunittests</id>
 			<activation>
@@ -1052,7 +847,7 @@
 							<execution>
 								<id>drop-postgresql-db-after-test</id>
 								<!-- there is no post-test phase, the next phase after "test" is "prepare-package" 
-									for integration tests running against mysql generated via setupDatabase.sql 
+									for integration tests running against PostgreSQL generated via setupDatabase.sql 
 									there is need to bind a similar drop/create/schema/drop to pre-integration-test 
 									and post-integration-test -->
 								<phase>prepare-package</phase>
@@ -1370,9 +1165,6 @@
 					<systemPropertyVariables>
 						<profile>${test.env}</profile>
 						<test.env.db.name>${test.env.db.name}</test.env.db.name>
-						<test.env.db.user>${test.env.db.user}</test.env.db.user>
-						<test.env.db.pass>${test.env.db.pass}</test.env.db.pass>
-						<test.env.db.host.port>${test.env.db.host.port}</test.env.db.host.port>
 						<test.env.db.postgresql.user>${test.env.db.postgresql.user}</test.env.db.postgresql.user>
 						<test.env.db.postgresql.pass>${test.env.db.postgresql.pass}</test.env.db.postgresql.pass>
 						<test.env.db.postgresql.host.port>${test.env.db.postgresql.host.port}</test.env.db.postgresql.host.port>
@@ -1502,7 +1294,7 @@
                 			<linkedResource>
 		                        <name>/src/test/java/olat.local.properties</name>
 		                        <type>1</type>
-		                        <location>${basedir}/src/test/profile/mysql/olat.local.properties</location>
+		                        <location>${basedir}/src/test/profile/postgresql/olat.local.properties</location>
                 			</linkedResource>
 				        </linkedResources>				        
 						<wtpversion>2.0</wtpversion>

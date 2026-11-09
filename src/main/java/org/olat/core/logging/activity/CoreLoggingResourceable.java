@@ -103,7 +103,7 @@ public class CoreLoggingResourceable implements ILoggingResourceable {
 	 * parameters initialized.
 	 * <p>
 	 * This method also does length checks to catch oversized parameters as early as possible
-	 * (versus later in the hibernate/mysql handling)
+	 * (versus later in the hibernate/postgresql handling)
 	 * <p>
 	 * @param resourceable the OlatResourceable if available - can be null
 	 * @param resourceableType the type which is used for comparison later during businessPath checks

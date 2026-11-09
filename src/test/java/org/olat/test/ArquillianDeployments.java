@@ -87,7 +87,7 @@ public class ArquillianDeployments {
 	public static WebArchive addOlatLocalProperties(WebArchive archive, Map<String,String> overrideProperties) {
 		String profile = System.getProperty("profile");
 		if(profile == null || profile.isEmpty()) {
-			profile = "mysql";
+			profile = "postgresql";
 		}
 		
 		File barebonePropertiesFile = new File("src/test/profile/" + profile, "olat.local.properties");

@@ -217,26 +217,17 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 			.append(" inner join fetch identity.user user ")
 			.append(" where ");
 		
-		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
 		//search email
 		StringBuilder emailSb = new StringBuilder(sb);
-		if(mysql) {
-			emailSb.append(" user.").append(UserConstants.EMAIL).append(" in (:emails) ");
-		} else {
-			emailSb.append(" lower(user.").append(UserConstants.EMAIL).append(") in (:emails)");
-		}
-
+		emailSb.append(" lower(user.").append(UserConstants.EMAIL).append(") in (:emails)");
+		
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(emailSb.toString(), Identity.class)
 				.setParameter("emails", emails).getResultList();
 
 		//search institutional email
 		StringBuilder institutionalSb = new StringBuilder(sb);
-		if(mysql) {
-			institutionalSb.append(" user.").append(UserConstants.INSTITUTIONALEMAIL).append(" in (:emails) ");
-		} else {
-			institutionalSb.append(" lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(") in (:emails)");
-		}
+		institutionalSb.append(" lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(") in (:emails)");
 		if(!identities.isEmpty()) {
 			institutionalSb.append(" and identity not in (:identities) ");
 		}

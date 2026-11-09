@@ -511,7 +511,6 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	}
 	
 	// Hint : Properties for testing with HSQL must be lowercaseHSQL DB does not 
-	//     mysql 'like' found results with upper and lowercase
 	//     HSQL  'like' found only results with lowercase
 	//     Our implementation of powersearch convert search-properties to lowercase ! 
 	@Test

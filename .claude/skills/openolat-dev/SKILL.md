@@ -523,7 +523,7 @@ public class OLATUpgrade_21_2_0 extends OLATUpgrade {
 }
 ```
 
-Register in `org/olat/upgrade/_spring/upgradeContext.xml` (append to the list). For SQL schema changes, add the ALTER statements to `src/main/resources/database/mysql/`, `.../postgresql/` and `.../oracle/` (e.g. `alter_21_0_x_to_21_1_0.sql`) and register a `DatabaseUpgrade` bean in `databaseUpgradeContext.xml`. New entities go into `persistence.xml`.
+Register in `org/olat/upgrade/_spring/upgradeContext.xml` (append to the list). For SQL schema changes, add the ALTER statements to `src/main/resources/database/postgresql/` and `.../oracle/` (e.g. `alter_21_0_x_to_21_1_0.sql`) and register a `DatabaseUpgrade` bean in `databaseUpgradeContext.xml`. New entities go into `persistence.xml`.
 
 A new secure default that would change the behaviour of existing instances: enable it for new installs, and switch it off in the upgrade unless it is set explicitly (pattern: `OLATUpgrade_21_1_0.disableSSRFOnExistingInstances`).
 

@@ -549,7 +549,7 @@ McpIdentityEntry (record, cached)           <span class="cmt"># per token hash: 
 <h3 id="table-o_mcp_profile_to_organisation">Table: <code>o_mcp_profile_to_organisation</code></h3>
 <p><strong>McpProfileToOrganisationImpl</strong> (<code>model/McpProfileToOrganisationImpl.java</code>), entity name <code>mcpprofiletoorganisation</code>. One row per organisation of a profile: <code>id</code>, <code>creationdate</code>, <code>fk_profile</code>, <code>fk_organisation</code>.</p>
 <h3 id="ddl-postgresql">DDL (PostgreSQL)</h3>
-<p>From <code>src/main/resources/database/postgresql/alter_21_1_x_to_21_2_0.sql</code>. The MySQL and Oracle files and the three <code>setupDatabase.sql</code> files hold the same tables.</p>
+<p>From <code>src/main/resources/database/postgresql/alter_21_1_x_to_21_2_0.sql</code>. The Oracle files and the three <code>setupDatabase.sql</code> files hold the same tables.</p>
 <pre><code>create table o_mcp_profile (
    id bigserial,
    creationdate timestamp not null,

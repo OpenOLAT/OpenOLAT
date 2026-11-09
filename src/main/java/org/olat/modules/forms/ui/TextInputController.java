@@ -22,7 +22,6 @@ package org.olat.modules.forms.ui;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -67,8 +66,6 @@ public class TextInputController extends FormBasicController implements Evaluati
 	private EvaluationFormResponse response;
 	private boolean validationEnabled = true;
 	
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
@@ -165,38 +162,31 @@ public class TextInputController extends FormBasicController implements Evaluati
 		if (textInput.isNumeric()) {
 			String val = singleRowEl.getValue();
 			if(StringHelper.containsNonWhitespace(val)) {
-				if (dbInstance.isMySQL() && val.length() > 55) {
-					singleRowEl.setErrorKey("error.number.too.large");
-					allOk = false;
-				} else {
-					try {
-						double value = Double.parseDouble(val);
-						if (textInput.getNumericMin() != null && textInput.getNumericMax() != null) {
-							if (textInput.getNumericMin().doubleValue() > value || textInput.getNumericMax().doubleValue() < value) {
-								singleRowEl.setErrorKey("error.number.between",
-										textInput.getNumericMin().toString(), textInput.getNumericMax().toString());
-								allOk = false;
-							}
-						} else if (textInput.getNumericMin() != null) {
-							if (textInput.getNumericMin().doubleValue() > value) {
-								singleRowEl.setErrorKey("error.number.min", textInput.getNumericMin().toString());
-								allOk = false;
-							}
-						} else if (textInput.getNumericMax() != null) {
-							if (textInput.getNumericMax().doubleValue() < value) {
-								singleRowEl.setErrorKey("error.number.max", textInput.getNumericMax().toString());
-								allOk = false;
-							}
+				try {
+					double value = Double.parseDouble(val);
+					if (textInput.getNumericMin() != null && textInput.getNumericMax() != null) {
+						if (textInput.getNumericMin().doubleValue() > value || textInput.getNumericMax().doubleValue() < value) {
+							singleRowEl.setErrorKey("error.number.between",
+									textInput.getNumericMin().toString(), textInput.getNumericMax().toString());
+							allOk = false;
 						}
-					} catch (NumberFormatException e) {
-						singleRowEl.setErrorKey("error.no.number");
-						allOk = false;
+					} else if (textInput.getNumericMin() != null) {
+						if (textInput.getNumericMin().doubleValue() > value) {
+							singleRowEl.setErrorKey("error.number.min", textInput.getNumericMin().toString());
+							allOk = false;
+						}
+					} else if (textInput.getNumericMax() != null) {
+						if (textInput.getNumericMax().doubleValue() < value) {
+							singleRowEl.setErrorKey("error.number.max", textInput.getNumericMax().toString());
+							allOk = false;
+						}
 					}
+				} catch (NumberFormatException e) {
+					singleRowEl.setErrorKey("error.no.number");
+					allOk = false;
 				}
 			}
 		}
-		
-		
 		
 		return allOk;
 	}

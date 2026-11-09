@@ -697,8 +697,7 @@ public class PageDAOTest extends OlatTestCase {
 	}
 
 	/**
-	 * Some databases (MySQL's DATETIME without explicit fractional-seconds precision, unlike
-	 * Postgres' microsecond-precision timestamp) can give a comment and its reply the exact same
+	 * Some databases can give a comment and its reply the exact same
 	 * creationDate when both are created within the same second. deleteAllComments(OLATResourceable,
 	 * String) must not rely on creationDate alone to order deletions - it also needs comment.key as
 	 * a secondary sort, otherwise a parent can be removed while its still-present reply references
@@ -717,10 +716,7 @@ public class PageDAOTest extends OlatTestCase {
 		UserComment reply = userCommentsDao.replyTo(comment, replier, "Reply");
 		dbInstance.commitAndCloseSession();
 
-		// force the exact tie a coarser DATETIME column would produce. The subquery is wrapped in
-		// an extra derived table ("as parent_row") because MySQL refuses to update a table while
-		// selecting from that same table in a subquery - Postgres has no such restriction, but the
-		// derived-table form is valid on both.
+		// Update creation date
 		dbInstance.getCurrentEntityManager()
 				.createNativeQuery("update o_usercomment set creationdate = ("
 						+ "select creationdate from (select creationdate from o_usercomment where comment_id = :parentKey) as parent_row"

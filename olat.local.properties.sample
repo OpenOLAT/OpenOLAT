@@ -18,8 +18,8 @@ userdata.dir=/opt/openolat/olatdata
 # Database settings
 ########################################################################
 
-# supported vendors currently include "mysql" and "postgresql"
-db.vendor=mysql
+# supported vendors currently include "postgresql"
+db.vendor=postgresql
 # here you have two options: when you set auto.upgrade.database to true
 # the alter scripts in /src/main/resources/database/**/alter**.sql are 
 # executed automatically. For most cases this is fine. If you set it to 
@@ -33,8 +33,6 @@ db.name=openolat
 db.user=openolat
 # the password of the OLAT database user
 db.pass=openolat
-# JDBC options (e.g., to set character channel behavior etc.)
-db.jdbc.options=?characterEncoding=UTF-8&connectionCollation=utf8_unicode_ci
 
 ########################################################################
 # Web application container (e.g., Tomcat) settings

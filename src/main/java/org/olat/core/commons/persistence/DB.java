@@ -34,8 +34,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 
 public interface DB {
 	
-	public boolean isMySQL();
-	
 	public boolean isPostgreSQL();
 	
 	public boolean isOracle();

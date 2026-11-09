@@ -54,7 +54,8 @@ public class OLATResourceImpl implements Persistable, OLATResource {
 
 	private static final long serialVersionUID = 4797534778467150679L;
 
-	/** for mysql, need always to provide a type and a key to allow a composite index, so 0 is
+	/**
+	 * need always to provide a type and a key to allow a composite index, so 0 is
 	 * a reserved key meaning "no key"
 	 */
 	public static final Long NULLVALUE = Long.valueOf(0l);
