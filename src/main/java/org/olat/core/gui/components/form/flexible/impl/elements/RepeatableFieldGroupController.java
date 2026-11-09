@@ -89,6 +89,7 @@ public class RepeatableFieldGroupController<R extends RepeatableFieldGroupRow> e
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addLink = uifactory.addFormLink(idPrefix + "add", CMD_ADD, addText, null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		addLink.setIconLeftCSS("o_icon o_icon_add");
+		flc.contextPut("groupId", idPrefix + "group");
 		flc.contextPut("addName", addLink.getName());
 		flc.contextPut("rows", rows);
 	}

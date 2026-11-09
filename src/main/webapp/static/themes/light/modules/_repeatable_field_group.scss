@@ -21,7 +21,6 @@
 }
 
 .o_rfg {
-	container-type: inline-size;
 	margin-bottom: 15px;
 
 	.o_rfg_head {
@@ -53,16 +52,33 @@
 	}
 
 	.o_rfg_cell {
-		flex: 1 1 100%;
-		min-width: 0;
+		flex: 1 1 180px;
+		min-width: min(180px, 100%);
 
 		.form-group {
 			margin-bottom: 8px;
 		}
 
+		.form-control-feedback {
+			&.o_icon_error,
+			&.o_icon_warn {
+				display: none;
+			}
+		}
+
 		.o_date {
 			padding-right: 0;
 
+			.form-group {
+				margin-bottom: 0;
+			}
+
+			.o_first_date:not(:has(~ .o_date_ms)) {
+				padding-right: 0;
+			}
+		}
+
+		&:not(.o_rfg_col_content) .o_date {
 			.o_date_bloc {
 				flex: 1 1 auto;
 			}
@@ -70,8 +86,6 @@
 			.o_first_date {
 				display: block;
 				width: 100%;
-				padding-right: 0;
-				margin-bottom: 0;
 			}
 
 			.o_date_picker {
@@ -82,6 +96,42 @@
 			.o_date_day {
 				width: 100%;
 			}
+		}
+
+		&.o_rfg_col_xs {
+			flex: 1 1 110px;
+			min-width: min(110px, 100%);
+			max-width: 150px;
+		}
+
+		&.o_rfg_col_s {
+			flex: 1 1 160px;
+			min-width: min(160px, 100%);
+			max-width: 200px;
+		}
+
+		&.o_rfg_col_m {
+			flex: 1 1 180px;
+			min-width: min(180px, 100%);
+		}
+
+		&.o_rfg_col_l {
+			flex: 2 1 240px;
+			min-width: min(240px, 100%);
+		}
+
+		&.o_rfg_col_content {
+			flex: 0 0 auto;
+			min-width: 0;
+			max-width: 100%;
+
+			.o_error, .o_warning_with_icon, .o_form_example {
+				contain: inline-size;
+			}
+		}
+
+		&.o_rfg_col_full {
+			flex: 0 0 100%;
 		}
 	}
 
@@ -100,7 +150,7 @@
 		margin-top: 12px;
 	}
 
-	@container (min-width: 530px) {
+	&.o_rfg_line {
 		.o_rfg_head,
 		.o_rfg_row {
 			flex-direction: row;
@@ -116,23 +166,7 @@
 
 		.o_rfg_fields {
 			flex: 1 1 auto;
-			flex-wrap: nowrap;
-		}
-
-		.o_rfg_cell {
-			flex: 1 1 0;
-		}
-
-		.o_rfg_col_xs {
-			flex: 0 0 120px;
-		}
-
-		.o_rfg_col_s {
-			flex: 0 0 170px;
-		}
-
-		.o_rfg_col_l {
-			flex: 2 1 0;
+			min-width: 0;
 		}
 
 		.o_rfg_row .control-label,
@@ -141,7 +175,7 @@
 		}
 
 		.o_rfg_actions {
-			flex: 0 0 70px;
+			flex: 0 0 auto;
 			flex-wrap: nowrap;
 			justify-content: flex-end;
 			padding-top: 2px;
@@ -157,13 +191,58 @@
 		}
 	}
 
-	@container (min-width: 800px) {
-		.o_rfg_actions {
-			flex-basis: 240px;
-			gap: 14px;
+	&.o_rfg_line:has(.o_rfg_row .o_rfg_col_full) {
+		.o_rfg_head {
+			display: none;
+		}
 
-			.btn > span {
-				@include o-rfg-visible();
+		.o_rfg_row .control-label {
+			@include o-rfg-visible();
+			margin-bottom: 5px;
+		}
+
+		.o_rfg_actions {
+			padding-top: $line-height-computed + 7px;
+		}
+	}
+
+	&.o_rfg_line_text .o_rfg_actions {
+		gap: 14px;
+
+		.btn > span {
+			@include o-rfg-visible();
+		}
+	}
+
+	&.o_rfg_line {
+		&.o_rfg_line_actions {
+			.o_rfg_row {
+				flex-wrap: wrap;
+			}
+
+			.o_rfg_fields {
+				flex-basis: 100%;
+			}
+
+			.o_rfg_head .o_rfg_actions {
+				display: none;
+			}
+
+			.o_rfg_row .o_rfg_actions {
+				flex: 0 0 100%;
+				flex-wrap: wrap;
+				justify-content: flex-start;
+				gap: 4px;
+				padding-top: 0;
+
+				.btn {
+					padding: 1px 5px;
+					font-size: $font-size-small;
+
+					> span {
+						@include o-rfg-visible();
+					}
+				}
 			}
 		}
 	}

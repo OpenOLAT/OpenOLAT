@@ -3486,6 +3486,71 @@ function o_initDayNavHeaderFit(domId) {
 	headerEl.oDayNavFitObserver = observer;
 }
 
+function o_initRepeatableFieldGroup(domId) {
+	const groupEl = document.getElementById(domId);
+	if (!groupEl) {
+		return;
+	}
+	const states = [['o_rfg_line', 'o_rfg_line_text'], ['o_rfg_line'], ['o_rfg_line', 'o_rfg_line_actions'], []];
+	
+	function fits() {
+		return Array.from(groupEl.querySelectorAll('.o_rfg_row .o_rfg_fields')).every(fieldsEl => {
+			const cells = fieldsEl.querySelectorAll(':scope > .o_rfg_cell:not(.o_rfg_col_full)');
+			return cells.length === 0 || cells[cells.length - 1].getBoundingClientRect().top - cells[0].getBoundingClientRect().top < 1;
+		});
+	}
+	
+	function sizeColumns() {
+		const columns = [];
+		groupEl.querySelectorAll('.o_rfg_fields').forEach(fieldsEl => {
+			[...fieldsEl.children].forEach((cellEl, i) => {
+				if (cellEl.classList.contains('o_rfg_col_content')) {
+					cellEl.style.flexBasis = '';
+					(columns[i] = columns[i] || []).push(cellEl);
+				}
+			});
+		});
+		const actions = [...groupEl.querySelectorAll('.o_rfg_actions')];
+		actions.forEach(actionsEl => actionsEl.style.flexBasis = '');
+		if (groupEl.classList.contains('o_rfg_line') && !groupEl.classList.contains('o_rfg_line_actions')) {
+			columns.push(actions);
+		}
+		columns.forEach(cells => {
+			const width = Math.ceil(Math.max(...cells.map(cellEl => cellEl.getBoundingClientRect().width)));
+			cells.forEach(cellEl => cellEl.style.flexBasis = width + 'px');
+		});
+	}
+	
+	function fit() {
+		if (groupEl.clientWidth === 0) {
+			return;
+		}
+		for (const state of states) {
+			groupEl.classList.remove('o_rfg_line', 'o_rfg_line_text', 'o_rfg_line_actions');
+			groupEl.classList.add(...state);
+			sizeColumns();
+			if (state.length === 0 || fits()) {
+				return;
+			}
+		}
+	}
+	
+	fit();
+	if (document.fonts.status === 'loading') {
+		document.fonts.ready.then(fit);
+	}
+	let width = groupEl.clientWidth;
+	const observer = new ResizeObserver(() => {
+		if (!groupEl.isConnected) {
+			observer.disconnect();
+		} else if (groupEl.clientWidth !== width) {
+			width = groupEl.clientWidth;
+			requestAnimationFrame(fit);
+		}
+	});
+	observer.observe(groupEl);
+}
+
 
 /*
  * For menu tree

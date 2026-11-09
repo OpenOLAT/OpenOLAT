@@ -30,8 +30,11 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 public interface RepeatableFieldGroupDelegate<R extends RepeatableFieldGroupRow> {
 	
 	/**
-	 * Create the form items of a new, empty row in the container.
-	 * 
+	 * Create the form items of a new, empty row in the container. All rows
+	 * must have the same form items in the same order. A form item has the
+	 * same visibility in all rows, because the header and the column widths
+	 * are built by column.
+	 *
 	 * @param id A unique identifier of the row. Use it as prefix of the item names.
 	 * @param container The container of the items
 	 * @return The new row
@@ -52,11 +55,15 @@ public interface RepeatableFieldGroupDelegate<R extends RepeatableFieldGroupRow>
 	}
 	
 	/**
-	 * @param column The index of the column
-	 * @return A CSS class for the width of the column, e.g. o_rfg_col_s, or null
+	 * The CSS class defines the minimum and maximum width of the column. If all
+	 * columns fit on one line, the row is on one line, else the columns wrap.
+	 * Use the classes of {@link RepeatableFieldGroupColumnWidth} as default.
+	 *
+	 * @param column The index of the column in {@link RepeatableFieldGroupRow#getFormItems()}
+	 * @return The CSS class of the column
 	 */
 	default String getColumnCssClass(int column) {
-		return null;
+		return RepeatableFieldGroupColumnWidth.m.getCssClass();
 	}
 	
 }

@@ -1,4 +1,4 @@
-<div class="o_rfg#if($numbered) o_rfg_numbered#end">
+<div id="$groupId" class="o_rfg#if($numbered) o_rfg_numbered#end">
 	#if($rows && $rows.size() > 0)
 	<div class="o_rfg_list">
 		<div class="o_rfg_head" aria-hidden="true">
@@ -28,3 +28,7 @@
 	#end
 	<div class="o_rfg_add">$r.render($addName)</div>
 </div>
+<script>
+'use strict';
+o_initRepeatableFieldGroup('$groupId');
+</script>

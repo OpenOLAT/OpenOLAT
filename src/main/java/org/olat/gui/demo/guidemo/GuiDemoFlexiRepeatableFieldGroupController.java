@@ -19,123 +19,40 @@
  */
 package org.olat.gui.demo.guidemo;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.elements.RepeatableFieldGroupController;
-import org.olat.core.gui.components.form.flexible.impl.elements.RepeatableFieldGroupDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.RepeatableFieldGroupRow;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.StringHelper;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.gui.demo.guidemo.GuiDemoFlexiRepeatableFieldGroupExampleController.Example;
 
 /**
  * Initial date: 28 Oct 2026<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
-public class GuiDemoFlexiRepeatableFieldGroupController extends FormBasicController
-		implements RepeatableFieldGroupDelegate<GuiDemoFlexiRepeatableFieldGroupController.DemoRow> {
+public class GuiDemoFlexiRepeatableFieldGroupController extends BasicController {
 	
-	private RepeatableFieldGroupController<DemoRow> groupCtrl;
+	private Controller exampleCtrl;
 	
 	public GuiDemoFlexiRepeatableFieldGroupController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
-		initForm(ureq);
+		super(ureq, wControl);
+		TabbedPane tabPane = new TabbedPane("tabs", getLocale());
+		for(Example example:Example.values()) {
+			tabPane.addTab(ureq, translate("guidemo.rfg." + example.name() + ".tab"), null, uureq -> {
+				removeAsListenerAndDispose(exampleCtrl);
+				exampleCtrl = new GuiDemoFlexiRepeatableFieldGroupExampleController(uureq, getWindowControl(), example);
+				listenTo(exampleCtrl);
+				return exampleCtrl.getInitialComponent();
+			}, true);
+		}
+		putInitialPanel(tabPane);
 	}
 	
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("guidemo.rfg.title");
-		
-		groupCtrl = new RepeatableFieldGroupController<>(ureq, getWindowControl(), mainForm, getTranslator(),
-				translate("guidemo.rfg.object"), translate("guidemo.rfg.add"), this);
-		listenTo(groupCtrl);
-		formLayout.add("appointments", groupCtrl.getInitialFormItem());
-		for(int i = 0; i < 3; i++) {
-			DemoRow row = groupCtrl.addRow();
-			row.getDateEl().setDate(DateUtils.addDays(DateUtils.setTime(ureq.getRequestTimestamp(), 0, 0, 0), i));
-			row.getValue1El().setValue(translate("guidemo.rfg.value1"));
-			row.getValue2El().setValue(translate("guidemo.rfg.value2"));
-		}
-		
-		uifactory.addFormSubmitButton("save", formLayout);
-	}
-	
-	@Override
-	public DemoRow createRow(String id, FormItemContainer container) {
-		DateChooser dateEl = uifactory.addDateChooser(id + "_date", "guidemo.rfg.date", null, container);
-		dateEl.setMandatory(true);
-		TextElement value1El = uifactory.addTextElement(id + "_value1", "guidemo.rfg.label1", 100, "", container);
-		value1El.setMandatory(true);
-		TextElement value2El = uifactory.addTextElement(id + "_value2", "guidemo.rfg.label2", 100, "", container);
-		return new DemoRow(dateEl, value1El, value2El);
-	}
-	
-	@Override
-	public void copyRow(DemoRow source, DemoRow target) {
-		target.getDateEl().setDate(source.getDateEl().getDate());
-		target.getValue1El().setValue(source.getValue1El().getValue());
-		target.getValue2El().setValue(source.getValue2El().getValue());
-	}
-	
-	@Override
-	public String getColumnCssClass(int column) {
-		return column == 0 ? "o_rfg_col_s" : null;
-	}
-	
-	@Override
-	public boolean validateRow(DemoRow row) {
-		boolean allOk = true;
-		if(!row.getDateEl().hasError() && row.getDateEl().getDate() == null) {
-			row.getDateEl().setErrorKey("form.legende.mandatory");
-			allOk = false;
-		}
-		if(!StringHelper.containsNonWhitespace(row.getValue1El().getValue())) {
-			row.getValue1El().setErrorKey("form.legende.mandatory");
-			allOk = false;
-		}
-		return allOk;
-	}
-	
-	@Override
-	protected void formOK(UserRequest ureq) {
-		showInfo("guidemo.rfg.saved", Integer.toString(groupCtrl.getRows().size()));
-	}
-	
-	public static class DemoRow implements RepeatableFieldGroupRow {
-		
-		private final DateChooser dateEl;
-		private final TextElement value1El;
-		private final TextElement value2El;
-		
-		private DemoRow(DateChooser dateEl, TextElement value1El, TextElement value2El) {
-			this.dateEl = dateEl;
-			this.value1El = value1El;
-			this.value2El = value2El;
-		}
-		
-		public DateChooser getDateEl() {
-			return dateEl;
-		}
-		
-		public TextElement getValue1El() {
-			return value1El;
-		}
-		
-		public TextElement getValue2El() {
-			return value2El;
-		}
-		
-		@Override
-		public List<FormItem> getFormItems() {
-			return List.of(dateEl, value1El, value2El);
-		}
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 	
 }
