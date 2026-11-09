@@ -733,13 +733,14 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(this);
 		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
+		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+		
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
 		Boolean passed = session.getPassed();
 		if(finalScore != null) {
 			if (assessmentConfig.hasGrade() && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
-				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 				if (assessmentConfig.isAutoGrade() || (assessmentEntry != null && StringHelper.containsNonWhitespace(assessmentEntry.getGrade()))) {
 					GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 					GradeScale gradeScale = gradeService.getGradeScale(
@@ -757,16 +758,19 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				passed = Boolean.valueOf(calculated);
 			}
 		}
+		
+		boolean increment = assessmentEntry == null
+				|| !Objects.equals(assessmentEntry.getCurrentRunStatus(), AssessmentRunStatus.done);
 		ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed,
 				assessmentStatus, visibility, null, 1.0d, AssessmentRunStatus.done, session.getKey());
-		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, true, by);
+		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);
 		
 		if(getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED, false)) {
 			sendConfirmationEmail(assessedUserCourseEnv, assessmentConfig, locale);
 		}
 		
 		if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
-			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+			assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 			RepositoryEntry testEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
 			CoreSpringFactory.getImpl(GradingService.class).assignGrader(testEntry, assessmentEntry, session.getFinishTime(), true);
 		}
