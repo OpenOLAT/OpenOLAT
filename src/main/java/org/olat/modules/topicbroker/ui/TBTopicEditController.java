@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.RepeatableFieldGroupColumnWidth;
 import org.olat.core.gui.components.form.flexible.impl.elements.RepeatableFieldGroupController;
 import org.olat.core.gui.components.form.flexible.impl.elements.RepeatableFieldGroupDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.RepeatableFieldGroupRow;
@@ -341,7 +342,7 @@ public class TBTopicEditController extends FormBasicController implements Repeat
 		endEl.setMandatory(true);
 		endEl.setTimeOnly(true);
 		TextElement locationEl = uifactory.addTextElement(id + "_location", "topic.date.location", TBTopicDate.LOCATION_MAX_LENGTH, null, container);
-		TextElement descriptionEl = uifactory.addTextElement(id + "_description", "topic.date.description", TBTopicDate.DESCRIPTION_MAX_LENGTH, null, container);
+		TextElement descriptionEl = uifactory.addTextAreaElement(id + "_description", "topic.date.description", TBTopicDate.DESCRIPTION_MAX_LENGTH, 2, -1, true, false, null, container);
 		DateRow row = new DateRow(dateEl, startEl, endEl, locationEl, descriptionEl);
 		dateEl.setUserObject(row);
 		startEl.setUserObject(row);
@@ -361,10 +362,9 @@ public class TBTopicEditController extends FormBasicController implements Repeat
 	@Override
 	public String getColumnCssClass(int column) {
 		return switch (column) {
-			case 0 -> "o_rfg_col_s";
-			case 1, 2 -> "o_rfg_col_xs";
-			case 4 -> "o_rfg_col_l";
-			default -> null;
+			case 0, 1, 2 -> RepeatableFieldGroupColumnWidth.content.getCssClass();
+			case 4 -> RepeatableFieldGroupColumnWidth.full.getCssClass();
+			default -> RepeatableFieldGroupDelegate.super.getColumnCssClass(column);
 		};
 	}
 	
