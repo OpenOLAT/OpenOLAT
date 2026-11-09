@@ -58,6 +58,33 @@ public interface UserCourseInformationsManager {
 
 	double calculateActivity(int visit, Date now);
 	
+	/**
+	 * Convert the stored activity (relative to ACTIVITY_EPOCH) to the
+	 * effective activity at the specified date: activity / 2 ^ ((now - EPOCH) / H)
+	 * 
+	 * @param activity The stored activity
+	 * @param now The current date
+	 * @return The effective activity, a launch today is worth 1.0
+	 */
+	double getEffectiveActivity(double activity, Date now);
+	
+	/**
+	 * Calculate the relevance of a course for a user. It's the effective activity
+	 * plus a newness bonus which fades with the time since the membership and
+	 * disappears after the user launched the course more than 2 times:<br>
+	 * relevance = activity_eff + N * v(visit) * 2 ^ (-(now - memberSince) / Hn)
+	 * <br>
+	 * The value is on the effective base (not relative to ACTIVITY_EPOCH),
+	 * the order is the same as the order of the relevance sort in the database.
+	 * 
+	 * @param activity The stored activity (relative to ACTIVITY_EPOCH)
+	 * @param visit The number of launches of the user
+	 * @param memberSince The earliest membership date of the user (can be null, no newness bonus)
+	 * @param now The current date
+	 * @return The relevance
+	 */
+	double calculateRelevance(double activity, int visit, Date memberSince, Date now);
+	
 	public List<UserCourseInformations> getUserCourseInformations(IdentityRef identity);
 	
 	public UserCourseInformations getUserCourseInformations(OLATResource resource, IdentityRef identity);

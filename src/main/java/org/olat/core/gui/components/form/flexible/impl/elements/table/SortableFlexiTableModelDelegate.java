@@ -206,6 +206,17 @@ public class SortableFlexiTableModelDelegate<T> {
 		}
 		return a.compareTo(b);
 	}
+	
+	protected final int compareDoubles(Double a, Double b) {
+		return compareDoubles(a, b, NullOrder.NULLS_ALWAYS_LAST);
+	}
+	
+	protected final int compareDoubles(Double a, Double b, NullOrder nullOrder) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b, nullOrder);
+		}
+		return a.compareTo(b);
+	}
 
 	protected final int compareBigDecimal(BigDecimal a, BigDecimal b) {
 		return compareBigDecimal(a, b, NullOrder.NULLS_ALWAYS_LAST);

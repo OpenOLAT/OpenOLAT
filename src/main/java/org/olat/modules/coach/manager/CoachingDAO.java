@@ -51,6 +51,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.model.CompletionStats;
 import org.olat.modules.coach.model.CourseStatEntry;
@@ -99,6 +100,8 @@ public class CoachingDAO {
 	private UserManager userManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private UserCourseInformationsManager userCourseInformationsManager;
 
 	
 	public boolean isMember(IdentityRef identity, GroupRoles role, RepositoryEntryStatusEnum[] status) {
@@ -567,7 +570,12 @@ public class CoachingDAO {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key, lifecycle.key, v.displayname, v.technicalType, v.externalId, v.externalRef, v.status,")
 		  .append("  v.teaser, v.location, v.authors, res.resId, res.resName, lifecycle.validFrom, lifecycle.validTo,")
-		  .append("  stats.rating, v.educationalType.key, courseInfos.activity, courseInfos.recentLaunch")
+		  .append("  stats.rating, v.educationalType.key, courseInfos.activity, courseInfos.recentLaunch, courseInfos.visit,")
+		  .append(" (select min(membership.creationDate) from repoentrytogroup rel")
+		  .append("   inner join rel.group g")
+		  .append("   inner join g.members membership")
+		  .append("   where rel.entry.key=v.key and membership.identity.key=:coachKey and membership.role=:role")
+		  .append(" ) as memberSince")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
@@ -604,13 +612,13 @@ public class CoachingDAO {
 				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("status", statusList)
 				.setParameter("runtimeTypes", runtimeTypesList)
-				.setParameter("coachKey", coach.getKey());
+				.setParameter("coachKey", coach.getKey())
+				.setParameter("role", role.name());
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
-		} else {
-			query.setParameter("role", role.name());
 		}
 		
+		Date now = new Date();
 		List<Object[]> list = query.getResultList();
 		Map<Long,CourseStatEntry> map = new HashMap<>();
 		for(Object[] rawStat:list) {
@@ -634,6 +642,9 @@ public class CoachingDAO {
 				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 15));
 				entry.setMyActivity(PersistenceHelper.extractPrimitiveDouble(rawStat, 16));
 				entry.setMyLastVisit((Date)rawStat[17]);
+				entry.setMyVisits(PersistenceHelper.extractPrimitiveInt(rawStat, 18));
+				entry.setMembersSince((Date)rawStat[19]);
+				entry.setRelevance(userCourseInformationsManager.calculateRelevance(entry.getMyActivity(), entry.getMyVisits(), entry.getMembersSince(), now));
 				return entry;
 			});
 		}

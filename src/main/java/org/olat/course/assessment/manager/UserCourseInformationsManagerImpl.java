@@ -227,6 +227,25 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	
 	
 	@Override
+	public double getEffectiveActivity(double activity, Date now) {
+		if(activity <= 0.0d) {
+			return 0.0d;
+		}
+		return activity / activityIncrement(now);
+	}
+
+	@Override
+	public double calculateRelevance(double activity, int visit, Date memberSince, Date now) {
+		double relevance = getEffectiveActivity(activity, now);
+		if(visit <= 2 && memberSince != null) {
+			double ageInSeconds = Math.max(0.0d, (now.getTime() - memberSince.getTime()) / 1000d);
+			double hn = (double)courseNewnessHalflife * DAY_IN_SECONDS;
+			relevance += courseNewnessWeight * Math.pow(2.0d, -ageInSeconds / hn);
+		}
+		return relevance;
+	}
+	
+	@Override
 	public long getNewnessWeight() {
 		return courseNewnessWeight;
 	}

@@ -111,6 +111,22 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	public String getEducationalTypei18nKey() {
 		return RepositoyUIFactory.getI18nKey(educationalType);
 	}
+	
+	public double getMyActivity() {
+		return entry.getMyActivity();
+	}
+	
+	public double getRelevance() {
+		return entry.getRelevance();
+	}
+	
+	public int getMyVisits() {
+		return entry.getMyVisits();
+	}
+	
+	public Date getMembersSince() {
+		return entry.getMembersSince();
+	}
 
 	public long getNumOfTaxonomyLevels() {
 		return numOfTaxonomyLevels;

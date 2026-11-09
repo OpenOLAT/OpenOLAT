@@ -425,6 +425,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			case taxonomyLevels -> row.getTaxonomyLevelsLink();
 			case references -> row.getReferencesLink();
 			case educationalType -> row.getEducationalType();
+			case activity -> row.getMyActivity();
 			default -> "ERROR";
 		};
 	}
@@ -563,7 +564,10 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		taxonomyLevels("table.header.num.of.levels"),
 		resourceType("table.header.typeimg"),
 		references("table.header.references"),
-		educationalType("table.header.educational.type");
+		educationalType("table.header.educational.type"),
+		activity(""),
+		relevance(""),
+		newest("");
 		
 		private final String i18nKey;
 		

@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
@@ -42,6 +43,8 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -364,6 +367,7 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 		if(config.withPresetsFilters()) {
 			initFiltersPresets();
 		}
+		initSorters(tableEl);
 
 		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.7-" + runtimeTypesGroup.name());
 		if(config.withPresetsFilters() && tableEl.getSelectedFilterTab() == null) {
@@ -555,6 +559,46 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 
 		tableEl.setFilterTabs(true, tabs);
     }
+    
+	private void initSorters(FlexiTableElement tableElement) {
+		List<FlexiTableSort> sorters = new ArrayList<>(14);
+		sorters.add(new FlexiTableSort(translate("orderby.activity"), Columns.activity.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.newest"), Columns.newest.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.relevance"), Columns.relevance.name()));
+		sorters.add(FlexiTableSort.SPACER);
+		sorters.add(new FlexiTableSort(translate(Columns.resourceType.i18nHeaderKey()), Columns.resourceType.name()));
+		sorters.add(new FlexiTableSort(translate(Columns.technicalType.i18nHeaderKey()), Columns.technicalType.name()));
+		sorters.add(new FlexiTableSort(translate(Columns.name.i18nHeaderKey()), Columns.name.name()));
+		sorters.add(new FlexiTableSort(translate(Columns.externalId.i18nHeaderKey()), Columns.externalId.name()));
+		sorters.add(new FlexiTableSort(translate(Columns.externalRef.i18nHeaderKey()), Columns.externalRef.name()));
+		sorters.add(new FlexiTableSort(translate(Columns.lifecycleStart.i18nHeaderKey()), Columns.lifecycleStart.name()));
+		sorters.add(new FlexiTableSort(translate(Columns.lifecycleEnd.i18nHeaderKey()), Columns.lifecycleEnd.name()));
+		sorters.add(new FlexiTableSort(translate(Columns.educationalType.i18nHeaderKey()), Columns.educationalType.name()));
+
+		if(curriculumModule.isEnabled()) {
+			sorters.add(new FlexiTableSort(translate(Columns.references.i18nHeaderKey()), Columns.references.name()));
+		}
+		
+		sorters.add(new FlexiTableSort(translate(Columns.access.i18nHeaderKey()), Columns.access.name()));
+
+		if(runtimeTypesGroup.loadStatistics()) {
+			sorters.add(new FlexiTableSort(translate(Columns.participants.i18nHeaderKey()), Columns.participants.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.participantsVisited.i18nHeaderKey()), Columns.participantsVisited.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.participantsNotVisited.i18nHeaderKey()), Columns.participantsNotVisited.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.lastVisit.i18nHeaderKey()), Columns.lastVisit.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.completion.i18nHeaderKey()), Columns.completion.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.successStatus.i18nHeaderKey()), Columns.successStatus.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.statusPassed.i18nHeaderKey()), Columns.statusPassed.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.statusNotPassed.i18nHeaderKey()), Columns.statusNotPassed.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.statusUndefined.i18nHeaderKey()), Columns.statusUndefined.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.averageScore.i18nHeaderKey()), Columns.averageScore.name()));
+			sorters.add(new FlexiTableSort(translate(Columns.certificates.i18nHeaderKey()), Columns.certificates.name()));
+		}
+		
+		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
+		options.setDefaultOrderBy(new SortKey(Columns.activity.name(), true));
+		tableElement.setSortSettings(options);
+	}
     
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {

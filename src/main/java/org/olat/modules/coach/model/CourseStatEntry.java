@@ -58,7 +58,10 @@ public class CourseStatEntry implements OLATResourceable {
 	private String resourceTypeName;
 	
 	private double myActivity;
+	private double relevance;
 	private Date myLastVisit;
+	private int myVisits;
+	private Date membersSince;
 	
 	private Double averageRating;
 	
@@ -215,6 +218,14 @@ public class CourseStatEntry implements OLATResourceable {
 		this.myActivity = myActivity;
 	}
 
+	public double getRelevance() {
+		return relevance;
+	}
+
+	public void setRelevance(double relevance) {
+		this.relevance = relevance;
+	}
+
 	public Date getMyLastVisit() {
 		return myLastVisit;
 	}
@@ -222,6 +233,23 @@ public class CourseStatEntry implements OLATResourceable {
 	public void setMyLastVisit(Date myLastVisit) {
 		this.myLastVisit = myLastVisit;
 	}
+
+	public int getMyVisits() {
+		return myVisits;
+	}
+
+	public void setMyVisits(int myVisits) {
+		this.myVisits = myVisits;
+	}
+
+	public Date getMembersSince() {
+		return membersSince;
+	}
+
+	public void setMembersSince(Date membersSince) {
+		this.membersSince = membersSince;
+	}
+	
 
 	public int getParticipants() {
 		return participants;

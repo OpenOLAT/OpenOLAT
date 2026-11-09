@@ -407,6 +407,145 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, countErrors);
 	}
 	
+	/**
+	 * A launch is worth 1.0 today, 0.5 after one half life (14 days).
+	 */
+	@Test
+	public void getEffectiveActivity() {
+		Date now = new Date();
+
+		double today = userCourseInformationsManager.getEffectiveActivity(storedActivity(now), now);
+		Assert.assertEquals(1.0d, today, 0.0001d);
+
+		double twoWeeksAgo = userCourseInformationsManager.getEffectiveActivity(storedActivity(daysAgo(now, 14)), now);
+		Assert.assertEquals(0.5d, twoWeeksAgo, 0.0001d);
+
+		double never = userCourseInformationsManager.getEffectiveActivity(0.0d, now);
+		Assert.assertEquals(0.0d, never, 0.0001d);
+	}
+
+	/**
+	 * Ranking of the patterns "daily for 7 days" > "once yesterday" > "20 times 4 months ago".
+	 */
+	@Test
+	public void getEffectiveActivity_ranking() {
+		Date now = new Date();
+
+		double onceYesterday = userCourseInformationsManager
+				.getEffectiveActivity(storedActivity(daysAgo(now, 1)), now);
+
+		Date[] dailyLaunches = new Date[7];
+		for(int i=0; i<dailyLaunches.length; i++) {
+			dailyLaunches[i] = daysAgo(now, i);
+		}
+		double daily = userCourseInformationsManager
+				.getEffectiveActivity(storedActivity(dailyLaunches), now);
+
+		Date fourMonthsAgo = daysAgo(now, 120);
+		Date[] oldLaunches = new Date[20];
+		for(int i=0; i<oldLaunches.length; i++) {
+			oldLaunches[i] = fourMonthsAgo;
+		}
+		double old = userCourseInformationsManager
+				.getEffectiveActivity(storedActivity(oldLaunches), now);
+
+		Assert.assertTrue(daily > onceYesterday);
+		Assert.assertTrue(onceYesterday > old);
+		Assert.assertTrue(old < 0.1d);
+	}
+
+	/**
+	 * A new course never opened is above a daily used course in the first days
+	 * and below after 2 weeks.
+	 */
+	@Test
+	public void calculateRelevance_newVsDailyUsed() {
+		Date now = new Date();
+		double dailyUsed = dailyUsedRelevance(now);
+		// saturation of a daily used course is about 20
+		Assert.assertEquals(20.7d, dailyUsed, 0.5d);
+
+		double newToday = userCourseInformationsManager.calculateRelevance(0.0d, 0, now, now);
+		Assert.assertEquals(40.0d, newToday, 0.0001d);
+		Assert.assertTrue(newToday > dailyUsed);
+
+		double newSince3Days = userCourseInformationsManager.calculateRelevance(0.0d, 0, daysAgo(now, 3), now);
+		Assert.assertTrue(newSince3Days > dailyUsed);
+
+		double newSince2Weeks = userCourseInformationsManager.calculateRelevance(0.0d, 0, daysAgo(now, 14), now);
+		Assert.assertEquals(10.0d, newSince2Weeks, 0.0001d);
+		Assert.assertTrue(newSince2Weeks < dailyUsed);
+
+		double newSince6Weeks = userCourseInformationsManager.calculateRelevance(0.0d, 0, daysAgo(now, 42), now);
+		Assert.assertTrue(newSince6Weeks < 1.0d);
+	}
+
+	/**
+	 * The newness bonus applies up to 2 launches. After 3 launches,
+	 * the course ranks by its activity only.
+	 */
+	@Test
+	public void calculateRelevance_visitCutOff() {
+		Date now = new Date();
+		Date yesterday = daysAgo(now, 1);
+
+		double activity2 = storedActivity(now, now);
+		double relevance2 = userCourseInformationsManager.calculateRelevance(activity2, 2, yesterday, now);
+		Assert.assertTrue(relevance2 > userCourseInformationsManager.getEffectiveActivity(activity2, now) + 30.0d);
+
+		double activity3 = storedActivity(now, now, now);
+		double relevance3 = userCourseInformationsManager.calculateRelevance(activity3, 3, yesterday, now);
+		Assert.assertEquals(3.0d, relevance3, 0.0001d);
+		Assert.assertEquals(userCourseInformationsManager.getEffectiveActivity(activity3, now), relevance3, 0.0001d);
+		Assert.assertTrue(relevance3 < dailyUsedRelevance(now));
+	}
+
+	/**
+	 * Without membership date, no newness bonus.
+	 */
+	@Test
+	public void calculateRelevance_withoutMembership() {
+		Date now = new Date();
+
+		double noActivity = userCourseInformationsManager.calculateRelevance(0.0d, 0, null, now);
+		Assert.assertEquals(0.0d, noActivity, 0.0001d);
+
+		double activity = storedActivity(now);
+		double relevance = userCourseInformationsManager.calculateRelevance(activity, 1, null, now);
+		Assert.assertEquals(1.0d, relevance, 0.0001d);
+	}
+
+	/**
+	 * Relevance of a course used daily for 90 days, member since 100 days.
+	 */
+	private double dailyUsedRelevance(Date now) {
+		Date[] launches = new Date[90];
+		for(int i=0; i<launches.length; i++) {
+			launches[i] = daysAgo(now, i);
+		}
+		return userCourseInformationsManager.calculateRelevance(storedActivity(launches),
+				launches.length, daysAgo(now, 100), now);
+	}
+
+	/**
+	 * Exact offset in days, independent of daylight saving time.
+	 */
+	private static Date daysAgo(Date now, int days) {
+		return new Date(now.getTime() - days * 24l * 60l * 60l * 1000l);
+	}
+	
+	/**
+	 * Simulate the stored activity (relative to the epoch) after launches
+	 * at the specified dates.
+	 */
+	private double storedActivity(Date... launches) {
+		double activity = 0.0d;
+		for(Date launch:launches) {
+			activity += userCourseInformationsManager.calculateActivity(1, launch);
+		}
+		return activity;
+	}
+	
 	/* Needed to generate a lot of datas
 	@Test
 	public void testHeavyLoads() {

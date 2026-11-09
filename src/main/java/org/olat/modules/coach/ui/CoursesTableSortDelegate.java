@@ -44,6 +44,20 @@ public class CoursesTableSortDelegate extends SortableFlexiTableModelDelegate<Co
 	
 	@Override
 	protected void sort(List<CourseStatEntryRow> rows) {
+		SortKey orderBy = getOrderBy();
+		if(Columns.activity.name().equals(orderBy.getKey())) {
+			Collections.sort(rows, new ActivityComparator());
+			return;
+		}
+		if(Columns.newest.name().equals(orderBy.getKey())) {
+			Collections.sort(rows, new NewestComparator());
+			return;
+		}
+		if(Columns.relevance.name().equals(orderBy.getKey())) {
+			Collections.sort(rows, new RelevanceComparator());
+			return;
+		}
+		
 		int columnIndex = getColumnIndex();
 		if(columnIndex == Columns.certificates.ordinal()) {
 			Collections.sort(rows, new CertificatesComparator());
@@ -54,6 +68,52 @@ public class CoursesTableSortDelegate extends SortableFlexiTableModelDelegate<Co
 		}
 	}
 	
+	private class RelevanceComparator implements Comparator<CourseStatEntryRow> {
+		
+		@Override
+		public int compare(CourseStatEntryRow o1, CourseStatEntryRow o2) {
+			Double a1 = o1.getRelevance() > 0.0d ? Double.valueOf(o1.getRelevance()) : null;
+			Double a2 = o2.getRelevance() > 0.0d ? Double.valueOf(o2.getRelevance()) : null;
+			int c = compareDoubles(a1, a2);
+			if(c == 0) {
+				c = compareString(o1.getDisplayName(), o2.getDisplayName());
+			}
+			if(c == 0) {
+				c = o1.getKey().compareTo(o2.getKey());
+			}
+			return c;
+		}
+	}
+	
+	private class NewestComparator implements Comparator<CourseStatEntryRow> {
+		@Override
+		public int compare(CourseStatEntryRow o1, CourseStatEntryRow o2) {
+			int c = compareDateAndTimestamps(o1.getMembersSince(), o2.getMembersSince());
+			if(c == 0) {
+				c = compareString(o1.getDisplayName(), o2.getDisplayName());
+			}
+			if(c == 0) {
+				c = o1.getKey().compareTo(o2.getKey());
+			}
+			return c;
+		}
+	}
+
+	private class ActivityComparator implements Comparator<CourseStatEntryRow> {
+		@Override
+		public int compare(CourseStatEntryRow o1, CourseStatEntryRow o2) {
+			Double a1 = o1.getMyActivity() > 0.0d ? Double.valueOf(o1.getMyActivity()) : null;
+			Double a2 = o2.getMyActivity() > 0.0d ? Double.valueOf(o2.getMyActivity()) : null;
+			int c = compareDoubles(a1, a2);
+			if(c == 0) {
+				c = compareString(o1.getDisplayName(), o2.getDisplayName());
+			}
+			if(c == 0) {
+				c = o1.getKey().compareTo(o2.getKey());
+			}
+			return c;
+		}
+	}
 
 	private class SuccessStatusComparator implements Comparator<CourseStatEntryRow> {
 		@Override
