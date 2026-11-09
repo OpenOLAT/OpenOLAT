@@ -18,7 +18,7 @@ Version markers in this skill: `**New in 21.1.0:**` marks a pattern that exists 
 ## Project Basics
 
 - **Build:** `mvn compile -pl :openolat-lms -q`
-- **Java 17+**, Jakarta EE, Spring 7, Hibernate 7, Apache Velocity
+- **Java 25+**, Jakarta EE, Spring 7, Hibernate 7, Apache Velocity
 - **Naming:** Always write "OpenOlat" in prose (not "OpenOLAT"). Java classes keep original casing.
 - **License:** Apache 2.0. Developed by frentix GmbH, Zurich, Switzerland.
 

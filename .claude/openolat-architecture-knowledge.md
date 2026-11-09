@@ -13,7 +13,7 @@
 
 **Synchronized window.** Each browser tab is a `Window` object. All dispatches to a window are synchronized — prevents race conditions from double-click or concurrent requests.
 
-**Stack (21.1.0):** Java 17 target, Spring 7.0.9, Hibernate 7.4.10, Infinispan 16.2.3, CXF 4.2.3, Jackson 2.22.3, LangChain4j 1.20.0, Log4j2 2.26.1, Velocity 2.4.1, Quartz 2.5.2. Maxima CAS and Nashorn are removed.
+**Stack (21.1.0):** Java 25 target, Spring 7.0.9, Hibernate 7.4.10, Infinispan 16.2.3, CXF 4.2.3, Jackson 2.22.3, LangChain4j 1.20.0, Log4j2 2.26.1, Velocity 2.4.1, Quartz 2.5.2. Maxima CAS and Nashorn are removed.
 
 ## 2. Request Flow
 

@@ -74,8 +74,8 @@ This is an installation guide for developers.
 * Check that you are using maven 3.8 or higher (mvn -V)
 * Check that you have the git plugin installed in eclipse
 * Check that you have git installed
-* Check that you have Java 17 installed
-* Check that you have Tomcat 10.0 or 10.1 installed
+* Check that you have Java 25 installed
+* Check that you have Tomcat 11.0 installed
 
 #### 1. In Eclipse
 
@@ -134,7 +134,7 @@ test database that you configured in `src/test/profile/postgresql/olat.local.pro
 
 Setup a tomcat server by clicking on `OpenOlat -> Run As -> "Run on Server"`. The
 "Run on Server" wizard will pop up and you define define a new server. Look for
-`Apache -> Tomcat v9.0`.
+`Apache -> Tomcat v11.0`.
 
 Add openolat as web application in the step "Add and remove" and click finish.
 
@@ -451,7 +451,7 @@ when the test get slower over time.
 
 #### Execute Selenium functional tests
 
-The Selenium integration tests start the whole web application in Tomcat 10.1. They run with
+The Selenium integration tests start the whole web application in Tomcat 11.0. They run with
 Google Chrome or Firefox and their WebDrivers will be automatically downloaded (internet connection
 needed). The browsers need to be installed the standard way on Mac or Linux.
 

@@ -14,7 +14,7 @@ This design has significant implications. Every user interaction — a button cl
 
 ### Technology Stack
 
-- **Build**: Maven (`mvn compile -pl :openolat-lms -q`), Java 17 target (`targetJdk` in `pom.xml`)
+- **Build**: Maven (`mvn compile -pl :openolat-lms -q`), Java 25 target (`targetJdk` in `pom.xml`)
 - **Dependency Injection**: Spring Framework 7 (XML + annotation-based)
 - **ORM**: Hibernate 7 / JPA via Jakarta Persistence
 - **Templating**: Apache Velocity (server-side rendering)
@@ -23,7 +23,7 @@ This design has significant implications. Every user interaction — a button cl
 - **Databases**: PostgreSQL, Oracle
 - **AI**: LangChain4j (chat and embedding models, see section 19)
 
-Key library versions on the 21.1.0 code line (from `pom.xml` properties):
+Key library versions on the 21.2.0 code line (from `pom.xml` properties):
 
 | Library | Version | Property |
 |---------|---------|----------|
