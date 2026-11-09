@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -1247,10 +1248,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			
 			Boolean visibility;
 			AssessmentEntryStatus assessmentStatus;
+			AssessmentEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 			String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
 			if(IQEditController.CORRECTION_MANUAL.equals(correctionMode) || IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 				assessmentStatus = AssessmentEntryStatus.inReview;
-				visibility = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv).getUserVisible();
+				visibility = currentEval.getUserVisible();
 			} else {
 				assessmentStatus = AssessmentEntryStatus.done;
 				visibility = Boolean.TRUE;
@@ -1261,7 +1263,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent,
 					updatePass, assessmentStatus, visibility, start, completion, AssessmentRunStatus.done, assessmentId);
 			
-			boolean increment = incrementAttempts.getAndSet(false);
+			boolean increment = incrementAttempts.getAndSet(false)
+					&& !Objects.equals(currentEval.getCurrentRunStatus(), AssessmentRunStatus.done);
 			courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),
 					increment, Role.user);
 			if(increment) {

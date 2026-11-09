@@ -86,7 +86,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	private final String mapperUri;
 	
 	private boolean pushUpdate = false;
-	private boolean authorizedSebVersion = false;
+	private Boolean authorizedSebVersion = null;
 	private List<TransientAssessmentMode> modes;
 	
 	private final ResourceGuards guards = new ResourceGuards();
@@ -248,51 +248,49 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			allowed &= ipInRange;
 		}
 		
+		// Only need to authorized the version once. 
+		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()
+				&& (StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey()) || StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList()))) {
+			String browserVersion = ureq.getParameter("browserVersion");
+			 if(StringHelper.containsNonWhitespace(browserVersion)) {
+				SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
+				boolean authorizedVersion = isVersionAllowed(ureq, versionInfos);
+				if(authorizedVersion) {
+					authorizedSebVersion = Boolean.TRUE;
+				} else {
+					writeSafeExamVersionWarning(sb);
+					authorizedSebVersion = Boolean.FALSE;
+				}
+				allowed &= authorizedVersion;
+			} else if(authorizedSebVersion != null) {
+				if(!authorizedSebVersion.booleanValue()) {
+					writeSafeExamVersionWarning(sb);
+				}
+				allowed &= authorizedSebVersion.booleanValue();
+			} else if(useHeaders != null) {
+				writeSafeExamVersionWarning(sb);
+				allowed &= false;
+			}
+		}
+		
 		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())) {
 			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null, useHeaders);
-			if(!safeExamCheck) {
-				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
-				sb.append(translate("error.safe.exam"));
-				sb.append("</h4>");
-				sb.append(translate("error.safe.exam.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
+			if(!safeExamCheck && (authorizedSebVersion == null || authorizedSebVersion.booleanValue()))  {
+				writeSafeExamWarning(sb);
 			}
 			allowed &= safeExamCheck;
 		} else if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
 			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, null, mode.getSafeExamBrowserConfigPListKey(), useHeaders);
 			if(!safeExamCheck) {
-				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
-				sb.append(translate("error.safe.exam"));
-				sb.append("</h4>");
-				sb.append(translate("error.safe.exam.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
-				
+				if(authorizedSebVersion == null || authorizedSebVersion.booleanValue()) {
+					writeSafeExamWarning(sb);
+				}
 				guard.getDownloadSEBButton().setVisible(true);
 				guard.getDownloadSEBConfigurationButton().setVisible(mode.isSafeExamBrowserConfigDownload());
 			}
 			allowed &= safeExamCheck;
 		}
-		
-		// Only need to authorized the version once. 
-		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()
-				&& (StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey()) || StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList()))
-				&& !authorizedSebVersion) {
-			String browserVersion = ureq.getParameter("browserVersion");
-			SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
-			if(versionInfos == null && !allowed) {
-				// Don't write message twice
-			} else {
-				boolean authorizedVersion = isVersionAllowed(ureq, versionInfos);
-				if(authorizedVersion) {
-					authorizedSebVersion = true;
-				} else {
-					sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
-					sb.append(translate("error.safe.exam.version"));
-					sb.append("</h4>");
-					sb.append(translate("error.safe.exam.version.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
-				}
-				allowed &= authorizedVersion;
-			}
-		}
-		
+
 		guard.getCountDown().setDate(mode.getBegin());
 
 		String state;
@@ -311,6 +309,21 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		
 		guard.sync(state, sb.toString(), mode, getLocale());
 		return guard;
+	}
+	
+
+	private void writeSafeExamWarning(StringBuilder sb) {
+		sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
+		sb.append(translate("error.safe.exam"));
+		sb.append("</h4>");
+		sb.append(translate("error.safe.exam.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
+	}
+	
+	private void writeSafeExamVersionWarning(StringBuilder sb) {
+		sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
+		sb.append(translate("error.safe.exam.version"));
+		sb.append("</h4>");
+		sb.append(translate("error.safe.exam.version.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
 	}
 	
 	private boolean isVersionAllowed(UserRequest ureq, SafeExamBrowserVersion versionInfos) {
