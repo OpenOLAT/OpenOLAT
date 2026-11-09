@@ -79,8 +79,8 @@
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.4.Final</io.undertow>
 		<io.undertow.ee>2.0.3.Final</io.undertow.ee>
-		<jackson.version>2.22.4</jackson.version>
-		<jackson.annotations.version>2.22</jackson.annotations.version>
+		<jackson.version>2.23.0</jackson.version>
+		<jackson.annotations.version>2.23</jackson.annotations.version>
 		<swagger.ui.version>5.34.1</swagger.ui.version>
 		<com.mysql.version>26.10.0</com.mysql.version>
 		<org.postgresql.version>42.7.14</org.postgresql.version>
