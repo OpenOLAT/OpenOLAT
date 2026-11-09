@@ -24,6 +24,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -31,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -83,6 +85,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -385,30 +388,33 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	
 	private int sendScheduledCourseMessage(InfoMessage infoMessage, Translator translator) {
 		ICourse course = CourseFactory.loadCourse(infoMessage.getResId());
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), infoMessage.getBusinessPath(), translator);
 		Set<Identity> sendTo = new HashSet<>();
 		Set<InfoMessageToGroup> infoMessageToGroups = infoMessage.getGroups();
 		Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = infoMessage.getCurriculumElements();
 
-		if (infoMessage.getSendMailTo() != null) {
+		Set<String> sendMailToKeys = parseSendMailToKeys(infoMessage.getSendMailTo());
+		if (!sendMailToKeys.isEmpty()) {
 			// send mails to subscribers
-			if (infoMessage.getSendMailTo().contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
+			if (sendMailToKeys.contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
 				sendTo.addAll(getInfoSubscribers(course, infoMessage.getResSubPath()));
 			}
-			// send mails to owners
-			if (infoMessage.getSendMailTo().contains(GroupRoles.owner.name())) {
-				sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-						RepositoryEntryRelationType.all, GroupRoles.owner.name()));
+			// send mails to owners (no course-only variant exists for owners)
+			if (sendMailToKeys.contains(GroupRoles.owner.name())) {
+				sendTo.addAll(repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name()));
 			}
-			// send mails to coaches
-			if (infoMessage.getSendMailTo().contains(GroupRoles.coach.name())) {
-				sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-						RepositoryEntryRelationType.all, GroupRoles.coach.name()));
+			// send mails to coaches: "coach" includes group/curriculum coaches, "coach-course" is course coaches only
+			if (sendMailToKeys.contains(GroupRoles.coach.name())) {
+				sendTo.addAll(repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.coach.name()));
+			} else if (sendMailToKeys.contains(GroupRoles.coach.name() + "-course")) {
+				sendTo.addAll(repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name()));
 			}
-			// send mails to participants
-			if (infoMessage.getSendMailTo().contains(GroupRoles.participant.name())) {
-				sendTo.addAll(repositoryService.getMembers(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-						RepositoryEntryRelationType.all, GroupRoles.participant.name()));
+			// send mails to participants: "participant" includes group/curriculum participants, "participant-course" is course participants only
+			if (sendMailToKeys.contains(GroupRoles.participant.name())) {
+				sendTo.addAll(repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name()));
+			} else if (sendMailToKeys.contains(GroupRoles.participant.name() + "-course")) {
+				sendTo.addAll(repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name()));
 			}
 		}
 		// send mails to group members
@@ -435,7 +441,21 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		sendInfoMessage(infoMessage, mailFormatter, translator.getLocale(), infoMessage.getAuthor(), sendTo);
 		return sendTo.size();
 	}
-	
+
+	/**
+	 * Splits the comma-separated sendMailTo value into a set of exact option keys such as
+	 * "coach", "participant", "coach-course", "participant-course".
+	 */
+	private static Set<String> parseSendMailToKeys(String sendMailTo) {
+		if (!StringHelper.containsNonWhitespace(sendMailTo)) {
+			return Set.of();
+		}
+		return Arrays.stream(sendMailTo.split(","))
+				.map(String::trim)
+				.filter(StringHelper::containsNonWhitespace)
+				.collect(Collectors.toSet());
+	}
+
 	@Override
 	public void deleteInfoMessage(InfoMessage infoMessage) {
 		if(StringHelper.containsNonWhitespace(infoMessage.getAttachmentPath())) {

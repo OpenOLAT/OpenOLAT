@@ -22,12 +22,15 @@ package org.olat.commons.info;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -35,9 +38,16 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.model.DBMailLight;
+import org.olat.core.util.mail.model.DBMailRecipient;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +65,10 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 	private InfoMessageFrontendManager infoManager;
 	@Autowired
 	private BusinessGroupService groupService;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private MailManager mailManager;
 	@Autowired
 	private DB dbInstance;
 
@@ -250,6 +264,68 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, identities.size());
 		Assert.assertTrue(identities.contains(id1));
 		Assert.assertTrue(identities.contains(id2));
+	}
+
+	/**
+	 * A scheduled info message on a course, addressed to "All course participants" only
+	 * (the course-only "participant-course" option, no groups selected), must be sent to the course's
+	 * own participants only - not to identities who are participants only via a business group linked
+	 * to the course. The scheduled-message cron used to match "participant-course" with a substring
+	 * check against "participant", wrongly treating it as the combined (course + groups) option.
+	 */
+	@Test
+	public void sendScheduledCourseMessage_shouldNotSendToLinkedGroupParticipants() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("oo10022-author");
+		Identity courseParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("oo10022-course-part");
+		Identity groupParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("oo10022-group-part");
+
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		dbInstance.commitAndCloseSession();
+
+		// direct course participant
+		repositoryService.addRole(courseParticipant, courseEntry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		// business group linked to the course, with a participant who is not a course member
+		BusinessGroup group = groupService.createBusinessGroup(null, "OO-10022 group", "OO-10022 group desc",
+				BusinessGroup.BUSINESS_TYPE, null, null, false, false, courseEntry);
+		dbInstance.commitAndCloseSession();
+		groupService.addParticipants(author, Roles.administratorRoles(), Collections.singletonList(groupParticipant), group, null);
+		dbInstance.commitAndCloseSession();
+
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		String title = "oo10022-" + UUID.randomUUID();
+		InfoMessage msg = infoManager.createInfoMessage(course, InfoMessageFrontendManager.businessGroupResSubPath, null, author);
+		msg.setTitle(title);
+		msg.setMessage("Scheduled message for the course participants only.");
+		// "participant-course" (course-only) as opposed to the combined "participant" key which also
+		// includes group/curriculum participants (see SendMembersMailOption.getOptionKey())
+		msg.setSendMailTo(GroupRoles.participant.name() + "-course");
+		msg.setPublishDate(new Date(System.currentTimeMillis() - 60000L));
+		msg = infoManager.saveInfoMessageAndNotify(msg);
+		dbInstance.commitAndCloseSession();
+
+		// trigger the scheduled-message cron (SendInfoMessageJob)
+		infoManager.sendScheduledInfoMessages();
+		dbInstance.commitAndCloseSession();
+
+		InfoMessage reloaded = infoManager.loadInfoMessage(msg.getKey());
+		Assert.assertNotNull(reloaded);
+		Assert.assertTrue(reloaded.isPublished());
+
+		List<DBMailLight> outbox = mailManager.getOutbox(author, 0, -1, true);
+		DBMailLight mail = outbox.stream()
+				.filter(m -> title.equals(m.getSubject()))
+				.findFirst()
+				.orElse(null);
+		Assert.assertNotNull("Expected an e-mail to have been sent for the scheduled info message", mail);
+
+		List<Identity> recipients = mail.getRecipients().stream()
+				.map(DBMailRecipient::getRecipient)
+				.toList();
+		Assert.assertTrue("The direct course participant must receive the e-mail", recipients.contains(courseParticipant));
+		Assert.assertFalse("A participant of a group linked to the course must not receive the e-mail",
+				recipients.contains(groupParticipant));
 	}
 
 	private class InfoOLATResourceable implements OLATResourceable {
