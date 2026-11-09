@@ -150,7 +150,7 @@ public class CPSettingsController extends RepositoryEntrySettingsController {
 		CPPackageConfig cpConfig = cpManager.getCPPackageConfig(resource);
 		DeliveryOptions config = cpConfig == null ? null : cpConfig.getDeliveryOptions();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Layout"), null);
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq,swControl), config, "Knowledge Transfer#_cp_layout", readOnly);
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, addToHistory(ureq,swControl), config, "manual_user/learningresources/CP_Administration/#tab_layout", readOnly);
 		deliveryOptionsCtrl.addControllerListener((uureq, source, event) -> {
 			if(source == deliveryOptionsCtrl
 					&& (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
