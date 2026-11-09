@@ -27,6 +27,7 @@
 package org.olat.core.gui.components.velocity;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
@@ -53,7 +54,7 @@ public class VelocityContainerRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		VelocityContainer vc = (VelocityContainer) source;
 		String pagePath = vc.getPage();
-		Context ctx = vc.getContext();
+		Context ctx = new VelocityContext(vc.getContext());
 		
 		// the component id of the urlbuilder  will be overwritten by the recursive render call for
 		// subcomponents (see Renderer)
