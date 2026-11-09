@@ -114,6 +114,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.MembershipInfos;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryPermanentlyDeletedEvent;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
@@ -162,6 +163,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDAO;
+	@Autowired
+	private RepositoryEntryLifecycleDAO repositoryEntryLifecycleDao;
 	@Autowired
 	private RepositoryEntryRelationDAO reToGroupDao;
 	@Autowired
@@ -791,6 +794,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			delete &= delegate.deleteRepositoryEntryData(reloadedEntry);
 		}
 		if(delete) {
+			RepositoryEntryLifecycle lifecycle = reloadedEntry.getLifecycle();
 			dbInstance.getCurrentEntityManager().remove(reloadedEntry);
 			if(defaultGroup != null) {
 				groupDao.removeGroup(defaultGroup);
@@ -801,6 +805,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			OLATResource reloadedResource = resourceManager.findResourceById(resourceKey);
 			if(reloadedResource != null) {
 				dbInstance.getCurrentEntityManager().remove(reloadedResource);
+			}
+			// the private execution period belongs only to this entry, a public one can be shared
+			if(lifecycle != null && lifecycle.isPrivateCycle()) {
+				repositoryEntryLifecycleDao.deleteLifecycle(lifecycle);
 			}
 		} else {
 			reloadedEntry.setExternalId(null);
