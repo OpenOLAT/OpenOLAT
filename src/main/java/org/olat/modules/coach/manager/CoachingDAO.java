@@ -574,7 +574,7 @@ public class CoachingDAO {
 		  .append(" (select min(membership.creationDate) from repoentrytogroup rel")
 		  .append("   inner join rel.group g")
 		  .append("   inner join g.members membership")
-		  .append("   where rel.entry.key=v.key and membership.identity.key=:coachKey and membership.role=:role")
+		  .append("   where rel.entry.key=v.key and membership.identity.key=:coachKey and membership.role in (:roles)")
 		  .append(" ) as memberSince")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
@@ -612,10 +612,13 @@ public class CoachingDAO {
 				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("status", statusList)
 				.setParameter("runtimeTypes", runtimeTypesList)
-				.setParameter("coachKey", coach.getKey())
-				.setParameter("role", role.name());
+				.setParameter("coachKey", coach.getKey());
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
+			query.setParameter("roles", List.of(GroupRoles.owner.name(), CurriculumRoles.mastercoach.name(), GroupRoles.coach.name()));
+		} else {
+			query.setParameter("role", role.name());
+			query.setParameter("roles", List.of(role.name()));
 		}
 		
 		Date now = new Date();
