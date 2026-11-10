@@ -59,7 +59,7 @@ public class UserDisplayNameCreatorLastnameFirst extends UserDisplayNameCreator{
 			combined = combined + first;
 		}
 		combined = combined.trim();
-		if (combined.length() == 0) combined = "unknown user";
+		if (combined.length() == 0) combined = getUnknownUserDisplayName();
 		return combined;
 	}
 }

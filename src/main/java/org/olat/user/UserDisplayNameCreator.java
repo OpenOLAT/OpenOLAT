@@ -24,6 +24,8 @@ import java.util.List;
 import org.olat.basesecurity.IdentityNames;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -50,7 +52,7 @@ public class UserDisplayNameCreator {
 	 * @return
 	 */
 	public String getUserDisplayName(User user) {
-		if (user == null) return "unknown user";
+		if (user == null) return getUnknownUserDisplayName();
 		// use first and lastname for display purpose
 		String first = user.getProperty(UserConstants.FIRSTNAME, null);
 		String last = user.getProperty(UserConstants.LASTNAME, null);
@@ -71,7 +73,11 @@ public class UserDisplayNameCreator {
 		// expect null values to make it robust agains NPE and remove whitespace
 		String combined = (firstName == null? "" : firstName) + " " + (lastName == null? "" : lastName);
 		combined = combined.trim();
-		if (combined.length() == 0) combined = "unknown user";
+		if (combined.length() == 0) combined = getUnknownUserDisplayName();
 		return combined;
+	}
+
+	protected static String getUnknownUserDisplayName() {
+		return Util.createPackageTranslator(UserDisplayNameCreator.class, I18nModule.getDefaultLocale()).translate("user.unknown");
 	}
 }
