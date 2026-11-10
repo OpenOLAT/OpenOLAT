@@ -24,10 +24,7 @@
 			#end
 			<div class="o_folder_quick_search">
 				#if($r.available("quicksearch") && $r.visible("quicksearch"))
-					<div class="input-group">
-						$r.render("quicksearch")
-						<span class="input-group-btn">$r.render("quickSearchButton")</span>
-					</div>
+					$r.render("quicksearch")
 				#end
 			</div>
 		</div>
