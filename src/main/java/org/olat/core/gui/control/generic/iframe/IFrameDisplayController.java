@@ -200,6 +200,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 					contentSecurityPolicy, courseDBId);
 		}
 		contentMapper.setStrictSanitize(iframeSettings.isStrictSanitize());
+		contentMapper.setRepositoryEntryKey(iframeSettings.getRepositoryEntryKey());
 		contentMapper.setDeliveryOptions(deliveryOptions);
 
 		if(adjustAutoHeight && iframeSettings.isIframeResizer()) {
@@ -231,7 +232,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		}
 		myContent.contextPut("token", token);
 		myContent.contextPut("baseURI", baseURI);
-		myContent.contextPut("serverUri", serverUri);
 		
 		newUriEventPanel = new Panel("newUriEvent");
 		newUriEventPanel.setContent(eventVC);

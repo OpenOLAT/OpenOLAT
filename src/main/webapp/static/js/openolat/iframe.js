@@ -234,16 +234,102 @@ function b_changeLinkTargets() {
 	}
 }
 
-// OO-10015: course internal links across the content domain. The iframe cannot call
-// parent.gotonode() because the parent has another origin. Send a message instead.
-function b_registerCourseLinkBridge(server_origin) {
-	const re = /^javascript:\s*(?:window\.)?(?:parent|top)\.(gotonode|gototool)\(\s*['"]?([\w-]{1,64})['"]?\s*\)\s*;?\s*$/;
+// OO-10015, OO-10045: links to OpenOlat in pages delivered by the content domain. The
+// page cannot call parent.gotonode() because the parent has another origin, and links
+// like /auth/RepositoryEntry/123 resolve against the content domain. The decorator:
+// - posts a message to the OpenOlat window for a plain click in a frame
+//   (olat-gotonode for an element of the same course, else olat-gotopath),
+// - points the link to the main domain for all other clicks (new tab, middle click,
+//   context menu) and lets the browser handle them.
+function b_registerContentLinkBridge(server_origin, content_origin, context_path, legacy_context) {
+	const jsRe = /^javascript:\s*(?:window\.)?(?:parent|top)\.(gotonode|gototool)\(\s*['"]?([\w-]{1,64})['"]?\s*\)\s*;?\s*$/;
+	const nodeRe = /^\/(?:auth|url)\/RepositoryEntry\/(\d+)\/CourseNode\/([\w-]{1,64})\/?$/;
+	context_path = context_path || '';
+
+	// Send the message to all ancestors, only the windows of the main domain receive it.
+	// window.top is not enough if OpenOlat itself is embedded in a frame.
+	function post(msg) {
+		let w = window;
+		for (let i = 0; i < 16; i++) {
+			let p = w.parent;
+			if (!p || p === w) break;
+			try {
+				p.postMessage(msg, server_origin);
+			} catch (e) {
+				// ignore
+			}
+			w = p;
+		}
+	}
+
+	// Path of an OpenOlat page (/auth/... or /url/... with query and hash) or null
+	function olatPath(a) {
+		let url;
+		try {
+			url = new URL(a.getAttribute('href'), document.baseURI);
+		} catch (e) {
+			return null;
+		}
+		if (url.origin !== server_origin && url.origin !== content_origin) return null;
+		let path = url.pathname;
+		if (context_path.length > 0 && path.indexOf(context_path + '/') === 0) {
+			path = path.substring(context_path.length);
+		} else if (legacy_context && path.indexOf(legacy_context) === 0) {
+			path = path.substring(legacy_context.length - 1);
+		}
+		let m = /^\/(auth|url)\/([^\/]*)/.exec(path);
+		// component URLs of OpenOlat windows (window:timestamp:component) are not links
+		if (!m || /:|%3a/i.test(m[2])) return null;
+		return path + url.search + url.hash;
+	}
+
+	function findAnchor(e) {
+		return e.target && e.target.closest ? e.target.closest('a[href]') : null;
+	}
+
+	// Point the link to the main domain, the browser opens it there
+	function rewrite(a, path) {
+		let mainUrl = server_origin + context_path + path;
+		if (a.href !== mainUrl) {
+			a.href = mainUrl;
+		}
+	}
+
 	document.addEventListener('click', function(e) {
-		let a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+		let a = findAnchor(e);
 		if (!a) return;
-		let m = re.exec(a.getAttribute('href'));
-		if (!m) return;
+		let m = jsRe.exec(a.getAttribute('href'));
+		if (m) {
+			e.preventDefault();
+			post({ type: 'olat-' + m[1], id: m[2] });
+			return;
+		}
+
+		let path = olatPath(a);
+		if (!path) return;
+		rewrite(a, path);
+		if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+		if ((a.getAttribute('target') || '').toLowerCase() === '_blank') return;
+		if (window.parent === window) return; // own tab, the browser opens the main domain
+
 		e.preventDefault();
-		window.parent.postMessage({ type: 'olat-' + m[1], id: m[2] }, server_origin);
+		let nm = nodeRe.exec(path.split(/[?#]/)[0]);
+		if (nm && typeof o_info !== 'undefined' && o_info.repository_entry_key && nm[1] === o_info.repository_entry_key) {
+			post({ type: 'olat-gotonode', id: nm[2] });
+		} else {
+			post({ type: 'olat-gotopath', path: path });
+		}
 	}, true);
+
+	function rewriteOnly(e) {
+		let a = findAnchor(e);
+		if (!a) return;
+		let path = olatPath(a);
+		if (path) {
+			rewrite(a, path);
+		}
+	}
+	document.addEventListener('auxclick', rewriteOnly, true);
+	document.addEventListener('contextmenu', rewriteOnly, true);
+	document.addEventListener('mousedown', rewriteOnly, true);
 }

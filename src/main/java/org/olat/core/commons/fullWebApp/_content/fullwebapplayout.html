@@ -43,10 +43,14 @@ o_info.submit=null;
 o_info.preventOnchange=false;
 o_info.latexit=false;
 #if($enforceTopFrame)
-if (top!=self){top.location=self.location+"?o_winrndo=1";}
+if (top!=self){top.location=self.location.origin+self.location.pathname+(self.location.search?self.location.search+"&":"?")+"o_winrndo=1"+self.location.hash;}
 #end
 function o_start() {
 	o_init();
+	#if($contentDomainOrigin)
+	## OO-10045: links and navigations from the content pages of the content domain
+	o_initContentDomainBridge("$r.escapeJavaScript($contentDomainOrigin)");
+	#end
 	## js E
 	## Set flag that bodyOnLoad has already been called and the page is fully loaded. 
 	## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)

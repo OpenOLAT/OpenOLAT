@@ -764,6 +764,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.tag.manager.TagDAOTest.class,
 	org.olat.core.commons.services.tag.TagServiceTest.class,
 	org.olat.core.dispatcher.DispatcherModuleRedirectTest.class,
+	org.olat.core.dispatcher.ContentDomainNavigationTest.class,
 	org.olat.modules.catalog.WebCatalogDispatcherTest.class,
 	org.olat.repository.ResourceInfoDispatcherTest.class,
 	org.olat.core.dispatcher.ErrorsDispatcherTest.class,

@@ -376,6 +376,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				: Settings.createServerURI();
 		mainVc.contextPut("o_serverUri", serverUri);
 		mainVc.contextPut("o_serverContext", WebappHelper.getServletContextPath());
+		if(Settings.isContentDomainNameEnabled() && !usess.isContentDelivery()) {
+			// OO-10045: the main window receives the links of the pages delivered by the content domain
+			mainVc.contextPut("contentDomainOrigin", Settings.createContentServerURI());
+		}
 		
 		// the current language; used e.g. by screenreaders
 		mainVc.contextPut("lang", ureq.getLocale().toString());

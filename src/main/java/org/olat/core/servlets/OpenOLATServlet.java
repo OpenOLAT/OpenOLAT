@@ -41,6 +41,7 @@ import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.PreWarm;
+import org.olat.core.dispatcher.ContentDomainNavigation;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
@@ -300,13 +301,16 @@ public class OpenOLATServlet extends HttpServlet {
 			}
 		}
 		
-		if("/dmz/".equals(dispatcherName) && !DispatcherModule.getPathDefault().equals("/dmz/")) {
-			redirectToDmz(response);
-		} else if(legacyContext != null && legacyContext.equals(dispatcherName)) {
+		if(legacyContext != null && legacyContext.equals(dispatcherName)) {
+			// first, the forwarded request comes back with the path without legacy context
 			String uri = request.getRequestURI();
 			String redirectUri = uri.substring(legacyContext.length() - 1, uri.length());
 			RequestDispatcher dispatcher = request.getRequestDispatcher(redirectUri);
 			dispatcher.forward(request, response);
+		} else if(ContentDomainNavigation.handle(request, response)) {
+			// OO-10045: navigation to the content domain answered with a redirect or the intermediate page
+		} else if("/dmz/".equals(dispatcherName) && !DispatcherModule.getPathDefault().equals("/dmz/")) {
+			redirectToDmz(response);
 		} else if(dispatchers.containsKey(dispatcherName)) {
 			Dispatcher dispatcher = dispatchers.get(dispatcherName);
 			if (dispatcher.isSessionRequired(request)) {
