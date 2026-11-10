@@ -1496,8 +1496,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 	@Override
 	protected void doDispose() {
-		ICourse course = CourseFactory.loadCourse(ores.getResourceableId());
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, course);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ores);
 		OLATResourceable lockEntryOres = OresHelper.createOLATResourceableInstance(LockEntry.class, 0l);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, lockEntryOres);
 
