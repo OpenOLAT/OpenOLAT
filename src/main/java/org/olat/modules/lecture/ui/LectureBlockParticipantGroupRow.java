@@ -102,7 +102,7 @@ public class LectureBlockParticipantGroupRow {
 			return "o_icon o_icon-fw o_icon_group";
 		}
 		if(curriculumElement != null) {
-			return "o_icon o_icon-fw o_icon_curriculum_element";
+			return "o_icon o_icon-fw o_icon_curriculum_implementations";
 		}
 		return null;
 	}
