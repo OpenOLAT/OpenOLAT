@@ -56,6 +56,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -88,6 +89,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	private Panel main;
 	private IFrameDeliveryMapper contentMapper;
 	private DeliveryOptions deliveryOptions;
+	
+	private EventBus singleUserEventCenter;
+	private final OLATResourceable contextResourceable;
 	
 	/**
 	 * Base URI of contentMapper
@@ -152,8 +156,10 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID		
 		
 		//register this object for textMarking on/off events
+		this.contextResourceable = contextResourceable;
 		if (contextResourceable != null) {
-			ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), contextResourceable);
+			singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
+			singleUserEventCenter.registerFor(this, getIdentity(), contextResourceable);
 		}
 		
 		boolean  enableTextmarking = textMarkerManager.isTextmarkingEnabled(ureq, contextResourceable);
@@ -449,6 +455,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		// contentMapper get's unregistered automatically with basic controller
 		// remove us as listener if not already done
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
+		if (contextResourceable != null && singleUserEventCenter != null) {
+			singleUserEventCenter.deregisterFor(this, contextResourceable);
+		}
         super.doDispose();
 	}
 
