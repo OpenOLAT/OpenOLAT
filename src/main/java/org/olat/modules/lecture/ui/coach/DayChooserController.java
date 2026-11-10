@@ -71,7 +71,7 @@ public class DayChooserController extends FormBasicController {
 		nextDayButton.setIconLeftCSS("o_icon o_icon_next_page");
 		
 		dateEl = uifactory.addDateChooser("day", null, new Date(), formLayout);
-		dateEl.setAriaLabel("aria.displayed.date");
+		dateEl.setAriaLabel(translate("aria.displayed.date"));
 		dateEl.setDomReplacementWrapperRequired(false);
 		dateEl.addActionListener(FormEvent.ONCHANGE);
 	}

@@ -20,6 +20,7 @@
 package org.olat.core.dispatcher.mapper;
 
 import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionIdListener;
 import jakarta.servlet.http.HttpSessionListener;
 
 import org.olat.core.CoreSpringFactory;
@@ -28,7 +29,7 @@ import org.olat.core.CoreSpringFactory;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MapperSessionListener  implements HttpSessionListener {
+public class MapperSessionListener implements HttpSessionListener, HttpSessionIdListener {
 
 	@Override
 	public void sessionCreated(HttpSessionEvent se) {
@@ -40,5 +41,11 @@ public class MapperSessionListener  implements HttpSessionListener {
 		MapperService mapperService = CoreSpringFactory.getImpl(MapperService.class);
 		String sessionId = se.getSession().getId();
 		mapperService.cleanUp(sessionId);
+	}
+
+	@Override
+	public void sessionIdChanged(HttpSessionEvent event, String oldSessionId) {
+		MapperService mapperService = CoreSpringFactory.getImpl(MapperService.class);
+		mapperService.cleanUp(oldSessionId);
 	}
 }

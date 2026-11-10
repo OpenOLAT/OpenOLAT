@@ -440,20 +440,19 @@ public class CourseQuotaUsageController extends FormBasicController
 		if (nodeWithFiles.isStorageInCourseFolder()) {
 			removeFromCourseFolder(row);
 		} else {
+			setRowInformation(nodeWithFiles, row, courseEnvironment);
 			Quota quota = nodeWithFiles.getQuota(quotaManager, entry);
 			// set quota values if available
 			if (quota != null) {
 				row.setElementQuota(quota);
-				ProgressBar currentlyUsedBar = setProgressBar(quota);
 				if (!(nodeWithFiles instanceof PFCourseNode)) {
-					row.setCurUsed(currentlyUsedBar);
+					row.setCurUsed(getProgressBarPF(row, quota));
 				}
 				if (nodeWithFiles.isStorageExtern()) {
 					FormLink externalLink = uifactory.addFormLink(EXTERNAL_LINK + childNodeIdent, CMD_EXTERNAL, "table.column.external.link", null, flc, Link.LINK);
 					row.setExternal(externalLink);
 				}
 			}
-			setRowInformation(nodeWithFiles, row, courseEnvironment);
 			if (nodeWithFiles instanceof PFCourseNode pfCourseNode) {
 				handlePFCourseNode(pfCourseNode, courseEnvironment, quota);
 			}
