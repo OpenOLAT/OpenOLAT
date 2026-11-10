@@ -151,6 +151,7 @@ public class CurriculumElementDAO {
 				elementToCopy.getLearningProgress(), curriculum);
 		
 		copy.setAuthors(elementToCopy.getAuthors());
+		copy.setCatalogSortPriority(elementToCopy.getCatalogSortPriority());
 		copy.setCredits(elementToCopy.getCredits());
 		copy.setDescription(elementToCopy.getDescription());
 		copy.setEducationalType(elementToCopy.getEducationalType());
@@ -160,6 +161,7 @@ public class CurriculumElementDAO {
 		copy.setMaxParticipants(elementToCopy.getMaxParticipants());
 		copy.setMinParticipants(elementToCopy.getMinParticipants());
 		copy.setObjectives(elementToCopy.getObjectives());
+		copy.setOrderFormRequired(elementToCopy.isOrderFormRequired());
 		copy.setRequirements(elementToCopy.getRequirements());
 		copy.setShowLectures(elementToCopy.isShowLectures());
 		copy.setShowOutline(elementToCopy.isShowOutline());
