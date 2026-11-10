@@ -37,7 +37,7 @@ public class SerializableIFrameDeliveryMapper extends IFrameDeliveryMapper imple
 	}
 	
 	public SerializableIFrameDeliveryMapper(VFSItem rootDir, boolean rawContent, boolean enableTextmarking,
-			boolean iframeResizer, String frameId, String themeBaseUri, String contentSecurityPolicy, String courseDBId) {
-		super(rootDir, rawContent, enableTextmarking, iframeResizer, frameId, themeBaseUri, contentSecurityPolicy, courseDBId);
+			boolean iframeResizer, String frameId, String themeBaseUri, String contentSecurityPolicy, String resourceableId) {
+		super(rootDir, rawContent, enableTextmarking, iframeResizer, frameId, themeBaseUri, contentSecurityPolicy, resourceableId);
 	}
 }

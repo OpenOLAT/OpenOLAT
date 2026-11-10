@@ -34,6 +34,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.dispatcher.ContentDomainNavigation;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.MediaResource;
@@ -102,7 +103,7 @@ public class MapperDispatcher implements Dispatcher {
 			m = mapperService.getSandboxMapper(usess, smappath, secret);
 			if(m == null) {
 				log.debug("Call to mapped resource, but mapper cannot be reclaimed for path::{}", smappath);
-				hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				sendNotFound(hreq, hres);
 				return;
 			} else if(usess.getSessionInfo() == null) {
 				initSessionInfos(usess, hreq);
@@ -118,7 +119,7 @@ public class MapperDispatcher implements Dispatcher {
 				m = mapperService.getMapperById(null, smappath);
 				if(m == null) {
 					log.debug("Call to mapped resource, but mapper does not exist for path::{}", smappath);
-					hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
+					sendNotFound(hreq, hres);
 					return;
 				}
 			}
@@ -153,5 +154,18 @@ public class MapperDispatcher implements Dispatcher {
 		sinfo.setREST(false);
 		sinfo.setContentDelivery(true);
 		usess.setSessionInfo(sinfo);
+	}
+
+	/**
+	 * A bookmark of an expired mapper on the content domain is redirected to
+	 * the start page of the main domain (OO-10045), all other requests get the
+	 * uniform 404 (OO-9729).
+	 */
+	private void sendNotFound(HttpServletRequest hreq, HttpServletResponse hres) {
+		if(ContentDomainNavigation.isDocumentGetOnContentHost(hreq)) {
+			ContentDomainNavigation.redirectToStartPage(hres);
+		} else {
+			hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
+		}
 	}
 }

@@ -34,6 +34,7 @@ public class IFrameSettings {
 	private boolean randomizeMapper = false;
 	private boolean iframeResizer = true;
 	private String courseDBId;
+	private Long repositoryEntryKey;
 	
 	public IFrameSettings() {
 		//
@@ -123,5 +124,17 @@ public class IFrameSettings {
 
 	public void setCourseDBId(String courseDBId) {
 		this.courseDBId = courseDBId;
+	}
+
+	/**
+	 * @return The key of the repository entry of the course, used to open the course
+	 *     elements of the same course without reload (OO-10045)
+	 */
+	public Long getRepositoryEntryKey() {
+		return repositoryEntryKey;
+	}
+
+	public void setRepositoryEntryKey(Long repositoryEntryKey) {
+		this.repositoryEntryKey = repositoryEntryKey;
 	}
 }

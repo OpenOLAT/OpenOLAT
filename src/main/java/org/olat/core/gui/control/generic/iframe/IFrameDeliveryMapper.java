@@ -94,6 +94,7 @@ public class IFrameDeliveryMapper implements Mapper {
 	private transient long suppressEndlessReload;
 	
 	private String courseDBId;
+	private Long repositoryEntryKey;
 	private String contentSecurityPolicy;
 	private boolean strictSanitize = false;
 	private boolean iframeResizer = true;
@@ -182,6 +183,10 @@ public class IFrameDeliveryMapper implements Mapper {
 		this.strictSanitize = strictSanitize;
 	}
 	
+	public void setRepositoryEntryKey(Long repositoryEntryKey) {
+		this.repositoryEntryKey = repositoryEntryKey;
+	}
+
 	public void setUseContentDomain(boolean useContentDomain) {
 		this.useContentDomain = useContentDomain;
 	}
@@ -432,6 +437,9 @@ public class IFrameDeliveryMapper implements Mapper {
 				if(StringHelper.containsNonWhitespace(courseDBId)) {
 					sb.append("o_info.course_id='").append(courseDBId).append("';\n");
 				}
+				if(repositoryEntryKey != null) {
+					sb.append("o_info.repository_entry_key='").append(repositoryEntryKey.toString()).append("';\n");
+				}
 				StringOutput baseUri = new StringOutput(100);
 				Renderer.renderStaticURI(baseUri, "");
 				sb.append("o_info.o_baseURI='").append(baseUri.toString()).append("';\n");
@@ -450,8 +458,13 @@ public class IFrameDeliveryMapper implements Mapper {
 			}
 
 			if(useContentDomain) {
+				// OO-10015, OO-10045: course and OpenOlat links open in the main window on the main domain
 				sb.append("\n<script>\n")
-				  .append(" b_registerCourseLinkBridge('").append(Settings.createServerURI()).append("');\n")
+				  .append(" b_registerContentLinkBridge('")
+				  .append(StringHelper.escapeJavaScript(Settings.createServerURI())).append("','")
+				  .append(StringHelper.escapeJavaScript(Settings.createContentServerURI())).append("','")
+				  .append(StringHelper.escapeJavaScript(WebappHelper.getServletContextPath())).append("','")
+				  .append(StringHelper.escapeJavaScript(getLegacyContext())).append("');\n")
 				  .append("</script>\n");
 			}
 
@@ -780,6 +793,24 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 	}
 	
+	/**
+	 * @return The legacy context in the form /olat/ (same as OpenOLATServlet) or an empty string
+	 */
+	private static String getLegacyContext() {
+		Settings settings = CoreSpringFactory.getImpl(Settings.class);
+		String legacyContext = settings == null ? null : settings.getLegacyContext();
+		if(!StringHelper.containsNonWhitespace(legacyContext)) {
+			return "";
+		}
+		if(!legacyContext.startsWith("/")) {
+			legacyContext = "/" + legacyContext;
+		}
+		if(!legacyContext.endsWith("/")) {
+			legacyContext += "/";
+		}
+		return legacyContext;
+	}
+
 	private static class ByNameCaseInsensitive implements VFSItemFilter {
 		
 		private final String filename;

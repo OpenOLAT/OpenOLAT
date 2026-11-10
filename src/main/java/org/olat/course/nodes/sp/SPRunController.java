@@ -187,6 +187,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 		IFrameSettings iframeSettings = IFrameSettings.secure();
 		iframeSettings.setRandomizeMapper(courseEnv.isPreview());
 		iframeSettings.setCourseDBId(courseEnv.getCourseResourceableId().toString());
+		iframeSettings.setRepositoryEntryKey(courseEnv.getCourseGroupManager().getCourseEntry().getKey());
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName,
 				allowRelativeLinks, null, ores, deliveryOptions, iframeSettings, repoKey);

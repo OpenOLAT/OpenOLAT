@@ -1655,6 +1655,57 @@ function gototool(toolname) {
 	}
 }
 
+// Open an OpenOlat page (business path) in this window. Accepts only
+// paths of the /auth/ and /url/ dispatchers, the origin and the context are
+// always the ones of this window.
+function gotopath(path) {
+	if (typeof path !== 'string' || path.length > 2048) return;
+	if (!/^\/(auth|url)\//.test(path)) return;
+	if (/[\\;\u0000-\u001f\u007f]/.test(path)) return;
+	window.location.assign(o_info.serverUri + o_info.serverContext + path);
+}
+
+// Receive the messages of the content pages delivered by the
+// content domain. They cannot call gotonode(), gototool() or gotopath() directly
+// because they have another origin.
+function o_initContentDomainBridge(contentOrigin) {
+	if (window.o_contentDomainBridge || typeof contentOrigin !== 'string' || contentOrigin.length == 0) return;
+	window.o_contentDomainBridge = true;
+	window.addEventListener('message', function(e) {
+		if (e.origin !== contentOrigin) return;
+		if (!o_isDescendantWindow(e.source)) return;
+		var d = e.data;
+		if (!d || typeof d !== 'object' || typeof d.type !== 'string') return;
+		if (navigator.userActivation && !navigator.userActivation.isActive) return;
+		if (d.type === 'olat-gotopath') {
+			gotopath(d.path);
+		} else if (d.type === 'olat-gotonode' || d.type === 'olat-gototool') {
+			if (typeof d.id !== 'string' || !/^[\w-]{1,64}$/.test(d.id)) return;
+			if (d.type === 'olat-gotonode') {
+				gotonode(d.id);
+			} else {
+				gototool(d.id);
+			}
+		}
+	});
+}
+
+// True if the window is a frame below this window (nested CP and SCORM frames). The
+// parent property is readable across origins.
+function o_isDescendantWindow(win) {
+	try {
+		for (var depth = 0; win && depth < 16; depth++) {
+			var parentWin = win.parent;
+			if (!parentWin || parentWin === win) return false;
+			if (parentWin === window) return true;
+			win = parentWin;
+		}
+	} catch (e) {
+		// ignore
+	}
+	return false;
+}
+
 function o_viewportHeight() {
 	// based on prototype library
 	const prototypeViewPortHeight = jQuery(window).height()
