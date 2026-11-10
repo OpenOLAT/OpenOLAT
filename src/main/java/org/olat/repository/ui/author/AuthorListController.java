@@ -538,6 +538,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
 		markColumn.setExportable(false);
 		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+		markColumn.setDefaultVisible(configuration.isRedesignedSelectionDialog());
 		columnModelList.add(markColumn);
 
 		TableConfiguration tableConfiguration = configuration.getTableConfiguration();
@@ -592,7 +593,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 
 		if (tableConfiguration == null || tableConfiguration.showUsageColumn()) {
-			DefaultFlexiColumnModel runtimeTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.runtimeType.i18nKey(),
+			DefaultFlexiColumnModel runtimeTypeColumnModel = new DefaultFlexiColumnModel(configuration.isRedesignedSelectionDialog(), Cols.runtimeType.i18nKey(),
 					Cols.runtimeType.ordinal(), true, OrderBy.runtimeType.name());
 			runtimeTypeColumnModel.setCellRenderer(new RuntimeTypeRenderer());
 			columnModelList.add(runtimeTypeColumnModel);
