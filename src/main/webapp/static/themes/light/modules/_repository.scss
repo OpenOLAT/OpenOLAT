@@ -23,7 +23,7 @@
 			}
 
 			.o_ext_ref {
-				color: $text-muted;
+				color: var(--o-text-muted);
 			}
 			h2 {
 				font-size: $o-coursesite-meta-title-font-size;
@@ -306,9 +306,9 @@
 }
 
 .o_repo_info_panel {
-	border: 1px solid $o-coursesite-sidecol-border;
+	border: 1px solid var(--o-coursesite-sidecol-border);
 	border-radius: $o-coursesite-sidecol-radius;
-	background: $o-coursesite-sidecol-bg;
+	background: var(--o-coursesite-sidecol-bg);
 	padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
 }
 
@@ -800,7 +800,7 @@ form { .o_form { .o_radio_cards_wrapper {
 				display: flex;
 				flex-direction: column;
 				.o_ext_ref {
-					color: $text-muted;
+					color: var(--o-text-muted);
 					font-size: 10px;
 					line-height: 12px;
 					height: 12px;
@@ -896,9 +896,9 @@ form { .o_form { .o_radio_cards_wrapper {
 	align-items: center;
 	padding: 8px 12px;
 	gap: 12px;
-	border: 1px solid $o-coursesite-rowelem-border;
+	border: 1px solid var(--o-coursesite-border);
 	border-radius: $border-radius-base;
-	background-color: $body-bg;
+	background-color: var(--o-bg);
 	margin-bottom: 5px;
 
 	.o_ac_reservation_item {
@@ -936,7 +936,7 @@ form { .o_form { .o_radio_cards_wrapper {
 			flex-direction: column;
 
 			.o_ac_reservation_ref {
-				color: $text-muted;
+				color: var(--o-text-muted);
 				font-size: 10px;
 				line-height: 12px;
 				height: 12px;
@@ -953,7 +953,7 @@ form { .o_form { .o_radio_cards_wrapper {
 
 		> .o_icon {
 			flex-shrink: 0;
-			color: $text-muted;
+			color: var(--o-text-muted);
 		}
 
 		> .o_title {

@@ -67,7 +67,7 @@
 		padding: 2px 14px 8px 14px;
 		margin: 0 -14px;
 		// same as modal-header
-		color: $o-dialog-header-color;
+		color: var(--o-dialog-header);
 	  	font-weight: $o-dialog-header-font-weight;
 		font-family: $headings-font-family;
 	  	line-height: $headings-line-height;
@@ -118,7 +118,7 @@
 				display: flex;
 				flex-direction: column;
 				.o_ext_ref {
-					color: $text-muted;
+					color: var(--o-text-muted);
 					font-size: 10px;
 					line-height: 12px;
 					height: 12px;
@@ -165,12 +165,12 @@
 .o_course_widget_icon {
 	// colour of the state of the course status (OO-10042)
 	&.o_icon_coach {
-		color: o-state-color("success", "text");
+		color: var(--o-state-success-text);
 	}
 	&.o_icon_repo_status_published {
-		color: o-state-color("success", "text");
+		color: var(--o-state-success-text);
 	}
 	&.o_icon_repo_status_closed {
-		color: o-state-color("finished", "text");
+		color: var(--o-state-finished-text);
 	}
 }

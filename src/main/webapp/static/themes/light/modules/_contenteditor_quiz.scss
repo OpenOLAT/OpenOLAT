@@ -55,11 +55,11 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 		padding: 12px 20px 20px 20px;
 
 		&.o_correct {
-			border-color: o-state-color("success", "border");
+			border-color: var(--o-state-success-border);
 		}
 
 		&.o_incorrect {
-			border-color: o-state-color("danger", "border");
+			border-color: var(--o-state-danger-border);
 		}
 
 		.o_quiz_progress_label {
@@ -98,7 +98,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 
 						&:after {
 							margin-left: -24px;
-							color: o-state-color("success", "text");
+							color: var(--o-state-success-text);
 							background-color: white;
 						}
 					}
@@ -109,7 +109,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 
 						&:after {
 							margin-left: -24px;
-							color: o-state-color("danger", "text");
+							color: var(--o-state-danger-text);
 							background-color: white;
 						}
 					}
@@ -126,11 +126,11 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 						-webkit-appearance: none;
 
 						&.o_correct {
-							border-color: o-state-color("success", "border");
+							border-color: var(--o-state-success-border);
 						}
 
 						&.o_incorrect {
-							border-color: o-state-color("danger", "border");
+							border-color: var(--o-state-danger-border);
 						}
 					}
 				}
@@ -146,11 +146,11 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 						-webkit-appearance: none;
 
 						&.o_correct {
-							border-color: o-state-color("success", "border");
+							border-color: var(--o-state-success-border);
 						}
 
 						&.o_incorrect {
-							border-color: o-state-color("danger", "border");
+							border-color: var(--o-state-danger-border);
 						}
 					}
 				}
@@ -181,35 +181,35 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 
 				.o_qti_item_choice_option_flow {
 					i:before {
-						color: $brand-primary;
+						color: var(--o-primary);
 					}
 
-					border-color: $brand-primary;
+					border-color: var(--o-primary);
 					border-width: 1px;
 					border-radius: $border-radius-base;
 
 					&.o_selected {
 						background-color: $brand-primary-bg;
-						color: $brand-primary;
+						color: var(--o-primary);
 					}
 
 					&.o_correct {
-						background-color: o-state-color("success", "soft-bg");
-						color: o-state-color("success", "text");
-						border-color: o-state-color("success", "border");
+						background-color: var(--o-state-success-soft-bg);
+						color: var(--o-state-success-text);
+						border-color: var(--o-state-success-border);
 
 						i:before {
-							color: o-state-color("success", "text");
+							color: var(--o-state-success-text);
 						}
 					}
 
 					&.o_incorrect {
-						background-color: o-state-color("danger", "soft-bg");
-						color: o-state-color("danger", "text");
-						border-color: o-state-color("danger", "border");
+						background-color: var(--o-state-danger-soft-bg);
+						color: var(--o-state-danger-text);
+						border-color: var(--o-state-danger-border);
 
 						i:before {
-							color: o-state-color("danger", "text");
+							color: var(--o-state-danger-text);
 						}
 					}
 
@@ -276,13 +276,13 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 
 							&.o_correct td {
 								&.choiceInteraction {
-									background-color: o-state-color("success", "soft-bg");
+									background-color: var(--o-state-success-soft-bg);
 								}
 							}
 
 							&.o_incorrect td {
 								&.choiceInteraction {
-									background-color: o-state-color("danger", "soft-bg");
+									background-color: var(--o-state-danger-soft-bg);
 								}
 							}
 						}
@@ -295,7 +295,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 
 				td {
 					padding: 0;
-					border-color: $brand-primary;
+					border-color: var(--o-primary);
 					border-width: 1px;
 					border-top-style: solid;
 					border-bottom-style: solid;
@@ -320,7 +320,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 						border-right-style: solid;
 
 						width: 100%;
-						color: $brand-primary;
+						color: var(--o-primary);
 
 						p {
 							margin: 0;
@@ -338,36 +338,36 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 				&.o_selected td {
 					&.control, &.choiceInteraction {
 						background-color: $brand-primary-bg;
-						color: $brand-primary;
+						color: var(--o-primary);
 					}
 				}
 
 				&.o_correct td {
 					&.control, &.choiceInteraction {
-						background-color: o-state-color("success", "soft-bg");
-						color: o-state-color("success", "text");
-						border-color: o-state-color("success", "border");
+						background-color: var(--o-state-success-soft-bg);
+						color: var(--o-state-success-text);
+						border-color: var(--o-state-success-border);
 					}
 
 					i:before {
-						color: o-state-color("success", "text");
+						color: var(--o-state-success-text);
 					}
 				}
 
 				&.o_incorrect td {
 					&.control, &.choiceInteraction {
-						background-color: o-state-color("danger", "soft-bg");
-						color: o-state-color("danger", "text");
-						border-color: o-state-color("danger", "border");
+						background-color: var(--o-state-danger-soft-bg);
+						color: var(--o-state-danger-text);
+						border-color: var(--o-state-danger-border);
 					}
 
 					i:before {
-						color: o-state-color("danger", "text");
+						color: var(--o-state-danger-text);
 					}
 				}
 
 				td i:before {
-					color: $brand-primary;
+					color: var(--o-primary);
 				}
 			}
 

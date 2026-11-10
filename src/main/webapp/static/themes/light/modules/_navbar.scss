@@ -17,7 +17,7 @@ a.o_disabled.navbar-text {
 	min-height: $o-navbar-height; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
 	margin-bottom: $o-navbar-margin-bottom;
 	border: 1px solid $o-navbar-border-color;	
-	background-color: $o-navbar-bg;
+	background-color: var(--o-navbar-bg);
 	
 	// Prevent floats from breaking the navbar
 	@include clearfix();
@@ -81,13 +81,13 @@ a.o_disabled.navbar-text {
 		.btn {
 			@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
 			&.btn-primary {
-				@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+				@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
 			}
 		}
 	}
 	
 	#o_navbar_langchooser {
-		color: $o-navbar-tools-permanent-color;
+		color: var(--o-navbar-tools);
 		padding: floor($grid-gutter-width * 0.25) floor($grid-gutter-width * 0.5);
 		form span + div {
 			display: inline;
@@ -96,7 +96,7 @@ a.o_disabled.navbar-text {
 	#o_navbar_tools_permanent {
 		#o_navbar_print, #o_navbar_impress, #o_navbar_help {
 			a {
-				color: $o-navbar-tools-permanent-color;
+				color: var(--o-navbar-tools);
 				padding-right: 0;		
 			}
 		}
@@ -229,27 +229,27 @@ a.o_disabled.navbar-text {
   			// Dropdowns get custom display when collapsed
   			.open .dropdown-menu {
     			> li > a {
-      				color: $o-navbar-link-color;
+      				color: var(--o-navbar-link);
       				&:hover,
 	      			&:focus {
-        				color: $o-navbar-link-hover-color;
-        				background-color: $o-navbar-link-hover-bg;
+        				color: var(--o-navbar-link-hover);
+        				background-color: var(--o-navbar-link-hover-bg);
       				}
     			}
     			> .active > a {
       				&,
       				&:hover,
       				&:focus {
-        				color: $o-navbar-link-active-color;
-        				background-color: $o-navbar-link-active-bg;
+        				color: var(--o-navbar-link-active);
+        				background-color: var(--o-navbar-link-active-bg);
       				}
     			}
     			> .disabled > a {
       				&,
       				&:hover,
       				&:focus {
-        				color: $o-navbar-link-disabled-color;
-        				background-color: $o-navbar-link-disabled-bg;
+        				color: var(--o-navbar-link-disabled);
+        				background-color: var(--o-navbar-link-disabled-bg);
         			}
       			}
     		}
@@ -317,12 +317,12 @@ body.o_dmz {
   	font-size: $o-navbar-brand-font-size;
   	line-height: $line-height-computed;
   	height: $o-navbar-brand-height;
-  	color: $o-navbar-brand-color;
+  	color: var(--o-navbar-brand);
 	&:hover,
   	&:focus {
     	text-decoration: none;
-      	color: $o-navbar-brand-hover-color;
-      	background-color: $o-navbar-brand-hover-bg;
+      	color: var(--o-navbar-brand-hover);
+      	background-color: var(--o-navbar-brand-hover-bg);
   	}
 }
 
@@ -339,7 +339,7 @@ body.o_dmz {
   	padding: 9px 10px;
   	@include navbar-vertical-align(34px);
   
-  	border: 1px solid $o-navbar-toggle-border-color;
+  	border: 1px solid var(--o-navbar-toggle-border);
   	border-radius: $o-navbar-toggle-border-radius;
     background-color: transparent;
  	background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
@@ -347,7 +347,7 @@ body.o_dmz {
   	&:hover,
   	&:focus {
   		outline: none;
-      	background-color: $o-navbar-toggle-hover-bg;
+      	background-color: var(--o-navbar-toggle-hover-bg);
     }
 
  	// Bars
@@ -356,7 +356,7 @@ body.o_dmz {
     	width: 22px;
     	height: 2px;
     	border-radius: 1px;
-  		background-color: $o-navbar-toggle-icon-bar-bg;
+  		background-color: var(--o-navbar-toggle-icon);
   	}
   	.icon-bar + .icon-bar {
     	margin-top: 4px;
@@ -376,9 +376,9 @@ body.o_dmz {
 
 // Add a class to ensure links outside the o_navbar nav are colored correctly.
 .o_navbar-link {
-	color: $o-navbar-link-color;
+	color: var(--o-navbar-link);
     &:hover {
-    	color: $o-navbar-link-hover-color;
+    	color: var(--o-navbar-link-hover);
    }
 }  
 
@@ -389,12 +389,12 @@ body.o_dmz {
     	padding-top:    10px;
     	padding-bottom: 10px;
     	line-height: $line-height-computed;
-	    color: $o-navbar-link-color;
+	    color: var(--o-navbar-link);
 
 	    &:hover,
 	    &:focus {
-	      	color: $o-navbar-link-hover-color;
-	     	background-color: $o-navbar-link-hover-bg;
+	      	color: var(--o-navbar-link-hover);
+	     	background-color: var(--o-navbar-link-hover-bg);
 	    }
   	}
 
@@ -402,16 +402,16 @@ body.o_dmz {
    		&,
       	&:hover,
       	&:focus {
-        	color: $o-navbar-link-active-color;
-        	background-color: $o-navbar-link-active-bg;
+        	color: var(--o-navbar-link-active);
+        	background-color: var(--o-navbar-link-active-bg);
       	}
     }
     > .disabled > a {
       	&,
       	&:hover,
       	&:focus {
-        	color: $o-navbar-link-disabled-color;
-        	background-color: $o-navbar-link-disabled-bg;
+        	color: var(--o-navbar-link-disabled);
+        	background-color: var(--o-navbar-link-disabled-bg);
       	}
     }    
     // Remove background color from open dropdown
@@ -419,8 +419,8 @@ body.o_dmz {
       	&,
       	&:hover,
       	&:focus {
-        	background-color: $o-navbar-link-active-bg;
-        	color: $o-navbar-link-active-color;
+        	background-color: var(--o-navbar-link-active-bg);
+        	color: var(--o-navbar-link-active);
       	}
     }
 
@@ -533,7 +533,7 @@ body.o_dmz {
 // Add a class to make any element properly align itself vertically within the o_navbars.
 .o_navbar-text {
 	@include navbar-vertical-align($line-height-computed);
-    color: $o-navbar-color;
+    color: var(--o-navbar-text);
 }
 .o_collapse .o_navbar-text {
     float: left;

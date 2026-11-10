@@ -63,11 +63,11 @@
 				margin-bottom: 0;
 				padding-top: 0px;
 				padding-bottom: 0px;
-				border: 1px solid $btn-default-border;
+				border: 1px solid var(--o-btn-default-border);
 				border-top-right-radius: 0;
 				border-bottom-right-radius: 0;
 				border-right: none;
-				background-color: $btn-default-bg;
+				background-color: var(--o-btn-default-bg);
 				display: flex;
 				height: 100%;
 				
@@ -191,7 +191,7 @@
 	.o_icon {
 		font-size: $o-folder-row-thumbnail-icon-size;
 		&.o_filetype_folder, &.o_icon_sharepoint_drive, &.o_icon_onedrive {
-			color: $o-folder-row-thumbnail-folder-icon-color;
+			color: var(--o-folder-row-thumbnail-folder-icon);
 		}
 	}
 	&:not(:has(.o_icon)) {
@@ -204,7 +204,7 @@
 	}
 }
 tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, tr.o_folder_muted_row td a {
-	color: $o-folder-muted-color;
+	color: var(--o-folder-muted);
 }
 
 .o_folder {
@@ -219,7 +219,7 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 		}
 		
 		.o_folder_row.o_dnd_over .o_card.o_folder_card {
-			border: 2px dashed $o-panel-placeholder-border-active-color;
+			border: 2px dashed var(--o-panel-placeholder-border-active);
 			border-radius: $o-card-border-radius;
 			margin: -1px;
 		}
@@ -270,7 +270,7 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 							font-size: 80px;
 							color: $o-folder-card-thumbnail-icon-color;
 							&.o_filetype_folder {
-								color: $o-folder-card-thumbnail-folder-icon-color;
+								color: var(--o-folder-card-thumbnail-folder-icon);
 							}
 						}
 						.o_folder_elements_labels {
@@ -303,19 +303,19 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 	
 	tr.o_folder_row.o_dnd_over {
 		td {
-			border-top: 2px dashed $o-panel-placeholder-border-active-color;
-			border-bottom: 2px dashed $o-panel-placeholder-border-active-color;
+			border-top: 2px dashed var(--o-panel-placeholder-border-active);
+			border-bottom: 2px dashed var(--o-panel-placeholder-border-active);
 			padding-top: 4px;
 			padding-bottom: 3px;
 		}
 		
 		td:first-child {
-			border-left: 2px dashed $o-panel-placeholder-border-active-color;
+			border-left: 2px dashed var(--o-panel-placeholder-border-active);
 			padding-left: 3px;
 		}
 		
 		td:last-child {
-			border-right: 2px dashed $o-panel-placeholder-border-active-color;
+			border-right: 2px dashed var(--o-panel-placeholder-border-active);
 			padding-right: 3px;
 		}
 	}

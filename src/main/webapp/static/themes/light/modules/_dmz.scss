@@ -93,7 +93,7 @@ body.o_dmz {
 	.o_login_intro {
 		h1 {
 			margin-bottom: $padding-large-vertical * 4;
-			color: $o-login-header-color;
+			color: var(--o-login-header);
 		}
 		.lead {
 			color: $o-login-lead-color;
@@ -167,7 +167,7 @@ body.o_dmz {
 			}
 			
 			a {
-				color: $o-login-help-link-color;
+				color: var(--o-login-help-link);
 			}
 		}
 	}
@@ -324,7 +324,7 @@ body.o_dmz {
 		}
 		
 		.btn-default.o_sel_auth_adfs i {
-			color: $brand-primary
+			color: var(--o-primary)
 		}
 		
 		.o_sel_auth_azureAdfs i {
@@ -332,16 +332,16 @@ body.o_dmz {
 		}
 		
 		.btn-default.o_sel_auth_OpenIDConnect i {
-			color: $brand-primary;
+			color: var(--o-primary);
 		}		
 	}
 }
 
 .icon_mastodon {
-	fill: $link-color;
+	fill: var(--o-link);
 }
 .icon_mastodon:hover {
-	fill: $link-hover-color;
+	fill: var(--o-link-hover);
 }
 
 .o_login_admin .o_login_roles legend {

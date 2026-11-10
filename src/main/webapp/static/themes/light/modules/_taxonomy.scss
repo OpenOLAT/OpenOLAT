@@ -120,7 +120,7 @@
 	}
 	
 	&.o_tag_selected {
-		color: $o-competences-selected-color;
+		color: var(--o-competence-selected);
 		background-color: #fff;
 		border-color: $o-competences-selected-border-color;
 		

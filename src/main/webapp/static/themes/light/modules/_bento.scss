@@ -90,7 +90,7 @@ $o-bento-half-columns: math.div($o-bento-cols, 2);
 
 .o_bento_gui_demo {
 	.o_bento_box {
-		border: 2px solid $brand-primary;
+		border: 2px solid var(--o-primary);
 		padding: $panel-body-padding;
 	}
 }

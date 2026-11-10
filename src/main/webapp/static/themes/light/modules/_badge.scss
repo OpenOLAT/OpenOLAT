@@ -12,7 +12,7 @@
 	height: 20px;
 	line-height: 20px;
 	margin-right: 5px;
-	background-color: $brand-primary;
+	background-color: var(--o-primary);
 	color: white;
 	border-radius: 4px;
 	text-align: center;
@@ -293,7 +293,7 @@
 
 			&.o_selected {
 				background-color: #dddddd;
-				border: 3px solid $brand-primary;
+				border: 3px solid var(--o-primary);
 			}
 
 			.o_template_image {
@@ -504,11 +504,11 @@ form {
 	tr {
 		&.o_table_row_expanded {
 			td a {
-				color: o-a11y-color($brand-primary, $o-table-details-bg);
+				color: var(--o-badge-row-expanded-link);
 			}
 			&:hover {
 				td a {
-					color: o-a11y-color($brand-primary, darken($o-table-details-bg,10%));
+					color: var(--o-badge-row-expanded-link-hover);
 				}
 			}
 		}
@@ -524,32 +524,32 @@ form {
 
 span.o_labeled_light {
 	&.o_badge_class_status_preparation {
-		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-info);
 	}
 	&.o_badge_class_status_active {
-		color: o-a11y-color($btn-success-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-success);
 	}
 	&.o_badge_class_status_deleted {
-		color: o-a11y-color($btn-warning-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-warning);
 	}
 	&.o_badge_class_status_revoked {
-		color: o-a11y-color($btn-danger-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-danger);
 	}
 
 	&.o_badge_assertion_status_editing {
-		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-info);
 	}
 
 	&.o_badge_assertion_status_issued {
-		color: o-a11y-color($btn-success-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-success);
 	}
 
 	&.o_badge_assertion_status_revoked {
-		color: o-a11y-color($btn-danger-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-danger);
 	}
 
 	&.o_badge_assertion_status_reset {
-		color: o-a11y-color($btn-warning-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-warning);
 	}
 	
 	&.o_badge_assertion_status_expired {
@@ -557,12 +557,12 @@ span.o_labeled_light {
 	}
 	
 	&.o_badge_verification_verified {
-		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-info);
 	}
 	
 	
 	&.o_badge_verification_signed {
-		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
+		color: var(--o-badge-status-info);
 	}
 }
 

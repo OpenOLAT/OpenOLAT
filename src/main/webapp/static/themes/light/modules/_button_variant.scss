@@ -1,0 +1,123 @@
+/*
+ * =================================================
+ *
+ * Button variant that reads the colour tokens (OO-10043).
+ *
+ * Replaces the mixin button-variant of Bootstrap (bootstrap/mixins/
+ * _buttons.scss) with the same rules, selectors and state colours. Imported
+ * after the Bootstrap mixins and before the Bootstrap buttons.
+ *
+ * Each argument is a colour or a token:
+ *
+ *   colour   @include button-variant(#fff, $my-bg, $my-border);
+ *            The states get a darker colour, computed at compile time as
+ *            in Bootstrap: background 10% and 17%, border 12% and 25%.
+ *   token    @include button-variant(var(--o-btn-primary-fg),
+ *                var(--o-btn-primary-bg), var(--o-btn-primary-border));
+ *            The states read the shade tokens of the background and of the
+ *            border token ($o-token-shades in _tokens.scss):
+ *
+ *            state                       background        border
+ *            hover                       {bg}-hover        {border}-hover
+ *            focus                       {bg}-hover        {border}-focus
+ *            active                      {bg}-hover        {border}-hover
+ *            active with hover or focus  {bg}-active       {border}-focus
+ *
+ *            A token without shade tokens stops the compile.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+@use "sass:list";
+@use "sass:map";
+@use "sass:meta";
+@use "sass:string";
+
+// The shade tokens that a rule read before _tokens.scss is imported.
+// _tokens.scss stops the compile when one of them does not exist.
+$o-button-variant-tokens: ();
+
+// The token name of var(--o-{name}), null for a colour
+@function o-button-variant-token($value) {
+	@if meta.type-of($value) == "color" {
+		@return null;
+	}
+	$text: "#{$value}";
+	@if string.slice($text, 1, 8) != "var(--o-" or string.slice($text, -1) != ")" or string.index($text, ",") != null {
+		@error "button-variant: needs a colour or a token var(--o-{name}), got '#{$value}'";
+	}
+	@return string.slice($text, 9, -2);
+}
+
+// The colour of a button state: the darker colour, or the shade token
+// --o-{name}-{shade} of the token
+@function o-button-variant-shade($value, $shade, $amount) {
+	$token: o-button-variant-token($value);
+	@if $token == null {
+		@return darken($value, $amount);
+	}
+	$name: "#{$token}-#{$shade}";
+	@if meta.global-variable-exists("o-token-shades") {
+		@if not map.has-key($o-token-shades, $name) {
+			@error "button-variant: the token '#{$token}' has no shade token '#{$name}'. Pass a colour, or use a token with shade tokens ($o-token-shades in _tokens.scss).";
+		}
+	} @else if list.index($o-button-variant-tokens, $name) == null {
+		$o-button-variant-tokens: list.append($o-button-variant-tokens, $name) !global;
+	}
+	@return var(--o-#{$name});
+}
+
+@mixin button-variant($color, $background, $border) {
+	$background-hover: o-button-variant-shade($background, "hover", 10%);
+	$background-active: o-button-variant-shade($background, "active", 17%);
+	$border-hover: o-button-variant-shade($border, "hover", 12%);
+	$border-focus: o-button-variant-shade($border, "focus", 25%);
+
+	color: $color;
+	background-color: $background;
+	border-color: $border;
+
+	&:focus,
+	&.focus {
+		color: $color;
+		background-color: $background-hover;
+		border-color: $border-focus;
+	}
+	&:hover {
+		color: $color;
+		background-color: $background-hover;
+		border-color: $border-hover;
+	}
+	&:active,
+	&.active,
+	.open > &.dropdown-toggle {
+		color: $color;
+		background-color: $background-hover;
+		background-image: none;
+		border-color: $border-hover;
+
+		&:hover,
+		&:focus,
+		&.focus {
+			color: $color;
+			background-color: $background-active;
+			border-color: $border-focus;
+		}
+	}
+	&.disabled,
+	&[disabled],
+	fieldset[disabled] & {
+		&:hover,
+		&:focus,
+		&.focus {
+			background-color: $background;
+			border-color: $border;
+		}
+	}
+
+	.badge {
+		color: $background;
+		background-color: $color;
+	}
+}

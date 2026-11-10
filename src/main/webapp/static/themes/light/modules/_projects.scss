@@ -231,7 +231,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 					padding-top: 5px;
 					padding-bottom: 6px;
 
-					color: $o-button-ghost-color;
+					color: var(--o-btn-ghost-fg);
 					background-color: $o-button-ghost-background-color;
 					border: 1px solid $o-button-ghost-border-color;
 					font-size: $o-widget-text-font-size;
@@ -250,7 +250,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 				.o_dnd {
 					.o_dnd_icon {
 						font-size: 1em;
-						color: $brand-primary;
+						color: var(--o-primary);
 						display: inline-block;
 						margin-right: 5px;
 					}
@@ -313,11 +313,11 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			margin-bottom: 0;
 			padding-top: 5px;
 			padding-bottom: 6px;
-			border: 1px solid $btn-default-border;
+			border: 1px solid var(--o-btn-default-border);
 			border-top-right-radius: 0;
 			border-bottom-right-radius: 0;
 			border-right: none;
-			background-color: $btn-default-bg;
+			background-color: var(--o-btn-default-bg);
 
 			&:has(.o_realchooser:hover),
 			&:has(.o_realchooser:focus) {
@@ -441,7 +441,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	
 	&.o_proj_card_cleft {
 		border: initial;
-		border-left: 3px solid $o-coursesite-rowelem-border;
+		border-left: 3px solid var(--o-coursesite-border);
 		.o_proj_card_meta {
 			color: initial;
 		}
@@ -475,7 +475,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			gap: 15px;
 			margin: 0;
 			.o_proj_quick_artefact {
-				border-bottom: 1px solid $o-coursesite-rowelem-border;
+				border-bottom: 1px solid var(--o-coursesite-border);
 				padding-bottom: 5px;
 				cursor: pointer;
 				overflow: hidden;
@@ -505,7 +505,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	}
 	.o_proj_quick_starters {
 		ul {
-			border-top: 1px solid $o-coursesite-rowelem-border;
+			border-top: 1px solid var(--o-coursesite-border);
 			display: flex;
 			flex-wrap: wrap;
 			margin: 0px -1px -1px 0px;
@@ -516,7 +516,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 				white-space: nowrap;
 				padding: 15px;
 				margin: -1px 0px 0px -1px;
-				border: 1px solid $o-coursesite-rowelem-border;
+				border: 1px solid var(--o-coursesite-border);
 				i {
 					display: block;
 					font-size: 2.5em;
@@ -800,7 +800,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 		&.o_proj_timeline_range_row {
 			.o_proj_timeline_range_deco {
 				flex-grow: 10;
-				border-top: .1rem solid $text-muted;
+				border-top: .1rem solid var(--o-text-muted);
 				transform: translateY(1rem);
 			}
 			&.o_proj_timeline_overdue {

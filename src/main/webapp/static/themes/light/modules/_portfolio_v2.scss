@@ -119,7 +119,7 @@
 		margin-right: 10px;
 
 		.o_binder_tools a {
-			color: $text-color;
+			color: var(--o-text);
 		}
 	}
 
@@ -152,7 +152,7 @@
 		}
 		
 		.o_binder_tools a {
-			color: $text-color;
+			color: var(--o-text);
 		}
 	}	
 	
@@ -294,19 +294,19 @@
 		font-size: 10px;
 	}
 	.dot.o_pf_status_draft {
-		fill: o-state-color("neutral", "text");
+		fill: var(--o-state-neutral-text);
 	}
 	.dot.o_pf_status_published {
-		fill: o-state-color("success", "text");
+		fill: var(--o-state-success-text);
 	}
 	.dot.o_pf_status_inrevision {
-		fill: o-state-color("danger", "text");
+		fill: var(--o-state-danger-text);
 	}
 	.dot.o_pf_status_closed {
-		fill: o-state-color("finished", "text");
+		fill: var(--o-state-finished-text);
 	}
 	.dot.o_pf_status_deleted {
-		fill: o-state-color("inactive", "text");
+		fill: var(--o-state-inactive-text);
 	}
 }
 
@@ -366,7 +366,7 @@
 			
 			.text-muted {
 				i::before {
-					color: $text-muted;
+					color: var(--o-text-muted);
 				}
 			}
 			
@@ -424,7 +424,7 @@
 		}
 	}
 	a.o_comment {
-		color: $text-muted;
+		color: var(--o-text-muted);
 		margin-left: 1em;
 	}
 	
@@ -442,7 +442,7 @@
 	}
 	
 	.o_popover, .popover:hover {
-		color: $o-content-text-color;
+		color: var(--o-content-text);
 		text-decoration: none;
 	}
 }

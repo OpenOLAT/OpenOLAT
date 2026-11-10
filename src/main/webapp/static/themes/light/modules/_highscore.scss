@@ -64,7 +64,7 @@
 			text-shadow: none;
 		}
 		.o_score {
-			color: $o-hs-score-color;
+			color: var(--o-highscore-score);
 			font-size: $o-hs-score-size;
 			width: 100%;
 			text-align: center;
@@ -176,7 +176,7 @@
 				}
 			}
 			.o_myself {
-				fill: $o-hs-histogram-bar-myself-color;
+				fill: var(--o-highscore-bar-myself);
 				&:hover {
 					fill: $o-hs-histogram-bar-myself-hover-color;
 				}

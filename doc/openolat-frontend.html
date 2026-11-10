@@ -405,7 +405,7 @@ p>.version-badge:first-child,li>.version-badge:first-child{margin-left:0;margin-
 </tbody>
 </table>
 
-<p><code>compiletheme.sh</code> compiles every non-partial <code>.scss</code> file in a theme folder, so <code>oo-docs.css</code> is built together with <code>theme.css</code> for <code>light</code>. <code>oo-docs.scss</code> imports only <code>functions</code>, <code>config</code>, <code>modules/mixins</code> and <code>modules/icons</code>, and loads the fonts from a sibling <code>fonts/</code> folder.</p>
+<p><code>compiletheme.sh</code> compiles every non-partial <code>.scss</code> file in a theme folder, so <code>oo-docs.css</code> is built together with <code>theme.css</code> for <code>light</code>. <code>oo-docs.scss</code> imports <code>functions</code>, <code>palette</code>, <code>config</code>, <code>palette_theme</code>, <code>modules/mixins</code>, <code>modules/icons</code>, <code>modules/palette_vars</code> and <code>modules/tokens</code> (<code>_icons.scss</code> reads tokens), and loads the fonts from a sibling <code>fonts/</code> folder.</p>
 
 <!-- ==================== SECTION 4: COMPILATION ==================== -->
 <h2 id="compilation">4. Compilation Pipeline</h2>
@@ -464,7 +464,7 @@ $o-tree-link-color       : $navbar-default-link-color;</code></pre>
 </tbody>
 </table>
 
-<p>Button and field borders use two tokens: <code>$btn-default-border</code> (<code>#6c757d</code>) and <code>$btn-default-hover-border</code> (<code>#667085</code>) for buttons and dropdown toggles, <code>$input-border</code> (<code>#d0d5dd</code>) for text fields, radio cards, tag selection and the toolbar nav. Ghost buttons use <code>$o-button-ghost-color: $btn-primary-bg</code> with a transparent hover background. <code>$o-font-size-section-title</code> (about 18px) sets the size of section headings.</p>
+<p>Button and field borders use two tokens: <code>$btn-default-border</code> (<code>#6c757d</code>) and <code>$btn-default-hover-border</code> (<code>#667085</code>) for buttons and dropdown toggles, <code>$input-border</code> (<code>#d0d5dd</code>) for text fields, radio cards, tag selection and the toolbar nav. Ghost buttons use the link colour <code>var(--o-link)</code> with a transparent hover background. <code>$o-font-size-section-title</code> (about 18px) sets the size of section headings.</p>
 
 <!-- ==================== SECTION 6: A11Y ==================== -->
 <h2 id="a11y">6. Accessibility Functions</h2>
@@ -487,6 +487,8 @@ $btn-primary-color: o-a11y-color(#fff, $btn-primary-bg);
 @if contrast($brand-primary, #FFF) &lt; 4.5 {
   $o-brand-box-border: darken($brand-primary, 20%);
 }</code></pre>
+
+<p><code>o-a11y-color()</code> changes the lightness of a colour in steps of 1% until the pair has the ratio, at most 100 steps. When it does not reach the ratio, it returns a colour outside the range, e.g. <code>hsl(0, 0%, -48%)</code>. A browser shows such a colour with each channel at its limit (black or white). <code>o-hex()</code> of <code>_palette.scss</code> writes the same limit into the token. <code>o-token-literal()</code> of <code>_tokens.scss</code> does the same for a colour with transparency.</p>
 
 <h3 id="palette">6.1 Colour Palette for User Colour Choosers</h3>
 
@@ -1789,8 +1791,8 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
 <tr><td><code>o_passed</code></td><td>Text colour of the success state (<code>$o-course-state-passed-color</code>)</td></tr>
-<tr><td><code>o_failed</code></td><td>Text colour of the danger state (<code>$o-course-state-failed-color</code>)</td></tr>
-<tr><td><code>o_unknown</code></td><td>Text colour of the warning state (<code>$o-course-state-unknown-color</code>)</td></tr>
+<tr><td><code>o_failed</code></td><td>Text colour of the danger state (<code>var(--o-state-danger-text)</code>)</td></tr>
+<tr><td><code>o_unknown</code></td><td>Text colour of the warning state (<code>var(--o-state-warning-text)</code>)</td></tr>
 <tr><td><code>o_noinfo</code></td><td>Muted text colour (<code>$text-muted</code>)</td></tr>
 </tbody>
 </table>
@@ -1862,65 +1864,76 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <!-- ==================== SECTION 26: COLORS ==================== -->
 <h2 id="css-colors">26. Color System</h2>
 
-<p><span class="version-badge changed">Changed in 21.2.0</span> The status colours come from 8 semantic states on the palette (OO-10042). The <code>$o-labeled-*</code> variables and the <code>%o_labeled_&lt;colour&gt;</code> placeholders are removed. The theme emits the semantic and state tokens as CSS custom properties (OO-9994, 26.5). The modules move to the three token layers (OO-10043).</p>
+<p><span class="version-badge changed">Changed in 21.2.0</span> The status colours come from 8 semantic states on the palette (OO-10042). The <code>$o-labeled-*</code> variables and the <code>%o_labeled_&lt;colour&gt;</code> placeholders are removed. The theme emits the colour tokens of three layers as CSS custom properties (OO-9994, OO-10043, 26.1, 26.5). The modules read the tokens with <code>var(--o-*)</code> (OO-10043). <code>_config.scss</code> no longer has the 226 colour variables that nothing read.</p>
 
 <h3 id="token-layers">26.1 Token Layers</h3>
 
-<p>Every colour belongs to one of three layers. A module reads the semantic layer, and the component layer only for a colour that a client theme or the dark mode sets separately.</p>
+<p>Every colour token belongs to one of three layers. The layer tells which code owns the element. It does not limit the references: a token can reference a token of any layer.</p>
 
 <div class="diagram-box">
-<svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+<svg viewBox="0 0 700 290" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
   <defs><marker id="tl-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#64748b"/></marker></defs>
   <text x="350" y="20" text-anchor="middle" font-size="13" font-weight="700" fill="#16797c">Colour Token Layers</text>
 
-  <rect x="20" y="40" width="190" height="120" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-  <text x="115" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Palette</text>
-  <text x="115" y="78" text-anchor="middle" font-size="9" fill="#475569">14 hues x 10 steps, theme colours</text>
-  <rect x="45" y="88" width="20" height="14" fill="#E4B132"/><rect x="65" y="88" width="20" height="14" fill="#0470D8"/><rect x="85" y="88" width="20" height="14" fill="#1F8320"/><rect x="105" y="88" width="20" height="14" fill="#D2343C"/><rect x="125" y="88" width="20" height="14" fill="#637286"/><rect x="145" y="88" width="20" height="14" fill="#BA37B4"/>
-  <text x="115" y="122" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-yellow-400, --o-theme1</text>
-  <text x="115" y="136" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-white, --o-base-text</text>
-  <text x="115" y="152" text-anchor="middle" font-size="8" fill="#64748b">_palette.scss, _palette_vars.scss</text>
+  <rect x="20" y="36" width="250" height="176" rx="6" fill="#f0fdfa" stroke="#16797c"/>
+  <text x="145" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#16797c">Base</text>
+  <rect x="32" y="66" width="226" height="30" rx="4" fill="#fff" stroke="#94a3b8"/>
+  <rect x="40" y="74" width="12" height="14" fill="#E4B132"/><rect x="52" y="74" width="12" height="14" fill="#0470D8"/><rect x="64" y="74" width="12" height="14" fill="#1F8320"/><rect x="76" y="74" width="12" height="14" fill="#D2343C"/>
+  <text x="96" y="80" font-size="9" font-weight="600" fill="#334155">Palette: the literal colours</text>
+  <text x="96" y="91" font-size="8" font-family="monospace" fill="#0f172a">--o-blue-500, --o-white, --o-base-*</text>
+  <rect x="32" y="102" width="226" height="30" rx="4" fill="#fff" stroke="#94a3b8"/>
+  <text x="40" y="116" font-size="9" font-weight="600" fill="#334155">Semantic tokens (14)</text>
+  <text x="40" y="127" font-size="8" font-family="monospace" fill="#0f172a">--o-text, --o-primary, --o-link</text>
+  <rect x="32" y="138" width="226" height="30" rx="4" fill="#fff" stroke="#94a3b8"/>
+  <text x="40" y="152" font-size="9" font-weight="600" fill="#334155">State tokens (56)</text>
+  <text x="40" y="163" font-size="8" font-family="monospace" fill="#0f172a">--o-state-success-text</text>
+  <rect x="32" y="174" width="226" height="30" rx="4" fill="#fff" stroke="#94a3b8"/>
+  <text x="40" y="188" font-size="9" font-weight="600" fill="#334155">Global elements (21)</text>
+  <text x="40" y="199" font-size="8" font-family="monospace" fill="#0f172a">--o-btn-primary-bg, --o-content-h1</text>
 
-  <rect x="255" y="40" width="190" height="120" rx="6" fill="#f0fdfa" stroke="#16797c"/>
-  <text x="350" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#16797c">Semantic</text>
-  <text x="350" y="78" text-anchor="middle" font-size="9" fill="#475569">meaning: text, surface, border,</text>
-  <text x="350" y="90" text-anchor="middle" font-size="9" fill="#475569">brand, link, focus, 8 states</text>
-  <text x="350" y="110" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-text-muted</text>
-  <text x="350" y="124" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-primary</text>
-  <text x="350" y="138" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-state-success-text</text>
-  <text x="350" y="152" text-anchor="middle" font-size="8" fill="#64748b">_tokens.scss (OO-9994)</text>
+  <rect x="320" y="36" width="170" height="110" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="405" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Framework (89)</text>
+  <text x="405" y="74" text-anchor="middle" font-size="9" fill="#475569">org.olat.core.gui,</text>
+  <text x="405" y="86" text-anchor="middle" font-size="9" fill="#475569">org.olat.core.commons.services</text>
+  <text x="405" y="108" text-anchor="middle" font-size="8" font-family="monospace" fill="#0f172a">--o-navbar-bg</text>
+  <text x="405" y="121" text-anchor="middle" font-size="8" font-family="monospace" fill="#0f172a">--o-tree-link</text>
+  <text x="405" y="134" text-anchor="middle" font-size="8" font-family="monospace" fill="#0f172a">--o-tag-bg</text>
 
-  <rect x="490" y="40" width="190" height="120" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
-  <text x="585" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Component</text>
-  <text x="585" y="78" text-anchor="middle" font-size="9" fill="#475569">only where a client theme or</text>
-  <text x="585" y="90" text-anchor="middle" font-size="9" fill="#475569">the dark mode sets it separately</text>
-  <text x="585" y="116" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-navbar-bg</text>
-  <text x="585" y="130" text-anchor="middle" font-size="9" font-family="monospace" fill="#0f172a">--o-rating-star</text>
-  <text x="585" y="152" text-anchor="middle" font-size="8" fill="#64748b">_tokens.scss (OO-10043)</text>
+  <rect x="515" y="36" width="170" height="110" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="600" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Component (101)</text>
+  <text x="600" y="74" text-anchor="middle" font-size="9" fill="#475569">one feature module:</text>
+  <text x="600" y="86" text-anchor="middle" font-size="9" fill="#475569">course, tests, forum, chat, ...</text>
+  <text x="600" y="108" text-anchor="middle" font-size="8" font-family="monospace" fill="#0f172a">--o-coursesite-start-bg</text>
+  <text x="600" y="121" text-anchor="middle" font-size="8" font-family="monospace" fill="#0f172a">--o-qti-menu-link</text>
+  <text x="600" y="134" text-anchor="middle" font-size="8" font-family="monospace" fill="#0f172a">--o-selectus-review-glow</text>
 
-  <line x1="212" y1="100" x2="251" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
-  <line x1="447" y1="100" x2="486" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <line x1="318" y1="100" x2="274" y2="115" stroke="#64748b" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <line x1="513" y1="130" x2="492" y2="130" stroke="#64748b" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <path d="M600,148 C600,190 400,200 274,170" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <text x="365" y="207" font-size="8" fill="#64748b">var() references: default or $o-tokens</text>
 
-  <rect x="200" y="195" width="300" height="34" rx="6" fill="#16797c"/>
-  <text x="350" y="216" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">Module: color: var(--o-*)</text>
-  <line x1="350" y1="162" x2="350" y2="191" stroke="#16797c" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
-  <line x1="585" y1="162" x2="480" y2="191" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#tl-arrow)"/>
-  <text x="115" y="190" text-anchor="middle" font-size="8" fill="#64748b">set by the theme config (Sass)</text>
-  <text x="595" y="190" text-anchor="middle" font-size="8" fill="#64748b">set by client theme, dark mode</text>
+  <rect x="200" y="240" width="300" height="34" rx="6" fill="#16797c"/>
+  <text x="350" y="261" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">Module: color: var(--o-*)</text>
+  <line x1="145" y1="214" x2="230" y2="236" stroke="#16797c" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <line x1="360" y1="148" x2="340" y2="236" stroke="#16797c" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <line x1="640" y1="148" x2="470" y2="236" stroke="#16797c" stroke-width="1.5" marker-end="url(#tl-arrow)"/>
+  <text x="600" y="226" text-anchor="middle" font-size="8" fill="#64748b">set by: theme Sass variable or $o-tokens</text>
 </svg>
-<div class="diagram-caption">Figure 5: The three colour token layers: palette, semantic, component</div>
+<div class="diagram-caption">Figure 5: The three colour token layers: base, framework, component</div>
 </div>
 
 <table>
-<thead><tr><th>Layer</th><th>Holds</th><th>Example</th><th>Defined in</th><th>Status</th></tr></thead>
+<thead><tr><th>Layer</th><th>Holds</th><th>Example</th><th>Map in <code>modules/_tokens.scss</code></th><th>Tokens</th></tr></thead>
 <tbody>
-<tr><td>Palette</td><td>literal colours: 14 hues x 10 steps, the theme colours, white, the base colours of the theme</td><td><code>--o-yellow-400</code>, <code>--o-theme1</code>, <code>--o-white</code>, <code>--o-base-text</code></td><td><code>_palette.scss</code>, <code>modules/_palette_vars.scss</code>, <code>modules/_tokens.scss</code></td><td>done (OO-9991, OO-9993, OO-9994)</td></tr>
-<tr><td>Semantic</td><td>the meaning: text, surface, border, brand, link, focus, the 8 states with their roles</td><td><code>--o-text-muted</code>, <code>--o-primary</code>, <code>--o-state-success-text</code></td><td><code>modules/_tokens.scss</code></td><td>done (OO-9994)</td></tr>
-<tr><td>Component</td><td>a colour of one component that a client theme or the dark mode sets separately</td><td><code>--o-navbar-bg</code>, <code>--o-rating-star</code></td><td><code>modules/_tokens.scss</code></td><td>planned (OO-10043)</td></tr>
+<tr><td>Base</td><td>the palette with the literal colours: <code>--o-{hue}-{step}</code>, <code>--o-theme{n}-{step}</code>, <code>--o-white</code>, the base colours <code>--o-base-{name}</code>; the semantic tokens; the state tokens <code>--o-state-{state}-{role}</code>; the tokens of the global elements: buttons, content text and headings</td><td><code>--o-yellow-400</code>, <code>--o-base-text</code>, <code>--o-primary</code>, <code>--o-state-success-text</code>, <code>--o-btn-default-fg</code>, <code>--o-content-h1</code></td><td><code>$o-token-base</code> (base colours), <code>$o-token-layer-base</code> (global elements)</td><td>14 semantic, 56 state, 21 element tokens, 12 shade tokens</td></tr>
+<tr><td>Framework</td><td>layout and generic UI elements of <code>org.olat.core.gui</code> and <code>org.olat.core.commons.services</code>: navigation bar, footer, login page, dialogs, menu tree, toolbar, scope selection, table, wizard, form elements, tags, date picker, ...</td><td><code>--o-navbar-bg</code>, <code>--o-tree-link</code>, <code>--o-tag-bg</code></td><td><code>$o-token-layer-framework</code></td><td>89 element tokens</td></tr>
+<tr><td>Component</td><td>the elements of one feature module: course, course site, tests and question pool (QTI 2.1), practice, forum, chat, lectures, topic broker, folder, selectus, ...</td><td><code>--o-coursesite-start-bg</code>, <code>--o-qti-menu-link</code>, <code>--o-selectus-review-glow</code></td><td><code>$o-token-layer-component</code></td><td>101 element tokens, 8 shade tokens</td></tr>
 </tbody>
 </table>
 
-<p>Literal colours exist only in the palette layer. A semantic or component token is always a <code>var()</code> reference to another token.</p>
+<p>The palette steps come from <code>_palette.scss</code>, <code>_palette_theme.scss</code> and <code>modules/_palette_vars.scss</code>. All other tokens come from <code>modules/_tokens.scss</code>.</p>
+
+<p>An <strong>element token</strong> is a token of the maps <code>$o-token-layer-base</code>, <code>$o-token-layer-framework</code> and <code>$o-token-layer-component</code>: 211 tokens <code>--o-{element}-{part}</code>. A <strong>shade token</strong> is the darker colour of an element token for a state, e.g. <code>--o-btn-primary-bg-hover</code> (26.5). Literal colours exist only in the palette and in the shade tokens. Every other token is a <code>var()</code> reference: to a semantic token, to a palette step, to another token or to its base colour.</p>
 
 <p>Goal: the modules read every colour with <code>var(--o-*)</code>. A client theme changes a colour with one CSS line, a dark mode redefines the semantic tokens, and the removal of Bootstrap ports modules that already read tokens. Spec and module inventory: OO-10043.</p>
 
@@ -1991,18 +2004,19 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <li>Choose the state by the meaning (26.2), not by the colour.</li>
 <li>A status colour outside a label reads the state token <code>var(--o-state-&lt;state&gt;-&lt;role&gt;)</code> (26.5). <code>o-state-color()</code> returns the same colour at compile time, for <code>email.scss</code> and for Sass that needs the value. Do not use <code>$brand-success</code>, <code>$brand-danger</code>, <code>$brand-warning</code>, <code>$brand-info</code> or <code>$state-*-text</code> for a status.</li>
 <li>A fixed colour that is not a status (rating stars, pen colours, chart series) comes from the palette (<code>o-palette()</code>), not from a hex value.</li>
-<li>Do not add a Sass colour variable. A new customization point is a CSS custom property (component token, OO-10043).</li>
+<li>Do not add a Sass colour variable. A new customization point is an element token in the map of its layer (26.1, 26.5), with a reference to an existing token as default: <code>"my-element-border": "primary"</code>. The module reads <code>var(--o-my-element-border)</code>.</li>
 <li>Do not use colour maths (<code>darken()</code>, <code>lighten()</code>, <code>mix()</code>, <code>rgba($var)</code>) on a palette or state colour. Use a role (<code>soft-fg</code>, <code>dark-bg</code>) or another palette step.</li>
 <li>Text, surface, border, brand, link and focus colours read the semantic tokens (<code>var(--o-text)</code>, <code>var(--o-border)</code>, ...), not <code>$text-color</code>, <code>$gray-*</code> or a hex value. The unit test <code>ThemeColorRatchetTest</code> fails when a module gets more old colour references than <code>theme_color_baseline.properties</code> allows.</li>
+<li>Keep <code>modules/_mixins.scss</code> in Sass colours, without <code>var()</code>. <code>email.scss</code> uses its mixins, and mail clients do not support custom properties.</li>
 </ol>
 
 <p>Buttons, alerts and form messages still read the Bootstrap colours <code>$brand-*</code>. OO-10043 moves them to the state tokens.</p>
 
 <h3 id="colour-tokens">26.5 Colour Tokens</h3>
 
-<p><code>modules/_tokens.scss</code> emits the tokens on <code>:root</code> in <code>theme.css</code> and <code>content.css</code>, not in <code>email.css</code> (mail clients do not support custom properties). The component library page <a href="component-library/colors.html#tokens">Colours</a>, section "Colour Tokens", shows every token with its value and contrast for the selected theme.</p>
+<p><code>modules/_tokens.scss</code> emits the tokens on <code>:root</code> in <code>theme.css</code>, <code>content.css</code> and <code>oo-docs.css</code>, not in <code>email.css</code> (mail clients do not support custom properties). The component library page <a href="component-library/colors.html#tokens">Colours</a>, section "Colour Tokens", shows every token with its value and contrast for the selected theme.</p>
 
-<p><strong>Base colours</strong> (palette layer) carry the colour inputs of the theme 1:1. A client theme keeps setting the Sass variables in its config.</p>
+<p><strong>Base colours</strong> (base layer, palette) carry the colour inputs of the theme 1:1. A client theme keeps setting the Sass variables in its config.</p>
 
 <table>
 <thead><tr><th>Token</th><th>Source</th><th>Semantic token</th><th>Use</th></tr></thead>
@@ -2028,22 +2042,383 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 
 <p><strong>State tokens:</strong> <code>--o-state-{state}-{role}</code> for the 8 states of <code>$o-states</code> (26.2) and the roles <code>text</code>, <code>bg</code>, <code>fg</code>, <code>border</code>, <code>soft-bg</code>, <code>soft-fg</code>, <code>soft-border</code> (56 tokens). Each one reads the palette step of its hue, e.g. <code>--o-state-success-bg: var(--o-green-400)</code>, <code>--o-state-danger-fg: var(--o-white)</code>.</p>
 
+<p><strong>Element tokens:</strong> <code>--o-{element}-{part}</code> holds the colour of one element: a global element (base layer), a framework element or a component element (26.1). 211 tokens in <code>$o-token-layer-base</code>, <code>$o-token-layer-framework</code> and <code>$o-token-layer-component</code> of <code>modules/_tokens.scss</code>. The default of an element token has one of two forms:</p>
+
+<table>
+<thead><tr><th>Default</th><th>Tokens</th><th>Meaning</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><code>($sass-variable, (tokens))</code></td><td>86</td><td>The Sass variable of the theme config feeds the token. A client theme that sets the Sass variable keeps working. The Sass variable must be a colour or <code>transparent</code>: <code>none</code> or <code>!important</code> stops the compile. The default can also be a Sass expression, for the text colour that <code>o-a11y-color()</code> adjusts for the background of one rule: <code>"course-style-link": (o-a11y-color($link-color, $o-cn-style-bg), ("link",))</code>. The rule reads the token. No module calls <code>o-a11y-color()</code>.</td><td><code>"navbar-bg": ($o-navbar-bg, ("bg",))</code></td></tr>
+<tr><td><code>"token-name"</code></td><td>125</td><td>A reference to another token. There is no Sass variable: a client theme changes the token with <code>$o-tokens</code>. A loop or an unknown name stops the compile.</td><td><code>"selectus-review-glow": "primary"</code> emits <code>--o-selectus-review-glow: var(--o-primary)</code>; <code>"qti-menu-link": "tree-link"</code> emits <code>var(--o-tree-link)</code></td></tr>
+</tbody>
+</table>
+
+<p>An element token reads, in this order:</p>
+
+<ol>
+<li>the value of <code>$o-tokens</code> for it (client override, see below);</li>
+<li>its reference default <code>"token-name"</code>;</li>
+<li>the first token of its list whose default has the colour of the Sass variable; the element token then follows an override of that token;</li>
+<li>the palette step with the same colour;</li>
+<li>its base colour <code>--o-base-{name}</code>, a literal value next to the token.</li>
+</ol>
+
+<p>The light theme has these defaults. "Sass variable" is empty for a token with a reference default. It shows the Sass expression for a token with an adjusted text colour.</p>
+
+<p><strong>Base layer: global elements</strong> (<code>$o-token-layer-base</code>, 21 tokens, 13 with a Sass variable):</p>
+
+<table>
+<thead><tr><th>Group</th><th>Token</th><th>Sass variable</th><th>Default in light</th></tr></thead>
+<tbody>
+<tr><td>Buttons</td><td><code>--o-btn-primary-bg</code></td><td><code>$btn-primary-bg</code></td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-primary-fg</code></td><td><code>$btn-primary-color</code></td><td><code>var(--o-primary-fg)</code></td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-primary-border</code></td><td><code>$btn-primary-border</code></td><td><code>#295FAA</code> (base colour)</td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-default-bg</code></td><td><code>$btn-default-bg</code></td><td><code>var(--o-bg)</code></td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-default-fg</code></td><td><code>$btn-default-color</code></td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-default-border</code></td><td><code>$btn-default-border</code></td><td><code>#6C757D</code> (base colour)</td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-dirty-bg</code></td><td><code>$o-button-dirty-bg</code></td><td><code>#F2AF40</code> (base colour)</td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-dirty-fg</code></td><td><code>$o-button-dirty-color</code></td><td><code>#4A4A4A</code> (base colour)</td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-dirty-border</code></td><td><code>$o-button-dirty-border</code></td><td><code>#F0A528</code> (base colour)</td></tr>
+<tr><td>Buttons</td><td><code>--o-btn-ghost-fg</code></td><td>-</td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-header</code></td><td><code>$o-content-header-base-color</code></td><td><code>var(--o-heading)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-link</code></td><td><code>$o-content-link-color</code></td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-bg</code></td><td>-</td><td><code>var(--o-bg)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-dimmed</code></td><td><code>$o-content-dimmed-color</code></td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-disabled</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-h1</code></td><td>-</td><td><code>var(--o-content-header)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-h2</code></td><td>-</td><td><code>var(--o-content-header)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-h3</code></td><td>-</td><td><code>var(--o-content-header)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-h4</code></td><td>-</td><td><code>var(--o-content-header)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-h5</code></td><td><code>$o-content-h5-color</code></td><td><code>var(--o-content-header)</code></td></tr>
+<tr><td>Content text and headings</td><td><code>--o-content-text</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+</tbody>
+</table>
+
+<p><strong>Framework layer</strong> (<code>$o-token-layer-framework</code>, 89 tokens, 45 with a Sass variable):</p>
+
+<table>
+<thead><tr><th>Group</th><th>Token</th><th>Sass variable</th><th>Default in light</th></tr></thead>
+<tbody>
+<tr><td>Bookmarks</td><td><code>--o-bookmark</code></td><td><code>$o-bookmark-color</code></td><td><code>#BC2D0C</code> (base colour)</td></tr>
+<tr><td>Cards and fact sheet</td><td><code>--o-card-hover</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Cards and fact sheet</td><td><code>--o-card-title</code></td><td>-</td><td><code>var(--o-coursesite-title)</code></td></tr>
+<tr><td>Cards and fact sheet</td><td><code>--o-fact-icon</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Context help</td><td><code>--o-chelp-bg</code></td><td><code>$o-chelp-bg</code></td><td><code>var(--o-btn-primary-bg)</code></td></tr>
+<tr><td>Context help</td><td><code>--o-chelp-border</code></td><td><code>$o-chelp-border</code></td><td><code>var(--o-btn-primary-border)</code></td></tr>
+<tr><td>Context help</td><td><code>--o-chelp-fg</code></td><td>-</td><td><code>var(--o-btn-primary-fg)</code></td></tr>
+<tr><td>Date component and date picker</td><td><code>--o-datecomp-day-bg</code></td><td>-</td><td><code>var(--o-bg)</code></td></tr>
+<tr><td>Date component and date picker</td><td><code>--o-datecomp-day-fg</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Date component and date picker</td><td><code>--o-datecomp-month-bg</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Date component and date picker</td><td><code>--o-datepicker-today-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Date component and date picker</td><td><code>--o-datepicker-today</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Dialogs</td><td><code>--o-dialog-header</code></td><td><code>$o-dialog-header-color</code></td><td><code>var(--o-primary-text)</code></td></tr>
+<tr><td>Empty state and indicators</td><td><code>--o-box-plot-values</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Empty state and indicators</td><td><code>--o-empty-msg</code></td><td><code>$o-empty-msg-color</code></td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Empty state and indicators</td><td><code>--o-empty-panel-icon</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Empty state and indicators</td><td><code>--o-indicator-label</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Empty state and indicators</td><td><code>--o-radial-progress-addon</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Figure cards</td><td><code>--o-figure-card-chevron</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Figure cards</td><td><code>--o-figure-card-figure</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Figure cards</td><td><code>--o-figure-card-icon</code></td><td><code>$o-figure-card-icon-color</code></td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Footer</td><td><code>--o-footer-bg</code></td><td><code>$o-footer-outer-bg</code></td><td><code>#F9FAFB</code> (base colour)</td></tr>
+<tr><td>Footer</td><td><code>--o-footer-inner-bg</code></td><td><code>$o-footer-inner-bg</code></td><td><code>#F9FAFB</code> (base colour)</td></tr>
+<tr><td>Footer</td><td><code>--o-footer-text</code></td><td><code>$o-footer-default-color</code></td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Footer</td><td><code>--o-footer-link</code></td><td><code>$o-footer-default-link-color</code></td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-autocomplete-suggestion-bg</code></td><td>-</td><td><code>var(--o-btn-primary-bg)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-autocomplete-suggestion-fg</code></td><td>-</td><td><code>var(--o-btn-primary-fg)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-file-upload-border</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-panel-placeholder-border-active</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-radio-card-border</code></td><td>-</td><td><code>var(--o-border-strong)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-radio-card-image-border</code></td><td>-</td><td><code>var(--o-border-strong)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-radio-card-label-hover</code></td><td>-</td><td><code>var(--o-btn-default-fg)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-slider-handler-bg</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-slider-handler-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-toggle-on-bg</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-toggle-on-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Form elements</td><td><code>--o-toggle-text</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Login page</td><td><code>--o-login-header</code></td><td><code>$o-login-header-color</code></td><td><code>var(--o-primary-text)</code></td></tr>
+<tr><td>Login page</td><td><code>--o-login-help-link</code></td><td><code>$o-login-help-link-color</code></td><td><code>#2C66B7</code> (base colour)</td></tr>
+<tr><td>Menu tree</td><td><code>--o-tree-link</code></td><td><code>$o-tree-link-color</code></td><td><code>#475467</code> (base colour)</td></tr>
+<tr><td>Menu tree</td><td><code>--o-tree-link-hover</code></td><td><code>$o-tree-link-hover-color</code></td><td><code>#333333</code> (base colour)</td></tr>
+<tr><td>Menu tree</td><td><code>--o-tree-link-hover-bg</code></td><td><code>$o-tree-link-hover-bg</code></td><td><code>var(--o-white)</code></td></tr>
+<tr><td>Menu tree</td><td><code>--o-tree-link-active</code></td><td><code>$o-tree-link-active-color</code></td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Menu tree</td><td><code>--o-tree-link-active-hover</code></td><td><code>$o-tree-link-active-hover-color</code></td><td><code>var(--o-link-hover)</code></td></tr>
+<tr><td>Menu tree</td><td><code>--o-tree-link-active-hover-bg</code></td><td><code>$o-tree-link-active-hover-bg</code></td><td><code>#EEEEEE</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-bg</code></td><td><code>$o-navbar-bg</code></td><td><code>var(--o-bg)</code></td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-text</code></td><td><code>$o-navbar-color</code></td><td><code>#777777</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-link</code></td><td><code>$o-navbar-link-color</code></td><td><code>#475467</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-link-hover</code></td><td><code>$o-navbar-link-hover-color</code></td><td><code>#323B49</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-link-hover-bg</code></td><td><code>$o-navbar-link-hover-bg</code></td><td><code>transparent</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-link-active</code></td><td><code>$o-navbar-link-active-color</code></td><td><code>#555555</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-link-active-bg</code></td><td><code>$o-navbar-link-active-bg</code></td><td><code>#EEEEEE</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-link-disabled</code></td><td><code>$o-navbar-link-disabled-color</code></td><td><code>#CCCCCC</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-link-disabled-bg</code></td><td><code>$o-navbar-link-disabled-bg</code></td><td><code>transparent</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-tools</code></td><td><code>$o-navbar-tools-permanent-color</code></td><td><code>#777777</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-toggle-hover-bg</code></td><td><code>$o-navbar-toggle-hover-bg</code></td><td><code>var(--o-gray-200)</code></td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-toggle-icon</code></td><td><code>$o-navbar-toggle-icon-bar-bg</code></td><td><code>#888888</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-toggle-border</code></td><td><code>$o-navbar-toggle-border-color</code></td><td><code>var(--o-gray-200)</code></td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-brand</code></td><td><code>$o-navbar-brand-color</code></td><td><code>#475467</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-brand-hover</code></td><td><code>$o-navbar-brand-hover-color</code></td><td><code>#323B49</code> (base colour)</td></tr>
+<tr><td>Navigation bar</td><td><code>--o-navbar-brand-hover-bg</code></td><td><code>$o-navbar-brand-hover-bg</code></td><td><code>transparent</code> (base colour)</td></tr>
+<tr><td>Portal and portlets</td><td><code>--o-portlet-border</code></td><td>-</td><td><code>var(--o-border)</code></td></tr>
+<tr><td>Portal and portlets</td><td><code>--o-portlet-header-bg</code></td><td>-</td><td><code>var(--o-bg-subtle)</code></td></tr>
+<tr><td>Scope selection</td><td><code>--o-scope-toggle-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Scope selection</td><td><code>--o-scope-toggle-fg</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Scope selection</td><td><code>--o-scope-toggle-on-bg</code></td><td><code>$o-scope-toggle-on-bg-color</code></td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Table</td><td><code>--o-table-header</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Table</td><td><code>--o-table-link</code></td><td><code>$o-table-link-color</code></td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Table</td><td><code>--o-table-striped-link</code></td><td><code>o-a11y-color($link-color, $table-bg-accent)</code></td><td><code>var(--o-table-link)</code></td></tr>
+<tr><td>Tags</td><td><code>--o-tag-bg</code></td><td><code>$o-tag-background-color</code></td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Tags</td><td><code>--o-tag-selected-bg</code></td><td><code>$o-tag-selected-background-color</code></td><td><code>var(--o-btn-dirty-bg)</code></td></tr>
+<tr><td>Tags</td><td><code>--o-tag-selection-bg</code></td><td><code>$o-tag-selection-background-color</code></td><td><code>var(--o-btn-default-bg)</code></td></tr>
+<tr><td>Tags</td><td><code>--o-tag-selection-border</code></td><td><code>$o-tag-selection-border-color</code></td><td><code>var(--o-border-strong)</code></td></tr>
+<tr><td>Tags</td><td><code>--o-tag-selection-fg</code></td><td>-</td><td><code>var(--o-btn-default-fg)</code></td></tr>
+<tr><td>Tags</td><td><code>--o-tag-selection-selected-bg</code></td><td><code>$o-tag-selection-selected-background-color</code></td><td><code>var(--o-btn-primary-bg)</code></td></tr>
+<tr><td>Tags</td><td><code>--o-tag-selection-selected-border</code></td><td><code>$o-tag-selection-selected-border-color</code></td><td><code>var(--o-btn-primary-border)</code></td></tr>
+<tr><td>Tags</td><td><code>--o-tag-selection-selected-fg</code></td><td>-</td><td><code>var(--o-btn-primary-fg)</code></td></tr>
+<tr><td>Timeline and swiper</td><td><code>--o-swiper-button-bg</code></td><td>-</td><td><code>var(--o-btn-default-bg)</code></td></tr>
+<tr><td>Timeline and swiper</td><td><code>--o-swiper-button-fg</code></td><td>-</td><td><code>var(--o-btn-default-fg)</code></td></tr>
+<tr><td>Timeline and swiper</td><td><code>--o-swiper-button-hover</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Timeline and swiper</td><td><code>--o-timeline-path</code></td><td>-</td><td><code>var(--o-border)</code></td></tr>
+<tr><td>Toolbar and breadcrumb</td><td><code>--o-toolbar-breadcrumb-bg</code></td><td><code>$o-toolbar-breadcrumb-bg-color</code></td><td><code>var(--o-bg-subtle)</code></td></tr>
+<tr><td>Toolbar and breadcrumb</td><td><code>--o-toolbar-breadcrumb-link</code></td><td><code>$o-toolbar-breadcrumb-link-color</code></td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Toolbar and breadcrumb</td><td><code>--o-toolbar-dropdown-active</code></td><td>-</td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Toolbar and breadcrumb</td><td><code>--o-toolbar-nav-border</code></td><td>-</td><td><code>var(--o-border-strong)</code></td></tr>
+<tr><td>Wizard</td><td><code>--o-wizard-step-main-active-bg</code></td><td>-</td><td><code>var(--o-btn-primary-bg)</code></td></tr>
+<tr><td>Wizard</td><td><code>--o-wizard-step-main-active-fg</code></td><td>-</td><td><code>var(--o-btn-primary-fg)</code></td></tr>
+<tr><td>Wizard</td><td><code>--o-wizard-step-sub-active-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Wizard</td><td><code>--o-wizard-step-sub-active</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+</tbody>
+</table>
+
+<p><strong>Component layer</strong> (<code>$o-token-layer-component</code>, 101 tokens, 28 with a Sass variable):</p>
+
+<table>
+<thead><tr><th>Group</th><th>Token</th><th>Sass variable</th><th>Default in light</th></tr></thead>
+<tbody>
+<tr><td>Absences and lectures</td><td><code>--o-lecture-timeline-next-bg</code></td><td>-</td><td><code>var(--o-state-warning-soft-bg)</code></td></tr>
+<tr><td>Absences and lectures</td><td><code>--o-lecture-timeline-next-border</code></td><td>-</td><td><code>var(--o-state-warning-border)</code></td></tr>
+<tr><td>Absences and lectures</td><td><code>--o-lecture-timeline-running-bg</code></td><td>-</td><td><code>var(--o-state-neutral-soft-bg)</code></td></tr>
+<tr><td>Absences and lectures</td><td><code>--o-lecture-timeline-running-border</code></td><td>-</td><td><code>var(--o-state-neutral-border)</code></td></tr>
+<tr><td>Absences and lectures</td><td><code>--o-lecture-timeline-path</code></td><td>-</td><td><code>var(--o-border)</code></td></tr>
+<tr><td>Badges</td><td><code>--o-badge-row-expanded-link</code></td><td><code>o-a11y-color($brand-primary, $o-table-details-bg)</code></td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Badges</td><td><code>--o-badge-row-expanded-link-hover</code></td><td><code>o-a11y-color($brand-primary, darken($o-table-details-bg, 10%))</code></td><td><code>#2B64B3</code> (base colour)</td></tr>
+<tr><td>Badges</td><td><code>--o-badge-status-info</code></td><td><code>o-a11y-color($btn-info-border, $o-toolbar-bg-color)</code></td><td><code>#1C6BDA</code> (base colour)</td></tr>
+<tr><td>Badges</td><td><code>--o-badge-status-success</code></td><td><code>o-a11y-color($btn-success-border, $o-toolbar-bg-color)</code></td><td><code>#398439</code> (base colour)</td></tr>
+<tr><td>Badges</td><td><code>--o-badge-status-warning</code></td><td><code>o-a11y-color($btn-warning-border, $o-toolbar-bg-color)</code></td><td><code>#A2690B</code> (base colour)</td></tr>
+<tr><td>Badges</td><td><code>--o-badge-status-danger</code></td><td><code>o-a11y-color($btn-danger-border, $o-toolbar-bg-color)</code></td><td><code>#BD0019</code> (base colour)</td></tr>
+<tr><td>Chat</td><td><code>--o-im-summary-bg</code></td><td><code>$o-im-summary-bg</code></td><td><code>#667085</code> (base colour)</td></tr>
+<tr><td>Chat</td><td><code>--o-im-buddies-link</code></td><td>-</td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Chat</td><td><code>--o-im-buddies-link-hover</code></td><td>-</td><td><code>var(--o-link-hover)</code></td></tr>
+<tr><td>Chat</td><td><code>--o-im-chat-date</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Chat</td><td><code>--o-im-groupchat-user</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Competences</td><td><code>--o-competence-selected</code></td><td>-</td><td><code>var(--o-btn-dirty-bg)</code></td></tr>
+<tr><td>Content editor</td><td><code>--o-editor-inspector-title</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Content editor</td><td><code>--o-editor-layout-pseudo-icon-bg-active</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Content editor</td><td><code>--o-editor-selected-border</code></td><td><code>$o-editor-selected-border-color</code></td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Content editor</td><td><code>--o-editor-selected-bg</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Course</td><td><code>--o-course-style-image-bg</code></td><td><code>$o-cn-style-image-bg</code></td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Course</td><td><code>--o-course-style-link</code></td><td><code>o-a11y-color($link-color, $o-cn-style-bg)</code></td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Course</td><td><code>--o-course-style-peekview-link</code></td><td><code>o-a11y-color($link-color, $o-cn-style-peekview-bg)</code></td><td><code>#4882D3</code> (base colour)</td></tr>
+<tr><td>Course</td><td><code>--o-course-assessment-part-bg</code></td><td>-</td><td><code>var(--o-bg-subtle)</code></td></tr>
+<tr><td>Course</td><td><code>--o-course-state-failed</code></td><td>-</td><td><code>var(--o-state-danger-text)</code></td></tr>
+<tr><td>Course</td><td><code>--o-course-state-passed</code></td><td><code>$o-course-state-passed-color</code></td><td><code>var(--o-state-success-text)</code></td></tr>
+<tr><td>Course</td><td><code>--o-course-state-unknown</code></td><td>-</td><td><code>var(--o-state-warning-text)</code></td></tr>
+<tr><td>Course</td><td><code>--o-course-file-box-border</code></td><td><code>$o-dialog-cn-box-border-color</code></td><td><code>var(--o-border)</code></td></tr>
+<tr><td>Course</td><td><code>--o-lp-pagination-in-progress-border</code></td><td>-</td><td><code>var(--o-state-neutral-text)</code></td></tr>
+<tr><td>Course</td><td><code>--o-lp-pagination-in-progress-icon</code></td><td>-</td><td><code>var(--o-state-neutral-text)</code></td></tr>
+<tr><td>Course</td><td><code>--o-lp-pagination-in-progress-icon-hover</code></td><td>-</td><td><code>var(--o-state-neutral-text)</code></td></tr>
+<tr><td>Course</td><td><code>--o-reminder-marker-bg</code></td><td>-</td><td><code>var(--o-btn-primary-bg)</code></td></tr>
+<tr><td>Course</td><td><code>--o-reminder-marker-fg</code></td><td>-</td><td><code>var(--o-btn-primary-fg)</code></td></tr>
+<tr><td>Course</td><td><code>--o-course-peekview-bg</code></td><td>-</td><td><code>var(--o-bg)</code></td></tr>
+<tr><td>Course element Task (process steps)</td><td><code>--o-step-active</code></td><td>-</td><td><code>var(--o-state-warning-border)</code></td></tr>
+<tr><td>Course element Task (process steps)</td><td><code>--o-step-done</code></td><td>-</td><td><code>var(--o-state-success-border)</code></td></tr>
+<tr><td>Course element Task (process steps)</td><td><code>--o-step-done-marker</code></td><td>-</td><td><code>var(--o-step-done)</code></td></tr>
+<tr><td>Course element Task (process steps)</td><td><code>--o-step-expired</code></td><td>-</td><td><code>var(--o-state-danger-border)</code></td></tr>
+<tr><td>Course element Task (process steps)</td><td><code>--o-step-status-expired</code></td><td>-</td><td><code>var(--o-state-danger-text)</code></td></tr>
+<tr><td>Course element Task (process steps)</td><td><code>--o-step-status-extended</code></td><td>-</td><td><code>var(--o-state-neutral-text)</code></td></tr>
+<tr><td>Course element Task (process steps)</td><td><code>--o-step-status-late</code></td><td>-</td><td><code>var(--o-state-critical-text)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-start-bg</code></td><td><code>$o-coursesite-start-bg</code></td><td><code>var(--o-btn-primary-bg)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-start-fg</code></td><td><code>$o-coursesite-start-color</code></td><td><code>var(--o-white)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-start-border</code></td><td><code>$o-coursesite-start-border</code></td><td><code>#295FAA</code> (base colour)</td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-book-bg</code></td><td><code>$o-coursesite-book-bg</code></td><td><code>#F2AF40</code> (base colour)</td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-book-fg</code></td><td><code>$o-coursesite-book-color</code></td><td><code>#4A4A4A</code> (base colour)</td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-book-border</code></td><td><code>$o-coursesite-book-border</code></td><td><code>#F0A528</code> (base colour)</td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-border</code></td><td><code>$o-coursesite-rowelem-border</code></td><td><code>var(--o-border-strong)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-title</code></td><td><code>$o-coursesite-meta-title-color</code></td><td><code>var(--o-heading)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-catalog-border</code></td><td><code>$o-coursesite-catalog-border</code></td><td><code>var(--o-coursesite-border)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-start-xs-bg</code></td><td>-</td><td><code>var(--o-coursesite-start-bg)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-start-xs-fg</code></td><td><code>$o-coursesite-go-xs-color</code></td><td><code>var(--o-coursesite-start-fg)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-meta-lifecycle</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-sidecol-bg</code></td><td>-</td><td><code>var(--o-bg-subtle)</code></td></tr>
+<tr><td>Course site and repository</td><td><code>--o-coursesite-sidecol-border</code></td><td>-</td><td><code>var(--o-border)</code></td></tr>
+<tr><td>Curriculum</td><td><code>--o-curriculum-avatar-bg</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Curriculum</td><td><code>--o-curriculum-widget-template-label</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Folder</td><td><code>--o-folder-card-thumbnail-folder-icon</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Folder</td><td><code>--o-folder-muted</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Folder</td><td><code>--o-folder-row-thumbnail-folder-icon</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Forum</td><td><code>--o-forum-message-footer-bg</code></td><td>-</td><td><code>var(--o-forum-message-header-bg)</code></td></tr>
+<tr><td>Forum</td><td><code>--o-forum-message-footer-border</code></td><td>-</td><td><code>var(--o-forum-message-header-border)</code></td></tr>
+<tr><td>Forum</td><td><code>--o-forum-message-header-bg</code></td><td><code>$o-forum-message-header-bg</code></td><td><code>var(--o-bg-subtle)</code></td></tr>
+<tr><td>Forum</td><td><code>--o-forum-message-header-border</code></td><td>-</td><td><code>var(--o-border)</code></td></tr>
+<tr><td>Forum</td><td><code>--o-forum-message-header-author</code></td><td><code>$o-forum-message-header-author-color</code></td><td><code>var(--o-link)</code></td></tr>
+<tr><td>Forum</td><td><code>--o-forum-message-header-modified</code></td><td><code>$o-forum-message-header-modified-color</code></td><td><code>#8A6D3B</code> (base colour)</td></tr>
+<tr><td>Forum</td><td><code>--o-forum-message-footer-attachment</code></td><td><code>$o-forum-message-footer-attachment-color</code></td><td><code>var(--o-forum-message-header-author)</code></td></tr>
+<tr><td>Forum</td><td><code>--o-forum-quote-author</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>High score</td><td><code>--o-highscore-bar-myself</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>High score</td><td><code>--o-highscore-score</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Practice</td><td><code>--o-practice-challenge-progress-bg</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Practice</td><td><code>--o-practice-level-disc</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Practice</td><td><code>--o-practice-play-main-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Practice</td><td><code>--o-practice-rank-me</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Selectus</td><td><code>--o-selectus-review-glow</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-drawing-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-drawing-select-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qpool-arrow-selected-bg</code></td><td>-</td><td><code>var(--o-navbar-link-active-bg)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qpool-arrow-selected-fg</code></td><td>-</td><td><code>var(--o-navbar-link-active)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-attempts</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-gap-border</code></td><td><code>$o-qti-gap-border-color</code></td><td><code>var(--o-border-strong)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-gap-drag-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-gap-selected-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-hottext-checked</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-hottext</code></td><td>-</td><td><code>var(--o-text)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-menu-link-active</code></td><td>-</td><td><code>var(--o-tree-link-active)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-menu-link-active-hover-bg</code></td><td>-</td><td><code>var(--o-tree-link-active-hover-bg)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-menu-link-active-hover</code></td><td>-</td><td><code>var(--o-tree-link-active-hover)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-menu-link</code></td><td>-</td><td><code>var(--o-tree-link)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-menu-link-hover</code></td><td>-</td><td><code>var(--o-tree-link-hover)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-status-correct</code></td><td>-</td><td><code>var(--o-state-success-text)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-status-incorrect</code></td><td>-</td><td><code>var(--o-state-danger-text)</code></td></tr>
+<tr><td>Tests and question pool (QTI 2.1)</td><td><code>--o-qti-status-review</code></td><td>-</td><td><code>var(--o-state-warning-text)</code></td></tr>
+<tr><td>Topic broker</td><td><code>--o-topicbroker-enrolled</code></td><td>-</td><td><code>var(--o-state-success-text)</code></td></tr>
+<tr><td>Topic broker</td><td><code>--o-topicbroker-fillin</code></td><td>-</td><td><code>var(--o-text-muted)</code></td></tr>
+<tr><td>Topic broker</td><td><code>--o-topicbroker-waiting</code></td><td>-</td><td><code>var(--o-state-warning-text)</code></td></tr>
+<tr><td>Topic broker</td><td><code>--o-topicbroker-title-abbr-bg</code></td><td>-</td><td><code>var(--o-btn-primary-bg)</code></td></tr>
+<tr><td>Topic broker</td><td><code>--o-topicbroker-title-abbr-fg</code></td><td>-</td><td><code>var(--o-btn-primary-fg)</code></td></tr>
+<tr><td>User authentication</td><td><code>--o-authentication-label-bg</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+<tr><td>Video task</td><td><code>--o-video-startbox-main-border</code></td><td>-</td><td><code>var(--o-primary)</code></td></tr>
+</tbody>
+</table>
+
+<p><strong>Shade tokens:</strong> a shade token holds the darker colour of an element token for a state: hover, focus or active. Its name is the name of the element token plus the shade, e.g. <code>--o-btn-primary-bg-hover</code>. <code>$o-token-shades</code> in <code>modules/_tokens.scss</code> holds the 20 shade tokens as <code>"name": ("token", percent)</code>. The compile computes the colour with <code>darken()</code> from the colour of the element token and emits a literal value. The browser does no colour maths.</p>
+
+<table>
+<thead><tr><th>Shade token</th><th>Colour</th><th>Button state</th></tr></thead>
+<tbody>
+<tr><td><code>--o-{element}-bg-hover</code></td><td><code>{element}-bg</code>, 10% darker</td><td>background: hover, focus, active</td></tr>
+<tr><td><code>--o-{element}-bg-active</code></td><td><code>{element}-bg</code>, 17% darker</td><td>background: active together with hover or focus</td></tr>
+<tr><td><code>--o-{element}-border-hover</code></td><td><code>{element}-border</code>, 12% darker</td><td>border: hover, active</td></tr>
+<tr><td><code>--o-{element}-border-focus</code></td><td><code>{element}-border</code>, 25% darker</td><td>border: focus, active together with hover or focus</td></tr>
+</tbody>
+</table>
+
+<p>The percentages are the percentages of the Bootstrap mixin <code>button-variant</code>: the state colours are the same as before OO-10043. These elements have shade tokens:</p>
+
+<table>
+<thead><tr><th>Element</th><th>Layer</th><th><code>-bg-hover</code></th><th><code>-bg-active</code></th><th><code>-border-hover</code></th><th><code>-border-focus</code></th></tr></thead>
+<tbody>
+<tr><td><code>btn-primary</code></td><td>base</td><td><code>#245496</code></td><td><code>#1D4479</code></td><td><code>#1D4479</code></td><td><code>#102644</code></td></tr>
+<tr><td><code>btn-default</code></td><td>base</td><td><code>#E6E6E6</code></td><td><code>#D4D4D4</code></td><td><code>#50565C</code></td><td><code>#313539</code></td></tr>
+<tr><td><code>btn-dirty</code></td><td>base</td><td><code>#EF9B10</code></td><td><code>#CD850E</code></td><td><code>#CD850E</code></td><td><code>#8F5D0A</code></td></tr>
+<tr><td><code>coursesite-start</code></td><td>component</td><td><code>#245496</code></td><td><code>#1D4479</code></td><td><code>#1D4479</code></td><td><code>#102644</code></td></tr>
+<tr><td><code>coursesite-book</code></td><td>component</td><td><code>#EF9B10</code></td><td><code>#CD850E</code></td><td><code>#CD850E</code></td><td><code>#8F5D0A</code></td></tr>
+</tbody>
+</table>
+
+<p>Rules for a shade token:</p>
+
+<ul>
+<li>It follows its element token. A new value of the Sass variable (<code>$btn-primary-bg</code>) or an override of the element token in <code>$o-tokens</code> gives a new shade colour.</li>
+<li><code>$o-tokens</code> overrides it like an element token, e.g. <code>"btn-primary-bg-hover": "blue-800"</code>.</li>
+<li>The background and the border have separate tokens. A theme that overrides <code>btn-primary-bg</code> in <code>$o-tokens</code> overrides <code>btn-primary-border</code> too. Without that, the border keeps the colour of <code>$btn-primary-border</code>.</li>
+<li>The compile computes the colour. A stylesheet that redefines an element token at run time (dark mode) redefines its shade tokens too.</li>
+</ul>
+
+<p><strong>Mixin <code>button-variant</code>:</strong> <code>modules/_button_variant.scss</code> replaces the Bootstrap mixin <code>button-variant($color, $background, $border)</code> with the same rules and selectors. Each argument is a colour or a token:</p>
+
+<ul>
+<li>A colour gets the state colours of Bootstrap, computed with <code>darken()</code> at compile time. A client theme that calls the mixin with colours keeps working.</li>
+<li>A token <code>var(--o-{name})</code> gets the shade tokens of the table above. A token without shade tokens stops the compile.</li>
+</ul>
+
+<p><code>modules/_bootstrap.scss</code> (<code>theme.scss</code>) and <code>content.scss</code> import the mixin after the Bootstrap mixins.</p>
+
+<pre><code>.my_button { @include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border)); }</code></pre>
+
+<p>The Bootstrap classes <code>.btn-default</code> and <code>.btn-primary</code>, the dirty button, the start and book buttons of the course site and the button rules of the modules read the tokens with this mixin. <code>.btn-success</code>, <code>.btn-info</code>, <code>.btn-warning</code>, <code>.btn-danger</code> and <code>.btn-link</code> read Sass variables. A new button with its own colours needs the element tokens <code>{element}-fg</code>, <code>{element}-bg</code>, <code>{element}-border</code> and 4 rows in <code>$o-token-shades</code>.</p>
+
+<p>Four element colours stay Sass in the modules, because client themes set a value that a token cannot carry: <code>$o-navbar-border-color</code> and <code>$o-tree-link-active-bg</code> (<code>none</code>), <code>$o-footer-default-link-hover-color</code> (an invalid hex value) and <code>$o-content-link-hover-color</code> (<code>!important</code> in the variable). They get a token when these client themes set a colour.</p>
+<p>Four Sass variables with a default from <code>o-a11y-color()</code> have no token. The rules read the Sass variable: <code>$o-button-primary-light-color</code> and <code>$o-button-danger-light-color</code> (<code>_helpers.scss</code>, <code>_topicbroker.scss</code>), <code>$o-edu-type-standard-course-color</code> (<code>_course.scss</code>) and <code>$o-dialog-cn-label-new-color</code> (<code>_dialog_coursenode.scss</code>).</p>
+
+<p>Contrast pairs of the element tokens, all 4.5:1:</p>
+
+<ul>
+<li>the <code>-fg</code> token on the <code>-bg</code> token of the same element: <code>btn-primary</code>, <code>btn-default</code>, <code>btn-dirty</code>, <code>coursesite-start</code>, <code>coursesite-start-xs</code>, <code>coursesite-book</code>, <code>autocomplete-suggestion</code>, <code>chelp</code>, <code>datecomp-day</code>, <code>swiper-button</code>, <code>tag-selection</code>, <code>tag-selection-selected</code>, <code>wizard-step-main-active</code>, <code>reminder-marker</code>, <code>topicbroker-title-abbr</code>;</li>
+<li>the <code>-fg</code> token on the shade tokens <code>-bg-hover</code> and <code>-bg-active</code> of the same button: <code>btn-primary</code>, <code>btn-default</code>, <code>btn-dirty</code>, <code>coursesite-start</code>, <code>coursesite-book</code>;</li>
+<li><code>navbar-text</code>, <code>navbar-link</code>, <code>navbar-tools</code> on <code>navbar-bg</code>;</li>
+<li><code>footer-text</code>, <code>footer-link</code> on <code>footer-inner-bg</code>;</li>
+<li><code>dialog-header</code>, <code>content-header</code>, <code>content-link</code>, <code>coursesite-title</code> on <code>bg</code>.</li>
+</ul>
+
+<p><code>$o-token-contrast-pairs</code> in <code>modules/_tokens.scss</code> holds the list. The compile checks a pair only when one of its colours differs from the default, with the rules of the client override below.</p>
+
+<p>The light defaults fail 6 pairs. They stay unchanged, because a fix changes the visible colours:</p>
+<ul>
+<li><code>navbar-text</code> and <code>navbar-tools</code>: <code>#777777</code> on white has 4.48:1 (<code>light</code>, <code>openolat</code>);</li>
+<li><code>btn-dirty-fg</code> and <code>coursesite-book-fg</code> on their <code>-bg-hover</code> and <code>-bg-active</code>: <code>#4A4A4A</code> has 3.95:1 on <code>#EF9B10</code> and 2.94:1 on <code>#CD850E</code> (<code>light</code>; <code>openolat</code> has 4.78:1 or more).</li>
+</ul>
+
 <pre><code>.my_note        { color: var(--o-text-muted); border: 1px solid var(--o-border); background: var(--o-bg-subtle); }
 .my_marker_done { border-left: 4px solid var(--o-state-success-border); }</code></pre>
 
-<p><strong>Client override:</strong> a client theme sets the map <code>$o-tokens</code> in its config, before the import of the light theme. The key is the token name without <code>--o-</code>, the value a palette step <code>"{hue}-{step}"</code>, <code>"white"</code> or a colour:</p>
+<p><strong>Client override:</strong> a client theme sets the map <code>$o-tokens</code> in its config, before the import of the light theme. The key is the name of a semantic, state or element token without <code>--o-</code>. The value is one of these:</p>
+
+<ul>
+<li>the name of any other token: semantic, state or element (<code>"primary"</code>, <code>"state-success-text"</code>, <code>"tree-link"</code>). It gives a <code>var()</code> reference to that token. A chain of references is allowed: <code>"qti-menu-link": "link"</code> and <code>"link": "blue-700"</code> give the QTI menu link the colour <code>blue-700</code>. A loop of references stops the compile;</li>
+<li>a palette step <code>"{hue}-{step}"</code>, also <code>"theme1-500"</code>. It gives <code>var(--o-{hue}-{step})</code>;</li>
+<li><code>"white"</code> or a colour. A colour that is not a palette step gives a literal value; for an element token, the literal value is its base colour <code>--o-base-{name}</code>.</li>
+</ul>
 
 <pre><code>$o-tokens: (
 	"text-muted": "slate-600",
 	"state-success-bg": "green-600",
 	"state-success-fg": "white",
 	"link": #1A4F99,
+	"navbar-bg": "primary",
+	"navbar-text": "primary-fg",
+	"navbar-link": "primary-fg",
+	"navbar-tools": "primary-fg",
+	"qti-menu-link": "link",
+	"selectus-review-glow": "orange-500",
 );</code></pre>
 
-<p>The compile stops for an unknown token, an unknown palette step, a value that is not a colour, and an override that breaks a contrast pair: 4.5:1 for text (<code>text</code>, <code>text-muted</code>, <code>heading</code>, <code>link</code>, <code>link-hover</code>, <code>primary-text</code> on <code>bg</code>; <code>primary-fg</code> on <code>primary</code>; per state <code>fg</code> on <code>bg</code>, <code>soft-fg</code> on <code>soft-bg</code>, <code>text</code> on white and on <code>soft-bg</code>), 3:1 for <code>focus</code> on <code>bg</code> and the state <code>border</code> on white. A pair that already fails with the default colours fails only when its foreground is overridden. The default <code>--o-focus</code> (<code>#66AFE9</code>, Bootstrap) has 2.37:1 on white.</p>
+<p>The override <code>"navbar-bg": "primary"</code> needs navbar text, link and tool colours with 4.5:1 on it, here <code>"primary-fg"</code>. Without them, the compile stops: the default link colour <code>#475467</code> has 1.45:1 and the default text colour <code>#777777</code> has 1.18:1 on the primary colour of <code>light</code>.</p>
+
+<p>An override changes every rule that reads the token. A rule that still reads the Sass variable (colour maths, Bootstrap) keeps the Sass value. To change both, set the Sass variable of the theme: this works only for an element token with a Sass variable default.</p>
+
+<p>Example: <code>"btn-primary-bg": "green-700"</code> changes the background of the primary button and its shade tokens <code>-bg-hover</code> and <code>-bg-active</code>. The border token <code>btn-primary-border</code>, its shade tokens and the shadow of <code>.btn-primary</code> (<code>rgba($btn-primary-bg, ...)</code>) keep the colour of the Sass variables. A theme that sets <code>$btn-primary-bg</code> changes all of them.</p>
+
+<p>A shade token is not an element token: the default of an element token cannot be a shade token. An override in <code>$o-tokens</code> can reference a shade token (<code>"tree-link": "btn-primary-bg-hover"</code>).</p>
+
+<p>The compile stops for an unknown token, an unknown palette step, a value that is not a colour, and an override that breaks a contrast pair: 4.5:1 for text (<code>text</code>, <code>text-muted</code>, <code>heading</code>, <code>link</code>, <code>link-hover</code>, <code>primary-text</code> on <code>bg</code>; <code>primary-fg</code> on <code>primary</code>; per state <code>fg</code> on <code>bg</code>, <code>soft-fg</code> on <code>soft-bg</code>, <code>text</code> on white and on <code>soft-bg</code>), 3:1 for <code>focus</code> on <code>bg</code> and the state <code>border</code> on white. A pair that already fails with the default colours fails only when its foreground is overridden or when its ratio gets lower than with the default colours. The default <code>--o-focus</code> (<code>#66AFE9</code>, Bootstrap) has 2.37:1 on white.</p>
 <p>The contrast check covers the palette, the theme colours and <code>$o-tokens</code>. <code>$o-contrast-check</code> in <code>_functions.scss</code> sets its mode: <code>"error"</code> (default) stops the compile at a pair below its ratio, <code>"warn"</code> reports each such pair as a Sass warning and accepts it. A client theme whose client insists on colours with too little contrast sets <code>$o-contrast-check: "warn";</code> in its config; the theme then does not meet WCAG 2.1 AA. The <code>light</code> and <code>openolat</code> themes always use <code>"error"</code>.</p>
 
-<p>Until OO-10043 migrates the modules, an override changes only the custom property, not the rendered modules. The unit test <code>ColorTokensTest</code> checks the tokens in the compiled <code>light/theme.css</code>.</p>
+<p><strong>Modules:</strong> a module reads a token where a token has exactly the same colour: <code>color: $text-muted</code> is now <code>color: var(--o-text-muted)</code>, <code>o-state-color("success", "text")</code> is <code>var(--o-state-success-text)</code>, <code>o-palette("blue", 500)</code> is <code>var(--o-blue-500)</code>. A colour of an element with an element token reads that token, not the shared token of the same colour: <code>var(--o-selectus-review-glow)</code>, not <code>var(--o-primary)</code>. OO-10043 changed 458 variable references and 191 function calls in 67 modules; 227 of the references read one of 146 element tokens of their own element. The buttons read their tokens through the mixin <code>button-variant</code>: 13 mixin calls and 4 <code>darken()</code> calls in 8 modules. An override of a token changes every module rule that reads the token. These colours stay Sass, because no exact token exists or a token changes the colour:</p>
+
+<ul>
+<li>hex values (531 references);</li>
+<li><code>$brand-success</code>, <code>$brand-danger</code>, <code>$brand-warning</code>, <code>$brand-info</code> and <code>$state-*</code> (187 references, a later OO-10043 step moves them to the state tokens with a visible change);</li>
+<li>variables that only 1 to 3 client themes set (170);</li>
+<li>colour maths with <code>darken()</code>, <code>lighten()</code>, <code>rgba()</code>, <code>mix()</code> (127);</li>
+<li>Bootstrap colours such as <code>$gray-*</code> and <code>$table-border-color</code> (124);</li>
+<li>values inside Sass functions and the arguments of mixins other than <code>button-variant</code>;</li>
+<li><code>o-state-color()</code> with the styles <code>tint</code>, <code>light</code> and <code>dark</code> (no token).</li>
+</ul>
+
+<p>OO-10043 removed 226 colour variables from <code>_config.scss</code> that nothing read (checked in <code>light</code>, <code>openolat</code> and 198 client themes). A client theme that sets one of them compiles without an error, and the setting has no effect. 125 of them gave the colour of a module element before OO-10043: this colour is now an element token with a reference default, e.g. <code>$o-selectus-review-glowing-color</code> is <code>--o-selectus-review-glow</code>. A theme changes it with <code>$o-tokens</code>.</p>
+
+<p><code>oo-docs.scss</code> (icons for the user manual) imports <code>palette_theme</code>, <code>modules/palette_vars</code> and <code>modules/tokens</code>, because <code>_icons.scss</code> reads tokens.</p>
+
+<p><strong>Tests:</strong> <code>ColorTokensTest</code> checks the compiled <code>light/theme.css</code>: the semantic, state and element tokens, the contrast pairs (<code>elementContrast</code> for the element tokens), the shade tokens of the buttons, each with the colour of <code>darken()</code> (<code>buttonShadeTokens</code>), that the button rules read the tokens and the shade tokens (<code>buttonRulesReadTokens</code>), that no module calls <code>o-a11y-color()</code> and that a rule reads each token with an adjusted text colour (<code>rulesReadAdjustedTextTokens</code>), that every token of <code>_tokens.scss</code> resolves to a colour (<code>tokensResolveToColors</code>), and that every <code>var(--o-*)</code> in <code>theme.css</code>, <code>content.css</code> and <code>oo-docs.css</code> of <code>light</code> and <code>openolat</code> has a definition (<code>referencesHaveDefinitions</code>). <code>ThemeColorRatchetTest</code> compares the old colour references per module with <code>theme_color_baseline.properties</code>: the baseline is 1788 references in 86 modules. It counts hex values, named colours, Sass colour variables, colour maths, <code>rgb()</code> and <code>hsl()</code> literals and the compile-time colour functions (<code>o-a11y-color()</code>, <code>o-state-color()</code>, <code>o-palette()</code>, <code>o-swatch-color()</code>). It does not count variables for radius, width, height, padding, size, margin, offset and style.</p>
 
 <!-- ==================== SECTION 27: SCSS MODULES ==================== -->
 <h2 id="scss-modules">27. SCSS Module Index</h2>
@@ -2053,6 +2428,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <thead><tr><th>Module</th><th>Purpose</th></tr></thead>
 <tbody>
 <tr><td><code>_bootstrap.scss</code></td><td>Bootstrap 3.4.1 imports + overrides</td></tr>
+<tr><td><code>_button_variant.scss</code></td><td>Mixin <code>button-variant</code> that reads the colour tokens and their shade tokens (replaces the Bootstrap mixin)</td></tr>
 <tr><td><code>_mixins.scss</code></td><td>OpenOlat SASS mixins (message boxes, icons, buttons)</td></tr>
 <tr><td><code>_icons.scss</code></td><td>Font Awesome 6 icon definitions</td></tr>
 <tr><td><code>_helpers.scss</code></td><td>Spacing, flex, scrolling, buttons, typography utilities</td></tr>
@@ -2061,7 +2437,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <tr><td><code>_swatches.scss</code></td><td>Swatch classes <code>o_swatch_{hue}</code> with the tokens <code>--o-sw-*</code></td></tr>
 <tr><td><code>_palette_vars.scss</code></td><td>Palette values as <code>--o-{hue}-{step}</code> on <code>:root</code></td></tr>
 <tr><td><code>_states.scss</code></td><td>Semantic states: <code>o_state_*</code> classes and the wiring of the status classes (imported last)</td></tr>
-<tr><td><code>_tokens.scss</code></td><td>Base, semantic and state tokens on <code>:root</code>, client overrides <code>$o-tokens</code> (not in <code>email.css</code>)</td></tr>
+<tr><td><code>_tokens.scss</code></td><td>Base, semantic, state, element and shade tokens on <code>:root</code>, client overrides <code>$o-tokens</code> (not in <code>email.css</code>)</td></tr>
 <tr><td><code>_type.scss</code></td><td>Typography and heading styles</td></tr>
 </tbody>
 </table>
@@ -2507,13 +2883,14 @@ if (itemDeleted) {
 <tr><td>OO-9992, OO-9993</td><td>Colour choosers on the palette, theme colours <code>--o-theme{n}</code></td><td><a href="#palette">Colour Palette</a></td></tr>
 <tr><td>OO-10042</td><td>8 semantic states in 5 styles, <code>o_state_*</code> classes, <code>$o-state-wiring</code> for 395 status classes, <code>o-state-color()</code>, <code>o-swatch-color()</code>; <code>$o-labeled-*</code> removed</td><td><a href="#css-colors">Color System</a></td></tr>
 <tr><td>OO-9994</td><td>Base, semantic and state tokens <code>--o-base-*</code>, <code>--o-text</code>, <code>--o-state-{state}-{role}</code> on <code>:root</code>, client overrides with <code>$o-tokens</code>, unit tests <code>ColorTokensTest</code> and <code>ThemeColorRatchetTest</code></td><td><a href="#colour-tokens">Colour Tokens</a></td></tr>
-<tr><td>OO-10043</td><td>Modules read the token layers, component tokens (planned)</td><td><a href="#token-layers">Token Layers</a></td></tr>
+<tr><td>OO-10043</td><td>Modules read the tokens with <code>var(--o-*)</code>, 226 unused colour variables removed from <code>_config.scss</code></td><td><a href="#colour-tokens">Colour Tokens</a></td></tr>
+<tr><td>OO-10043</td><td>Token layers base, framework and component; 211 element tokens <code>--o-{element}-{part}</code> with a Sass variable default (86) or a reference default (125); 15 of them hold the text colours that a module adjusted with <code>o-a11y-color()</code>, no module calls the function; <code>$o-tokens</code> references any token, chains allowed; 38 contrast pairs of the element tokens, test <code>elementContrast</code>; 20 shade tokens for the button states, mixin <code>button-variant</code> reads tokens</td><td><a href="#token-layers">Token Layers</a>, <a href="#colour-tokens">Colour Tokens</a></td></tr>
 </tbody>
 </table>
 
 <hr>
 
-<p style="color:#64748b;font-size:12px;margin-top:40px">Generated for the OpenOlat project &mdash; frentix GmbH, Z&uuml;rich, Switzerland. Release 21.1.0, updated 2026-11-08.</p>
+<p style="color:#64748b;font-size:12px;margin-top:40px">Generated for the OpenOlat project &mdash; frentix GmbH, Z&uuml;rich, Switzerland. Release 21.1.0, updated 2026-11-09.</p>
 
 </main>
 </div>

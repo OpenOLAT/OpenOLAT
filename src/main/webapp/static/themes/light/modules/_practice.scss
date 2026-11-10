@@ -8,7 +8,7 @@
 	border-radius: 50%;
 	padding: 4px 6px 4px 6px;
 	margin: 1px;
-	@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+	@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
 	
 	>i:before {
 		margin: 1px -3px -1px 3px;
@@ -141,7 +141,7 @@ svg {
 		
 		
 		td {
-			color: $o-practice-rank-me-color;
+			color: var(--o-practice-rank-me);
 		}
 	}
 }
@@ -164,7 +164,7 @@ svg {
 		margin: 15px 25px 0 0;
 		
 		.progress-bar {
-			background-color: $o-practice-challenge-progress-bg-color;
+			background-color: var(--o-practice-challenge-progress-bg);
 		}
 		
 		i.o_challenge {
@@ -206,12 +206,12 @@ svg {
 	grid-template-columns: 2fr 1fr;
 	column-gap: 15px;
 	
-	border: 1px solid $o-practice-play-main-border-color;
+	border: 1px solid var(--o-practice-play-main-border);
 	border-radius: $o-practice-play-border-radius;
 	background-color: $o-practice-play-main-bg-color;
 	
 	.o_practice_shuffle_play {
-		border-right: 1px solid $o-practice-play-main-border-color;
+		border-right: 1px solid var(--o-practice-play-main-border);
 		padding-right: 15px;
 		
 		display: flex;
@@ -295,7 +295,7 @@ svg {
 	column-gap: 15px;
 	.o_numbers {
 		a {
-			color: $o-table-link-color;
+			color: var(--o-table-link);
 		}
 	}
 }
@@ -337,7 +337,7 @@ svg {
 	}
 	
 	.o_practice_data_correct {
-		color: o-state-color("success", "text");
+		color: var(--o-state-success-text);
 	}
 	
 	>fieldset {
@@ -348,14 +348,14 @@ svg {
 
 .o_practice_configuration_statistics {
 	.panel-title {
-		color: $text-color;
+		color: var(--o-text);
 		
 		.text-muted {
-			color: $text-muted;
+			color: var(--o-text-muted);
 		}
 	}
 }
 
 .o_assessmentitem_level>i {
-	color: $o-practice-level-disc-color;
+	color: var(--o-practice-level-disc);
 }

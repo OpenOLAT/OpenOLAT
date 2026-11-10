@@ -1,6 +1,6 @@
 .o_videotask_box {
 	padding: 1em 2em;
-	border: 1px solid $o-video-startbox-main-border-color;
+	border: 1px solid var(--o-video-startbox-main-border);
 	border-radius: $o-video-startbox-border-radius;
 	background-color: $o-video-startbox-main-bg-color;
 	
@@ -222,7 +222,7 @@
 	&:after{
 		font-size: 20px;
 		line-height: 16px;
-		color: o-state-color("success", "text");
+		color: var(--o-state-success-text);
 		background-color: white;
 		width: 16px;
 		height: 16px;
@@ -237,7 +237,7 @@
 }
 
 .o_videotask_marker.o_segment_marker_correct:before {
-	background-color: o-state-color("success", "border") !important;
+	background-color: var(--o-state-success-border) !important;
 }
 
 .o_videotask_marker.o_segment_marker_not_correct {
@@ -246,7 +246,7 @@
 	&:after{
 		font-size: 20px;
 		line-height: 16px;
-		color: o-state-color("danger", "text");
+		color: var(--o-state-danger-text);
 		background-color: white;
 		width: 16px;
 		height: 16px;
@@ -261,7 +261,7 @@
 }
 
 .o_videotask_marker.o_segment_marker_not_correct:before {
-	background-color: o-state-color("danger", "border") !important;
+	background-color: var(--o-state-danger-border) !important;
 }
 
 .o_videotask_segment {
@@ -283,7 +283,7 @@
 	&:after{
 		font-size: 14px;
 		line-height: 12px;
-		color: o-state-color("success", "text");
+		color: var(--o-state-success-text);
 		background-color: white;
 		width: 12px;
 		height: 12px;

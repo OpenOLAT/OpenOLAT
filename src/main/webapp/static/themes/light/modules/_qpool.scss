@@ -23,27 +23,27 @@ a.o_qpool_status {
 }
 .btn-arrow-right.o_qpool_qitem_review {
 	background: $o-qpool-arrow-bg-color;
-	border-bottom-color: o-state-color("warning");
+	border-bottom-color: var(--o-state-warning-border);
 	border-bottom-width: $o-qpool-arrow-border-bottom-width
 }
 .btn-arrow-right.o_qpool_qitem_revised {
 	background: $o-qpool-arrow-bg-color;
-	border-bottom-color: o-state-color("danger");
+	border-bottom-color: var(--o-state-danger-border);
 	border-bottom-width: $o-qpool-arrow-border-bottom-width
 }
 .btn-arrow-right.o_qpool_qitem_final {
 	background: $o-qpool-arrow-bg-color;
-	border-bottom-color: o-state-color("success");
+	border-bottom-color: var(--o-state-success-border);
 	border-bottom-width: $o-qpool-arrow-border-bottom-width
 }
 .btn-arrow-right.o_qpool_qitem_end_of_life {
 	background: $o-qpool-arrow-bg-color;
-	border-bottom-color: o-state-color("inactive");
+	border-bottom-color: var(--o-state-inactive-border);
 	border-bottom-width: $o-qpool-arrow-border-bottom-width
 }
 .btn-arrow-right.o_qpool_status_slected {
-	background-color: 	$o-qpool-arrow-selected-bg-color;
-	color: 				$o-qpool-arrow-selected-color;
+	background-color: 	var(--o-qpool-arrow-selected-bg);
+	color: 				var(--o-qpool-arrow-selected-fg);
 }
 
 // Thanks to https://github.com/shpoont/bootstrap-arrow-buttons

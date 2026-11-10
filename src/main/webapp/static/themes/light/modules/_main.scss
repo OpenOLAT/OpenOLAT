@@ -63,7 +63,7 @@
 				@include border-right-radius($o-tree-border-radius);
 				background-color: #fbfbfb;
 				@include box-shadow(2px 0px 4px 1px rgba(0,0,0,.15));
-				color: $brand-primary;
+				color: var(--o-primary);
 			}
 			
 			&.o_offcanvas {

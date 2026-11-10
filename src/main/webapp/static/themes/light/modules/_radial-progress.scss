@@ -80,7 +80,7 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 			}
 			.addon {
 				display: block;
-				color: $o-radial-progress-addon-color;	
+				color: var(--o-radial-progress-addon);	
 				margin-top: 0.2em; 
 				margin-bottom: -0.4em; 
 				>span {
@@ -345,7 +345,7 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 			font-size: $o-content-font-size-base;
 			line-height: $o-content-line-height-base;
 			font-weight: normal;
-			color: $text-color;
+			color: var(--o-text);
 		}
 		.addon {
 			display: none;

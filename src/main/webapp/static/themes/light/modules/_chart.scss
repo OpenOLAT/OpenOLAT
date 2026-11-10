@@ -4,9 +4,9 @@
 	.bar_default_light { fill: $o-d3chart-light; }
 	.bar_default, .bubble_default { fill: $o-d3chart-default; }
 	.bar_default_dark { fill: $o-d3chart-dark; }
-	.bar_green { fill: o-state-color("success", "border"); }
-	.bar_red { fill: o-state-color("danger", "border"); }
-	.bar_grey { fill: o-state-color("inactive", "soft-border"); }
+	.bar_green { fill: var(--o-state-success-border); }
+	.bar_red { fill: var(--o-state-danger-border); }
+	.bar_grey { fill: var(--o-state-inactive-soft-border); }
 
 	.axis { font: 12px sans-serif; }
 
@@ -18,6 +18,6 @@
 	
 	
 	circle.bubble_green {
-		fill: o-state-color("success", "border");
+		fill: var(--o-state-success-border);
 	}
 }

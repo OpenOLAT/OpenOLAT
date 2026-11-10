@@ -70,7 +70,7 @@
 }
 
 .o_building_room_status_active {
-	color: o-state-color("success", "text");
+	color: var(--o-state-success-text);
 }
 
 .o_building_room_status_inactive {
@@ -110,7 +110,7 @@
 	margin-top: 8px;
 	border-radius: $border-radius-base;
 	overflow: hidden;
-	border: 1px solid $input-border;
+	border: 1px solid var(--o-border-strong);
 
 	container-type: inline-size;
 	container-name: o-building-map-container;
@@ -203,7 +203,7 @@
 	gap: 16px;
 	align-items: start;
 	padding: 12px;
-	border: 1px solid $panel-default-border;
+	border: 1px solid var(--o-border);
 	border-radius: $border-radius-base;
 	overflow-y: auto;
 	
@@ -343,7 +343,7 @@
 		border-radius: $border-radius-base;
 
 		div.fc-event-main {
-			color: $text-color;
+			color: var(--o-text);
 			padding: 4px 4px 3px 4px;
 		}
 	}
@@ -352,7 +352,7 @@
 		border-radius: $border-radius-small;
 
 		div.fc-event-main {
-			color: $text-color;
+			color: var(--o-text);
 			padding: 2px 2px 1px 2px;
 		}
 	}

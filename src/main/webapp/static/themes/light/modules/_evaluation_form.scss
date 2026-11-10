@@ -329,7 +329,7 @@
 		position: absolute;
 		width: 10px;
 		height: 10px;
-		background-color: $o-slider-handler-background-color;
+		background-color: var(--o-slider-handler-bg);
 	}
 }
 
@@ -356,7 +356,7 @@
 			a:hover,
 			a:has(~ a:hover) {
 				@include o-add-icon('star');
-				color: $brand-primary;
+				color: var(--o-primary);
 			}
 		}
 	}

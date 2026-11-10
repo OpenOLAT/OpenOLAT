@@ -538,7 +538,7 @@
 
 	h4 {
 		margin: 0;
-		color: $o-editor-inspector-title-color;
+		color: var(--o-editor-inspector-title);
 		font-size: 17px;
 		line-height: 23px;
 		overflow: hidden;
@@ -644,7 +644,7 @@
 	}
 
 	.active .o_page_layout>div, .active .o_page_layout>span {
-		background-color: $o-editor-layout-pseudo-icon-bg-active-color;
+		background-color: var(--o-editor-layout-pseudo-icon-bg-active);
 	}
 
 	>a, >a:hover {
@@ -831,7 +831,7 @@
 	&.o_fragment_edited .o_page_element_tools>button[aria-expanded='true'],
 	.o_fragment_edited .o_page_element_tools>a.active,
 	&.o_fragment_edited .o_page_element_tools>a.active {
-		background-color: $o-editor-selected-color;
+		background-color: var(--o-editor-selected-bg);
 		color: #fff;
 	}
 
@@ -983,7 +983,7 @@
 }
 
 .o_page_container_slot-inner.oo-drop-accepted {
-	outline: 1px dashed $o-editor-selected-border-color;
+	outline: 1px dashed var(--o-editor-selected-border);
 }
 
 .o_page_container_slot-inner {
@@ -1015,7 +1015,7 @@
 }
 
 .gu-mirror .o_page_element_tools>span {
-	background-color: $o-editor-selected-color;
+	background-color: var(--o-editor-selected-bg);
 	color: #fff;
 }
 
@@ -1482,7 +1482,7 @@ table.o_ce_table {
 	td.hljs-ln-numbers {
 		padding-right: 8px;
 		text-align: right;
-		color: $text-muted;
+		color: var(--o-text-muted);
 	}
 }
 
@@ -1652,13 +1652,13 @@ table.o_ce_table {
 			border: none;
 			background-color: transparent;
 			margin: auto 10px;
-			color: $brand-primary;
+			color: var(--o-primary);
 		}
 
 		.swiper-button-prev:hover, .swiper-button-next:hover {
 			border: none;
 			box-shadow: none;
-			color: $link-hover-color;
+			color: var(--o-link-hover);
 		}
 	}
 
@@ -1786,21 +1786,21 @@ table.o_ce_table {
 				border-style: solid;
 
 				&.twentytwenty-before-label {
-					border-color: o-state-color("danger", "border");
+					border-color: var(--o-state-danger-border);
 				}
 				&.twentytwenty-after-label {
-					border-color: o-state-color("success", "border");
+					border-color: var(--o-state-success-border);
 				}
 			}
 		}
 
 		.twentytwenty-horizontal {
 			.twentytwenty-left-arrow {
-				border-right-color: o-state-color("success", "border");
+				border-right-color: var(--o-state-success-border);
 			}
 
 			.twentytwenty-right-arrow {
-				border-left-color: o-state-color("danger", "border");
+				border-left-color: var(--o-state-danger-border);
 			}
 
 			.twentytwenty-overlay {
@@ -1817,11 +1817,11 @@ table.o_ce_table {
 
 		.twentytwenty-vertical {
 			.twentytwenty-down-arrow {
-				border-top-color: o-state-color("danger", "border");
+				border-top-color: var(--o-state-danger-border);
 			}
 
 			.twentytwenty-up-arrow {
-				border-bottom-color: o-state-color("success", "border");
+				border-bottom-color: var(--o-state-success-border);
 			}
 
 			.twentytwenty-overlay {
@@ -1924,7 +1924,7 @@ table.o_ce_table {
 		.o_table_caption {
 			padding-top: $table-cell-padding;
 			padding-bottom: $table-cell-padding;
-			color: $text-muted;
+			color: var(--o-text-muted);
 			text-align: left;
 			font-style: italic;
 		}
@@ -2838,12 +2838,12 @@ table.o_ce_table {
 
 .o_page_toc_editor {
 	.o_page_toc_placeholder {
-		color: $text-muted;
+		color: var(--o-text-muted);
 		font-style: italic;
 	}
 
 	.o_page_toc_empty {
-		color: $text-muted;
+		color: var(--o-text-muted);
 		font-style: italic;
 	}
 }

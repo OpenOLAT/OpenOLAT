@@ -395,13 +395,13 @@ form .o_form, form.o_form {
 		 		height: 100%;
 			 	padding: 10px 10px 10px 30px;
 			 	border-radius: $o-radio-card-border-radius;
-			 	border: 1px solid $o-radio-card-border-color;			  			 	
+			 	border: 1px solid var(--o-radio-card-border);			  			 	
 				background-color: $o-radio-card-bg;			 	
 			  	&:hover {
 					background-color: $o-radio-card-bg-hover;
 				 	border: 1px solid $o-radio-card-border-color-hover;			  
 				 	.o_radio_label {
-				 		color: $o-radio-card-label-color-hover;
+				 		color: var(--o-radio-card-label-hover);
 					}
 			  	}
 			}		  	
@@ -432,7 +432,7 @@ form .o_form, form.o_form {
 				height: (math.div(math.div($o-radio-card-width, 3), 3) * 2);
 				&:not(.o_icon) {
 					width: clamp(40px, math.div($o-radio-card-width, 3), 95%);
-					border: 1px solid $o-radio-card-image-border-color;
+					border: 1px solid var(--o-radio-card-image-border);
 					border-radius: $o-radio-card-image-border-radius;
 					background-position: 50% 50%;
 					background-size: contain;
@@ -460,9 +460,9 @@ form .o_form, form.o_form {
 		  		~ .o_radio_card {		  		
 		  			cursor: not-allowed;
 					background-color: $input-bg-disabled;
-				 	border: 1px solid $o-radio-card-border-color;	
+				 	border: 1px solid var(--o-radio-card-border);	
 					.o_radio_label, .o_radio_desc {
-						color: $text-muted;
+						color: var(--o-text-muted);
 					}	  		  	
 				}
 		  	}
@@ -719,7 +719,7 @@ form .o_form, form.o_form {
 			outline: 0;
 			@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
 			input {
-				border-color: $input-border-focus;
+				border-color: var(--o-focus);
 			}
 		}	
 
@@ -745,10 +745,10 @@ form .o_form, form.o_form {
 			margin: 0.5em;
 		}			
 		&.o_dnd_over {
-			border-color: $o-panel-placeholder-border-active-color;
+			border-color: var(--o-panel-placeholder-border-active);
 			background: $o-panel-placeholder-bg-active;
 			.o_dnd_icon {
-				color: $o-panel-placeholder-border-active-color;
+				color: var(--o-panel-placeholder-border-active);
 			}
 		}	
 		
@@ -765,7 +765,7 @@ form .o_form, form.o_form {
 			&:focus {
 					&+script+.o_dnd .btn,
 					&+.o_dnd .btn {
-					color: $btn-default-color;
+					color: var(--o-btn-default-fg);
 				    background-color: darken($btn-default-bg, 5%);
 				}
 			}
@@ -773,7 +773,7 @@ form .o_form, form.o_form {
 			&:focus+script+.o_dnd .btn,
 			&:focus+.o_dnd .btn  {
 				$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
-				border-color: $input-border-focus;
+				border-color: var(--o-focus);
 				outline: 0;
 				@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
 			}
@@ -783,7 +783,7 @@ form .o_form, form.o_form {
 		border-color: darken($o-panel-placeholder-border-color, 10%);
 		.o_dnd .btn {
 			$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
-			border-color: $input-border-focus;
+			border-color: var(--o-focus);
 			outline: 0;
 			@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
 		}
@@ -795,7 +795,7 @@ form .o_form, form.o_form {
 }
 
 form.o_dnd_over {
-	border: 2px dashed $o-panel-placeholder-border-active-color;
+	border: 2px dashed var(--o-panel-placeholder-border-active);
 	border-radius: $o-panel-placeholder-border-radius;
 	background: $o-panel-placeholder-bg-active;
 	margin: -2px;
@@ -813,7 +813,7 @@ form.o_dnd_over {
 .o_muted_labels {
 	label,
 	.o_form_label {
-		color: $text-muted;
+		color: var(--o-text-muted);
 		font-weight: 400;
 	}
 }
@@ -891,12 +891,12 @@ form.o_dnd_over {
 			+ input.form-control {
 				border-left-color: transparent;
 				&:focus {
-					border-left-color: $input-border-focus;
+					border-left-color: var(--o-focus);
 				}
 			}
 			&:hover {
-				background-color: darken($btn-default-bg, 10%);
-				border-color: darken($btn-default-border, 12%);
+				background-color: var(--o-btn-default-bg-hover);
+				border-color: var(--o-btn-default-border-hover);
 			}
 		}
 	}
@@ -958,10 +958,10 @@ form.o_dnd_over {
 
 	> div {
 		position: relative;
-		border: 1px solid $btn-default-border;
+		border: 1px solid var(--o-btn-default-border);
 		margin: 0;
-		background-color: $btn-default-bg;
-		color: $btn-default-color;
+		background-color: var(--o-btn-default-bg);
+		color: var(--o-btn-default-fg);
 		white-space: nowrap;
 		cursor: pointer;
 
@@ -983,8 +983,8 @@ form.o_dnd_over {
 
 		&:hover {
 			z-index: 2;
-			background-color: darken($btn-default-bg, 10%);
-			border-color: darken($btn-default-border, 12%);
+			background-color: var(--o-btn-default-bg-hover);
+			border-color: var(--o-btn-default-border-hover);
 		}
 
 		&:has(input:checked) {
@@ -996,7 +996,7 @@ form.o_dnd_over {
 
 		&:focus-within {
 			z-index: 3;
-			outline: 2px solid $input-border-focus;
+			outline: 2px solid var(--o-focus);
 			outline-offset: -1px;
 		}
 
@@ -1073,7 +1073,7 @@ legend.control-label {
 }
 
 .o_button_dirty {
-	@include button-variant($o-button-dirty-color, $o-button-dirty-bg, $o-button-dirty-border);
+	@include button-variant(var(--o-btn-dirty-fg), var(--o-btn-dirty-bg), var(--o-btn-dirty-border));
 }
 
 /* TOGGLE SWITCH */
@@ -1105,14 +1105,14 @@ legend.control-label {
 		line-height: $o-toggle-size;
 		vertical-align: top;		
 		font-size: 60%;
-		color: $o-toggle-text-color;
+		color: var(--o-toggle-text);
 		text-transform: uppercase;
 	}
 	&[aria-checked="true"] {
 		text-align: right;
 		padding: 0 1px 0 0.5em;
-		background: $o-toggle-on-bg;
-		border-color: $o-toggle-on-border-color;
+		background: var(--o-toggle-on-bg);
+		border-color: var(--o-toggle-on-border);
 		i {
 			color: $o-toggle-on-color;
 			text-shadow: -1px 0 2px rgba(0,0,0,.25);
@@ -1160,8 +1160,8 @@ legend.control-label {
 	}
 	
 	&.o_toggle_off {
-		border-color: $brand-primary;
-		color: $brand-primary;
+		border-color: var(--o-primary);
+		color: var(--o-primary);
 	}
 
 	&:is(.o_table_flexi *) {
@@ -1214,7 +1214,7 @@ legend.control-label {
 	}
 	
 	&.o_toggle_link {
-		color: $link-color;
+		color: var(--o-link);
 		background-color: transparent;
 	}
 }
@@ -1251,7 +1251,7 @@ legend.control-label {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	min-height: 34px;
-	border-color: $input-border;
+	border-color: var(--o-border-strong);
 }
 
 .o_color_picker_colored_area {
@@ -1307,7 +1307,7 @@ ul.o_color_picker_dropdown, ul.o_icon_selector_dropdown {
 
 		&.o_selected {
 			a, a:hover {
-				background-color: $brand-primary;
+				background-color: var(--o-primary);
 				color: $o-bright-text-and-border;
 			}
 		}
@@ -1415,13 +1415,13 @@ dialog {
 		&::after {
 			content: "";
 			flex-grow: 2;
-			border-top: 1px solid $input-border;
+			border-top: 1px solid var(--o-border-strong);
 			transform: translateY(50%);
 		}
 		
 		.o_object_selection_divider_text,
 		button {
-			color: $text-color;
+			color: var(--o-text);
 		}
 		
 		.o_object_selection_divider_text {
@@ -1528,7 +1528,7 @@ dialog {
 		   the background it falls back to $btn-default-bg, which is #fff in the
 		   light theme but darker in a theme with coloured buttons, and the field
 		   then looks disabled. */
-		border-color: $input-border;
+		border-color: var(--o-border-strong);
 		background-color: $input-bg;
 		.o_icon {
 			margin: auto 0 auto auto;
@@ -1541,7 +1541,7 @@ dialog {
 		&.btn-default {
 			&.disabled {
 				&:hover {
-					border-color: $input-border;
+					border-color: var(--o-border-strong);
 				}
 			}
 		}
@@ -1612,8 +1612,8 @@ dialog {
 		cursor: text;
 	}
 	.o_url_qr.active {
-		background-color: $brand-primary;
-		border-color: $brand-primary;
+		background-color: var(--o-primary);
+		border-color: var(--o-primary);
 		color: #fff;
 	}
 	.o_url_qr_panel {
@@ -1625,7 +1625,7 @@ dialog {
 		margin: $padding-base-vertical 0 0 auto;
 		padding: $padding-base-horizontal;
 		background-color: #fff;
-		border: 1px solid $input-border;
+		border: 1px solid var(--o-border-strong);
 		border-radius: $border-radius-base;
 		&[hidden] {
 			display: none;

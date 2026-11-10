@@ -27,7 +27,7 @@
 	#o_im_summary {
 		.badge {
 			color: $o-im-summary-color;
-			background-color: $o-im-summary-bg;
+			background-color: var(--o-im-summary-bg);
 		}
 	}
 	#o_im_status {
@@ -154,7 +154,7 @@
 	font-size: $o-im-chat-load-font-size; 
 	padding-right: 0.5em;
 	line-height: 1.5em;
-	color: $text-muted;
+	color: var(--o-text-muted);
 }
 
 /* message group for all following messages of a single user. a new message group starts 
@@ -215,7 +215,7 @@
 		font-size: $o-im-chat-body-font-size;
 		.o_date { 
 			float: right;
-			color: $o-im-chat-date-color; 
+			color: var(--o-im-chat-date); 
 			font-size: $o-im-chat-date-font-size;
 		}
 	}
@@ -240,7 +240,7 @@
 		border-radius: 50%;
 		padding: 6px 8px 6px 6px;
 		margin: 1px;
-		@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+		@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
 	}
 }
 
@@ -248,7 +248,7 @@
 	font-size: $o-im-groupchat-font-size;
 	li {
 		@include text-overflow();
-		color: $o-im-groupchat-user-color;
+		color: var(--o-im-groupchat-user);
 		
 		&.o_vip {
 			color: $o-im-groupchat-vip-color ;
@@ -297,9 +297,9 @@
 			padding-left: 1em;		
 		}
 		a {
-			color: $o-im-buddies-link-color;
+			color: var(--o-im-buddies-link);
 			&:hover {
-				color: $o-im-buddies-link-hover-color;
+				color: var(--o-im-buddies-link-hover);
 			}
 		}
 	}	

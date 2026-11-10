@@ -20,7 +20,7 @@
 }
 
 .o_color_picker_wrapper {
-	.o_colcat_nocolor { background-color: $o-cn-style-image-bg; }
+	.o_colcat_nocolor { background-color: var(--o-course-style-image-bg); }
 	#{o-swatch-alias-selector("o_colcat_")} {
 		background-color: var(--o-sw-bg);
 		color: var(--o-sw-fg);
@@ -58,7 +58,7 @@
 	background-color: $o-cn-style-bg;
 	
 	a:not(.btn) {
-		color: o-a11y-color($link-color, $o-cn-style-bg);
+		color: var(--o-course-style-link);
 	}
 	
 	.o_expanded {
@@ -77,7 +77,7 @@
 	.o_image > img,
 	&.o_cover > .o_top {
 		background-repeat: no-repeat;
-		&.o_colcat_nocolor { background-color: $o-cn-style-image-bg; }
+		&.o_colcat_nocolor { background-color: var(--o-course-style-image-bg); }
 		@at-root #{o-swatch-alias-selector("o_colcat_", &)} { background-color: var(--o-sw-bg); }
 	}
 	.o_image {
@@ -212,7 +212,7 @@
 			padding: 15px 15px 10px 15px;
 			background: $o-cn-style-peekview-bg;
 			a:not(.btn) {
-				color: o-a11y-color($link-color, $o-cn-style-peekview-bg);
+				color: var(--o-course-style-peekview-link);
 			}
 		}
 		.o_assessment {
@@ -223,7 +223,7 @@
 		.o_st_peekview {
 			.o_st_item {
 				margin-bottom: 5px;
-				background: $o-st-peekview-bg;
+				background: var(--o-course-peekview-bg);
 				.o_text {
 					padding: $o-st-peekview-text-padding;
 				}
@@ -504,41 +504,41 @@
 
 /* score info status classes */
 .o_passed {
-	color: $o-course-state-passed-color;
+	color: var(--o-course-state-passed);
 	a:hover {
-	    color: o-state-color("success", "soft-fg");
+	    color: var(--o-state-success-soft-fg);
 	}					
 	th {
-		color: $text-color		
+		color: var(--o-text)		
 	}
 }
 .o_failed {
-	color: $o-course-state-failed-color;
+	color: var(--o-course-state-failed);
 	a:hover {
-	    color: o-state-color("danger", "soft-fg");
+	    color: var(--o-state-danger-soft-fg);
 	}				
 	th {
-		color: $text-color		
+		color: var(--o-text)		
 	}
 }
 .o_unknown {
-	color: $o-course-state-unknown-color;
+	color: var(--o-course-state-unknown);
 	a:hover {
-	    color: o-state-color("warning", "soft-fg");
+	    color: var(--o-state-warning-soft-fg);
 	}				
 	th {
-		color: $text-color		
+		color: var(--o-text)		
 	}
 }		
 .o_noinfo {
-	color: $text-muted;
+	color: var(--o-text-muted);
 }
 .o_passed_cell {
 	&.o_cell_passed {
-		color: $o-course-state-passed-color;
+		color: var(--o-course-state-passed);
 	}
 	&.o_cell_failed {
-		color: $o-course-state-failed-color;
+		color: var(--o-course-state-failed);
 	}
 }
 .o_assessment_stats {
@@ -566,13 +566,13 @@
 					padding: $o-course-assessment-chart-padding;
 					margin: unset;
 					.o_passed_slice {
-						stroke: $o-course-state-passed-color;
+						stroke: var(--o-course-state-passed);
 					}
 					.o_failed_slice {
-						stroke: $o-course-state-failed-color;
+						stroke: var(--o-course-state-failed);
 					}
 					.o_done_slice {
-						stroke: $brand-primary;
+						stroke: var(--o-primary);
 					}
 				}
 			}
@@ -607,10 +607,10 @@
 }
 .progress-bar {
 	&.o_passed_progress_bar {
-		background-color: $o-course-state-passed-color;
+		background-color: var(--o-course-state-passed);
 	}
 	&.o_failed_progress_bar {
-		background-color: $o-course-state-failed-color;
+		background-color: var(--o-course-state-failed);
 	}
 }
 .o_assessment_grade_stats {
@@ -749,7 +749,7 @@
 		}
 	}
 	.o_table_part {
-		background-color: $o-course-assessment-table-part-bg-color;
+		background-color: var(--o-course-assessment-part-bg);
 	}
 }
 
@@ -880,7 +880,7 @@
 	h5 {
 		margin-bottom: 5px;
 		a.o_desc {
-			color: $o-content-h5-color;	
+			color: var(--o-content-h5);	
 			small {
 				display: none;
 			}
@@ -896,7 +896,7 @@
 		}
 	}
 	div.o_comment {
-		color: $o-content-dimmed-color;
+		color: var(--o-content-dimmed);
 	}
 }
 
@@ -909,17 +909,17 @@
 	}
 	&[aria-checked="false"] {
 		background-color: $o-lp-pagination-in-progress-bgcolor;
-		border-color: $o-lp-pagination-in-progress-border-color;
+		border-color: var(--o-lp-pagination-in-progress-border);
 		>i {
 			background-color: $o-lp-pagination-in-progress-icon-bgcolor;
-			color: $o-lp-pagination-in-progress-icon-color;
+			color: var(--o-lp-pagination-in-progress-icon);
 			border-radius: 1em;
 		}
 		.o_icon_toggle_button_off{ @include o-add-icon('circle', false);}
 		&:hover {
 			.o_icon_toggle_button_off{ 
 				@include o-add-icon('circle-check', false);
-				color: $o-lp-pagination-in-progress-icon-hover-color; 
+				color: var(--o-lp-pagination-in-progress-icon-hover); 
 			}
 		}
 	}
@@ -1025,7 +1025,7 @@
 				.o_mail {
 					margin-left: $padding-base-vertical;	
 				}
-				color: $text-muted;
+				color: var(--o-text-muted);
 			}
 			
 			.o_curriculum_displayname, .o_curriculum_root_el_identifier, .o_curriculum_root_el_displayname {

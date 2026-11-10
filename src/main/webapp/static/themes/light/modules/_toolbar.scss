@@ -22,7 +22,7 @@
 		.breadcrumb {
 			margin-bottom: 0;
 			padding: 5px 9px;
-			background-color: $o-toolbar-breadcrumb-bg-color;
+			background-color: var(--o-toolbar-breadcrumb-bg);
 			font-size: $o-toolbar-breadcrumb-font-size;
 			line-height: $o-toolbar-breadcrumb-line-height;
 	    	border-radius: 0; // reset from default breadcrumb style
@@ -113,7 +113,7 @@
 				// override rule from above
 		    	display: block;
 		    	&.active {
-					color: $o-toolbar-dropdown-active-color;
+					color: var(--o-toolbar-dropdown-active);
 					background-color: $o-toolbar-dropdown-active-bg;
 		    	}
 		    }
@@ -197,7 +197,7 @@
 			position: relative;
 			top: -1em;
 			vertical-align: top;
-			color: $o-chelp-color;
+			color: var(--o-chelp-fg);
 		}
 		
 		/* Auto completer element: small by default and enlarged when in focus */
@@ -246,7 +246,7 @@
 	.o_tool_next, .o_tool_previous {
 		padding: 0;
 		margin-top: floor($o-toolbar-nav-size-icon-md * 0.25);
-		border: 1px solid $o-toolbar-nav-border-color;
+		border: 1px solid var(--o-toolbar-nav-border);
 		background-color: $o-toolbar-nav-bg-color;
 		a {
 			color: $o-toolbar-nav-link-color;

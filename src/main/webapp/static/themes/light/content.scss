@@ -26,6 +26,8 @@
 	Bootstrap includes for base element styling 
 */
 @import "../../bootstrap/stylesheets/bootstrap/mixins";
+// button-variant that reads the colour tokens, replaces the Bootstrap mixin (OO-10043)
+@import "modules/button_variant";
 @import "../../bootstrap/stylesheets/bootstrap/normalize";
 @import "../../bootstrap/stylesheets/bootstrap/print";
 

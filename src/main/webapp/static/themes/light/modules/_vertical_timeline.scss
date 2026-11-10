@@ -89,7 +89,7 @@
 
                 .o_vertical_timeline_path_top,
                 .o_vertical_timeline_path_bottom {
-                    border-left: $o-v-timeline-path-stroke-width solid $o-v-timeline-path-color;
+                    border-left: $o-v-timeline-path-stroke-width solid var(--o-timeline-path);
                     transform: translateX(1rem);
                 }
 
@@ -98,7 +98,7 @@
                 }
 
                 .o_vertical_timeline_path_center {
-                    border: $o-v-timeline-path-stroke-width solid $o-v-timeline-path-color;
+                    border: $o-v-timeline-path-stroke-width solid var(--o-timeline-path);
                     border-radius: 99999px;
                     width: 2rem;
                     height: 2rem;
@@ -175,8 +175,8 @@
 }
 
 .o_vertical_timeline_info_panel {
-    border: 1px solid $o-coursesite-sidecol-border;
+    border: 1px solid var(--o-coursesite-sidecol-border);
     border-radius: $o-coursesite-sidecol-radius;
-    background: $o-coursesite-sidecol-bg;
+    background: var(--o-coursesite-sidecol-bg);
     padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
 }

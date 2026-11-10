@@ -106,7 +106,7 @@ div.o_callout_overlay {
  	text-align: center;
  	
  	.alert {
-		color: $text-color;
+		color: var(--o-text);
 	  	background-color: $o-box-info-bg;
 	  	border-color: $o-box-info-color;
 		position: relative;
@@ -290,7 +290,7 @@ body#o_body:has(dialog.dialog.modal.show) {
 	}
 	
 	.modal-header h4 {
-		color: $o-dialog-header-color;
+		color: var(--o-dialog-header);
 	  	font-weight: $o-dialog-header-font-weight;
 		font-family: $headings-font-family;
 	  	line-height: $headings-line-height;

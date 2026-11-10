@@ -18,10 +18,10 @@ ul.sessionControl {
 .o_associate_item {
 	padding: 5px;
 	margin:0 15px 10px 0;
-	border: 2px solid $o-qti-gap-border-color;
+	border: 2px solid var(--o-qti-gap-border);
 	
 	&.oo-selected {
-		border: 2px solid $o-qti-gap-selected-border-color;
+		border: 2px solid var(--o-qti-gap-selected-border);
 	}
 	
 	&.oo-choosed {
@@ -29,15 +29,15 @@ ul.sessionControl {
 	}
 	
 	&.oo-drag {
-		border: 2px solid $o-qti-gap-drag-border-color !important;
+		border: 2px solid var(--o-qti-gap-drag-border) !important;
 	}
 }
 
 .association_box {
-	border: 3px dotted $o-qti-gap-border-color;
+	border: 3px dotted var(--o-qti-gap-border);
 	
 	&.oo-filled {
-		border: 3px solid $o-qti-gap-border-color;
+		border: 3px solid var(--o-qti-gap-border);
 	}
 }
 
@@ -72,13 +72,13 @@ ul.sessionControl {
 	
 .o_group_colors {
 	// pen colours of the drawing interaction, the same values as data-color in drawingInteraction.html
-	.black .o_icon:before { color: o-palette("gray", 900); }
+	.black .o_icon:before { color: var(--o-gray-900); }
 	.white .o_icon:before { color: #FFFFFF; }
-	.blue .o_icon:before { color: o-palette("blue", 500); }
-	.green .o_icon:before { color: o-palette("green", 500); }
-	.yellow .o_icon:before { color: o-palette("yellow", 400); }
-	.red .o_icon:before { color: o-palette("red", 500); }
-	.purple .o_icon:before { color: o-palette("violet", 500); }
+	.blue .o_icon:before { color: var(--o-blue-500); }
+	.green .o_icon:before { color: var(--o-green-500); }
+	.yellow .o_icon:before { color: var(--o-yellow-400); }
+	.red .o_icon:before { color: var(--o-red-500); }
+	.purple .o_icon:before { color: var(--o-violet-500); }
 }
 
 .white.btn>i.o_icon_circle_color:before {
@@ -110,7 +110,7 @@ ul.sessionControl {
 	}
 	
 	&.oo-selected {
-		border: 3px solid $o-qti-gap-selected-border-color;
+		border: 3px solid var(--o-qti-gap-selected-border);
 	}
 }
 
@@ -158,7 +158,7 @@ ul.sessionControl {
 	
 	.o_draw_circle.o_hotspot_selected, .o_draw_rectangle.o_hotspot_selected {
 		background-color: $o-drawing-select-bg !important;
-		border-color: $o-drawing-select-border !important;
+		border-color: var(--o-drawing-select-border) !important;
 	}
 	
 	&.o_qti_hotspot-standard  {
@@ -270,13 +270,13 @@ img.o_hotspot_responsive[usemap] {
 	
 	// answer feedback: soft fill of the state (OO-10042)
 	&.success {
-		background-color: o-state-color("success", "soft-bg");
-		border: 1px solid o-state-color("success", "soft-border");
+		background-color: var(--o-state-success-soft-bg);
+		border: 1px solid var(--o-state-success-soft-border);
 	}
 	
 	&.danger {
-		background-color: o-state-color("danger", "soft-bg");
-		border: 1px solid o-state-color("danger", "soft-border");
+		background-color: var(--o-state-danger-soft-bg);
+		border: 1px solid var(--o-state-danger-soft-border);
 	}
 }
 
@@ -467,32 +467,32 @@ span.o_qti_gaptext_score_alternative {
 		border-radius: 5px;
 
 		&.o_assessment_status_several {
-			border-color: o-state-color("warning", "border");
+			border-color: var(--o-state-warning-border);
 		}
 
 		&.o_assessment_status_none {
-			background-color: o-state-color("neutral", "soft-bg");
-			border-color: o-state-color("neutral", "border");
+			background-color: var(--o-state-neutral-soft-bg);
+			border-color: var(--o-state-neutral-border);
 		}
 
 		&.o_assessment_status_leadtime {
-			background-color: o-state-color("warning", "soft-bg");
-			border-color: o-state-color("warning", "border");
+			background-color: var(--o-state-warning-soft-bg);
+			border-color: var(--o-state-warning-border);
 		}
 
 		&.o_assessment_status_assessment {
-			background-color: o-state-color("success", "soft-bg");
-			border-color: o-state-color("success", "border");
+			background-color: var(--o-state-success-soft-bg);
+			border-color: var(--o-state-success-border);
 		}
 
 		&.o_assessment_status_followup {
-			background-color: o-state-color("finished", "soft-bg");
-			border-color: o-state-color("finished", "border");
+			background-color: var(--o-state-finished-soft-bg);
+			border-color: var(--o-state-finished-border);
 		}
 
 		&.o_assessment_status_end {
-			background-color: o-state-color("finished", "soft-bg");
-			border-color: o-state-color("finished", "border");
+			background-color: var(--o-state-finished-soft-bg);
+			border-color: var(--o-state-finished-border);
 		}
 
 		&.o_assessment_mode_warn {
@@ -636,7 +636,7 @@ span.o_qti_gaptext_score_alternative {
 li.o_assessmentitem_order_item {
 	padding: 10px;
 	margin-bottom: 10px;
-	border: 2px $o-qti-order-source-border-style $o-qti-gap-border-color;
+	border: 2px $o-qti-order-source-border-style var(--o-qti-gap-border);
 	border-radius: $o-qti-order-border-radius;
 	background-color: #ffffff;
 	background: $o-qti-order-source-bg;
@@ -678,7 +678,7 @@ body>li.o_assessmentitem_order_item  {
 			border: 1px solid $o-qti-item-max-score-border-color;
 			font-size: 0.8em;
 			line-height: 1.2em;
-			color: $text-color;		
+			color: var(--o-text);		
 			background: #fff;	
 			
 		}
@@ -692,7 +692,7 @@ body>li.o_assessmentitem_order_item  {
 				font-size: 80%;
 				
 				>i {
-					color: $o-practice-level-disc-color;
+					color: var(--o-practice-level-disc);
 				}
 			}
 						
@@ -1061,11 +1061,11 @@ tr.choiceinteraction {
 	
 	&.has-error input,
 	&.has-error span.o_correction_value {
-		border-color: o-state-color("danger", "border");
+		border-color: var(--o-state-danger-border);
 	}
 	&.has-success input,
 	&.has-success span.o_correction_value {
-		border-color: o-state-color("success", "border");
+		border-color: var(--o-state-success-border);
 	}
 }
 
@@ -1074,7 +1074,7 @@ tr.choiceinteraction {
 	&.has-feedback {
 		padding-right: 5px;
 		display: inline-block;
-		border: 1px solid o-state-color("success", "border");
+		border: 1px solid var(--o-state-success-border);
 		border-radius: $input-border-radius;
 	}
 	&.has-feedback span.o_correction_value {
@@ -1084,10 +1084,10 @@ tr.choiceinteraction {
 	}
 	
 	&.has-error {
-		border-color: o-state-color("danger", "border");
+		border-color: var(--o-state-danger-border);
 	}
 	&.has-success {
-		border-color: o-state-color("success", "border");
+		border-color: var(--o-state-success-border);
 	}
 	
 	.o_feedback_right {
@@ -1138,7 +1138,7 @@ table.o_qti_item_kprim {
 	div.bar_red { background-color: $o-qti-bar-red; }
 	
 	.has-success input {
-		border-color: o-state-color("success", "border");
+		border-color: var(--o-state-success-border);
 	}
 }
 
@@ -1172,7 +1172,7 @@ table.o_qti_item_kprim {
 .o_match_dnd_source {
 	padding: 10px;
 	margin-bottom: 10px;
-	border: 2px $o-qti-match-source-border-style $o-qti-gap-border-color;
+	border: 2px $o-qti-match-source-border-style var(--o-qti-gap-border);
 	border-radius: $o-qti-match-border-radius;
 	background-color: #ffffff;
 	background: $o-qti-match-source-bg;
@@ -1291,13 +1291,13 @@ table.o_qti_item_kprim {
 		border: 1px solid $o-qti-hottext-border-color;
 		border-radius: $o-qti-hottext-border-radius;
 		
-		color: $o-qti-hottext-color;
+		color: var(--o-qti-hottext);
 		font-weight: normal;
 		white-space: normal;
 	}
 	
 	&.o_disabled.o_checked {
-		color: $o-qti-hottext-checked-color;
+		color: var(--o-qti-hottext-checked);
 		background: $o-qti-hottext-checked-bg;
 		border: 1px solid $o-qti-hottext-checked-border-color;
 	}
@@ -1317,12 +1317,12 @@ table.o_qti_item_kprim {
 			border: 1px solid $o-qti-hottext-border-color;
 			border-radius: $o-qti-hottext-border-radius;
 			
-			color: $o-qti-hottext-color;
+			color: var(--o-qti-hottext);
 			font-weight: normal;
 			white-space: normal;
 		}
 		&:checked+label {
-			color: $o-qti-hottext-checked-color;
+			color: var(--o-qti-hottext-checked);
 			background: $o-qti-hottext-checked-bg;
 			border: 1px solid $o-qti-hottext-checked-border-color;
 		}
@@ -1638,7 +1638,7 @@ table.o_qti_item_kprim {
 	legend {
 		font-size: 110%;
 		font-weight: bold;
-		color: $text-muted;
+		color: var(--o-text-muted);
 		margin-bottom: 0;
 		border-bottom: 0;
 	}
@@ -1650,7 +1650,7 @@ table.o_qti_item_kprim {
 	
 	textarea {
 		display: block;
-		color: $text-muted;
+		color: var(--o-text-muted);
 	}
 }
 
@@ -1691,22 +1691,22 @@ table.o_qti_item_kprim {
 		display: flex;
 		
 	    a {
-	    	color : $o-qti-menu-link-color;
+	    	color : var(--o-qti-menu-link);
 			overflow-wrap: break-word;
 	    	&:hover,
 			&:focus {
-				color: $o-qti-menu-link-hover-color;
+				color: var(--o-qti-menu-link-hover);
 				overflow-wrap: break-word;
 			}
 	    }
 		&.active a {
-			color : $o-qti-menu-link-active-color; 
+			color : var(--o-qti-menu-link-active); 
 			font-weight: $o-qti-menu-link-active-font-weight;
 			overflow-wrap: break-word;
 			&:hover,
 			&:focus {
-				color: $o-qti-menu-link-active-hover-color; 
-				background-color : $o-qti-menu-link-active-hover-bg;
+				color: var(--o-qti-menu-link-active-hover); 
+				background-color : var(--o-qti-menu-link-active-hover-bg);
 				overflow-wrap: break-word;
 			}
 		}
@@ -1735,7 +1735,7 @@ table.o_qti_item_kprim {
 			padding: 0.3em;
 			border-radius: 2px;
 			background-color: #fafafa;
-			color: $o-qti-attempts-color;
+			color: var(--o-qti-attempts);
 			font-size: 0.7em;
 		}
 
@@ -1904,7 +1904,7 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 /* Results reporting / detailed assessment results */
 .o_assessment_test_results {
 	.o_qti_assessment_title {
-		border-bottom: 1px solid $panel-default-border;
+		border-bottom: 1px solid var(--o-border);
 	}
 	
 	/* align tables in assessment results to have same column width */
@@ -2138,9 +2138,9 @@ div.o_qti_statistics {
 		border: 1px solid $table-border-color;
 		border-radius: $panel-border-radius;
 		ul li {
-			.bar_green { background-color: o-state-color("success", "border"); }
-			.bar_red { background-color: o-state-color("danger", "border"); }
-			.bar_grey { background-color: o-state-color("inactive", "soft-border"); }
+			.bar_green { background-color: var(--o-state-success-border); }
+			.bar_red { background-color: var(--o-state-danger-border); }
+			.bar_grey { background-color: var(--o-state-inactive-soft-border); }
 			
 			.bar_color_legend {
 				display: inline-block;

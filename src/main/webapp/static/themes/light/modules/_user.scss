@@ -286,16 +286,16 @@
 			.o_user_portrait_border {
 				// border of the state of the user status badge (OO-10042)
 				&:is(:has(.o_user_status_active) *) {
-					outline: solid 2px o-state-color("success", "border");
+					outline: solid 2px var(--o-state-success-border);
 				}
 				&:is(:has(.o_user_status_inactive) *) {
 					outline: solid 2px o-state-color("inactive", "border", "tint");
 				}
 				&:is(:has(.o_user_status_login_denied) *) {
-					outline: solid 2px o-state-color("danger", "border");
+					outline: solid 2px var(--o-state-danger-border);
 				}
 				&:is(:has(.o_user_status_pending) *) {
-					outline: solid 2px o-state-color("warning", "border");
+					outline: solid 2px var(--o-state-warning-border);
 				}
 				&:is(:has(.o_user_status_deleted) *) {
 					outline: solid 2px o-state-color("inactive", "border", "dark");
@@ -491,7 +491,7 @@ div.o_skype_button {
 		}
 		.o_properties {
 			:not(.o_name) {
-				color: $text-muted;
+				color: var(--o-text-muted);
 			}
 		}
 	}
@@ -577,8 +577,8 @@ div.o_skype_button {
 		text-transform: initial;
 		margin: -3px 0 0 1em;
 		font-weight: normal;
-		background-color: $o-authentication-label-bg;
-		border-color: $o-authentication-label-bg;
+		background-color: var(--o-authentication-label-bg);
+		border-color: var(--o-authentication-label-bg);
 	}
 }
 

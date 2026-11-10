@@ -9,7 +9,7 @@
   	color: $o-autocomplete-color;
   	background-color: $o-autocomplete-bg-color;
   	/* same border style as in bootstrap form */
-  	border: 1px solid $input-border-focus;
+  	border: 1px solid var(--o-focus);
   	@include border-top-radius($o-autocomplete-border-radius);
   	@include border-bottom-radius($o-autocomplete-border-radius);
     @include box-shadow(0 0 8px rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6));
@@ -22,8 +22,8 @@
 }
 
 .tt-suggestion.tt-cursor, .tt-suggestion:hover  {
-  	color: $o-autocomplete-suggestion-color;
-  	background-color: $o-autocomplete-suggestion-bg-color;
+  	color: var(--o-autocomplete-suggestion-fg);
+  	background-color: var(--o-autocomplete-suggestion-bg);
 }
 
 .tt-suggestion p {

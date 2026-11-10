@@ -73,12 +73,14 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 }
 
 // Returns a colour as "#RRGGBB" for custom properties. Interpolating a
-// computed colour prints rgb(...), Java reads only the hex form.
+// computed colour prints rgb(...), Java reads only the hex form. A channel
+// outside 0 to 255 gets the limit, as in the browser: o-a11y-color() returns
+// e.g. hsl(0, 0%, -48%) when it does not reach the contrast.
 @function o-hex($color) {
 	$digits: "0123456789ABCDEF";
 	$hex: "#";
 	@each $channel in ("red", "green", "blue") {
-		$v: math.round(color.channel($color, $channel, $space: rgb));
+		$v: math.clamp(0, math.round(color.channel($color, $channel, $space: rgb)), 255);
 		$hex: $hex + string.slice($digits, math.floor(math.div($v, 16)) + 1, math.floor(math.div($v, 16)) + 1)
 			+ string.slice($digits, $v % 16 + 1, $v % 16 + 1);
 	}

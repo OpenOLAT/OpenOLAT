@@ -98,17 +98,45 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     to its state. For a new status use the classes "o_labeled o_state_<name>" (styles o_state_dark,
     o_state_tint, o_state_light) or "o_labeled_light o_state_<name>" (outline). In SCSS use
     o-state-color($state, $role, $style) for a component colour.
-  - the colours are moving to three token layers of CSS custom properties: palette (--o-{hue}-{step},
-    --o-white and the base colours --o-base-*), semantic (--o-text, --o-heading, --o-primary,
-    --o-state-{state}-{role}) and component (--o-{component}-{part}, only where a theme or the dark
-    mode sets a colour separately). The base colours come from your Sass variables
+  - the colours are CSS custom properties (colour tokens) in three layers:
+      base       the palette (--o-{hue}-{step}, --o-white and the base colours --o-base-*), the
+                 semantic tokens (--o-text, --o-heading, --o-primary, ...), the state tokens
+                 (--o-state-{state}-{role}) and the global elements (buttons, content text and
+                 headings, e.g. --o-btn-default-fg, --o-content-h1)
+      framework  layout and generic UI elements, e.g. --o-navbar-bg, --o-footer-link,
+                 --o-tree-link, --o-tag-bg
+      component  the elements of one feature module, e.g. --o-coursesite-start-bg,
+                 --o-qti-menu-link, --o-selectus-review-glow
+    The modules read the tokens with var(--o-*). The base colours come from your Sass variables
     ($text-color, $headings-color, $brand-primary, $link-color, ...), so keep setting them as
-    before. To override a semantic or state token, set the map $o-tokens in your config. The
-    value is a palette step "{hue}-{step}", "white" or a colour, e.g.
+    before. An element token (base, framework or component) has one of two defaults:
+      - a Sass variable of the theme config ($o-navbar-bg, $btn-default-color, $o-bookmark-color,
+        ...): keep setting the variable as before, it gives the default of the token. For a link
+        or status text on a coloured background (e.g. --o-course-style-link, --o-table-striped-link,
+        --o-badge-status-info) the default is the text colour that o-a11y-color() adjusts for
+        that background. When you set such a token with $o-tokens, check the contrast yourself;
+      - a reference to another token, e.g. --o-selectus-review-glow reads --o-primary and
+        --o-qti-menu-link reads --o-tree-link. There is no Sass variable: set the token with
+        $o-tokens.
+    modules/_tokens.scss lists every token with its default.
+    The buttons have shade tokens for the hover, focus and active state, e.g.
+    --o-btn-primary-bg-hover and --o-btn-primary-border-focus. The compile computes them as the
+    darker colour of --o-btn-primary-bg and --o-btn-primary-border, so they follow your button
+    colours. Set a shade token with $o-tokens only when you want a different state colour. When
+    you override a button background with $o-tokens, override its border token too. For your own
+    button rules use the mixin button-variant with colours as before, or with tokens:
+      @include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
+    To override a token, set the map $o-tokens in your config. The key is the token name without
+    "--o-". The value is the name of any other token ("primary", "tree-link"), a palette step
+    "{hue}-{step}", "white" or a colour, e.g.
       $o-tokens: ("text-muted": "slate-600", "state-success-bg": "green-600", "state-success-fg": "white");
-    The compile stops for an unknown token or step and for an override below the contrast of its
-    pair (4.5:1 text, 3:1 borders and focus). Do not add new Sass colour variables to your theme for
-    new components; a new customization point is a CSS custom property.
+      $o-tokens: ("navbar-bg": "primary", "navbar-text": "primary-fg", "navbar-link": "primary-fg", "navbar-tools": "primary-fg", "bookmark": "red-600");
+      $o-tokens: ("qti-menu-link": "link", "selectus-review-glow": "orange-500");
+    The compile stops for an unknown token or step, for a loop of references and for an override
+    below the contrast of its pair (4.5:1 text, 3:1 borders and focus). An override changes every
+    rule that reads the token; a rule that still reads the Sass variable keeps the Sass value. Do
+    not add new Sass colour variables to your theme for new components; a new customization point
+    is a token.
     Details: doc/openolat-frontend.md, chapter 26.
   - when the client insists on colours with too little contrast: set
       $o-contrast-check: "warn";

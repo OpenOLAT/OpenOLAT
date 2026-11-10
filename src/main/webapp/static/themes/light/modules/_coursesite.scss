@@ -32,17 +32,17 @@
 
 .o_coursetable.o_rendertype_custom, .o_table_details {
 		.o_table_row:last-child .o_repo_entry_list_item {
-			border-bottom: 1px solid $o-coursesite-rowelem-border;
+			border-bottom: 1px solid var(--o-coursesite-border);
 		}
 
 		.o_table_row:last-child, &.o_entry_wrapper {
 			.o_repo_entry_list_item {
-				border-bottom: 1px solid $o-coursesite-rowelem-border;
+				border-bottom: 1px solid var(--o-coursesite-border);
 			}			
 		}
 
 		.o_table_row .o_repo_entry_list_item {
-			border-top: 1px solid $o-coursesite-rowelem-border;
+			border-top: 1px solid var(--o-coursesite-border);
 		}
 	
 		.o_table_row, &.o_entry_wrapper {
@@ -114,7 +114,7 @@
 				min-width: 0;				
 				
 				.o_ext_ref {
-					color: $text-muted;
+					color: var(--o-text-muted);
 					font-size: 10px;
 					line-height: 12px;
 					height: 12px;
@@ -132,7 +132,7 @@
 						@extend %o_undecorated;
 						@include text-overflow();
 						display: block;
-						color: $o-coursesite-meta-title-color;
+						color: var(--o-coursesite-title);
 						&:hover {
 						    color: darken($o-coursesite-meta-title-color, 10%);
 						}			
@@ -167,7 +167,7 @@
 				.o_lifecycle {
 					margin: 0.5em 0;
 					line-height: normal;
-					color: $o-coursesite-meta-lifecycle-color;
+					color: var(--o-coursesite-meta-lifecycle);
 					.o_lifecycle_date, .o_lifecycle_location {
 						display: inline;
 					}
@@ -180,7 +180,7 @@
 				}
 				
 				.o_taxonomy_levels {
-					color: $text-muted;
+					color: var(--o-text-muted);
 					vertical-align: text-bottom;
 					margin-top: auto;
 					margin-bottom: -3px;
@@ -241,8 +241,8 @@
 					height: $o-coursesite-rowelem-height-xs;
 					width: math.floor($o-coursesite-rowelem-height-xs * .75);
 					line-height: $o-coursesite-rowelem-height-xs;
-					color: $o-coursesite-go-xs-color;
-					background-color: $o-coursesite-go-xs-bg;
+					color: var(--o-coursesite-start-xs-fg);
+					background-color: var(--o-coursesite-start-xs-bg);
 					border-top-right-radius: $o-coursesite-rowelem-border-radius;
 					border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
 					.o_icon {
@@ -424,7 +424,7 @@
 			}
 		}
 		&:hover .o_meta .o_title a {
-			color: $brand-primary;
+			color: var(--o-primary);
 		}
 }	
 
@@ -437,18 +437,18 @@
 			white-space: nowrap;
 		}
 		.o_repoentry_type {
-			color: $text-muted;
+			color: var(--o-text-muted);
 		}
 		.o_repoentry_ac {
-			color: $text-muted;
+			color: var(--o-text-muted);
 			ul {
 				display: inline-block;
 			}
 		}
 	}
 	
-	.o_start { @include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); }
-	.o_book  { @include button-variant($o-coursesite-book-color, $o-coursesite-book-bg, $o-coursesite-book-border); }
+	.o_start { @include button-variant(var(--o-coursesite-start-fg), var(--o-coursesite-start-bg), var(--o-coursesite-start-border)); }
+	.o_book  { @include button-variant(var(--o-coursesite-book-fg), var(--o-coursesite-book-bg), var(--o-coursesite-book-border)); }
 	
 	.o_start, .o_book {
 		@include text-overflow();
@@ -473,7 +473,7 @@
 		.o_visual {
 			box-sizing: content-box;
 			border-radius: ($o-coursesite-rowelem-border-radius - 1px) ($o-coursesite-rowelem-border-radius - 1px) 0px 0px;
-			border-bottom: 1px solid $o-coursesite-rowelem-border;
+			border-bottom: 1px solid var(--o-coursesite-border);
 			display: flex;
 			align-items: center;
 			
@@ -526,7 +526,7 @@
 			padding: $o-cat2-card-meta-padding;
 			gap: 5px;
 			.o_ext_ref {
-				color: $text-muted;
+				color: var(--o-text-muted);
 				font-size: 10px;
 				line-height: 12px;
 				height: 12px;
@@ -534,7 +534,7 @@
 				display: block;
 			}
 			.o_taxonomy_levels {
-				color: $text-muted;
+				color: var(--o-text-muted);
 				font-size: 85%;
 				vertical-align: text-bottom;
 
@@ -616,8 +616,8 @@
 		margin-bottom: math.div($o-coursesite-catalog-space,2);
 		padding: 0;
 
-		border-top: 1px solid $o-coursesite-catalog-border;
-		border-bottom: 1px solid $o-coursesite-catalog-border;
+		border-top: 1px solid var(--o-coursesite-catalog-border);
+		border-bottom: 1px solid var(--o-coursesite-catalog-border);
 
 		.o_visual {
 			height: $o-coursesite-rowelem-width-md;
@@ -635,7 +635,7 @@
 				margin: 0; /* box moves down otherwhise, replaced with padding */
 				a {
 					@extend %o_undecorated;
-					color: $o-coursesite-meta-title-color;
+					color: var(--o-coursesite-title);
 					&:hover {
 					    color: darken($o-coursesite-meta-title-color, 10%);
 					}				
@@ -683,7 +683,7 @@
 		.o_sublevel {
 			position: relative;
 			display: flex;
-			border: 1px solid $o-coursesite-rowelem-border;
+			border: 1px solid var(--o-coursesite-border);
 			margin-bottom: math.floor(math.div($line-height-computed,2));
 			
 			.o_visual {
@@ -702,7 +702,7 @@
 			}
 			
 			.o_meta {
-				border-left: 1px solid $o-coursesite-rowelem-border;
+				border-left: 1px solid var(--o-coursesite-border);
 				min-height: $o-coursesite-rowelem-width-xs;	
 				height: $o-coursesite-rowelem-width-xs;	
 				padding: 0 0 0 1em;
@@ -752,7 +752,7 @@
 			}
 						
 			.o_visual {
-				border: 1px solid $o-coursesite-catalog-border;
+				border: 1px solid var(--o-coursesite-catalog-border);
 				position: relative;
 				height: $o-coursesite-rowelem-width-md;
 			
@@ -768,7 +768,7 @@
 				bottom: 0;
 				width: $o-coursesite-rowelem-width-md + 2px;
 
-				border: 1px solid $o-coursesite-catalog-border;
+				border: 1px solid var(--o-coursesite-catalog-border);
 				border-top: 0;
 				background-color: rgba(255,255,255,0.8);
 				
@@ -784,7 +784,7 @@
 					a {
 						@extend %o_undecorated;
 						display: block;
-						color: $o-coursesite-meta-title-color;
+						color: var(--o-coursesite-title);
 						&:hover {
 						    color: darken($o-coursesite-meta-title-color, 10%);
 						}
@@ -935,7 +935,7 @@
 	.o_catalog_breadcrumb {
 		.breadcrumb {
 			background-color: $input-bg;
-			border: 1px solid $input-border;
+			border: 1px solid var(--o-border-strong);
 			border-radius: $input-border-radius;
 			margin-left: 15px;
 			margin-right: 15px;

@@ -89,7 +89,7 @@
 }
 
 .o_lecture_free {
-	color: $text-muted;
+	color: var(--o-text-muted);
 }
 
 .o_lectures div#o_main_toolbar.o_toolbar {
@@ -99,7 +99,7 @@
 .o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning,
 .o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning>td.o_col_sticky_left,
 .o_sel_absence_lectures_table table>tbody>tr.o_lecture_warning>td.o_col_sticky_right {
-	background-color: o-state-color("warning", "soft-bg") !important;
+	background-color: var(--o-state-warning-soft-bg) !important;
 }
 
 .o_labeled {
@@ -257,7 +257,7 @@ tr.o_rm_room_preselected {
 	}
 	
 	.o_empty_panel {
-		border: 1px solid $panel-default-border;
+		border: 1px solid var(--o-border);
 	}
 	
 	label {
@@ -271,7 +271,7 @@ tr.o_rm_room_preselected {
 		grid-template-columns: 150px 1fr auto;
 		gap: 10px;
 		padding: 12px;
-		border: 1px solid $panel-default-border;
+		border: 1px solid var(--o-border);
 		border-radius: $border-radius-base;
 		background-color: #fff;
 		
@@ -468,14 +468,14 @@ tr.o_rm_room_preselected {
 
 				.o_lectures_timeline_path_top,
 				.o_lectures_timeline_path_bottom {
-					border-left: $o-lm-timeline-path-stroke-width solid $o-lm-timeline-path-color;
+					border-left: $o-lm-timeline-path-stroke-width solid var(--o-lecture-timeline-path);
 					transform: translateX(1rem);
 				}
 				.o_lectures_timeline_path_top {
 					height: $o-lm-timeline-path-top-height;
 				}
 				.o_lectures_timeline_path_center 	{
-					border: $o-lm-timeline-path-stroke-width solid $o-lm-timeline-path-color;
+					border: $o-lm-timeline-path-stroke-width solid var(--o-lecture-timeline-path);
 					border-radius: 99999px; // circle
 					width: 2rem;
 					height: 2rem;
@@ -532,7 +532,7 @@ tr.o_rm_room_preselected {
 			.o_lectures_timeline_path_lecture:last-child:only-child {
 				.o_lectures_timeline_path {
 					.o_lectures_timeline_path_bottom {
-						border-left: $o-lm-timeline-path-stroke-width solid $o-lm-timeline-path-color;
+						border-left: $o-lm-timeline-path-stroke-width solid var(--o-lecture-timeline-path);
 					}
 				}
 			}
@@ -713,13 +713,13 @@ tr.o_rm_room_preselected {
 
 .o_table_wrapper.o_table_flexi.o_vertical_timeline  {
 	.o_vertical_timeline_item.o_lecture_running .o_vertical_timeline_item_content {
-		border-left: 3px solid $o-lm-table-timeline-running-border-color;
-		background-color: $o-lm-table-timeline-running-bg-color;
+		border-left: 3px solid var(--o-lecture-timeline-running-border);
+		background-color: var(--o-lecture-timeline-running-bg);
 	}
 	
 	.o_vertical_timeline_item.o_lecture_next .o_vertical_timeline_item_content {
-		border-left: 3px solid $o-lm-table-timeline-next-border-color;
-		background-color: $o-lm-table-timeline-next-bg-color;
+		border-left: 3px solid var(--o-lecture-timeline-next-border);
+		background-color: var(--o-lecture-timeline-next-bg);
 	}
 }
 
@@ -754,10 +754,10 @@ tr.o_rm_room_preselected {
 			height: 80%;
 			// fill of the state of the lecture status (OO-10042)
 			&.o_lecture_widget_status_next {
-				background-color: o-state-color("warning", "bg");
+				background-color: var(--o-state-warning-bg);
 			}
 			&.o_lecture_widget_status_running {
-				background-color: o-state-color("neutral", "bg");
+				background-color: var(--o-state-neutral-bg);
 			}
 		}
 	}
@@ -774,7 +774,7 @@ tr.o_rm_room_preselected {
 		display: flex;
 		flex-direction: column;
 		.o_ext_ref {
-			color: $text-muted;
+			color: var(--o-text-muted);
 			font-size: 10px;
 			line-height: 12px;
 			height: 12px;

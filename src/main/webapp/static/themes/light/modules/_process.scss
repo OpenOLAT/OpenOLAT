@@ -71,7 +71,7 @@
 	.o_step.o_active {
 		.o_bar {
 			@include o-add-icon('dot-circle', false, false); 		
-			color: $o-step-active-color !important;
+			color: var(--o-step-active) !important;
 			border: unset;
 			background-color: unset;
 		}
@@ -99,7 +99,7 @@
 	.o_step.o_expired  {
 		.o_bar {
 			@include o-add-icon('dot-circle', false, false); 		
-			color: $o-step-expired-color !important;
+			color: var(--o-step-expired) !important;
 			border: unset;
 			background-color: unset;
 		}
@@ -129,14 +129,14 @@
 	
 	.o_step.o_done {
 		.o_bar {
-			border-color: $o-step-done-color !important;
+			border-color: var(--o-step-done) !important;
 			@include o-add-icon('check-circle', false, false); 		
 		}
 		.o_bar:before {
-			border-color: $o-step-done-marker-color !important;
+			border-color: var(--o-step-done-marker) !important;
 		}
 		.o_bar:after {
-			color: $o-step-done-color !important;
+			color: var(--o-step-done) !important;
 		}
 	}
 	
@@ -159,7 +159,7 @@
 	}
 	
 	.o_expired_warning {
-		color: $o-step-status-expired-color;
+		color: var(--o-step-status-expired);
 	}
 }
 
@@ -172,11 +172,11 @@
 }
 
 .o_process_status_late {
-	color: $o-step-status-late-color;
+	color: var(--o-step-status-late);
 }
 
 .o_process_status_extended {
-	color: $o-step-status-extended-color;
+	color: var(--o-step-status-extended);
 }
 
 .o_labeled_light {

@@ -14,8 +14,8 @@
 
 .o_scope_toggle {
 	background-color: $o-scope-toggle-bg-color;
-	color: $o-scope-toggle-color;
-	border-color: $o-scope-toggle-border-color;
+	color: var(--o-scope-toggle-fg);
+	border-color: var(--o-scope-toggle-border);
 	&.btn:hover {
 		background-color: $o-scope-toggle-bg-hover-color;
 	}
@@ -24,7 +24,7 @@
 	}
 	
 	&.o_toggle_on {
-		background-color: $o-scope-toggle-on-bg-color;
+		background-color: var(--o-scope-toggle-on-bg);
 		color: $o-scope-toggle-on-color;
 		border-color: $o-scope-toggle-on-border-color;
 		&:hover {

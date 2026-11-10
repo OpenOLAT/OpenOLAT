@@ -21,15 +21,15 @@
 	position: relative;
 	@extend %o_block_large;
 	background-color: $o-portlet-bg;
-	border: 1px solid $o-portlet-border;
+	border: 1px solid var(--o-portlet-border);
 	border-radius: $o-portlet-border-radius;
 	@include box-shadow(0 1px 1px rgba(0,0,0,.1));	
 
 	.o_header {
 		@include text-overflow();
 		padding: $padding-base-vertical $padding-base-horizontal;
-	  	border-bottom: 1px solid $o-portlet-border; 
-	  	background-color: $o-portlet-header-bg;
+	  	border-bottom: 1px solid var(--o-portlet-border); 
+	  	background-color: var(--o-portlet-header-bg);
 	  	@include border-top-radius($o-portlet-border-radius);
 	}
 	.o_content {

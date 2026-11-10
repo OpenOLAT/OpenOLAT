@@ -9,9 +9,9 @@
 	border-radius: 1em;
 	border-width: 1px;
 	border-style: solid;
-	border-color: $o-tag-background-color;
+	border-color: var(--o-tag-bg);
 	color: $o-tag-font-color;
-	background-color: $o-tag-background-color;
+	background-color: var(--o-tag-bg);
 	
 	&:hover {
 		text-decoration: none;
@@ -32,7 +32,7 @@
 	}
 	
 	&.o_tag_selected {
-		background-color: $o-tag-selected-background-color;
+		background-color: var(--o-tag-selected-bg);
 		border-color: $o-tag-selected-border-color;
 		
 		&.o_tag_clickable {
@@ -50,7 +50,7 @@
 	}
 
 	&.o_tag_selected_remove {
-		background-color: $o-tag-selected-background-color;
+		background-color: var(--o-tag-selected-bg);
 		border-color: $o-tag-selected-border-color;
 
 		&.o_tag_clickable {
@@ -113,9 +113,9 @@
 }
 
 .o_tag.o_selection_tag {
-	border-color: $o-tag-selection-border-color;
-	background-color: $o-tag-selection-background-color;
-	color: $o-tag-selection-font-color;
+	border-color: var(--o-tag-selection-border);
+	background-color: var(--o-tag-selection-bg);
+	color: var(--o-tag-selection-fg);
 	.o_tag_count {
 		font-size: 85%;
 	}
@@ -134,9 +134,9 @@
 	}
 	
 	&.o_tag_selected {
-		border-color: $o-tag-selection-selected-border-color;
-		background-color: $o-tag-selection-selected-background-color;
-		color: $o-tag-selection-selected-font-color;
+		border-color: var(--o-tag-selection-selected-border);
+		background-color: var(--o-tag-selection-selected-bg);
+		color: var(--o-tag-selection-selected-fg);
 		
 		&.o_tag_clickable {
 			&:hover {

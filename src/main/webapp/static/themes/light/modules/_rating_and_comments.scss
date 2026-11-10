@@ -28,13 +28,13 @@
 	}	
 	&.o_rating_personal .o_rating_items {
 		.o_icon {
-			color: $brand-primary;
+			color: var(--o-primary);
 		}	
 
 	}
 	.o_rating_explanation {
 		font-size: $font-size-small;
-		color: $text-muted;
+		color: var(--o-text-muted);
 	}
 	
 	@media (max-width: $screen-sm-max) {

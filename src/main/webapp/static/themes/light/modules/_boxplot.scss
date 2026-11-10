@@ -21,7 +21,7 @@ svg.o_bp {
 	*/
 				
 	.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
-		stroke: $o-box-plot-values-color;
+		stroke: var(--o-box-plot-values);
 		stroke-width: 2;
 	}
 

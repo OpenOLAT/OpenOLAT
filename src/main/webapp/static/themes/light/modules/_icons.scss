@@ -15,9 +15,9 @@ $fa-css-prefix: "o_icon" !default;
 /* OpenOLAT Icons */ 
 .o_icon_about { @include o-add-icon('info');}
 .o_icon_absence { @include o-add-icon('times');}
-.o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: o-state-color("success", "text");}
+.o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: var(--o-state-success-text);}
 .o_icon_absence_leave { @include o-add-icon('clock', false);}
-.o_icon_absence_unauthorized { @include o-add-icon('exclamation-circle'); color: o-state-color("danger", "text");}
+.o_icon_absence_unauthorized { @include o-add-icon('exclamation-circle'); color: var(--o-state-danger-text);}
 .o_icon_abstain { @include o-add-icon('hand', false); }
 .o_icon_accepted { @include o-add-icon('thumbs-up', false);}
 .o_icon_accessibility { @include o-add-icon('wheelchair');}
@@ -42,7 +42,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_assessment_tool { @include o-add-icon('trophy');}
 .o_icon_assignment { @include o-add-icon('bolt'); color: $o-portfolio-assignment-color;}
 .o_icon_attempts { @include o-add-icon('rotate-left');}
-.o_icon_accept { @include o-add-icon('check'); color: o-state-color("success", "text");}
+.o_icon_accept { @include o-add-icon('check'); color: var(--o-state-success-text);}
 .o_icon_activity_log { @include o-add-icon('scroll'); }
 .o_icon_add { @include o-add-icon('plus-circle');}
 .o_icon_add_member { @include o-add-icon('user-plus');}
@@ -56,15 +56,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_back { @include o-add-icon('chevron-left');}
 .o_icon_badge { @include o-add-icon('award');}
 .o_icon_ban { @include o-add-icon('ban');}
-.o_icon_banned { @include o-add-icon('flask'); color: o-state-color("danger", "text");}
+.o_icon_banned { @include o-add-icon('flask'); color: var(--o-state-danger-text);}
 .o_icon_billing_address { @include o-add-icon('address-card');}
 .o_icon_bold { @include o-add-icon('bold');}
 .o_icon_bolt { @include o-add-icon('bolt');}
 .o_icon_bolt_lightning { @include o-add-icon('bolt-lightning');}
 .o_icon_bomb { @include o-add-icon('bomb');}
 .o_icon_booking { @include o-add-icon('shopping-cart');}
-.o_icon_bookmark { @include o-add-icon('bookmark'); color: $o-bookmark-color;}
-.o_icon_bookmark_add { @include o-add-icon('bookmark', false);  color: $o-bookmark-color;}
+.o_icon_bookmark { @include o-add-icon('bookmark'); color: var(--o-bookmark);}
+.o_icon_bookmark_add { @include o-add-icon('bookmark', false);  color: var(--o-bookmark);}
 .o_icon_bookmark_header { @include o-add-icon('bookmark');}
 .o_icon_branch { @include o-add-icon('code-fork');}
 .o_icon_rm_status_active { @include o-add-icon('check');}
@@ -153,8 +153,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_compulsory { @include o-add-icon('asterisk');}
 .o_icon_competences { @include o-add-icon('shield');}
 .o_icon_content_popup { @include o-add-icon('external-link');}
-.o_icon_correct_answer { @include o-add-icon('check'); color: o-state-color("success", "text");}
-.o_icon_correct_response { @include o-add-icon('check-circle', false); color: o-state-color("success", "text");}
+.o_icon_correct_answer { @include o-add-icon('check'); color: var(--o-state-success-text);}
+.o_icon_correct_response { @include o-add-icon('check-circle', false); color: var(--o-state-success-text);}
 .o_icon_correction { @include o-add-icon('highlighter');}
 .o_icon_course_bundle { @include o-add-icon('cubes-stacked');}
 .o_icon_crosshairs { @include o-add-icon('crosshairs');}
@@ -175,8 +175,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_diagram_project { @include o-add-icon('diagram-project');}
 .o_icon_disabled { @include o-add-icon('circle', false);}
 .o_icon_disadvantage_compensation { @include o-add-icon('universal-access');}
-.o_icon_dispensation_authorized { @include o-add-icon('check-circle', false); color: o-state-color("success", "text") }
-.o_icon_dispensation_unauthorized { @include o-add-icon('exclamation-triangle'); color: o-state-color("warning", "text") }
+.o_icon_dispensation_authorized { @include o-add-icon('check-circle', false); color: var(--o-state-success-text) }
+.o_icon_dispensation_unauthorized { @include o-add-icon('exclamation-triangle'); color: var(--o-state-warning-text) }
 .o_icon_display { @include o-add-icon('display');}
 .o_icon_download { @include o-add-icon('download');}
 .o_icon_duplicate { @include o-add-icon('clone');}
@@ -260,7 +260,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_impress { @include o-add-icon('info-circle');}
 .o_icon_important { @include o-add-icon('exclamation-triangle'); color: $brand-warning;}
 .o_icon_import { @include o-add-icon('upload');}
-.o_icon_incorrect_response { @include o-add-icon('times-circle', false); color: o-state-color("danger", "text");}
+.o_icon_incorrect_response { @include o-add-icon('times-circle', false); color: var(--o-state-danger-text);}
 .o_icon_info { @include o-add-icon('info-circle'); color: $brand-info}
 .o_icon_info_badge { @include o-add-icon('info-circle');}
 .o_icon_info_ap { @include o-add-icon('info-circle');}
@@ -312,7 +312,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_lrm { @include o-add-icon('university');}
 .o_icon_magnifying_glass { @include o-add-icon('magnifying-glass');}
 .o_icon_mandatory { @include o-add-icon('asterisk'); color: $o-base-orange-color;}
-.o_icon_managed { @include o-add-icon('retweet'); color: $text-muted}
+.o_icon_managed { @include o-add-icon('retweet'); color: var(--o-text-muted)}
 .o_icon_manual { @include o-add-icon('book'); cursor: help;}
 .o_icon_mail { @include o-add-icon('envelope', false);}
 .o_icon_master_coach { @include o-add-icon('eye');}
@@ -320,9 +320,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_media { @include o-add-icon('image');}
 .o_icon_mediacenter { @include o-add-icon('folder-open');}
 .o_icon_membersmanagement { @include o-add-icon('users');}
-.o_icon_member_not_valid { @include o-add-icon('exclamation-triangle'); color: o-state-color("warning", "text"); }
+.o_icon_member_not_valid { @include o-add-icon('exclamation-triangle'); color: var(--o-state-warning-text); }
 .o_icon_member_skipped { @include o-add-icon('minus-circle'); color: #A87E7E; }
-.o_icon_member_valid { @include o-add-icon('check'); color: o-state-color("success", "text"); }
+.o_icon_member_valid { @include o-add-icon('check'); color: var(--o-state-success-text); }
 .o_icon_memo { @include o-add-icon('circle-info');}
 .o_icon_menuhandel { @include o-add-icon('bars');}
 .o_icon_message { @include o-add-icon('envelope');}
@@ -346,7 +346,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_ms_done { @include o-add-icon('check');}
 .o_icon_ms_pending { @include o-add-icon('play');}
 .o_icon_name { @include o-add-icon('table-cells-large');}
-.o_icon_new { @include o-add-icon('asterisk'); color: o-state-color("success", "text");}
+.o_icon_new { @include o-add-icon('asterisk'); color: var(--o-state-success-text);}
 .o_icon_new_document { @include o-add-icon('file-text');}
 .o_icon_new_folder { @include o-add-icon('folder-plus');}
 .o_icon_new_portfolio { @include o-add-icon('pencil');}
@@ -360,17 +360,17 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_node_under { @include o-add-icon('mail-reply');}
 .o_icon_node_up_down { @include o-add-icon('arrows-v');}
 .o_icon_non_members { @include o-add-icon('person-circle-minus');}
-.o_icon_not_available {  @include o-add-icon('exclamation'); color: o-state-color("danger", "text");}
+.o_icon_not_available {  @include o-add-icon('exclamation'); color: var(--o-state-danger-text);}
 .o_icon_notes { @include o-add-icon('sticky-note', true);}
 .o_icon_notes_empty { @include o-add-icon('sticky-note', false);}
-.o_icon_not_correct { @include o-add-icon('times'); color: o-state-color("danger", "text") }
-.o_icon_not_correct_plus { @include o-add-icon('plus'); color: o-state-color("danger", "text") }
+.o_icon_not_correct { @include o-add-icon('times'); color: var(--o-state-danger-text) }
+.o_icon_not_correct_plus { @include o-add-icon('plus'); color: var(--o-state-danger-text) }
 .o_icon_not_identified { @include o-add-icon('minus');}
-.o_icon_notice_authorized { @include o-add-icon('check-circle', false); color: o-state-color("success", "text") }
-.o_icon_notice_unauthorized { @include o-add-icon('exclamation-triangle'); color: o-state-color("warning", "text") }
+.o_icon_notice_authorized { @include o-add-icon('check-circle', false); color: var(--o-state-success-text) }
+.o_icon_notice_unauthorized { @include o-add-icon('exclamation-triangle'); color: var(--o-state-warning-text) }
 .o_icon_notification { @include o-add-icon('rss');}
 .o_icon_number_of { @include o-add-icon('hashtag');}
-.o_icon_ok { @include o-add-icon('check'); color: o-state-color("success", "text")}
+.o_icon_ok { @include o-add-icon('check'); color: var(--o-state-success-text)}
 .o_icon_onedrive { @include o-add-icon('cloud'); }
 .o_icon_open_tree { @include o-add-icon('caret-right');}
 .o_icon_open_togglebox { @include o-add-icon('caret-right');}
@@ -409,8 +409,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_process_running { @include o-add-icon('spinner');}
 .o_icon_profile { @include o-add-icon('user-circle');}
 .o_icon_progress { @include o-add-icon('arrow-up-right-dots');}
-.o_icon_progress_success { @include o-add-icon('check'); color: o-state-color("success", "soft-bg")}
-.o_icon_progress_danger { @include o-add-icon('times'); color: o-state-color("danger", "soft-bg")}
+.o_icon_progress_success { @include o-add-icon('check'); color: var(--o-state-success-soft-bg)}
+.o_icon_progress_danger { @include o-add-icon('times'); color: var(--o-state-danger-soft-bg)}
 .o_icon_provider_adfs { @include o-add-brand-icon('windows');}
 .o_icon_provider_datenlotsen { @include o-add-icon('university');}
 .o_icon_provider_keycloak { @include o-add-icon('user-secret');}
@@ -463,16 +463,16 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rating_yes_off { @include o-add-icon('thumbs-up', false);}
 .o_icon_reactivate { @include o-add-icon('level-up');}
 .o_icon_read { @include o-add-icon('circle', false);}
-.o_icon_readonly { @include o-add-icon('edit'); color: o-state-color("danger", "text");}
+.o_icon_readonly { @include o-add-icon('edit'); color: var(--o-state-danger-text);}
 .o_icon_readwrite { @include o-add-icon('edit');}
 .o_icon_recertification { @include o-add-icon('arrow-rotate-right');}
-.o_icon_recertification_error { @include o-add-icon('circle-exclamation'); color: o-state-color("danger", "text"); }
-.o_icon_recertification_warning { @include o-add-icon('triangle-exclamation'); color: o-state-color("warning", "text"); }
+.o_icon_recertification_error { @include o-add-icon('circle-exclamation'); color: var(--o-state-danger-text); }
+.o_icon_recertification_warning { @include o-add-icon('triangle-exclamation'); color: var(--o-state-warning-text); }
 .o_icon_recycle { @include o-add-icon('recycle');}
 .o_icon_rectangle { @include o-add-icon('square', false);}
 .o_icon_redo { @include o-add-icon('repeat');}
 .o_icon_refresh { @include o-add-icon('refresh');}
-.o_icon_reject { @include o-add-icon('times'); color: o-state-color("danger", "text");}
+.o_icon_reject { @include o-add-icon('times'); color: var(--o-state-danger-text);}
 .btn-danger .o_icon_reject:before { color: $btn-danger-color;}
 .o_icon_rejected { @include o-add-icon('thumbs-down');}
 .o_icon_reload { @include o-add-icon('undo');}
@@ -660,7 +660,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_linkedin { @include o-add-brand-icon('linkedin');}
 
 /* Disabled icons */
-.o_disabled>.o_icon_delete { color: $o-content-disabled-color;}
+.o_disabled>.o_icon_delete { color: var(--o-content-disabled);}
 
 /* repository type icons */
 .o_BinderTemplate_icon { @include o-add-icon('briefcase');}
@@ -816,16 +816,16 @@ $fa-css-prefix: "o_icon" !default;
 .o_calendar_icon { @include o-add-icon('calendar-days', false);}
 
 /* portfolio icons */
-.o_icon_pf_section_draft { @include o-add-icon('eye-slash'); color: o-state-color("neutral", "text");}
-.o_icon_pf_section_progress { @include o-add-icon('refresh'); color: o-state-color("neutral", "text");}
-.o_icon_pf_section_closed { @include o-add-icon('lock'); color: o-state-color("finished", "text");}
+.o_icon_pf_section_draft { @include o-add-icon('eye-slash'); color: var(--o-state-neutral-text);}
+.o_icon_pf_section_progress { @include o-add-icon('refresh'); color: var(--o-state-neutral-text);}
+.o_icon_pf_section_closed { @include o-add-icon('lock'); color: var(--o-state-finished-text);}
 .o_icon_pf_binder { @include o-add-icon('briefcase');}
 .o_icon_pf_entry { @include o-add-icon('file');}
-.o_icon_pf_entry_draft { @include o-add-icon('pencil'); color: o-state-color("neutral", "text");}
-.o_icon_pf_entry_published { @include o-add-icon('check'); color: o-state-color("success", "text");}
-.o_icon_pf_entry_revision { @include o-add-icon('rotate-left'); color: o-state-color("danger", "text");}
-.o_icon_pf_entry_closed { @include o-add-icon('lock'); color: o-state-color("finished", "text");}
-.o_icon_pf_entry_deleted { @include o-add-icon('trash-can', false); color: o-state-color("inactive", "text");}
+.o_icon_pf_entry_draft { @include o-add-icon('pencil'); color: var(--o-state-neutral-text);}
+.o_icon_pf_entry_published { @include o-add-icon('check'); color: var(--o-state-success-text);}
+.o_icon_pf_entry_revision { @include o-add-icon('rotate-left'); color: var(--o-state-danger-text);}
+.o_icon_pf_entry_closed { @include o-add-icon('lock'); color: var(--o-state-finished-text);}
+.o_icon_pf_entry_deleted { @include o-add-icon('trash-can', false); color: var(--o-state-inactive-text);}
 .o_icon_pf_history { @include o-add-icon('clock', false);}
 .o_icon_pf_my_shares { @include o-add-icon('share-alt');}
 .o_icon_pf_new_entry { @include o-add-icon('pencil');}
@@ -840,10 +840,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_forum_status_thread_icon { @include o-add-icon('comments', false);}
 .o_forum_status_sticky_closed_icon { @include o-add-icon('ban');}
 .o_forum_status_sticky_icon { @include o-add-icon('comments');}
-.o_forum_status_closed_icon { @include o-add-icon('ban'); color: o-state-color("danger", "text");}
-.o_forum_status_opened_icon { @include o-add-icon('ban'); color: o-state-color("success", "text");}
-.o_forum_status_hidden_icon { @include o-add-icon('eye-slash'); color: o-state-color("danger", "text");}
-.o_forum_status_visible_icon { @include o-add-icon('eye'); color: o-state-color("success", "text");}
+.o_forum_status_closed_icon { @include o-add-icon('ban'); color: var(--o-state-danger-text);}
+.o_forum_status_opened_icon { @include o-add-icon('ban'); color: var(--o-state-success-text);}
+.o_forum_status_hidden_icon { @include o-add-icon('eye-slash'); color: var(--o-state-danger-text);}
+.o_forum_status_visible_icon { @include o-add-icon('eye'); color: var(--o-state-success-text);}
 
 .o_forum_all_icon { @include o-add-icon('align-right');}
 .o_forum_all_flat_icon { @include o-add-icon('align-justify');}
@@ -898,14 +898,14 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_notPresented { @include o-add-icon('circle', false); color: $o-qti-status-notPresented-color;}
 .o_icon_qti_notAnswered { @include o-add-icon('circle', false); }
 .o_icon_qti_answered { @include o-add-icon('circle'); }
-.o_icon_qti_correct { @include o-add-icon('face-smile-beam'); color: $o-qti-status-correct-color;}
+.o_icon_qti_correct { @include o-add-icon('face-smile-beam'); color: var(--o-qti-status-correct);}
 .o_icon_qti_ended { @include o-add-icon('ban'); color: $o-qti-status-ended-color;}
-.o_icon_qti_incorrect { @include o-add-icon('face-frown-open'); color: $o-qti-status-incorrect-color;}
+.o_icon_qti_incorrect { @include o-add-icon('face-frown-open'); color: var(--o-qti-status-incorrect);}
 .o_icon_qti_invalid { @include o-add-icon('exclamation-circle'); color: $o-qti-status-invalid-color;}
-.o_icon_qti_review { @include o-add-icon('eye'); color: $o-qti-status-review-color;}
+.o_icon_qti_review { @include o-add-icon('eye'); color: var(--o-qti-status-review);}
 .o_icon_qti_reviewNotSeen,
 .o_icon_qti_reviewNotAnswered,
-.o_icon_qti_reviewInvalid { @include o-add-icon('eye-slash'); color: $o-qti-status-review-color;}
+.o_icon_qti_reviewInvalid { @include o-add-icon('eye-slash'); color: var(--o-qti-status-review);}
 .o_icon_qti_end_testpart { @include o-add-icon('floppy-disk', false);}
 .o_icon_qti_close_test { @include o-add-icon('window-close');}
 .o_icon_qti_cancel { @include o-add-icon('stop');}
@@ -914,8 +914,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_hint { @include o-add-icon('question-circle');}
 .o_icon_qti_summary_notAnswered { @include o-add-icon('circle', false); color: $o-qti-status-notAnswered-color;}
 .o_icon_qti_summary_notPresented { @include o-add-icon('circle', false); color: $o-qti-status-notPresented-color;}
-.o_icon_qti_summary_ended { @include o-add-icon('times-circle'); color: o-state-color("danger", "text");}
-.o_icon_qti_summary_correct { @include o-add-icon('check-circle'); color: o-state-color("success", "text");}
+.o_icon_qti_summary_ended { @include o-add-icon('times-circle'); color: var(--o-state-danger-text);}
+.o_icon_qti_summary_correct { @include o-add-icon('check-circle'); color: var(--o-state-success-text);}
 .o_icon_qti_signature { @include o-add-icon('file-code');}
 .o_icon_qti_solution { @include o-add-icon('lightbulb');}
 
@@ -932,7 +932,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_correction_auto { @include o-add-icon('wand-magic-sparkles');}
 .o_icon_correction_adjusted { @include o-add-icon('pen');}
 .o_icon_correction_manual { @include o-add-icon('hand-point-up');}
-.o_icon_correction_to_correct { @include o-add-icon('highlighter'); color: o-state-color("warning", "text"); }
+.o_icon_correction_to_correct { @include o-add-icon('highlighter'); color: var(--o-state-warning-text); }
 .o_icon_correction_not_corrected { @include o-add-icon('highlighter'); }
 
 /* SEB template status */
@@ -940,21 +940,21 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_seb_template_status_inactive { @include o-add-icon('ban'); }
 
 /* lectures */
-.o_lectures_current { @include o-add-icon('circle'); color: o-state-color("warning", "text");}
+.o_lectures_current { @include o-add-icon('circle'); color: var(--o-state-warning-text);}
 .o_lectures_next { @include o-add-icon('clock', false);  }
-.o_lectures_pending { @include o-add-icon('circle'); color: o-state-color("danger", "text");}
+.o_lectures_pending { @include o-add-icon('circle'); color: var(--o-state-danger-text);}
 .o_lectures_closed { @include o-add-icon('circle');}
 
-.o_lectures_rollcall_ok { @include o-add-icon('circle'); color: o-state-color("success", "text");}
-.o_lectures_rollcall_warning { @include o-add-icon('adjust'); color: o-state-color("warning", "text");}
-.o_lectures_rollcall_danger { @include o-add-icon('circle', false); color: o-state-color("danger", "text");}
-.o_lectures_rollcall_free { @include o-add-icon('circle'); color: o-state-color("inactive", "text");}
-.o_lectures_rollcall_notice { @include o-add-icon('circle'); color: o-state-color("inactive", "text");}
+.o_lectures_rollcall_ok { @include o-add-icon('circle'); color: var(--o-state-success-text);}
+.o_lectures_rollcall_warning { @include o-add-icon('adjust'); color: var(--o-state-warning-text);}
+.o_lectures_rollcall_danger { @include o-add-icon('circle', false); color: var(--o-state-danger-text);}
+.o_lectures_rollcall_free { @include o-add-icon('circle'); color: var(--o-state-inactive-text);}
+.o_lectures_rollcall_notice { @include o-add-icon('circle'); color: var(--o-state-inactive-text);}
 .o_lectures_rollcall_ { @include o-add-icon('clock', false); color: o-state-color("inactive", "border", "light");}
-.o_lectures_attended { @include o-add-icon('circle'); color: o-state-color("success", "text") !important;}
-.o_lectures_authorized { @include o-add-icon('circle'); color: o-state-color("warning", "text") !important;}
-.o_lectures_absent { @include o-add-icon('circle'); color: o-state-color("danger", "text") !important;}
-.o_lectures_dispensed { @include o-add-icon('circle'); color: o-state-color("neutral", "text") !important;}
+.o_lectures_attended { @include o-add-icon('circle'); color: var(--o-state-success-text) !important;}
+.o_lectures_authorized { @include o-add-icon('circle'); color: var(--o-state-warning-text) !important;}
+.o_lectures_absent { @include o-add-icon('circle'); color: var(--o-state-danger-text) !important;}
+.o_lectures_dispensed { @include o-add-icon('circle'); color: var(--o-state-neutral-text) !important;}
 .o_absences_col_warning { @include o-add-icon('warning');}
 .o_absences_col_alert { @include o-add-icon('exclamation-circle');}
 
@@ -967,17 +967,17 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_taxonomy_levels { @include o-add-icon('sitemap');}
 
 /* coaching */
-.o_black_led { @include o-add-icon('circle'); color: $brand-primary;}
-.o_green_led { @include o-add-icon('circle'); color: o-state-color("success", "text");}
-.o_yellow_led { @include o-add-icon('circle'); color: o-state-color("warning", "text");}
-.o_red_led { @include o-add-icon('circle'); color: o-state-color("danger", "text");}
-.o_grey_led { @include o-add-icon('circle'); color: o-state-color("inactive", "soft-border");}
+.o_black_led { @include o-add-icon('circle'); color: var(--o-primary);}
+.o_green_led { @include o-add-icon('circle'); color: var(--o-state-success-text);}
+.o_yellow_led { @include o-add-icon('circle'); color: var(--o-state-warning-text);}
+.o_red_led { @include o-add-icon('circle'); color: var(--o-state-danger-text);}
+.o_grey_led { @include o-add-icon('circle'); color: var(--o-state-inactive-soft-border);}
 
 /* grading */
-.o_grader_active { @include o-add-icon('check-circle', false); color: o-state-color("success", "text");}
-.o_grader_inactive { @include o-add-icon('ban'); color: o-state-color("danger", "text");}
-.o_grader_absence { @include o-add-icon('clock', false); color: o-state-color("warning", "text");}
-.o_grad_assignment_unassigned { @include o-add-icon('exclamation-circle'); color: o-state-color("danger", "text");}
+.o_grader_active { @include o-add-icon('check-circle', false); color: var(--o-state-success-text);}
+.o_grader_inactive { @include o-add-icon('ban'); color: var(--o-state-danger-text);}
+.o_grader_absence { @include o-add-icon('clock', false); color: var(--o-state-warning-text);}
+.o_grad_assignment_unassigned { @include o-add-icon('exclamation-circle'); color: var(--o-state-danger-text);}
 .o_grad_assignment_assigned { @include o-add-icon('square', false);}
 .o_grad_assignment_inprocess { @include o-add-icon('refresh');}
 .o_grad_assignment_done { @include o-add-icon('check-square', false);}
@@ -999,17 +999,17 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_guests_icon { @include o-add-icon('user-circle', false);}
 .o_ac_openaccess_icon { @include o-add-icon('door-open');}
 .o_ac_paypal_icon { @include o-add-brand-icon('cc-paypal');}
-.o_ac_status_canceled_icon { @include o-add-icon('minus'); color: o-state-color("inactive", "text");}
-.o_ac_status_error_icon { @include o-add-icon('times'); color: o-state-color("danger", "text");}
-.o_ac_status_new_icon { @include o-add-icon('asterisk'); color: o-state-color("neutral", "text");}
-.o_ac_status_success_icon { @include o-add-icon('check'); color: o-state-color("success", "text");}
-.o_ac_status_waiting_icon { @include o-add-icon('clock', false); color: o-state-color("warning", "text");}
-.o_ac_offer_active_icon { @include o-add-icon('eye'); color: o-state-color("success", "text");}
+.o_ac_status_canceled_icon { @include o-add-icon('minus'); color: var(--o-state-inactive-text);}
+.o_ac_status_error_icon { @include o-add-icon('times'); color: var(--o-state-danger-text);}
+.o_ac_status_new_icon { @include o-add-icon('asterisk'); color: var(--o-state-neutral-text);}
+.o_ac_status_success_icon { @include o-add-icon('check'); color: var(--o-state-success-text);}
+.o_ac_status_waiting_icon { @include o-add-icon('clock', false); color: var(--o-state-warning-text);}
+.o_ac_offer_active_icon { @include o-add-icon('eye'); color: var(--o-state-success-text);}
 .o_ac_offer_almost_fully_booked_icon { @include o-add-icon('circle-half-stroke'); }
 .o_ac_offer_bookable_icon { @include o-add-icon('cart-shopping'); }
 .o_ac_offer_finished_icon { @include o-add-icon('ban'); }
 .o_ac_offer_fully_booked_icon { @include o-add-icon('ban'); }
-.o_ac_offer_inactive_icon { @include o-add-icon('eye-slash'); color: o-state-color("inactive", "text");}
+.o_ac_offer_inactive_icon { @include o-add-icon('eye-slash'); color: var(--o-state-inactive-text);}
 .o_ac_offer_not_available_icon { @include o-add-icon('eye-slash'); }
 .o_ac_offer_overbooked_icon { @include o-add-icon('circle-exclamation'); }
 .o_ac_offer_pending_icon { @include o-add-icon('clock'); }
@@ -1044,7 +1044,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_curriculum_status_transition { @include o-add-icon('chevron-right');}
 
 /* Membership status (and pseudo status) */
-.o_membership_status_booking { @include o-add-icon('clock', false); color: o-state-color("neutral", "text"); }
+.o_membership_status_booking { @include o-add-icon('clock', false); color: var(--o-state-neutral-text); }
 .o_membership_status_parentbooking { @include o-add-icon('arrow-up');}
 .o_membership_status_transfer { @include o-add-icon('arrow-right');}
 .o_membership_status_reservation { @include o-add-icon('hourglass-half');}
@@ -1075,7 +1075,7 @@ $fa-css-prefix: "o_icon" !default;
 
 .o_icon_certificate_status_pending { @include o-add-icon('hourglass-half'); }
 .o_icon_certificate_status_error { @include o-add-icon('circle-xmark'); }
-.o_icon_certificate_status_failed { @include o-add-icon('circle-xmark'); color: o-state-color("danger", "text"); }
+.o_icon_certificate_status_failed { @include o-add-icon('circle-xmark'); color: var(--o-state-danger-text); }
 
 /* Menu tree status icons for course editor and SCORM module */
 .o_scorm_org { @include o-add-icon('archive');}
@@ -1265,7 +1265,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_proj_recurrence { @include o-add-icon('refresh');}
 .o_icon_proj_milestone { @include o-add-icon('bullseye');}
 .o_icon_proj_milestone_status_open { @include o-add-icon('circle', false);}
-.o_icon_proj_milestone_status_achieved { @include o-add-icon('check-circle'); color: o-state-color("success", "text");}
+.o_icon_proj_milestone_status_achieved { @include o-add-icon('check-circle'); color: var(--o-state-success-text);}
 .o_icon_proj_reference { @include o-add-icon('link');}
 .o_icon_proj_whiteboard{ @include o-add-icon('paint-brush');}
 .o_icon_proj_project { @include o-add-icon('leaf');}
@@ -1279,12 +1279,12 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_todo_task { @include o-add-icon('check-square', false);}
 .o_icon_todo_status_open { @include o-add-icon('circle', false);}
 .o_icon_todo_status_in_progress { @include o-add-icon('adjust'); transform: rotate(270deg);}
-.o_icon_todo_status_done { @include o-add-icon('check-circle'); color: o-state-color("success", "text");}
+.o_icon_todo_status_done { @include o-add-icon('check-circle'); color: var(--o-state-success-text);}
 .o_icon_todo_status_deleted { @include o-add-icon('trash-can', false);}
-.o_icon_todo_priority_urgent { @include o-add-icon('bell'); color: o-state-color("danger", "text");}
-.o_icon_todo_priority_high { @include o-add-icon('exclamation'); color: o-state-color("critical", "text");}
-.o_icon_todo_priority_medium { @include o-add-icon('circle'); color: o-state-color("warning", "text");}
-.o_icon_todo_priority_low { @include o-add-icon('angle-double-down'); color: $brand-primary;}
+.o_icon_todo_priority_urgent { @include o-add-icon('bell'); color: var(--o-state-danger-text);}
+.o_icon_todo_priority_high { @include o-add-icon('exclamation'); color: var(--o-state-critical-text);}
+.o_icon_todo_priority_medium { @include o-add-icon('circle'); color: var(--o-state-warning-text);}
+.o_icon_todo_priority_low { @include o-add-icon('angle-double-down'); color: var(--o-primary);}
 .o_icon_todo_date_range { @include o-add-icon('long-arrow-right');}
 .o_icon_todo_start { @include o-add-icon('circle-play');}
 
@@ -1341,11 +1341,11 @@ a.o_icon {
 }
 
 .o_icon_success {
-	color: o-state-color("success", "text");
+	color: var(--o-state-success-text);
 }
 
 .o_icon_danger {
-	color: o-state-color("danger", "text");
+	color: var(--o-state-danger-text);
 }
 
 /* Small fixed with */

@@ -22,12 +22,12 @@ body {
   font-family: $o-content-font-family-base;
   font-size: $o-content-font-size-base;
   line-height: $o-content-line-height-base;
-  color: $o-content-text-color;
-  background-color: $o-content-body-bg;
+  color: var(--o-content-text);
+  background-color: var(--o-content-bg);
 }
 
 a {
-  color: $o-content-link-color;
+  color: var(--o-content-link);
   text-decoration: none;
 
   &:hover,
@@ -49,26 +49,26 @@ a {
 
 
 h1 { 
-	color: $o-content-h1-color;
+	color: var(--o-content-h1);
 }
 body > h1:first-child { 
 	margin-top: 0;
 }
 
 h2 { 
-	color: $o-content-h2-color;
+	color: var(--o-content-h2);
 }
 h3 { 
-	color: $o-content-h3-color;
+	color: var(--o-content-h3);
 }
 h4 { 
-	color: $o-content-h4-color;
+	color: var(--o-content-h4);
 }
 h5 { 
-	color: $o-content-h5-color;
+	color: var(--o-content-h5);
 }
 h5 { 
-	color: $o-content-h5-color;
+	color: var(--o-content-h5);
 }
 hr {
 	border-top: $o-content-hr-size solid $o-content-hr-color;

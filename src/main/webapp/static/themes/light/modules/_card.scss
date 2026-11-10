@@ -8,17 +8,17 @@
 	
 	.o_card_title {
 		a {
-			color: $o-card-title-color;
+			color: var(--o-card-title);
 			@extend %o_undecorated;
 		}
 	}
 	
 	&:hover {
-		border: 1px solid $o-card-hover-color;
+		border: 1px solid var(--o-card-hover);
 		box-shadow: $o-card-box-hover-shadow; 
 		.o_card_title {
 			a {
-				color: $o-card-hover-color;
+				color: var(--o-card-hover);
 			}
 		}
 	}
@@ -128,10 +128,10 @@
 						padding-bottom: 5px;
 					}
 					&.o_widget_text_success {
-						color: o-state-color("success", "text");
+						color: var(--o-state-success-text);
 					}
 					&.o_widget_text_danger {
-						color: o-state-color("danger", "text");
+						color: var(--o-state-danger-text);
 					}
 				}
 				.o_widget_additional {
@@ -307,7 +307,7 @@
 
 		.o_icon {
 			font-size: $o-fact-icon-font-size;
-			color: $o-fact-icon-color;
+			color: var(--o-fact-icon);
 		}
 	}
 
@@ -323,7 +323,7 @@
 
 	.o_fact_sub_value {
 		font-size: 12px;
-		color: $text-muted;
+		color: var(--o-text-muted);
 	}
 
 	.o_facts:empty + .o_fact_sheet_footer {
@@ -470,7 +470,7 @@
 	
 	.table {
 		th {
-			color: $text-muted;
+			color: var(--o-text-muted);
 			font-size: $o-dashboard-widget-table-th-font-size;
 			font-weight: $o-dashboard-widget-table-th-font-weight;
 			&:first-child {
@@ -621,7 +621,7 @@
 
 		&:hover {
 			filter: brightness(0.95);		
-			border: 1px solid $input-border-focus;
+			border: 1px solid var(--o-focus);
 			border-radius: $o-dashboard-widget-border-radius;
 		}
 		&.sortable-drag {
@@ -701,7 +701,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 6px;
-		color: $text-color;
+		color: var(--o-text);
 
 		.o_icon {
 			font-size: 2.4em;
@@ -725,10 +725,10 @@
 	.o_dashboard_edit_remove {
 		margin-left: 12px;
 		white-space: nowrap;
-		color: $link-color;
+		color: var(--o-link);
 
 		&:hover {
-			color: $link-hover-color;
+			color: var(--o-link-hover);
 		}
 	}
 

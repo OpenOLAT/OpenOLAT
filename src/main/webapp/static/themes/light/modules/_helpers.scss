@@ -243,7 +243,7 @@
 
 /* Ghost button */
 .btn.o_button_ghost {
-	color: $o-button-ghost-color;
+	color: var(--o-btn-ghost-fg);
 	background-color: $o-button-ghost-background-color;
 	border-color: $o-button-ghost-border-color;
 	&:hover {
@@ -485,9 +485,9 @@
 
 /* disabled elements */
 .o_disabled, %o_disabled {
-	color: $o-content-disabled-color !important;
+	color: var(--o-content-disabled) !important;
 	&:hover{
-		color: $o-content-disabled-color !important;
+		color: var(--o-content-disabled) !important;
 	}
 	@extend %o_undecorated;
 	cursor: default;
@@ -497,7 +497,7 @@
 	@include opacity(.4);
 }
 .o_muted, %o_muted {
-	color: $text-muted;
+	color: var(--o-text-muted);
 }
 /* selected text */
 .o_selected, %o_selected { 

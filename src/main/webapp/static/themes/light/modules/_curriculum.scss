@@ -152,7 +152,7 @@ a.o_validation_open_results {
 	}
 	
 	color: $o-curriculum-avatar-color;
-	background-color: $o-curriculum-avatar-bg-color;
+	background-color: var(--o-curriculum-avatar-bg);
 	border-radius: $o-curriculum-avatar-border-radius;
 		
 	padding: 10px;
@@ -308,7 +308,7 @@ a.o_validation_open_results {
 		&.o_curriculum_label_template {
 			background-color: $o-curriculum-widget-template-label-bg ;
 			border-color: $o-curriculum-widget-template-label-border;
-			color: $o-curriculum-widget-template-label-color;
+			color: var(--o-curriculum-widget-template-label);
 		}
 	}
 	
@@ -421,11 +421,11 @@ a.o_validation_open_results {
 	}
 	
 	.o_curriculum_widget_members_status_overbooked {
-		color: o-state-color("danger", "text");
+		color: var(--o-state-danger-text);
 	}
 	.o_curriculum_widget_members_status_fullybooked .o_icon:before,
 	.o_curriculum_widget_members_status_fewleft .o_icon:before {
-		color: o-state-color("warning", "text");
+		color: var(--o-state-warning-text);
 	}
 }
 .o_indicators_key {
@@ -449,10 +449,10 @@ a.o_validation_open_results {
 }
 .o_members_widget_icon {
 	&.o_membership_status_active {
-		color: o-state-color("success", "text");
+		color: var(--o-state-success-text);
 	}
 	&.o_membership_status_pending {
-		color: o-state-color("warning", "text");
+		color: var(--o-state-warning-text);
 	}
 }
 .o_widget_implementation_row {
@@ -484,7 +484,7 @@ a.o_validation_open_results {
 				display: flex;
 				flex-direction: column;
 				.o_ext_ref {
-					color: $text-muted;
+					color: var(--o-text-muted);
 					font-size: 10px;
 					line-height: 12px;
 					height: 12px;
@@ -763,7 +763,7 @@ a.o_validation_open_results {
 				gap: 10px;
 				.o_curriculum_element_taughtby_delimiter:before {
 					content: "⸱";
-					color: $link-color;
+					color: var(--o-link);
 				}
 			}
 		}
@@ -859,19 +859,19 @@ a.o_validation_open_results {
 .o_curriculum_widget_icon {
 	// colour of the state of the element status (OO-10042)
 	&.o_icon_curriculum_status_preparation {
-		color: o-state-color("neutral", "text");
+		color: var(--o-state-neutral-text);
 	}
 	&.o_icon_curriculum_status_provisional {
-		color: o-state-color("warning", "text");
+		color: var(--o-state-warning-text);
 	}
 	&.o_icon_curriculum_status_confirmed {
-		color: o-state-color("success", "text");
+		color: var(--o-state-success-text);
 	}
 	&.o_icon_curriculum_status_cancelled {
-		color: o-state-color("inactive", "text");
+		color: var(--o-state-inactive-text);
 	}
 	&.o_icon_curriculum_status_finished {
-		color: o-state-color("finished", "text");
+		color: var(--o-state-finished-text);
 	}
 }
 

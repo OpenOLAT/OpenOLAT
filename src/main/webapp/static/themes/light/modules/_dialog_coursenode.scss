@@ -140,7 +140,7 @@ div.panel.o_dialog_file_overview {
   gap: 3rem;
   flex-direction: row;
   padding: 20px;
-  border: 1px solid $o-dialog-cn-box-border-color;
+  border: 1px solid var(--o-course-file-box-border);
 
   .o_dialog_file {
     display: flex;
@@ -156,7 +156,7 @@ div.panel.o_dialog_file_overview {
       position: relative;
       background-color: #fff;
       border-radius: $thumbnail-border-radius;
-      border: 1px solid $o-dialog-cn-box-border-color;
+      border: 1px solid var(--o-course-file-box-border);
       justify-content: center;
       align-items: center;
 
@@ -260,7 +260,7 @@ div.panel.o_dialog_file_overview {
 
 .o_dialog_file_overview:before {
   content: "";
-  border: 1px solid $o-dialog-cn-box-border-color;
+  border: 1px solid var(--o-course-file-box-border);
   align-self: stretch;
 }
 

@@ -2,7 +2,7 @@
 	position:relative;
 	
 	a {
-		color: $o-toolbar-breadcrumb-link-color;
+		color: var(--o-toolbar-breadcrumb-link);
 	}
 
 	/* close link, used mostly in breadcrumb wrapped in toolbar */
@@ -46,7 +46,7 @@
 				@include o-add-icon-font();
 				+ li:before {
 					padding: 0 5px;
-					color: $text-color;
+					color: var(--o-text);
 					content: "#{$fa-var-chevron-right}";
 				}
 				&.o_breadcrumb_back {
@@ -76,7 +76,7 @@
 				}
 				&.o_last_crumb {
 					span {
-						color: $text-color !important;
+						color: var(--o-text) !important;
 						font-weight: bold;
 					}
 				}

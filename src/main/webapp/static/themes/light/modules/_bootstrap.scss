@@ -1,5 +1,7 @@
 // Core variables and mixins
 @import "../../../bootstrap/stylesheets/bootstrap/mixins";
+// button-variant that reads the colour tokens, replaces the Bootstrap mixin (OO-10043)
+@import "button_variant";
 
 // Reset
 @import "../../../bootstrap/stylesheets/bootstrap/normalize";
@@ -15,7 +17,27 @@
 @import "../../../bootstrap/stylesheets/bootstrap/grid";
 @import "../../../bootstrap/stylesheets/bootstrap/tables";
 @import "../../../bootstrap/stylesheets/bootstrap/forms";
+// The Bootstrap rules of .btn, .btn-default and .btn-primary read the button
+// tokens: the Sass variables hold the token during the import only (OO-10043)
+$o-bootstrap-btn-default-color: $btn-default-color;
+$o-bootstrap-btn-default-bg: $btn-default-bg;
+$o-bootstrap-btn-default-border: $btn-default-border;
+$o-bootstrap-btn-primary-color: $btn-primary-color;
+$o-bootstrap-btn-primary-bg: $btn-primary-bg;
+$o-bootstrap-btn-primary-border: $btn-primary-border;
+$btn-default-color: var(--o-btn-default-fg);
+$btn-default-bg: var(--o-btn-default-bg);
+$btn-default-border: var(--o-btn-default-border);
+$btn-primary-color: var(--o-btn-primary-fg);
+$btn-primary-bg: var(--o-btn-primary-bg);
+$btn-primary-border: var(--o-btn-primary-border);
 @import "../../../bootstrap/stylesheets/bootstrap/buttons";
+$btn-default-color: $o-bootstrap-btn-default-color;
+$btn-default-bg: $o-bootstrap-btn-default-bg;
+$btn-default-border: $o-bootstrap-btn-default-border;
+$btn-primary-color: $o-bootstrap-btn-primary-color;
+$btn-primary-bg: $o-bootstrap-btn-primary-bg;
+$btn-primary-border: $o-bootstrap-btn-primary-border;
 
 // Components
 @import "../../../bootstrap/stylesheets/bootstrap/component-animations";
@@ -155,27 +177,27 @@ body .modal-body {
 }
 
 .btn.btn-primary.o_disabled {
-	color: $btn-primary-color !important;
+	color: var(--o-btn-primary-fg) !important;
 }
 
 /* Input-group addons styled as buttons get the button border and background */
 .btn.input-group-addon,
 a.input-group-addon {
-	border-color: $btn-default-border;
-	background-color: $btn-default-bg;
+	border-color: var(--o-btn-default-border);
+	background-color: var(--o-btn-default-bg);
 	&:hover {
-		background-color: darken($btn-default-bg, 10%);
-		border-color: darken($btn-default-border, 12%);
+		background-color: var(--o-btn-default-bg-hover);
+		border-color: var(--o-btn-default-border-hover);
 	}
 }
 /* Dividing border between btn-addon and form-control matches button border */
 .input-group:has(> .btn.input-group-addon:last-child) .form-control,
 .input-group:has(> a.input-group-addon:last-child) .form-control {
-	border-right-color: $btn-default-border;
+	border-right-color: var(--o-btn-default-border);
 }
 .input-group:has(> .btn.input-group-addon:first-child) .form-control,
 .input-group:has(> a.input-group-addon:first-child) .form-control {
-	border-left-color: $btn-default-border;
+	border-left-color: var(--o-btn-default-border);
 }
 /* Text field next to a button/link addon keeps the input background, also when
    disabled, so the field never looks greyed out. This must be $input-bg and not

@@ -144,7 +144,7 @@ body .modal #o_link_chooser .container-fluid {
 	font-size: $font-size-base;
 	font-weight: bold;
 	line-height: $line-height-base;
-	color: $text-color;
+	color: var(--o-text);
 }
 
 .tox .tox-form .help-block {
@@ -178,7 +178,7 @@ dialog.dialog .tox-dialog.tox-dialog--width-lg {
 
 .o_richtext_mce .tox {
 	&.tox-tinymce {
-		border: 1px solid $input-border;
+		border: 1px solid var(--o-border-strong);
   		border-radius: $input-border-radius;
 	}
 	

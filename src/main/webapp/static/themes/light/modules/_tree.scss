@@ -9,11 +9,11 @@
     font-size: $o-tree-font-size;
     
     a {
-    	color : $o-tree-link-color;
+    	color : var(--o-tree-link);
     	background-color: none;
     	&:hover,
 		&:focus {
-			color: $o-tree-link-hover-color;
+			color: var(--o-tree-link-hover);
 		}
     }
     
@@ -21,7 +21,7 @@
 		background-color : $o-tree-link-bg;
 		&:hover,
 		&:focus {
-			background-color : $o-tree-link-hover-bg;
+			background-color : var(--o-tree-link-hover-bg);
 		}
 		&:first-child {
 			background-color: transparent;
@@ -29,7 +29,7 @@
 		&:last-child{
 			&:hover,
 			&:focus {
-				background-color : $o-tree-link-hover-bg;
+				background-color : var(--o-tree-link-hover-bg);
 			}
 		}
 	}
@@ -119,12 +119,12 @@
 		}
 		
 		li .active.o_tree_link {
-			a { color : $o-tree-link-active-color; }
+			a { color : var(--o-tree-link-active); }
 			background-color : $o-tree-link-active-bg;
 			&:hover,
 			&:focus {
-				a { color: $o-tree-link-active-hover-color; }
-				background-color : $o-tree-link-active-hover-bg;
+				a { color: var(--o-tree-link-active-hover); }
+				background-color : var(--o-tree-link-active-hover-bg);
 			}
 			font-weight: $o-tree-link-active-font-weight;
 		}

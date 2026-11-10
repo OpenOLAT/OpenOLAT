@@ -9,9 +9,9 @@ a.o_chelp,
 	font-size: $o-chelp-font-size;
 	font-weight: $o-chelp-font-weight;
 	line-height: floor($o-chelp-font-size *1.5);
-	color: $o-chelp-color;
-	background-color: $o-chelp-bg;
-	border: 1px solid $o-chelp-border;
+	color: var(--o-chelp-fg);
+	background-color: var(--o-chelp-bg);
+	border: 1px solid var(--o-chelp-border);
 	border-radius: $o-chelp-border-radius;
 	cursor: help;
  	@include user-select(none);
@@ -20,7 +20,7 @@ a.o_chelp,
 	&:hover,
 	&:focus {
 		text-decoration: none;
-		color: $o-chelp-color;
+		color: var(--o-chelp-fg);
 		background-color: darken($o-chelp-bg, 8%);
 		border-color: darken($o-chelp-border, 12%);
 	}
@@ -55,14 +55,14 @@ a.o_chelp,
 
 /* drawing */
 .o_draw_circle {
-	border: $o-drawing-border-width solid $o-drawing-border-color;
+	border: $o-drawing-border-width solid var(--o-drawing-border);
 	border-radius: 50%;
 	position: absolute !important;
 	box-sizing: border-box;
 }
 
 .o_draw_rectangle {
-	border: $o-drawing-border-width solid $o-drawing-border-color;
+	border: $o-drawing-border-width solid var(--o-drawing-border);
 	position: absolute !important;
 	box-sizing: border-box;
 }
@@ -247,7 +247,7 @@ ul.o_dropdown {
 	}
 	.o_empty_msg {
 		margin: 0.5em 0;
-		color: $o-empty-msg-color;	
+		color: var(--o-empty-msg);	
 		font-size: 1.5em;
 		font-weight: 500;
 	}
@@ -346,7 +346,7 @@ ul.o_dropdown {
 		}
 		.o_lastmodified {
 			float: right;
-			color: $text-muted;	
+			color: var(--o-text-muted);	
 			@extend %o_small;
 			line-height: $line-height-base;
 		}
@@ -369,7 +369,7 @@ ul.o_dropdown {
 
 /* File download */
 .o_file_upload {
-	border-bottom: 1px solid $o-file-upload-border-bottom-color;
+	border-bottom: 1px solid var(--o-file-upload-border);
 	max-width: 600px;
 	display: grid;
   	grid-template-columns: auto 4em;
@@ -382,7 +382,7 @@ ul.o_dropdown {
 		}
 		.o_file_date, .o_file_type, .o_file_size {
 			text-transform: uppercase;
-			color: $text-muted;
+			color: var(--o-text-muted);
 		}
 		.o_file_type:before, .o_file_size:before {
 			content: "\007C";
@@ -406,7 +406,7 @@ ul.o_dropdown {
 			display: none;
 		}
 		.o_notifications_news_context {
-			color: $text-muted;	
+			color: var(--o-text-muted);	
 		}
 		.o_notifications_news_content {
 			margin-left: 1.5em;
@@ -417,7 +417,7 @@ ul.o_dropdown {
 				line-height: 1.5em;
 			}
 			.o_date {
-				color: $text-muted;
+				color: var(--o-text-muted);
 			}
 		}
 		.o_notifications_news_url {
@@ -457,11 +457,11 @@ ul.o_dropdown {
 .o_noti {
 	margin: $padding-base-vertical 0 $padding-base-vertical $padding-base-horizontal;
 	float: right;
-	color: $text-muted;	
+	color: var(--o-text-muted);	
 	@extend %o_small;
 	.o_label {
 		@extend %o_undecorated;
-		color: $text-muted;	
+		color: var(--o-text-muted);	
 		cursor:help;
 	}
 	@media (max-width: $screen-xs-max) { 
@@ -505,7 +505,7 @@ ul.o_dropdown {
 		height: $line-height-computed; 
 		line-height: $line-height-computed; 
 		font-size: $font-size-small; 
-		background-color: $o-datecomp-month-bg;
+		background-color: var(--o-datecomp-month-bg);
 		color: $o-datecomp-month-color;
 	}
 	div.o_day {
@@ -513,8 +513,8 @@ ul.o_dropdown {
 		line-height: floor($line-height-computed * 1.5);
 		font-size: $font-size-large;
 		border-top: 1px solid $o-datecomp-border;
-		background-color: $o-datecomp-day-bg;
-		color: $o-datecomp-day-color;
+		background-color: var(--o-datecomp-day-bg);
+		color: var(--o-datecomp-day-fg);
 	}
 }
 .o_block_with_datecomp {
@@ -535,7 +535,7 @@ ul.o_dropdown {
 		margin-top: 0;
 	}
 	.o_meta {
-		color: $text-muted;
+		color: var(--o-text-muted);
 		@extend %o_small;
 	}
 	.o_content {
@@ -747,7 +747,7 @@ ul.o_certificates li {
 		@extend .img-thumbnail;
 	}
 	.o_date, .o_author {
-		color: $text-muted;
+		color: var(--o-text-muted);
 	}
 	.o_subscription {
 		a {	
@@ -779,7 +779,7 @@ ul.o_certificates li {
 	}
 	.o_meta {
 		font-size: 90%;
-		color: $text-muted;
+		color: var(--o-text-muted);
 		font-style: italic;
 	}
 	dl {
@@ -788,7 +788,7 @@ ul.o_certificates li {
 				font-size: ceil(($font-size-base * 1.5));
 			}
 			small {
-				color: $text-muted;
+				color: var(--o-text-muted);
 			}
 		}
 	}
@@ -971,7 +971,7 @@ div.o_assessment_mini_conditional_overview {
 	.o_buttons {
 		padding: 0.9em 1em 0.5em 1em;
 		margin: 0.5em 1em 0.5em 0;
-		border-left: 1px solid $panel-default-border;
+		border-left: 1px solid var(--o-border);
 	}
 }
 
@@ -1105,8 +1105,8 @@ div.o_assessment_mini_conditional_overview {
 		width: 19px;
 	}
 	.o_marker {
-		color: $o-reminder-marker-color;
-		background-color: $o-reminder-marker-bg-color;
+		color: var(--o-reminder-marker-fg);
+		background-color: var(--o-reminder-marker-bg);
 		padding: $o-reminder-marker-padding;
 	}
 }
@@ -1157,7 +1157,7 @@ div.o_reminder_custom_email {
 		background: none;
 	}
 	.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus {
-		color: $o-content-link-color;
+		color: var(--o-content-link);
 		background: none;
 	}
 	.o_segment_separator {
@@ -1166,7 +1166,7 @@ div.o_reminder_custom_email {
 }
 
 .o_segments.o_segments_tab {
-	border-bottom: 1px solid $o-content-link-color;
+	border-bottom: 1px solid var(--o-content-link);
 	width: 100%;
 
 	.btn, .btn:hover, .btn:active, .btn:focus {
@@ -1182,10 +1182,10 @@ div.o_reminder_custom_email {
 	}
 	.btn.btn-primary, .btn.btn-primary:hover, .btn.btn-primary:active, .btn.btn-primary:focus {
 		background: none;
-		border-color: $o-content-link-color;
+		border-color: var(--o-content-link);
 	}
 	.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus {
-		color: $o-content-link-color;
+		color: var(--o-content-link);
 		background: none;
 	}
 	.o_segment_separator {
@@ -1238,7 +1238,7 @@ div.o_reminder_custom_email {
 		
 		> i	{
 			font-size: 16px;
-			color: $o-empty-panel-icon-color;
+			color: var(--o-empty-panel-icon);
 		}
 	}
 	
@@ -1547,7 +1547,7 @@ ul.o_assessment_docs>li:last-child {
 	.o_mail_date,
 	.o_mail_from,
 	.o_mail_recipients {
-		color: $text-muted;
+		color: var(--o-text-muted);
 		font-size: 90%;
 		
 		.o_label {
@@ -1655,12 +1655,12 @@ ul.o_assessment_docs>li:last-child {
 	}
 	.o_progress-bar-passed {
 		&.progress-bar {
-			background-color: $o-course-state-passed-color;
+			background-color: var(--o-course-state-passed);
 		}
 	}
 	.o_progress-bar-failed {
 		&.progress-bar {
-			background-color: $o-course-state-failed-color;
+			background-color: var(--o-course-state-failed);
 		}
 	}
 	.o_progress-bar-neutral {
@@ -1764,7 +1764,7 @@ a.o_labeled_light {
  	max-width: 100%;
  	width: 100%;
  	display: flex;
-	border-color: $input-border;
+	border-color: var(--o-border-strong);
 	span:not(.o_ms_carret) {
  		text-overflow: ellipsis;
 		overflow: hidden;
@@ -1788,7 +1788,7 @@ a.o_labeled_light {
  	width: 100%;
  	min-height: 34px;
  	display: flex;
-	border-color: $input-border;
+	border-color: var(--o-border-strong);
 	span:not(i.o_icon) {
  		text-overflow: ellipsis;
 		overflow: hidden;
@@ -1867,12 +1867,12 @@ a.o_labeled_light {
 			}
 			tr.o_gr_passed_row {
 				div.o_gr_passed_cell {
-					color: $o-course-state-passed-color;
+					color: var(--o-course-state-passed);
 				}
 			}
 			tr.o_gr_failed_row {
 				div.o_gr_passed_cell {
-					color: $o-course-state-failed-color;
+					color: var(--o-course-state-failed);
 				}
 			}
 		}
@@ -1896,13 +1896,13 @@ a.o_labeled_light {
 	stroke: $o-d3chart-default;
 	fill: none;
 	&.o_gr_passed {
-		stroke: $o-course-state-passed-color;
+		stroke: var(--o-course-state-passed);
 	}
 	&.o_gr_failed {
-		stroke: $o-course-state-failed-color;
+		stroke: var(--o-course-state-failed);
 	}
 	&.o_gr_cut_value {
-		stroke: $o-course-state-passed-color;
+		stroke: var(--o-course-state-passed);
 		stroke-width: 1;
 	}
 	&.o_gr_help_line {
@@ -2109,7 +2109,7 @@ ul.o_list_narrow {
 	
 	.o_indicator_label {
 		font-size: $o-indicator-label-font-size;
-		color: $o-indicator-label-color;
+		color: var(--o-indicator-label);
 		text-align: center;
 	}
 	
@@ -2179,7 +2179,7 @@ $o-figure-card-icon-colors:
 		height: 100%;
 		padding: $o-figure-card-one-line-padding;
 		background-color: $o-figure-card-bg-color;
-		color: $text-color;
+		color: var(--o-text);
 		text-decoration: none;
 		
 		// The link wraps its content in a span
@@ -2194,7 +2194,7 @@ $o-figure-card-icon-colors:
 	
 	.o_figure_card_icon {
 		grid-area: icon;
-		color: $o-figure-card-icon-color;
+		color: var(--o-figure-card-icon);
 	}
 	@each $name, $color, $bg-color in $o-figure-card-icon-colors {
 		.o_figure_card_icon_#{$name} {
@@ -2205,7 +2205,7 @@ $o-figure-card-icon-colors:
 	.o_figure_card_figure {
 		grid-area: figure;
 		font-weight: bold;
-		color: $o-figure-card-figure-color;
+		color: var(--o-figure-card-figure);
 	}
 	
 	.o_figure_card_label {
@@ -2218,7 +2218,7 @@ $o-figure-card-icon-colors:
 	
 	.o_figure_card_chevron {
 		grid-area: chevron;
-		color: $o-figure-card-chevron-color;
+		color: var(--o-figure-card-chevron);
 	}
 }
 
@@ -2278,7 +2278,7 @@ $o-figure-card-icon-colors:
 		align-items: center;
 		padding: $o-day-nav-day-padding;
 		background-color: $o-day-nav-day-bg-color;
-		color: $text-color;
+		color: var(--o-text);
 		line-height: 1.2;
 		
 		&:hover {
@@ -2301,8 +2301,8 @@ $o-figure-card-icon-colors:
 			background-color: currentColor;
 		}
 		&.o_day_today {
-			color: $o-datepicker-today-color;
-			border-color: $o-datepicker-today-border-color;
+			color: var(--o-datepicker-today);
+			border-color: var(--o-datepicker-today-border);
 		}
 		&.o_day_selected {
 			background-color: $o-day-nav-day-selected-bg-color;
@@ -2315,7 +2315,7 @@ $o-figure-card-icon-colors:
 		background-color: $o-day-nav-day-weekend-bg-color;
 		
 		&:not(.o_day_today) {
-			color: $text-muted;
+			color: var(--o-text-muted);
 		}
 	}
 }

@@ -34,7 +34,7 @@
 	
 	.ui-widget-header {
 		.ui-dialog-title {
-			color: $o-dialog-header-color;
+			color: var(--o-dialog-header);
 		  	font-weight: $o-dialog-header-font-weight;
 			font-family: $headings-font-family;
 		  	line-height: $headings-line-height;
@@ -114,15 +114,15 @@
 
 .o_has_value.ui-slider.ui-widget-content {
 	.ui-slider-handle {
-		border: 1px solid $o-slider-handler-border-color;
+		border: 1px solid var(--o-slider-handler-border);
 		background-image: none;
-		background-color: $o-slider-handler-background-color;
+		background-color: var(--o-slider-handler-bg);
 	}
 }
 
 .o_no_value.ui-slider.ui-widget-content {
 	.ui-slider-handle {
-		border: 3px solid $o-slider-handler-border-color;
+		border: 3px solid var(--o-slider-handler-border);
 		background-image: none;
 	}
 }
@@ -159,8 +159,8 @@
 		background-color: #fff;
 	}
 	&:not(.selected):not(.disabled) {
-		color: $o-datepicker-today-color;
-		border: 1px solid $o-datepicker-today-border-color;
+		color: var(--o-datepicker-today);
+		border: 1px solid var(--o-datepicker-today-border);
 		font-weight: bold;
 	}
 }
@@ -188,8 +188,8 @@
 			min-width: $o-swiper-button-width;
 			width: $o-swiper-button-width;
 			height: $o-swiper-button-height;
-			color: $o-swiper-button-color;
-			background-color: $o-swiper-button-bg-color;
+			color: var(--o-swiper-button-fg);
+			background-color: var(--o-swiper-button-bg);
 			border: $o-swiper-button-border;
 			border-radius: $o-swiper-button-border-radius;
 			&::after {
@@ -197,7 +197,7 @@
 				font-weight: bold;
 			}
 			&:hover {
-				color: $o-swiper-button-hover-color;
+				color: var(--o-swiper-button-hover);
 				box-shadow: $o-swiper-button-hover-box-shadow;
 			}
 			&.o_swiper_button_disabled {

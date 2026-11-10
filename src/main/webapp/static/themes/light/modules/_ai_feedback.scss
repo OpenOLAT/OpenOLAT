@@ -40,7 +40,7 @@
  * footnote.
  * ---------------------------------------------------------------------- */
 .o_ai_paragraph_feedback {
-	color: $text-muted;
+	color: var(--o-text-muted);
 	background: rgba(0, 0, 0, 0.04);
 	border-radius: 3px;
 	padding: 0.5rem 0.75rem;

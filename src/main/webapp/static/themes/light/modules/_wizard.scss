@@ -69,15 +69,15 @@
 					padding: 0 15px 0 30px;
 					
 					&.active {
-						background: $o-wizard-step-main-active-bg-color;
+						background: var(--o-wizard-step-main-active-bg);
 						a {
 							span {
-								color: $o-wizard-step-main-active-color;
+								color: var(--o-wizard-step-main-active-fg);
 							}
 						}
 						
 						.chevron:before {
-							border-left: 14px solid $o-wizard-step-main-active-bg-color;
+							border-left: 14px solid var(--o-wizard-step-main-active-bg);
 						}
 					}
 					.badge {
@@ -99,10 +99,10 @@
 					border-bottom: 1px solid $o-wizard-steps-border-color;
 				
 					&.active {
-						border-bottom: 2px solid $o-wizard-step-sub-activ-bottom-color;
+						border-bottom: 2px solid var(--o-wizard-step-sub-active-border);
 						a {
 							span {
-								color: $o-wizard-step-sub-active-color;
+								color: var(--o-wizard-step-sub-active);
 							}
 						}
 					}

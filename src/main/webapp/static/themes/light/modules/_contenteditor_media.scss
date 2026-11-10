@@ -111,11 +111,11 @@
 			margin-bottom: 0;
 			padding-top: 5px;
 			padding-bottom: 6px;
-			border: 1px solid $btn-default-border;
+			border: 1px solid var(--o-btn-default-border);
 			border-top-right-radius: 0;
 			border-bottom-right-radius: 0;
 			border-right: none;
-			background-color: $btn-default-bg;
+			background-color: var(--o-btn-default-bg);
 
 			&:has(.o_realchooser:hover),
 			&:has(.o_realchooser:focus) {
@@ -235,10 +235,10 @@
 				height: $o-media-browser-card-height-md;
 				
 				&:hover {
-					border-color: $o-card-hover-color;
+					border-color: var(--o-card-hover);
 					
 					.o_dnd_icon, .o_dnd_info {
-						color: $o-card-hover-color;
+						color: var(--o-card-hover);
 					}
 				}
 				
@@ -401,7 +401,7 @@
 
 .o_media_browser.o_media_browser_preview {
 	.o_card_title a {
-		color: $o-card-title-color !important;
+		color: var(--o-card-title) !important;
 	}
 
 	.o_rendertype_custom .o_medias_table .o_media_card_cell .o_media_card {

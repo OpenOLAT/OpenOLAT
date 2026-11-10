@@ -145,8 +145,8 @@
 	display: grid;
 	align-content: center;
 	justify-content: center;
-	color: $o-tb-topic-card-title-abbr-color;
-	background-color: $o-tb-topic-card-title-abbr-bg-color;
+	color: var(--o-topicbroker-title-abbr-fg);
+	background-color: var(--o-topicbroker-title-abbr-bg);
 	border: $o-tb-topic-card-title-abbr-border;
 	border-radius: $o-tb-topic-card-title-abbr-border-radius;
 }
@@ -175,10 +175,10 @@
 }
 
 .o_tb_icon_colored_enrolled {
-	color: 				$o-tb-priority-enrolled-color;
+	color: 				var(--o-topicbroker-enrolled);
 }
 .o_tb_icon_colored_waiting  {
-	color: 				$o-tb-priority-waiting-color;
+	color: 				var(--o-topicbroker-waiting);
 }
 .o_tb_priority_label {
 	display: grid;
@@ -195,7 +195,7 @@
 	}
 	// selected, enrolled, waiting, not_enrolled, surplus: semantic states in _states.scss (OO-10042)
 	>.o_tb_priority_fillin {
-		color: $o-tb-priority-fillin-color;
+		color: var(--o-topicbroker-fillin);
 		border: none;
 	}
 }

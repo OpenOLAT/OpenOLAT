@@ -21,6 +21,7 @@
 @import "functions";
 @import "palette";
 @import "config";
+@import "palette_theme";
 @import "modules/mixins";
 
 /* Serve every icon font from a sibling fonts/ folder so this bundle is portable and can be copied as-is into OpenOLAT-docs. */
@@ -37,3 +38,7 @@ $fa-font-path: "fonts";
 }
 
 @import "modules/icons"; /* provides the o_icon base and all o_icon_* / o_*_icon classes */
+
+/* the icons read their colours from the tokens: palette and tokens (OO-10043) */
+@import "modules/palette_vars";
+@import "modules/tokens";
