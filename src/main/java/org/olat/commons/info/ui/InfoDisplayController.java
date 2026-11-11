@@ -675,8 +675,6 @@ public class InfoDisplayController extends FormBasicController {
 					identities.addAll(option.getSelectedIdentities());
 					if (sendMailTo != null && !sendMailTo.toString().contains(option.getOptionKey())) {
 						sendMailTo.append(",").append(option.getOptionKey());
-					} else if (sendMailTo == null) {
-						sendMailTo.append(option.getOptionKey());
 					}
 				}
 			}

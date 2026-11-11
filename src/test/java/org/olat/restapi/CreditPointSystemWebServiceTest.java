@@ -31,6 +31,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
@@ -111,5 +112,31 @@ public class CreditPointSystemWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(CreditPointSystemStatus.active.name(), loadedSystem.get().getStatus());
 		Assert.assertEquals(Boolean.FALSE, loadedSystem.get().getRolesRestrictions());
 		Assert.assertEquals(Boolean.FALSE, loadedSystem.get().getOrganisationsRestrictions());
+	}
+	
+	
+	@Test
+	public void getNotCreditPointSystems()
+	throws IOException, URISyntaxException {
+		// Make a curriculum manager
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("coins-1");
+		organisationService.addMember(defaultUnitTestOrganisation, user.getIdentity(), OrganisationRoles.author,
+				defaultUnitTestAdministrator.getIdentity());
+		
+		CreditPointSystem system = creditPointService.createCreditPointSystem("REST test coins", "RTC2",
+				120, CreditPointExpirationType.DAY, false, false);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(system);
+		
+		RestConnection conn = new RestConnection(user);
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("creditpoints").path("system").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		conn.shutdown();
 	}
 }

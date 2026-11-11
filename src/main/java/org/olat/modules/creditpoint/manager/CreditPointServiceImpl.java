@@ -225,8 +225,8 @@ public class CreditPointServiceImpl implements CreditPointService {
 	}
 	
 	@Override
-	public List<CreditPointWallet> getWallets(CreditPointSystem system) {
-		return creditPointWalletDao.getWallets(system);
+	public List<CreditPointWallet> getWallets(CreditPointSystem system, List<OrganisationRef> organisations) {
+		return creditPointWalletDao.getWallets(system, organisations);
 	}
 
 	@Override
