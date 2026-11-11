@@ -46,7 +46,12 @@ public class RepositoryEntryInfosController extends RepositoryEntryDetailsContro
 
 	public RepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			DetailsHeaderConfig config, boolean inRuntime) {
-		super(ureq, wControl, entry, config, RepositoryEntryDetailsController.getShareUrl(entry), false, true);
+		this(ureq, wControl, entry, config, inRuntime, true);
+	}
+	
+	public RepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			DetailsHeaderConfig config, boolean inRuntime, boolean closeTabOnLeave) {
+		super(ureq, wControl, entry, config, RepositoryEntryDetailsController.getShareUrl(entry), false, closeTabOnLeave);
 		this.inRuntime = inRuntime;
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
