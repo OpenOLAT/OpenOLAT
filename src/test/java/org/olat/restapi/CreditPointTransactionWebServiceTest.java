@@ -30,6 +30,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,8 +77,8 @@ public class CreditPointTransactionWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void addDeposit()
 	throws IOException, URISyntaxException {
-		// Make a curriculum manager
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("ooc-transaction-1");
+		// User in the test organisation
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("ooc-transaction-1", defaultUnitTestOrganisation, null);
 		
 		CreditPointSystem system = creditPointService.createCreditPointSystem("REST transact coins", "RTT1",
 				120, CreditPointExpirationType.DAY, false, false);
@@ -105,6 +106,37 @@ public class CreditPointTransactionWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(result.getAmount());
 		Assert.assertTrue(new BigDecimal("100").compareTo(result.getAmount()) == 0);
 		Assert.assertEquals("Initial deposit", result.getNote());
+		conn.shutdown();
 	}
 	
+	
+	@Test
+	public void addDepositForbidden()
+	throws IOException, URISyntaxException {
+		// User in the default organisation, not the same as the administrator
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("ooc-transaction-1",JunitTestHelper.getDefaultOrganisation(), null);
+		
+		CreditPointSystem system = creditPointService.createCreditPointSystem("REST transact coins", "RTT1",
+				120, CreditPointExpirationType.DAY, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+		
+		CreditPointTransactionVO depositTransaction = new CreditPointTransactionVO();
+		depositTransaction.setAmount(new BigDecimal("100"));
+		depositTransaction.setType("deposit");
+		depositTransaction.setNote("Initial deposit");
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("creditpoints")
+				.path("system").path(system.getKey().toString())
+				.path("transactions").path(user.getKey().toString())
+				.build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, depositTransaction);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		conn.shutdown();
+	}
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.creditpoint.model.CreditPointSystemInfos;
 import org.olat.modules.creditpoint.model.CreditPointTransactionAndWallet;
@@ -96,7 +97,7 @@ public interface CreditPointService {
 	
 	List<CreditPointWallet> getWallets(IdentityRef identity);
 	
-	List<CreditPointWallet> getWallets(CreditPointSystem system);
+	List<CreditPointWallet> getWallets(CreditPointSystem system, List<OrganisationRef> usersOrganisations);
 	
 	CreditPointTransactionAndWallet createCreditPointTransaction(CreditPointTransactionType transactionType,
 			BigDecimal amount, Date expirationDate, String note, CreditPointWallet wallet, Identity creator, 

@@ -31,6 +31,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
@@ -81,15 +82,15 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 	public void getCreditPointWallets()
 	throws IOException, URISyntaxException {
 		// Make an administrator
-		IdentityWithLogin user1 = JunitTestHelper.createAndPersistRndUser("wallet-1");
-		IdentityWithLogin user2 = JunitTestHelper.createAndPersistRndUser("wallet-2");
+		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-1", defaultUnitTestOrganisation, null);
+		Identity user2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-2", defaultUnitTestOrganisation, null);
 		
 		// Create a credit point system
 		CreditPointSystem system = creditPointService.createCreditPointSystem("REST test coins", "RTC1",
 				120, CreditPointExpirationType.DAY, false, false);
 		// Create 2 wallets
-		CreditPointWallet wallet1 = creditPointService.getOrCreateWallet(user1.getIdentity(), system);
-		CreditPointWallet wallet2 = creditPointService.getOrCreateWallet(user2.getIdentity(), system);
+		CreditPointWallet wallet1 = creditPointService.getOrCreateWallet(user1, system);
+		CreditPointWallet wallet2 = creditPointService.getOrCreateWallet(user2, system);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
@@ -113,7 +114,7 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getCreditPointWalletByIdentity()
 	throws IOException, URISyntaxException {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-3");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-3", defaultUnitTestOrganisation, null);
 
 		// Create a credit point system
 		CreditPointSystem system = creditPointService.createCreditPointSystem("REST test coins", "RTC1",
@@ -153,7 +154,7 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getCreditPointWalletForNonUser()
 	throws IOException, URISyntaxException {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-4");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-4", defaultUnitTestOrganisation, null);
 
 		// Create a credit point system
 		CreditPointSystem system = creditPointService.createCreditPointSystem("REST test coins", "RTC1",
@@ -176,5 +177,37 @@ public class CreditPointWalletWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(system.getKey(), walletVo.getCreditPointSystemKey());
 		Assert.assertNotNull(walletVo.getBalance());
 		Assert.assertTrue(BigDecimal.ZERO.compareTo(walletVo.getBalance()) == 0);
+		
+		conn.shutdown();
+	}
+	
+	/**
+	 * The call doesn't create a wallet if it not exists. It returns an empty
+	 * wallet with a balance of 0.00.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void getCreditPointWalletForbiddenWrong()
+	throws IOException, URISyntaxException {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("wallet-4", JunitTestHelper.getDefaultOrganisation(), null);
+
+		// Create a credit point system
+		CreditPointSystem system = creditPointService.createCreditPointSystem("REST test coins", "RTC6",
+				120, CreditPointExpirationType.DAY, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+		URI request = UriBuilder.fromUri(getContextURI()).path("creditpoints")
+				.path("system").path(system.getKey().toString())
+				.path("wallets").path(user.getKey().toString())
+				.build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		conn.shutdown();
 	}
 }
