@@ -40,6 +40,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
@@ -112,6 +113,32 @@ public class CreditPointSystemWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(CreditPointSystemStatus.active.name(), loadedSystem.get().getStatus());
 		Assert.assertEquals(Boolean.FALSE, loadedSystem.get().getRolesRestrictions());
 		Assert.assertEquals(Boolean.FALSE, loadedSystem.get().getOrganisationsRestrictions());
+		conn.close();
+	}
+	
+	
+	@Test
+	public void getNotCreditPointSystems()
+	throws IOException, URISyntaxException, InterruptedException {
+		// Make a curriculum manager
+		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("coins-1");
+		organisationService.addMember(defaultUnitTestOrganisation, user.getIdentity(), OrganisationRoles.author,
+				defaultUnitTestAdministrator.getIdentity());
+		
+		CreditPointSystem system = creditPointService.createCreditPointSystem("REST test coins", "RTC2",
+				120, CreditPointExpirationType.DAY, false, false);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(system);
+		
+		RestConnection conn = new RestConnection(user);
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("creditpoints").path("system").build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.statusCode());
+		ConnectionUtilities.consume(response);
+		
 		conn.close();
 	}
 }

@@ -81,7 +81,7 @@ public class CreditPointSystemWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCreditPointSystems(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isAdministrator() && !roles.isCurriculumManager() && !roles.isLearnResourceManager() && !roles.isAuthor()) {
+		if(!roles.isAdministrator() && !roles.isCurriculumManager() && !roles.isLearnResourceManager()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
@@ -97,7 +97,7 @@ public class CreditPointSystemWebService {
 	public CreditPointWalletWebService getWalletsWebservice(@PathParam("systemKey") Long systemKey,
 			@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isAdministrator() && !roles.isCurriculumManager() && !roles.isLearnResourceManager() && !roles.isAuthor()) {
+		if(!roles.isAdministrator()) {
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 		CreditPointSystem system = creditPointService.getCreditPointSystem(roles, systemKey);
@@ -113,15 +113,15 @@ public class CreditPointSystemWebService {
 	public CreditPointTransactionWebService getTransactionsWebService(@PathParam("systemKey") Long systemKey,
 			@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
-		if(!roles.isAdministrator() && !roles.isCurriculumManager() && !roles.isLearnResourceManager() && !roles.isAuthor()) {
+		if(!roles.isAdministrator()) {
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 		CreditPointSystem system = creditPointService.getCreditPointSystem(roles, systemKey);
 		if(system == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
-		CreditPointTransactionWebService walletsWebService = new CreditPointTransactionWebService(system);
-		CoreSpringFactory.autowireObject(walletsWebService);
-		return walletsWebService;
+		CreditPointTransactionWebService transactionsWebService = new CreditPointTransactionWebService(system);
+		CoreSpringFactory.autowireObject(transactionsWebService);
+		return transactionsWebService;
 	}
 }

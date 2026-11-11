@@ -27,8 +27,10 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.TemporalType;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.certificationprogram.CertificationProgramRef;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointWallet;
@@ -84,14 +86,25 @@ public class CreditPointWalletDAO {
 				.getResultList();
 	}
 	
-	public List<CreditPointWallet> getWallets(CreditPointSystem system) {
+	public List<CreditPointWallet> getWallets(CreditPointSystem system, List<OrganisationRef> organisations) {
 		String query = """
 				select wallet from creditpointwallet as wallet
 				inner join fetch wallet.creditPointSystem as sys
 				inner join fetch wallet.identity as ident
-				where sys.key=:systemKey""";
+				where sys.key=:systemKey and exists (
+					select org from organisation org
+					inner join org.group baseGroup
+					inner join baseGroup.members membership
+					where membership.identity.key=ident.key and membership.role=:role and org.key in (:organisationKeys)
+				)""";
+		
+		List<Long> organisationKeys = organisations.stream()
+				.map(OrganisationRef::getKey)
+				.toList();
 		return dbInstance.getCurrentEntityManager().createQuery(query, CreditPointWallet.class)
 				.setParameter("systemKey", system.getKey())
+				.setParameter("role", OrganisationRoles.user.name())
+				.setParameter("organisationKeys", organisationKeys)
 				.getResultList();
 	}
 	

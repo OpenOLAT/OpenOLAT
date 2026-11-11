@@ -63,8 +63,8 @@ public class InfoMessageWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = InfoMessageVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = InfoMessageVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "Not Found")
+	@ApiResponse(responseCode = "403", description = "The authenticated user cannot read the info message")
+	@ApiResponse(responseCode = "404", description = "The info message was not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMessage() {
 		InfoMessageVO msgVO = new InfoMessageVO(msg);

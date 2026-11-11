@@ -1196,7 +1196,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			headerConfig.hideOpenButtons();
 			ctrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, headerConfig);
 		} else {
-			ctrl = new RepositoryEntryInfosController(ureq, addToHistory(ureq, bwControl), entry, new InfoToolConfig(), true);
+			ctrl = new RepositoryEntryInfosController(ureq, addToHistory(ureq, bwControl), entry, new InfoToolConfig(), true, false);
 		}
 		listenTo(ctrl);
 		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);

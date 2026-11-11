@@ -20,6 +20,7 @@
 package org.olat.modules.creditpoint.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.math.BigDecimal;
 
@@ -36,7 +37,10 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
@@ -125,7 +129,9 @@ public class CreditPointTransactionWebService {
 	}
 	
 	private Response addTransaction(Long identityKey, CreditPointTransactionVO transaction, HttpServletRequest httpRequest) {
-		Identity actor = getIdentity(httpRequest);
+		if(!isAdministratorOf(identityKey, httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 		
 		if(creditPointSystem.getStatus() != CreditPointSystemStatus.active) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
@@ -145,10 +151,22 @@ public class CreditPointTransactionWebService {
 		
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(identity, creditPointSystem);
 		if(type == CreditPointTransactionType.deposit) {
+			Identity actor = getIdentity(httpRequest);
 			CreditPointTransactionAndWallet result = creditPointService.createCreditPointTransaction(type, amount, null,
 					note, wallet, actor, null, null, null, null, null);
 			return Response.ok(CreditPointTransactionVO.valueOf(result.transaction())).build();
 		}
 		return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+	}
+	
+	private boolean isAdministratorOf(Long identityKey, HttpServletRequest request) {
+		if(identityKey == null) return false;
+		
+		Roles managerRoles = getRoles(request);
+		if(!managerRoles.isAdministrator()) {
+			return false;
+		}
+		Roles identityRoles = securityManager.getRoles(new IdentityRefImpl(identityKey));
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
 	}
 }

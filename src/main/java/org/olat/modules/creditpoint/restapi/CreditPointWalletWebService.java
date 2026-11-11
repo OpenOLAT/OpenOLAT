@@ -33,8 +33,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
@@ -57,6 +60,8 @@ public class CreditPointWalletWebService {
 	
 	private final CreditPointSystem creditPointSystem;
 	
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private CreditPointService creditPointService;
 	
@@ -81,12 +86,13 @@ public class CreditPointWalletWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCreditPointWallets(@Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isAdministrator() && !roles.isCurriculumManager() && !roles.isLearnResourceManager() && !roles.isAuthor()) {
+		Roles managerRoles = getRoles(httpRequest);
+		if(!managerRoles.isAdministrator()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		List<CreditPointWallet> wallets = creditPointService.getWallets(creditPointSystem);
+		List<OrganisationRef> organisations = managerRoles.getOrganisationsWithRole(OrganisationRoles.administrator);
+		List<CreditPointWallet> wallets = creditPointService.getWallets(creditPointSystem, organisations);
 		CreditPointWalletVO[] voes = wallets.stream()
 				.map(CreditPointWalletVO::valueOf)
 				.toArray(CreditPointWalletVO[]::new);
@@ -111,8 +117,7 @@ public class CreditPointWalletWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCreditPointWallet(@PathParam("identityKey") Long identityKey,  @Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isAdministrator() && !roles.isCurriculumManager() && !roles.isLearnResourceManager() && !roles.isAuthor()) {
+		if(!isAdministratorOf(identityKey, httpRequest)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
@@ -122,5 +127,16 @@ public class CreditPointWalletWebService {
 			return Response.ok(CreditPointWalletVO.valueOf(wallet)).build();
 		}
 		return Response.ok(CreditPointWalletVO.emptyVO(identity, creditPointSystem)).build();
+	}
+	
+	private boolean isAdministratorOf(Long identityKey, HttpServletRequest request) {
+		if(identityKey == null) return false;
+		
+		Roles managerRoles = getRoles(request);
+		if(!managerRoles.isAdministrator()) {
+			return false;
+		}
+		Roles identityRoles = securityManager.getRoles(new IdentityRefImpl(identityKey));
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
 	}
 }

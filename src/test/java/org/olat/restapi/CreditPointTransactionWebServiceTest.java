@@ -38,6 +38,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
@@ -77,8 +78,8 @@ public class CreditPointTransactionWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void addDeposit()
 	throws IOException, URISyntaxException, InterruptedException {
-		// Make a curriculum manager
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("ooc-transaction-1");
+		// User in the test organisation
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("ooc-transaction-1", defaultUnitTestOrganisation, null);
 		
 		CreditPointSystem system = creditPointService.createCreditPointSystem("REST transact coins", "RTT1",
 				120, CreditPointExpirationType.DAY, false, false);
@@ -107,4 +108,33 @@ public class CreditPointTransactionWebServiceTest extends OlatRestTestCase {
 		conn.close();
 	}
 	
+	
+	@Test
+	public void addDepositForbidden()
+	throws IOException, URISyntaxException, InterruptedException {
+		// User in the default organisation, not the same as the administrator
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("ooc-transaction-1",JunitTestHelper.getDefaultOrganisation(), null);
+		
+		CreditPointSystem system = creditPointService.createCreditPointSystem("REST transact coins", "RTT1",
+				120, CreditPointExpirationType.DAY, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+		
+		CreditPointTransactionVO depositTransaction = new CreditPointTransactionVO();
+		depositTransaction.setAmount(new BigDecimal("100"));
+		depositTransaction.setType("deposit");
+		depositTransaction.setNote("Initial deposit");
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("creditpoints")
+				.path("system").path(system.getKey().toString())
+				.path("transactions").path(user.getKey().toString())
+				.build();
+		HttpRequest method = conn.createPut(request, depositTransaction, MediaType.APPLICATION_JSON);
+		
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.shutdown();
+	}
 }

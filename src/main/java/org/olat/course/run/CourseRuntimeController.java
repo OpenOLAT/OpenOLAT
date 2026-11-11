@@ -308,6 +308,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private StatisticCourseNodesController statsToolCtr;
 	private BigBlueButtonRunController bigBlueButtonCtrl;
 	private ZoomRunController zoomCtrl;
+	private CourseCalendarController calendarCtrl;
+	private MyLearningPathController learningPathCtrl;
+	private CourseMyToDoTaskController myToDoTaskCtrl;
+	private LearningPathIdentityListController learningPathsCtrl;
+	private CertificateAndEfficiencyStatementController efficiencyStatementCtrl;
 	private AssessmentManagementController assessmentModeCtrl;
 	private StopAssessmentWarningController stopAssessmentCtrl;
 	private FakeParticipantStopController fakeParticipantStopCtrl;
@@ -2600,7 +2605,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("CoachFolder", 0l);
 			WindowControl swControl = addToHistory(ureq, ores, null);
+			removeAsListenerAndDispose(coachFolderCtrl);
 			coachFolderCtrl = new CoachFolderController(ureq, swControl, getUserCourseEnvironment());
+			listenTo(coachFolderCtrl);
 
 			pushController(ureq, translate("command.coachfolder"), coachFolderCtrl);
 			setActiveTool(coachFolderLink);
@@ -2743,6 +2750,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			
 			boolean coachToDoTaskEdit = getUserCourseEnvironment().getCourseEnvironment().getCourseConfig().isCoachToDoTaskEdit();
+			removeAsListenerAndDispose(toDoTaskCtrl);
 			CourseToDoTaskController courseToDoTaskController = new CourseToDoTaskController(ureq, swControl,
 					getRepositoryEntry(), coachToDoTaskEdit);
 			toDoTaskCtrl = pushController(ureq, translate("command.todo.tasks"), courseToDoTaskController);
@@ -2834,11 +2842,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.efficiencyStatements || requestForClose(ureq)) {
 			// will not be disposed on course run dispose, popus up as new browserwindow
 			WindowControl bwControl = getSubWindowControl("Certification");
-			CertificateAndEfficiencyStatementController efficiencyStatementController
-				= new CertificateAndEfficiencyStatementController(addToHistory(ureq, bwControl), ureq, getRepositoryEntry());
-			listenTo(efficiencyStatementController);
-			efficiencyStatementController = pushController(ureq, translate("command.efficiencystatement"), efficiencyStatementController);
-			currentToolCtr = efficiencyStatementController;
+			removeAsListenerAndDispose(efficiencyStatementCtrl);
+			efficiencyStatementCtrl = new CertificateAndEfficiencyStatementController(addToHistory(ureq, bwControl), ureq, getRepositoryEntry());
+			listenTo(efficiencyStatementCtrl);
+			pushController(ureq, translate("command.efficiencystatement"), efficiencyStatementCtrl);
+			currentToolCtr = efficiencyStatementCtrl;
 			setActiveTool(efficiencyStatementsLink);
 		} else {
 			delayedClose = Delayed.efficiencyStatements;
@@ -2848,11 +2856,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Activateable2 doMyToDoTasks(UserRequest ureq) {
 		if(delayedClose == Delayed.toDoTasksMy || requestForClose(ureq)) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("ToDoTasks"), null);
-			CourseMyToDoTaskController courseMyToDoTaskCtrl = new CourseMyToDoTaskController(ureq, swControl, getRepositoryEntry());
-			listenTo(courseMyToDoTaskCtrl);
-			courseMyToDoTaskCtrl = pushController(ureq, translate("command.todo.task.my"), courseMyToDoTaskCtrl);
-			currentToolCtr = courseMyToDoTaskCtrl;
-			return courseMyToDoTaskCtrl;
+			removeAsListenerAndDispose(myToDoTaskCtrl);
+			myToDoTaskCtrl = new CourseMyToDoTaskController(ureq, swControl, getRepositoryEntry());
+			listenTo(myToDoTaskCtrl);
+			pushController(ureq, translate("command.todo.task.my"), myToDoTaskCtrl);
+			currentToolCtr = myToDoTaskCtrl;
+			return myToDoTaskCtrl;
 		}
 		delayedClose = Delayed.toDoTasksMy;
 		return null;
@@ -2910,7 +2919,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.learningPath || requestForClose(ureq)) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LearningPath");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			MyLearningPathController learningPathCtrl = new MyLearningPathController(ureq, swControl,
+			removeAsListenerAndDispose(learningPathCtrl);
+			learningPathCtrl = new MyLearningPathController(ureq, swControl,
 					toolbarPanel, getUserCourseEnvironment());
 			
 			listenTo(learningPathCtrl);
@@ -2926,14 +2936,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.learningPaths || requestForClose(ureq)) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LearningPaths");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			LearningPathIdentityListController learningPathIdentityListCtrl = new LearningPathIdentityListController(ureq, swControl,
+			removeAsListenerAndDispose(learningPathsCtrl);
+			learningPathsCtrl = new LearningPathIdentityListController(ureq, swControl,
 					toolbarPanel, getUserCourseEnvironment());
-			
-			listenTo(learningPathIdentityListCtrl);
-			pushController(ureq, translate("command.learning.paths"), learningPathIdentityListCtrl);
-			currentToolCtr = learningPathIdentityListCtrl;
+
+			listenTo(learningPathsCtrl);
+			pushController(ureq, translate("command.learning.paths"), learningPathsCtrl);
+			currentToolCtr = learningPathsCtrl;
 			setActiveTool(learningPathsLink);
-			return learningPathIdentityListCtrl;
+			return learningPathsCtrl;
 		}
 		delayedClose = Delayed.learningPaths;
 		return null;
@@ -2978,7 +2989,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("ParticipantList");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			participatListCtrl = new  MembersToolRunController(ureq, swControl, getUserCourseEnvironment());
+			removeAsListenerAndDispose(participatListCtrl);
+			participatListCtrl = new MembersToolRunController(ureq, swControl, getUserCourseEnvironment());
+			listenTo(participatListCtrl);
 
 			pushController(ureq, translate("command.participant.list"), participatListCtrl);
 			setActiveTool(participantListLink);
@@ -3007,6 +3020,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("ParticipantInfos");
 			WindowControl swControl = addToHistory(ureq, ores, null);
+			removeAsListenerAndDispose(participatInfoCtrl);
 			participatInfoCtrl = new InfoRunController(ureq, swControl, getUserCourseEnvironment(), "ParticipantInfos",
 					secCallback, autoSubscribe);
 			listenTo(participatInfoCtrl);
@@ -3025,7 +3039,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("email");
 			WindowControl swControl = addToHistory(ureq, ores, null);
+			removeAsListenerAndDispose(emailCtrl);
 			emailCtrl = new COToolController(ureq, swControl, getUserCourseEnvironment());
+			listenTo(emailCtrl);
 
 			pushController(ureq, translate("command.email"), emailCtrl);
 			setActiveTool(emailLink);
@@ -3041,7 +3057,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("blog");
 			WindowControl swControl = addToHistory(ureq, ores, null);
+			removeAsListenerAndDispose(blogCtrl);
 			blogCtrl = new BlogToolController(ureq, swControl, getUserCourseEnvironment());
+			listenTo(blogCtrl);
 			
 			pushController(ureq, translate("command.blog"), blogCtrl);
 			setActiveTool(blogLink);
@@ -3061,8 +3079,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 			boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 			boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+			removeAsListenerAndDispose(teamsCtrl);
 			teamsCtrl = new TeamsMeetingsRunController(ureq, swControl, getRepositoryEntry(), null, null,
 					admin, moderator, userCourseEnv.isCourseReadOnly());
+			listenTo(teamsCtrl);
 			
 			pushController(ureq, translate("command.teams"), teamsCtrl);
 			setActiveTool(teamsLink);
@@ -3087,8 +3107,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 			boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 			BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(moderatorStart);
+			removeAsListenerAndDispose(bigBlueButtonCtrl);
 			bigBlueButtonCtrl = new BigBlueButtonRunController(ureq, swControl, getRepositoryEntry(), null, null,
 					configuration, admin, moderator, userCourseEnv.isCourseReadOnly());
+			listenTo(bigBlueButtonCtrl);
 			
 			pushController(ureq, translate("command.bigbluebutton"), bigBlueButtonCtrl);
 			setActiveTool(bigBlueButtonLink);
@@ -3110,9 +3132,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			String subIdent = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 			CourseConfig cc = course.getCourseConfig();
+			removeAsListenerAndDispose(zoomCtrl);
 			zoomCtrl = new ZoomRunController(ureq, swControl,
 					ZoomManager.ApplicationType.courseTool, entry, subIdent, null,
 					userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant(), cc.getZoomClientId());
+			listenTo(zoomCtrl);
+			
 			pushController(ureq, translate("command.zoom"), zoomCtrl);
 			setActiveTool(zoomLink);
 			currentToolCtr = zoomCtrl;
@@ -3128,7 +3153,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("wiki");
 			WindowControl swControl = addToHistory(ureq, ores, null);
+			removeAsListenerAndDispose(wikiCtrl);
 			wikiCtrl = new WikiToolController(ureq, swControl, getUserCourseEnvironment());
+			listenTo(wikiCtrl);
 			
 			pushController(ureq, translate("command.wiki"), wikiCtrl);
 			setActiveTool(wikiLink);
@@ -3145,7 +3172,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("forum");
 			WindowControl swControl = addToHistory(ureq, ores, null);
+			removeAsListenerAndDispose(forumCtrl);
 			forumCtrl = new FOToolController(ureq, swControl, getUserCourseEnvironment());
+			listenTo(forumCtrl);
 
 			pushController(ureq, translate("command.forum"), forumCtrl);
 			setActiveTool(forumLink);
@@ -3161,7 +3190,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("documents");
 			WindowControl swControl = addToHistory(ureq, ores, null);
+			removeAsListenerAndDispose(documentsCtrl);
 			documentsCtrl = new CourseDocumentsController(ureq, swControl, getUserCourseEnvironment());
+			listenTo(documentsCtrl);
 
 			pushController(ureq, translate("command.documents"), documentsCtrl);
 			setActiveTool(documentsLink);
@@ -3181,11 +3212,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseCalendarController doCalendar(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableType("Calendar");
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		CourseCalendarController calendarController = new CourseCalendarController(ureq, swControl, getUserCourseEnvironment());
-		pushController(ureq, translate("command.calendar"), calendarController);
+		removeAsListenerAndDispose(calendarCtrl);
+		calendarCtrl = new CourseCalendarController(ureq, swControl, getUserCourseEnvironment());
+		listenTo(calendarCtrl);
+
+		pushController(ureq, translate("command.calendar"), calendarCtrl);
 		setActiveTool(calendarLink);
-		currentToolCtr = calendarController;
-		return calendarController;
+		currentToolCtr = calendarCtrl;
+		return calendarCtrl;
 	}
 	
 	/**

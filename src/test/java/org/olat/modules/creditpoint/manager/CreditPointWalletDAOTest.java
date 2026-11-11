@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
@@ -113,13 +114,14 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 	@Test
 	public void getWalletsByCreditPointSystem() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-6");
+		Organisation defaultOrganisation = JunitTestHelper.getDefaultOrganisation();
 		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("wall-2c-coin", "W2bC", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(id, cpSystem);
 		dbInstance.commitAndCloseSession();
 		
-		List<CreditPointWallet> loadedWallets = creditPointWalletDao.getWallets(cpSystem);
+		List<CreditPointWallet> loadedWallets = creditPointWalletDao.getWallets(cpSystem, List.of(defaultOrganisation));
 		Assertions.assertThat(loadedWallets)
 			.hasSize(1)
 			.containsExactly(wallet);

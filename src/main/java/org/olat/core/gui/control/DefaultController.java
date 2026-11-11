@@ -37,10 +37,9 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.panel.DisposedControllerPanel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -52,7 +51,6 @@ import org.olat.core.logging.activity.IUserActivityLogger;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.core.util.RunnableWithException;
-import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -62,7 +60,7 @@ import org.olat.core.util.session.UserSessionManager;
  * @author Felix Jost
  */
 public abstract class DefaultController implements Controller, ControllerEventListener {
-	private static final String DEFAULTDISPOSED_PAGE = "defaultdisposed";
+	
 	private static final Logger log = Tracing.createLoggerFor(DefaultController.class);
 	// for memory watch only.
 	private static AtomicInteger controllerCnt = new AtomicInteger(0);
@@ -241,9 +239,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 				wrapperPanel.setContent(disposedMessageController.getInitialComponent());
 			}else if(wrapperPanel != null){
 				// place disposed message
-				Translator pT = Util.createPackageTranslator(DefaultController.class, locale);
-				Component dispMsgVC = new VelocityContainer(DEFAULTDISPOSED_PAGE,DefaultController.class,DEFAULTDISPOSED_PAGE,pT,null);
-				wrapperPanel.pushContent(dispMsgVC);
+				wrapperPanel.pushContent(DisposedControllerPanel.panel(getLocale()));
 			}
 		}
 	}
@@ -272,9 +268,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 					locale = ureq.getLocale();
 				}
 				// place disposed message
-				Translator pT = Util.createPackageTranslator(DefaultController.class, locale);
-				Component dispMsgVC = new VelocityContainer(DEFAULTDISPOSED_PAGE, DefaultController.class,DEFAULTDISPOSED_PAGE, pT, null);
-				wrapperPanel.pushContent(dispMsgVC);
+				wrapperPanel.pushContent(DisposedControllerPanel.panel(getLocale()));
 			}
 		}
 	}
@@ -432,7 +426,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		}
 		//FIXME:pb 2008-04-16 provide a default message controller without always create one?!
 		//how much memory is used here
-		if(disposedMessageController!=null && wrapperPanel != null){
+		if(disposedMessageController != null && wrapperPanel != null){
 			wrapperPanel.setContent(disposedMessageController.getInitialComponent());
 		}else if (wrapperPanel != null){
 			if (locale == null) {
@@ -440,9 +434,9 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 				locale = I18nModule.getDefaultLocale();
 			}
 			// place disposed message
-			Translator pT = Util.createPackageTranslator(DefaultController.class, locale);
-			Component dispMsgVC = new VelocityContainer(DEFAULTDISPOSED_PAGE,DefaultController.class,DEFAULTDISPOSED_PAGE,pT,null);
-			wrapperPanel.pushContent(dispMsgVC);
+			//Translator pT = Util.createPackageTranslator(DefaultController.class, locale);
+			//Component dispMsgVC = new VelocityContainer(DEFAULTDISPOSED_PAGE,DefaultController.class,DEFAULTDISPOSED_PAGE,pT,null);
+			wrapperPanel.pushContent(DisposedControllerPanel.panel(getLocale()));
 		}
 			
 			
