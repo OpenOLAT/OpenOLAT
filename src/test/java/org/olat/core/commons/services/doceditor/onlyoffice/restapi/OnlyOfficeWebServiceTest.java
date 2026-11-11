@@ -156,6 +156,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		callback.setUsers(new String[] {user1Id} );
 		HttpResponse<InputStream> response = postCallback(callback);
 		softly.assertThat(getCallbackError(response)).as("Response error code").isEqualTo(0);
+		ConnectionUtilities.consume(response);
 		
 		softly.assertThat(vfsLockManager.getLock(vfsLeaf).getTokens())
 				.as("User 1 started editing: the lock should have one token")
@@ -192,6 +193,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		callback.setUsers(new String[] {user1Id, user2Id} );
 		response = postCallback(callback);
 		softly.assertThat(getCallbackError(response)).as("Response error code").isEqualTo(0);
+		ConnectionUtilities.consume(response);
 		
 		softly.assertThat(vfsLockManager.getLock(vfsLeaf).getTokens())
 				.as("User 2 started editing in 1st window: the lock should have 2 tokens")
@@ -226,6 +228,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		callback.setUsers(new String[] {user1Id, user2Id} );
 		response = postCallback(callback);
 		softly.assertThat(getCallbackError(response)).as("Response error code").isEqualTo(0);
+		ConnectionUtilities.consume(response);
 		
 		softly.assertThat(vfsLockManager.getLock(vfsLeaf).getTokens())
 				.as("User 2 started editing in 2nd window: the lock should have 3 tokens")
@@ -247,6 +250,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		callback.setUsers(new String[] {user1Id, user2Id} );
 		response = postCallback(callback);
 		softly.assertThat(getCallbackError(response)).as("Response error code").isEqualTo(0);
+		ConnectionUtilities.consume(response);
 		
 		// We do not know which token to remove...
 		softly.assertThat(vfsLockManager.getLock(vfsLeaf).getTokens())
@@ -269,6 +273,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		callback.setUsers(new String[] {user1Id} );
 		response = postCallback(callback);
 		softly.assertThat(getCallbackError(response)).as("Response error code").isEqualTo(0);
+		ConnectionUtilities.consume(response);
 		
 		// We do not know which token to remove...
 		softly.assertThat(vfsLockManager.getLock(vfsLeaf).getTokens())
@@ -292,6 +297,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		callback.setUrl(conn.getContextURI().path("dmz/index.html").build().toString()); // Get the OpenOlat main URL as a fake
 		callback.setUsers(new String[] {user1Id} );
 		response = postCallback(callback);
+		ConnectionUtilities.consume(response);
 		
 		softly.assertThat(vfsLockManager.isLockedForMe(vfsLeaf, user2, VFSLockApplicationType.vfs, null))
 				.as("User 1 finished editing: No locks anymore")
@@ -337,6 +343,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		callback.setUsers(new String[] {user1Id} );
 		HttpResponse<InputStream> response = postCallback(callback);
 		softly.assertThat(getCallbackError(response)).as("Response error code").isEqualTo(0);
+		ConnectionUtilities.consume(response);
 		
 		LockInfo lock = vfsLockManager.getLock(vfsLeaf);
 		softly.assertThat(lock)
@@ -362,6 +369,7 @@ public class OnlyOfficeWebServiceTest extends OlatRestTestCase {
 		callback.setUsers(null);
 		response = postCallback(callback);
 		softly.assertThat(getCallbackError(response)).as("Response error code").isEqualTo(0);
+		ConnectionUtilities.consume(response);
 		
 		softly.assertThat(vfsLockManager.isLockedForMe(vfsLeaf, user1, VFSLockApplicationType.vfs, null))
 				.as("User 1 finished editing: No locks anymore")
