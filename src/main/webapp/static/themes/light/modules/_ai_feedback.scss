@@ -21,7 +21,7 @@
  * feedback aside renders BETWEEN consecutive blockquotes (outside).
  * ---------------------------------------------------------------------- */
 .o_ai_essay_direct {
-	border-left: 3px solid rgba($brand-primary, 0.35);
+	border-left: 3px solid color-mix(in srgb, var(--o-primary) 35%, transparent);
 	padding: 0.75rem 1rem;
 	margin: 0 0 0.5rem;
 	background: transparent;
@@ -45,7 +45,7 @@
 	border-radius: 3px;
 	padding: 0.5rem 0.75rem;
 	margin: 0 0 0.75rem 0.5rem;
-	border-left: 2px solid rgba($brand-primary, 0.25);
+	border-left: 2px solid color-mix(in srgb, var(--o-primary) 25%, transparent);
 
 	p {
 		margin: 0;
@@ -112,8 +112,8 @@
 	gap: 1rem;
 	padding: 0.75rem 1rem;
 	margin-bottom: 1rem;
-	background: rgba($brand-primary, 0.05);
-	border: 1px solid rgba($brand-primary, 0.15);
+	background: color-mix(in srgb, var(--o-primary) 5%, transparent);
+	border: 1px solid color-mix(in srgb, var(--o-primary) 15%, transparent);
 	border-radius: 6px;
 
 	/* small radial variant (.radial-progress-sm) controls the size */

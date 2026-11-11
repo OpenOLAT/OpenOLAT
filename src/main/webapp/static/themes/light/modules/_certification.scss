@@ -19,7 +19,7 @@
 }
 
 .o_certificate_card {
-	background: #ffffff;
+	background: var(--o-bg);
 	height: 100%;
 }
 
@@ -263,7 +263,7 @@
 }
 
 .o_certificate_next_value span > input.o_disabled {
-	background-color: #e7eeee;
+	background-color: var(--o-neutral-100);
 }
 
 .o_certificate_selector {

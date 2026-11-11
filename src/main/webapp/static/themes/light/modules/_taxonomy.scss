@@ -122,18 +122,18 @@
 	&.o_tag_selected {
 		color: var(--o-competence-selected);
 		background-color: #fff;
-		border-color: $o-competences-selected-border-color;
+		border-color: var(--o-competence-selected-border);
 		
 		&.o_tag_clickable {
 			&:hover {
 				text-decoration: none;
 				background-color: darken(#ffffff, 10%);
-				border-color: darken($o-competences-selected-border-color, 10%);
+				border-color: var(--o-competence-selected-border-hover);
 			}
 			
 			&:active {
 				background-color: darken(#ffffff, 15%);
-				border-color: darken($o-competences-selected-border-color, 15%);
+				border-color: var(--o-competence-selected-border-active);
 			}
 		}
 	}

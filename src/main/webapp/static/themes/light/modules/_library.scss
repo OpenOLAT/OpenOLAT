@@ -33,9 +33,9 @@ $extra-size: 200px;
 
 	.o_library_visual {
 		float: left;
-		background-color: #fff;
+		background-color: var(--o-bg);
 		border-radius: $thumbnail-border-radius;
-		border: 1px solid $thumbnail-border;
+		border: 1px solid var(--o-thumbnail-border);
 
 		.o_thumbnail_available, .o_thumbnail_unavailable {
 			background-size: ($thumbnail-size - $thumbnail-padding) auto;

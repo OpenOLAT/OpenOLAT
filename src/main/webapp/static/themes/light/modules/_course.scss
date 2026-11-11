@@ -268,7 +268,7 @@
 
 .o_course_edit_overview_table {
 	tr.o_deleted, tr.o_deleted td, tr.o_deleted td span, tr.o_deleted td a {
-		color: lighten($o-course-node-deleted, 20%);
+		color: var(--o-course-node-deleted);
 	}
 }
 
@@ -781,7 +781,7 @@
 .o_assessment_document {
 	margin: 5px 0;
 	padding: 5px 0;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid var(--o-border-subtle);
 	
 	i.o_flex_item_fix {
 		margin-bottom: auto;	
@@ -867,7 +867,7 @@
 	margin-bottom: $padding-large-vertical;
 	padding-bottom: $padding-small-vertical;
 	&.o_even {
-		background-color: $table-bg-accent;
+		background-color: var(--o-table-striped-bg);
 	}
 }
 
@@ -886,10 +886,10 @@
 			}
 	
 			&:hover {
-				color: darken($o-content-h5-color,10%);				
+				color: var(--o-content-h5-hover);				
 				text-decoration: none;
 				small {
-					color: darken($o-content-dimmed-color,10%);				
+					color: var(--o-content-dimmed-hover);				
 					display: inline;
 				}
 			}		
@@ -1089,7 +1089,7 @@
 		font-weight: strong;		
 		color: #000;
 		padding-bottom: 10px;
-		border-bottom: 1px solid #eee;
+		border-bottom: 1px solid var(--o-border-subtle);
 	}
 	
 	.o_cmember_info_wrapper {
@@ -1215,9 +1215,9 @@ div.o_correction_navigation {
 			width: 150px;
 			min-width: 150px;
 			min-height: 150px;
-			background-color: #fff;
+			background-color: var(--o-bg);
 			border-radius: $thumbnail-border-radius;
-			border: 1px solid $thumbnail-border;
+			border: 1px solid var(--o-thumbnail-border);
 			margin-right: 10px;
 			display: flex;
 			justify-content: center;

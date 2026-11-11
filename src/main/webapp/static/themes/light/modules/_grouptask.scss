@@ -33,7 +33,7 @@ p.o_gta_reopen_warning {
 		}
 		
 		.o_gta_stars {
-			color: $brand-warning;
+			color: var(--o-state-warning-text);
 		}
 		
 		.o_gta_yes_no>.o_icon_accepted {
@@ -121,7 +121,7 @@ p.o_gta_reopen_warning {
 }
 
 .o_gta_card {
-	background: #ffffff;
+	background: var(--o-bg);
 	height: 100%;
 	
 	&.o_gta_card_link {
@@ -134,7 +134,7 @@ p.o_gta_reopen_warning {
 	.o_gta_card_meta {
 		padding: 10px;
 		border-radius: $o-card-border-radius;
-		background: #ffffff;
+		background: var(--o-bg);
 		
 		.o_gta_card_title {
 			margin-top: 0;
@@ -175,7 +175,7 @@ p.o_gta_reopen_warning {
 	}
 	
 	.o_gta_score_total th {
-		border-top: 1px solid $table-border-color;
+		border-top: 1px solid var(--o-table-border);
 	}
 }
 

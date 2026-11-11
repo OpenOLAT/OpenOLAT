@@ -7,18 +7,18 @@
 	margin: auto;
 	padding: 1em;	
 	
-	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, color-mix(in srgb, var(--o-shadow-color) 30%, transparent) 0px 8px 16px -8px;
 	
 	&.validated {
-		background-color: lighten($o-ip-validated-bg-color, 31%);
+		background-color: var(--o-immunity-proof-validated-bg-tint);
 	}
 	
 	&.claimed {
-		background-color: lighten($o-ip-claimed-bg-color, 45%);
+		background-color: var(--o-immunity-proof-claimed-bg-tint);
 	}
 	
 	&.none {
-		background-color: lighten($o-ip-none-bg-color, 48%);	
+		background-color: var(--o-immunity-proof-none-bg-tint);	
 	}
 	
 	p {
@@ -46,21 +46,21 @@
 	box-shadow: rgba(10, 37, 64, 0.35) 0px 0px 6px 0px inset;
 	
 	&.validated {
-		color: lighten($o-ip-validated-bg-color, 33%);
-		background-color: $o-ip-validated-bg-color;
-		-webkit-text-stroke: 2px darken($o-ip-validated-bg-color, 31%);
+		color: var(--o-immunity-proof-validated-fg);
+		background-color: var(--o-immunity-proof-validated-bg);
+		-webkit-text-stroke: 2px var(--o-immunity-proof-validated-bg-edge);
 	}
 	
 	&.claimed {
-		color: lighten($o-ip-claimed-bg-color, 45%);
-		background-color: $o-ip-claimed-bg-color;
-		-webkit-text-stroke: 2px darken($o-ip-claimed-bg-color, 23%);
+		color: var(--o-immunity-proof-claimed-fg);
+		background-color: var(--o-immunity-proof-claimed-bg);
+		-webkit-text-stroke: 2px var(--o-immunity-proof-claimed-bg-edge);
 	}
 	
 	&.none {
-		color: lighten($o-ip-none-bg-color, 48%);
-		background-color: $o-ip-none-bg-color;	
-		-webkit-text-stroke: 2px darken($o-ip-none-bg-color, 25%);
+		color: var(--o-immunity-proof-none-fg);
+		background-color: var(--o-immunity-proof-none-bg);	
+		-webkit-text-stroke: 2px var(--o-immunity-proof-none-bg-edge);
 	}
 	
 	&:before {
@@ -88,18 +88,18 @@
 	border-radius: $border-radius-small;
 
 	&.validated {
-		color: lighten($o-ip-validated-bg-color, 33%);
-		background-color: $o-ip-validated-bg-color;
+		color: var(--o-immunity-proof-validated-fg);
+		background-color: var(--o-immunity-proof-validated-bg);
 	}
 	
 	&.claimed {
-		color: lighten($o-ip-claimed-bg-color, 45%);
-		background-color: $o-ip-claimed-bg-color;
+		color: var(--o-immunity-proof-claimed-fg);
+		background-color: var(--o-immunity-proof-claimed-bg);
 	}
 	
 	&.none {
-		color: lighten($o-ip-none-bg-color, 48%);
-		background-color: $o-ip-none-bg-color;
+		color: var(--o-immunity-proof-none-fg);
+		background-color: var(--o-immunity-proof-none-bg);
 	}
 }
 

@@ -69,6 +69,12 @@ public class Palette {
 	/** The prefix of the theme colours, e.g. "theme1" */
 	public static final String THEME_COLOR_PREFIX = "theme";
 
+	/**
+	 * The neutral scale <code>--o-neutral-{step}</code> (the greys of the theme,
+	 * <code>themes/light/_palette_neutral.scss</code>): no hue of the palette
+	 */
+	public static final String NEUTRAL = "neutral";
+
 	private static final Pattern CUSTOM_PROPERTY = Pattern.compile("--o-([a-z]+\\d*)-(\\d+)\\s*:\\s*(#[0-9A-Fa-f]{6})(?![0-9A-Fa-f])");
 	private static final Pattern THEME_COLOR_FILL = Pattern.compile("--o-(" + THEME_COLOR_PREFIX + "\\d+)\\s*:\\s*(#[0-9A-Fa-f]{6})(?![0-9A-Fa-f])");
 	private static final Pattern THEME_COLOR_NAME = Pattern.compile(THEME_COLOR_PREFIX + "\\d+");
@@ -87,8 +93,8 @@ public class Palette {
 	/**
 	 * Reads the palette from the custom properties <code>--o-{hue}-{step}: #RRGGBB</code>
 	 * of a compiled theme CSS. A hue without all of the {@link #STEPS} is
-	 * dropped with a warning. If a property is declared twice, the last
-	 * declaration wins, as in CSS.
+	 * dropped with a warning. The neutral scale {@link #NEUTRAL} is no hue.
+	 * If a property is declared twice, the last declaration wins, as in CSS.
 	 *
 	 * @param css The content of a CSS file, e.g. theme.css
 	 * @return The palette, or null if the CSS has no complete hue
@@ -109,7 +115,7 @@ public class Palette {
 
 		Map<String,Map<Integer,String>> hues = new LinkedHashMap<>();
 		for (Map.Entry<String,Map<Integer,String>> hue : parsed.entrySet()) {
-			if (isThemeColor(hue.getKey())) {
+			if (isThemeColor(hue.getKey()) || NEUTRAL.equals(hue.getKey())) {
 				continue;
 			}
 			Map<Integer,String> steps = hue.getValue();

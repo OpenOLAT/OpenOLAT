@@ -1,0 +1,18 @@
+/*
+ * =================================================
+ *
+ * Own rules of the Bootstrap navbar. _navbar.scss styles the OpenOlat navbar.
+ *
+ * _modules.scss imports this module directly after modules/bootstrap.
+ * The rules were in _bootstrap.scss before (OO-10043).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+/* fix wrong margin for navbar (e.g. folder-comp) */
+@media (min-width: 768px){
+	.navbar-right {
+		margin-right: 0;
+	}
+}

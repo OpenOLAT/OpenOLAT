@@ -175,8 +175,8 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 	.percentage .centeredWrapper {
 		.number,
 		.o_progress_label {
-			color: #fff;
-			text-shadow: 1px 1px 2px #000000;
+			color: var(--o-white);
+			text-shadow: 1px 1px 2px var(--o-shadow-color);
 		}
 	}		
 }	
@@ -248,7 +248,7 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 		.percentage {
 			.centeredWrapper {
 				.number {
-					color: $o-toolbar-link-color;
+					color: var(--o-toolbar-link);
 					margin-right: -0.3em;
 				}
 				.addon {

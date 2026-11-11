@@ -223,13 +223,13 @@
 	.o_ap_planned {
 		border-color: $o-ap-planned-color;
 		border-width: 2px;
-		box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.2); 
+		box-shadow: 0px 0px 20px 5px color-mix(in srgb, var(--o-shadow-color) 20%, transparent); 
 	}
 	
 	.o_ap_confirmed {
 		border-color: $o-ap-confirmed-color;
 		border-width: 2px;
-		box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.2);
+		box-shadow: 0px 0px 20px 5px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
 		
 		.o_free_places {
 			margin-top: 8px;

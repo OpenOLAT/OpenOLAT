@@ -233,7 +233,7 @@ tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, 
 				}
 				height: $o-folder-card-thumbnail-height;
 				position: relative;
-				background-color: #fcfcfc;
+				background-color: var(--o-bg-subtle);
 				.o_folder_card_img {
 					transition: opacity 200ms ease-in-out;
 					

@@ -1,0 +1,289 @@
+<div class="o_block_top" id="o_gd_tok_$r.getCId()" data-o-neutral-steps="#foreach($step in $neutral)$step.step()#if($foreach.hasNext),#end#end">
+<p>The colour tokens a module reads. Every sample on this tab uses the custom property <code>var(--o-...)</code> of the current theme.
+The values and the contrast ratios are measured in the browser. "Reads in this theme" follows the <code>var()</code> references of the theme CSS to the literal colour:
+a theme that overrides a token shows the new chain. The tokens are defined in <code>themes/light/modules/_tokens.scss</code>, the rules in <code>doc/openolat-frontend.md</code>, chapter 26.</p>
+
+<div class="o_info">
+	<h4>How to use</h4>
+	<ul>
+		<li>A rule in a module reads a token: <code>color: var(--o-text-muted);</code>, <code>border: 1px solid var(--o-border);</code>, <code>background-color: var(--o-bg-subtle);</code>.</li>
+		<li>Never write a hex value or a Sass colour variable (<code>&#36;text-color</code>, <code>&#36;gray-light</code>, <code>&#36;brand-primary</code>) in a module rule. <code>ThemeColorRatchetTest</code> counts them.</li>
+		<li>Never read a neutral step or a palette step in a rule. A token reads the step.</li>
+		<li>A translucent colour mixes the token with transparent: <code>color-mix(in srgb, var(--o-shadow-color) 15%, transparent)</code>.</li>
+		<li>A new customisation point is a new element token in the map of its layer, with a reference to an existing token as default: <code>"my-element-border": "border"</code>.</li>
+		<li>A theme changes a token in its config, before the import of the light theme. The value is another token, a neutral or palette step, <code>"white"</code> or a colour:
+			<code>&#36;o-tokens: ("text-muted": "neutral-600", "toolbar-link": "link");</code></li>
+	</ul>
+</div>
+
+<h4>Semantic tokens</h4>
+<p>The meaning of a colour: text, link, brand, surface, line, overlay and focus. Each semantic token reads its base colour <code>--o-base-{name}</code>, and the base colour carries the Sass variable of the theme config.
+A dark mode redefines these tokens. Use them for every colour that is not a status and not a single element.
+Under the value, "= neutral-{step}" names the step of the neutral scale (tab "Palette") with the same colour in the current theme.
+The contrast under a sample is measured on the sample; "needs" names the ratio the colour must reach (4.5:1 text, 3:1 focus and control borders).</p>
+#foreach($group in $semantic)
+<h5 class="o_gd_col_badge_group">$r.escapeHtml($group.name())</h5>
+<div class="o_gd_col_scroll">
+<table class="table table-condensed o_gd_tok_table">
+	<thead><tr><th scope="col">Token</th><th scope="col">Sample</th><th scope="col">Value</th><th scope="col">Source in the theme config</th><th scope="col">Reads in this theme</th><th scope="col">Use for</th></tr></thead>
+	<tbody>
+	#foreach($token in $group.tokens())
+	#set($sample = $token.sample())
+	<tr>
+		<th scope="row"><code>$r.escapeHtml($token.property)</code></th>
+		<td class="o_gd_tok_samplecell"><div class="o_gd_tok_sample" style="$sample.style()"#if(!$sample.hasInner()) data-o-measure="$sample.measure()" data-o-min="$sample.minRatio()"#end>#if($sample.hasInner())<span class="o_gd_tok_inner" style="$sample.innerStyle()" data-o-measure="$sample.measure()" data-o-min="$sample.minRatio()">$r.escapeHtml($sample.text())</span>#{else}$r.escapeHtml($sample.text())#{end}</div></td>
+		<td class="o_gd_tok_valuecell"><span class="o_gd_tok_chip" aria-hidden="true" data-o-tok="$token.name()" data-o-semantic="true" style="background-color: var($token.property);"></span><span class="o_gd_tok_hex"></span><span class="o_gd_tok_now"></span></td>
+		<td>$r.escapeHtml($token.defaultValue())</td>
+		<td><span class="o_gd_tok_chain" data-o-chain="$token.name()"></span></td>
+		<td>$r.escapeHtml($token.use())</td>
+	</tr>
+	#end
+	</tbody>
+</table>
+</div>
+#end
+
+<h4>State tokens</h4>
+<p>The colours of the 8 semantic states (<code>&#36;o-states</code>, see the tab "Badges / Status") as <code>--o-state-{state}-{role}</code>, for a status without a label: icon, marker, progress bar, chart.
+Roles: <code>text</code> text and icons on white, <code>bg</code> fill, <code>fg</code> text on the fill, <code>border</code> border and chart line, <code>soft-bg</code>, <code>soft-fg</code> and <code>soft-border</code> the tinted block.
+Each cell shows the token colour and its value; the samples combine the roles and show the measured contrast.</p>
+<div class="o_gd_col_scroll">
+<table class="table table-condensed o_gd_tok_states">
+	<thead><tr>
+		<th scope="col">State</th>
+		#foreach($role in $roles)<th scope="col"><code>$role</code></th>#end
+		<th scope="col">Samples: solid, soft, text on white</th>
+	</tr></thead>
+	<tbody>
+	#foreach($row in $states)
+	<tr>
+		<th scope="row"><code>$r.escapeHtml($row.state().name())</code><br><small>$r.escapeHtml($row.state().hue())</small></th>
+		#foreach($token in $row.tokens())
+		<td class="o_gd_tok_valuecell" title="--o-$token"><span class="o_gd_tok_chip" aria-hidden="true" data-o-tok="$token" style="background-color: var(--o-$token);"></span><span class="o_gd_tok_hex"></span></td>
+		#end
+		<td>
+		#foreach($sample in $row.samples())
+			<span class="o_gd_tok_samplecell"><span class="o_gd_tok_sample" style="$sample.style()" data-o-measure="$sample.measure()" data-o-min="$sample.minRatio()">$r.escapeHtml($sample.text())</span></span>
+		#end
+		</td>
+	</tr>
+	#end
+	</tbody>
+</table>
+</div>
+
+<h4>Framework tokens (selection)</h4>
+<p>The element tokens a module author reuses: the buttons of the base layer and the generic elements of the framework layer.
+"Default in _tokens.scss" is the default of the map: a Sass variable of the theme config (the token follows the named token while the colours are equal), a reference <code>"token"</code>,
+or a shade, the darker colour of a token computed at compile time. "Reads in this theme" shows which token to override: an override of <code>nav-link</code> reaches <code>toolbar-link</code> and <code>tree-link</code> as long as they read it.
+The full list is in <code>&#36;o-token-layer-base</code>, <code>&#36;o-token-layer-framework</code> and <code>&#36;o-token-shades</code>.</p>
+#foreach($group in $elements)
+<h5 class="o_gd_col_badge_group">$r.escapeHtml($group.name()) <small>$r.escapeHtml($group.layer())</small></h5>
+<div class="o_gd_col_scroll">
+<table class="table table-condensed o_gd_tok_table">
+	<thead><tr><th scope="col">Token</th><th scope="col">Sample</th><th scope="col">Value</th><th scope="col">Default in _tokens.scss</th><th scope="col">Reads in this theme</th><th scope="col">Use for</th></tr></thead>
+	<tbody>
+	#foreach($token in $group.tokens())
+	#set($sample = $token.sample())
+	<tr>
+		<th scope="row"><code>$r.escapeHtml($token.property)</code></th>
+		<td class="o_gd_tok_samplecell"><div class="o_gd_tok_sample" style="$sample.style()" data-o-measure="$sample.measure()" data-o-min="$sample.minRatio()">$r.escapeHtml($sample.text())</div></td>
+		<td class="o_gd_tok_valuecell"><span class="o_gd_tok_chip" aria-hidden="true" data-o-tok="$token.name()" style="background-color: var($token.property);"></span><span class="o_gd_tok_hex"></span></td>
+		<td>$r.escapeHtml($token.defaultValue())</td>
+		<td><span class="o_gd_tok_chain" data-o-chain="$token.name()"></span></td>
+		<td>$r.escapeHtml($token.use())</td>
+	</tr>
+	#end
+	</tbody>
+</table>
+</div>
+#end
+<p>The component layer (<code>&#36;o-token-layer-component</code> in <code>themes/light/modules/_tokens.scss</code>) has the tokens of the elements of one feature module, one group per module: course, tests, forum, chat, ...
+This tab does not list them. A module reads its own tokens, and a theme overrides them with <code>&#36;o-tokens</code> like the tokens above.</p>
+</div>
+<script>
+"use strict";
+jQuery(function() {
+	var box = document.getElementById("o_gd_tok_$r.getCId()");
+	if (!box) {
+		return;
+	}
+	var white = { r: 255, g: 255, b: 255, a: 1 };
+	var rootStyle = window.getComputedStyle(document.documentElement);
+
+	// rgb(), rgba() and color(srgb r g b / a) of getComputedStyle
+	function parse(c) {
+		if (!c) return null;
+		var srgb = c.indexOf("color(srgb") === 0;
+		var m = c.match(/[\d.]+/g);
+		if (!m || m.length < 3) return null;
+		var f = srgb ? 255 : 1;
+		return { r: m[0] * f, g: m[1] * f, b: m[2] * f, a: m.length > 3 ? +m[3] : 1 };
+	}
+	function hex(c) {
+		function two(v) {
+			var s = Math.round(Math.max(0, Math.min(255, v))).toString(16).toUpperCase();
+			return s.length < 2 ? "0" + s : s;
+		}
+		return "#" + two(c.r) + two(c.g) + two(c.b);
+	}
+	function blend(top, bottom, alpha) {
+		return { r: top.r * alpha + bottom.r * (1 - alpha), g: top.g * alpha + bottom.g * (1 - alpha), b: top.b * alpha + bottom.b * (1 - alpha), a: 1 };
+	}
+	function channel(c) {
+		c = c / 255;
+		return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+	}
+	function luminance(c) {
+		return 0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
+	}
+	function ratio(c1, c2) {
+		var l1 = luminance(c1), l2 = luminance(c2);
+		return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+	}
+	// the background behind an element: the fills up the tree, on white
+	function background(el) {
+		var layers = [];
+		for (var node = el; node && node.nodeType === 1; node = node.parentElement) {
+			var bg = parse(window.getComputedStyle(node).backgroundColor);
+			if (bg && bg.a > 0) {
+				layers.push(bg);
+				if (bg.a >= 1) break;
+			}
+		}
+		var result = white;
+		for (var i = layers.length - 1; i >= 0; i--) {
+			result = blend(layers[i], result, layers[i].a);
+		}
+		return result;
+	}
+	function isDefined(name) {
+		return rootStyle.getPropertyValue("--o-" + name).trim() !== "";
+	}
+	// declared values of the :root rules of the theme CSS, null when the browser blocks the stylesheet
+	function declared() {
+		var map = {};
+		var found = false;
+		for (var s = 0; s < document.styleSheets.length; s++) {
+			var rules = null;
+			try {
+				rules = document.styleSheets[s].cssRules;
+			} catch (e) {
+				rules = null;
+			}
+			if (!rules) continue;
+			for (var i = 0; i < rules.length; i++) {
+				var rule = rules[i];
+				if (rule.selectorText !== ":root" || !rule.style) continue;
+				for (var p = 0; p < rule.style.length; p++) {
+					var prop = rule.style[p];
+					if (prop.indexOf("--o-") === 0) {
+						map[prop.substring(4)] = rule.style.getPropertyValue(prop).trim();
+						found = true;
+					}
+				}
+			}
+		}
+		return found ? map : null;
+	}
+	// the references of a token to its literal colour: "nav-link -> base-nav-link -> #475467"
+	function chain(decl, name) {
+		var parts = [];
+		var seen = {};
+		var current = name;
+		for (var i = 0; i < 10; i++) {
+			var value = decl[current];
+			if (value === undefined) {
+				parts.push("not declared");
+				break;
+			}
+			var m = /^var\(--o-([a-z0-9-]+)\)$/.exec(value);
+			if (!m) {
+				parts.push(value);
+				break;
+			}
+			current = m[1];
+			if (seen[current]) {
+				parts.push("loop");
+				break;
+			}
+			seen[current] = true;
+			parts.push(current);
+		}
+		return parts.join(" -> ");
+	}
+
+	// values of the tokens: the fill of the chip
+	jQuery(box).find("[data-o-tok]").each(function() {
+		var name = this.getAttribute("data-o-tok");
+		var out = jQuery(this).siblings(".o_gd_tok_hex");
+		if (!isDefined(name)) {
+			out.text("not defined");
+			return;
+		}
+		var c = parse(window.getComputedStyle(this).backgroundColor);
+		if (!c) {
+			out.text("n/a");
+			return;
+		}
+		out.text(c.a < 1 ? hex(c) + " alpha " + c.a.toFixed(2) : hex(c));
+	});
+
+	// reference chains
+	var decl = declared();
+	jQuery(box).find("[data-o-chain]").each(function() {
+		jQuery(this).text(decl ? chain(decl, this.getAttribute("data-o-chain")) : "theme CSS not readable");
+	});
+
+	// semantic tokens: the step of the neutral scale with the same colour
+	var steps = (box.getAttribute("data-o-neutral-steps") || "").split(",");
+	var stepOf = {};
+	for (var n = 0; n < steps.length; n++) {
+		var stepValue = rootStyle.getPropertyValue("--o-neutral-" + steps[n]).trim().toUpperCase();
+		if (/^#[0-9A-F]{6}$/.test(stepValue) && !stepOf[stepValue]) {
+			stepOf[stepValue] = steps[n];
+		}
+	}
+	jQuery(box).find("[data-o-semantic]").each(function() {
+		var out = jQuery(this).siblings(".o_gd_tok_now");
+		var c = parse(window.getComputedStyle(this).backgroundColor);
+		var step = c && c.a >= 1 ? stepOf[hex(c)] : undefined;
+		out.text(step !== undefined ? "= neutral-" + step : "");
+	});
+
+	// contrast of the samples
+	jQuery(box).find("[data-o-measure]").each(function() {
+		var kind = this.getAttribute("data-o-measure");
+		if (!kind) return;
+		var min = parseFloat(this.getAttribute("data-o-min"));
+		var style = window.getComputedStyle(this);
+		var jThis = jQuery(this);
+		var value, label;
+		if (kind === "text") {
+			var fill = background(this);
+			var text = parse(style.color);
+			if (!text) return;
+			value = ratio(blend(text, fill, text.a), fill);
+			label = "text ";
+		} else {
+			var page = background(this.parentElement);
+			var line = parse(kind === "outline" ? style.outlineColor : style.borderTopColor);
+			if (!line) return;
+			value = ratio(blend(line, page, line.a), page);
+			label = kind + " ";
+		}
+		var out = label + value.toFixed(2) + ":1";
+		if (!isNaN(min)) {
+			if (value < min) {
+				out += ", below " + min + ":1";
+				jThis.addClass(kind === "text" ? "o_gd_col_fail" : "o_gd_col_fail_border");
+			} else {
+				out += ", needs " + min + ":1";
+			}
+		}
+		var cell = jThis.closest(".o_gd_tok_samplecell");
+		cell.find(".o_gd_col_measure").remove();
+		cell.append(jQuery("<span class='o_gd_col_measure'></span>").text(out));
+	});
+});
+</script>

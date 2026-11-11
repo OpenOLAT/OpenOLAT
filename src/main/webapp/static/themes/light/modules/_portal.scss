@@ -23,7 +23,7 @@
 	background-color: $o-portlet-bg;
 	border: 1px solid var(--o-portlet-border);
 	border-radius: $o-portlet-border-radius;
-	@include box-shadow(0 1px 1px rgba(0,0,0,.1));	
+	@include box-shadow(0 1px 1px color-mix(in srgb, var(--o-shadow-color) 10%, transparent));	
 
 	.o_header {
 		@include text-overflow();
@@ -50,7 +50,7 @@
 		top: -1px;
 		right: -1px;
 		z-index: 2;
-		background-color: #fff;
+		background-color: var(--o-bg);
 		border: 1px solid $o-portlet-edit-border; 
 	  	@include border-top-radius($o-portlet-border-radius);
 	  	@include border-bottom-radius($o-portlet-border-radius);

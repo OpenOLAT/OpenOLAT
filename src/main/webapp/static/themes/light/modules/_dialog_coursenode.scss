@@ -86,7 +86,7 @@
 
 
 .o_dialog_card {
-  background: #ffffff;
+  background: var(--o-bg);
   height: 100%;
 
   &.o_dialog_card_link {
@@ -101,7 +101,7 @@
     display: flex;
     flex-direction: column;
     border-radius: $o-card-border-radius;
-    background: #ffffff;
+    background: var(--o-bg);
 
     .o_dialog_card_title {
       margin-top: 0;
@@ -154,7 +154,7 @@ div.panel.o_dialog_file_overview {
       cursor: pointer;
       height: auto;
       position: relative;
-      background-color: #fff;
+      background-color: var(--o-bg);
       border-radius: $thumbnail-border-radius;
       border: 1px solid var(--o-course-file-box-border);
       justify-content: center;

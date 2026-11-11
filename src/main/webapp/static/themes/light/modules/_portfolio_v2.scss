@@ -13,7 +13,7 @@
 			vertical-align: top;
 		}
 		li.o_pf_trash_entry {
-			border-right: 5px dashed #eee;
+			border-right: 5px dashed var(--o-border-subtle);
 			padding-right: 2em;
 		}
 		li a {
@@ -381,7 +381,7 @@
 	}
 	
 	.o_portfolio_page_links {
-		background-color: #f8f8f8;
+		background-color: var(--o-bg-subtle);
 		border-radius: $border-radius-base;
 		
 		.o_portfolio_comment {
@@ -451,34 +451,34 @@
 	&.o_portfolio_entry_draft,
 	&.o_portfolio_section_draft,
 	&.o_portfolio_section_progress {
-		i::before { color: #fff; }
+		i::before { color: var(--o-white); }
 	}
 	&.o_portfolio_entry_published {
-		i::before { color: #fff; }
+		i::before { color: var(--o-white); }
 	}
 	&.o_portfolio_entry_revision {
-		i::before { color: #fff; }
+		i::before { color: var(--o-white); }
 	}
 	&.o_portfolio_entry_closed,
 	&.o_portfolio_section_closed {
-		i::before { color: #fff; }
+		i::before { color: var(--o-white); }
 	}
 	&.o_portfolio_entry_deleted {
-		i::before { color: #fff; }
+		i::before { color: var(--o-white); }
 	}
 	&.o_portfolio_entry_incoming {
-		i::before { color: #fff; }
+		i::before { color: var(--o-white); }
 	}
 	&.o_portfolio_entry_inprocess {
-		i::before { color: #fff; }
+		i::before { color: var(--o-white); }
 	}
 	&.o_portfolio_entry_done {
-		i::before { color: #fff; }
+		i::before { color: var(--o-white); }
 	}
 }
 
 .o_labeled_light {
-	background-color: #fff;
+	background-color: var(--o-bg);
 	
 }
 
@@ -509,8 +509,8 @@
 
 /* page mini view */
 .o_portfolio_page {
-	background: #fcfcfc;
-	border: 1px solid #eee;
+	background: var(--o-bg-subtle);
+	border: 1px solid var(--o-border-subtle);
 	border-radius: $border-radius-base;
 }
 
@@ -560,7 +560,7 @@
 			margin-bottom: 5px;
 		}
 		li {
-			background: #fbfbfb;
+			background: var(--o-bg-subtle);
 			padding: 3px;	
 			margin-bottom: 2px;
 			li {
@@ -681,7 +681,7 @@
 	.o_artefact_metadata {
 		page-break-inside : avoid;
 		border: 0;	
-	    border-left:  5px solid #eee;
+	    border-left:  5px solid var(--o-border-subtle);
 	    padding-left:  10px;
 	    font-size: 80%;
 	    table {

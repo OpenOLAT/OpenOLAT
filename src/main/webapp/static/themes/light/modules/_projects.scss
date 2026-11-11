@@ -401,7 +401,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 }
 
 .o_proj_card {
-	background: #ffffff;
+	background: var(--o-bg);
 	height: 100%;
 	
 	&.o_proj_card_link {
@@ -414,7 +414,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	.o_proj_card_meta {
 		padding: 10px;
 		border-radius: $o-card-border-radius;
-		background: #ffffff;
+		background: var(--o-bg);
 		.o_proj_card_title {
 			margin-top: 0;
 			margin-bottom: 5px;
@@ -732,14 +732,14 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 		}
 		.o_proj_whiteboard_modified {
 			@extend %o_muted;
-			background-color: rgba(255,255,255,.7);
+			background-color: color-mix(in srgb, var(--o-scrim) 70%, transparent);
 			align-self: end;
 			justify-self: start;
 			padding: 1px 8px;
 			border-top-right-radius: 4px;
 		}
 		&.o_card:not(:hover) {
-			border-color: $panel-bg;
+			border-color: var(--o-panel-bg);
 		}
 	}
 }

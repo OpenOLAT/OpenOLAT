@@ -12,7 +12,7 @@
   	border: 1px solid var(--o-focus);
   	@include border-top-radius($o-autocomplete-border-radius);
   	@include border-bottom-radius($o-autocomplete-border-radius);
-    @include box-shadow(0 0 8px rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6));
+    @include box-shadow(0 0 8px color-mix(in srgb, var(--o-focus) 60%, transparent));
 }
 
 .tt-suggestion {

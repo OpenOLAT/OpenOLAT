@@ -35,7 +35,7 @@ form .o_form, form.o_form {
 	}
 
 	.o_form_explanation {
-		color: $brand-warning;
+		color: var(--o-state-warning-text);
 	}
 		
 	.o_error {
@@ -218,8 +218,8 @@ form .o_form, form.o_form {
 		white-space: pre-wrap;
 		height: auto;
 		font-family: $font-family-monospace;
-		color: $input-color !important;
-		background: $input-bg-disabled;
+		color: var(--o-input-fg) !important;
+		background: var(--o-input-disabled-bg);
 	}
 	
 	/* disabled text areas are rendered in div's for improved printing and layouting features */
@@ -227,7 +227,7 @@ form .o_form, form.o_form {
 		resize: both;
 		overflow: auto;	
 		white-space: pre-wrap;
-		background: $input-bg-disabled;
+		background: var(--o-input-disabled-bg);
 	}
 	
 	/*
@@ -335,10 +335,10 @@ form .o_form, form.o_form {
   		font-family: $font-family-monospace;
   		padding-left: 4px;
   		padding-right: 4px;
-  		color: $pre-color;
-  		background-color: $pre-bg;
+  		color: var(--o-code-block-fg);
+  		background-color: var(--o-code-block-bg);
   		border-radius: $border-radius-base;
-  		border: 1px solid $pre-border-color;
+  		border: 1px solid var(--o-code-block-border);
 	}
 	
 	.o_form_two_cols input.o_form_number {
@@ -459,7 +459,7 @@ form .o_form, form.o_form {
 		  	input:disabled {
 		  		~ .o_radio_card {		  		
 		  			cursor: not-allowed;
-					background-color: $input-bg-disabled;
+					background-color: var(--o-input-disabled-bg);
 				 	border: 1px solid var(--o-radio-card-border);	
 					.o_radio_label, .o_radio_desc {
 						color: var(--o-text-muted);
@@ -715,9 +715,9 @@ form .o_form, form.o_form {
 		
 		/* same highlight style as in bootstrap form-control-focus mixin */
 		&:focus +.o_fakechooser {	
-			$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+			$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
 			outline: 0;
-			@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+			@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
 			input {
 				border-color: var(--o-focus);
 			}
@@ -766,26 +766,26 @@ form .o_form, form.o_form {
 					&+script+.o_dnd .btn,
 					&+.o_dnd .btn {
 					color: var(--o-btn-default-fg);
-				    background-color: darken($btn-default-bg, 5%);
+				    background-color: var(--o-file-upload-btn-bg-hover);
 				}
 			}
 			/* same highlight style as in bootstrap form-control-focus mixin */
 			&:focus+script+.o_dnd .btn,
 			&:focus+.o_dnd .btn  {
-				$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+				$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
 				border-color: var(--o-focus);
 				outline: 0;
-				@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+				@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
 			}
 		}
 	}
 	&.panel-placeholder:hover {
 		border-color: darken($o-panel-placeholder-border-color, 10%);
 		.o_dnd .btn {
-			$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+			$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
 			border-color: var(--o-focus);
 			outline: 0;
-			@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+			@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
 		}
 	}
 }
@@ -838,7 +838,7 @@ form.o_dnd_over {
 			flex: 1 1 auto;
 			height: 1px;
 			margin-left: 1em;
-			background-color: $hr-border;
+			background-color: var(--o-border-subtle);
 		}
 		@media (max-width: $screen-xs-max) {
 			flex-direction: column;
@@ -886,7 +886,7 @@ form.o_dnd_over {
 	}
 	&.input-group {
 		.input-group-addon {
-			background-color: $input-bg-disabled;
+			background-color: var(--o-input-disabled-bg);
 			padding: 6px 8px;
 			+ input.form-control {
 				border-left-color: transparent;
@@ -939,11 +939,11 @@ form.o_dnd_over {
 
 /* checkbox */
 .checkbox label.o_checkbox_error {
-	color: $state-danger-text;
+	color: var(--o-state-danger-text);
 }
 
 .checkbox label.o_checkbox_warning {
-	color: $state-warning-text;
+	color: var(--o-state-warning-text);
 }
 .o_checkbox_h_aligned {
 	display: flex;
@@ -1048,7 +1048,7 @@ legend.control-label {
 	font-size: $font-size-base;
 	font-weight: 700;
 	line-height: inherit;
-	color: $legend-color;
+	color: var(--o-legend);
 	border: none;
 }
 
@@ -1099,7 +1099,7 @@ legend.control-label {
 	
 	i {
 		color: $o-toggle-color;
-		text-shadow: 1px 0 2px rgba(0,0,0,.25);		
+		text-shadow: 1px 0 2px color-mix(in srgb, var(--o-shadow-color) 25%, transparent);		
 	}	
 	span {
 		line-height: $o-toggle-size;
@@ -1115,7 +1115,7 @@ legend.control-label {
 		border-color: var(--o-toggle-on-border);
 		i {
 			color: $o-toggle-on-color;
-			text-shadow: -1px 0 2px rgba(0,0,0,.25);
+			text-shadow: -1px 0 2px color-mix(in srgb, var(--o-shadow-color) 25%, transparent);
 		}
 		span {
 			color: $o-toggle-on-text-color;
@@ -1264,7 +1264,7 @@ legend.control-label {
 	border-width: 1px;
 	border-style: solid;
 	border-radius: 4px;
-	color: white;
+	color: var(--o-white);
 	line-height: 18px;
 	text-align: center;
 }
@@ -1495,8 +1495,8 @@ dialog {
 		.radio {
 			&:hover,
 			&:focus-within {
-				background-color: $dropdown-link-hover-bg;
-				color: $dropdown-link-hover-color;
+				background-color: var(--o-dropdown-link-hover-bg);
+				color: var(--o-dropdown-link-hover);
 				border-radius: $input-border-radius;
 				margin-left: -8px;
 				margin-right: -8px;
@@ -1529,7 +1529,7 @@ dialog {
 		   light theme but darker in a theme with coloured buttons, and the field
 		   then looks disabled. */
 		border-color: var(--o-border-strong);
-		background-color: $input-bg;
+		background-color: var(--o-input-bg);
 		.o_icon {
 			margin: auto 0 auto auto;
 		}
@@ -1608,13 +1608,13 @@ dialog {
 
 .o_url_component {
 	.o_url_input[readonly] {
-		background-color: $input-bg;
+		background-color: var(--o-input-bg);
 		cursor: text;
 	}
 	.o_url_qr.active {
 		background-color: var(--o-primary);
 		border-color: var(--o-primary);
-		color: #fff;
+		color: var(--o-white);
 	}
 	.o_url_qr_panel {
 		display: flex;
@@ -1624,7 +1624,7 @@ dialog {
 		width: fit-content;
 		margin: $padding-base-vertical 0 0 auto;
 		padding: $padding-base-horizontal;
-		background-color: #fff;
+		background-color: var(--o-bg);
 		border: 1px solid var(--o-border-strong);
 		border-radius: $border-radius-base;
 		&[hidden] {

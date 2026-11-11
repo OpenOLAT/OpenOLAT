@@ -31,7 +31,7 @@
 	img {
 		border-radius: $o-portfolio-lead-border-radius;
 		border: 1px $o-portfolio-lead-border-color solid;
-		background: #fff;
+		background: var(--o-bg);
 		height: auto;	/* expand to fit */
 		width: auto;
 	}
@@ -252,7 +252,7 @@
 				border-style: none;
 				padding: 2px;
 				height: 100%;
-				background: white;
+				background: var(--o-bg);
 				
 				.o_dnd {
 					display: grid;
@@ -279,7 +279,7 @@
 				background: none;
 				font-size: 6em;
 				text-align: center;
-				color: $gray-lighter;
+				color: var(--o-editor-media-unavailable);
 				line-height: 1.5em;
 			}
 			

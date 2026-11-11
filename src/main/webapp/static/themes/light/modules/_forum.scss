@@ -65,10 +65,10 @@
 
 	.o_forum_message {
 	  margin-bottom: $line-height-computed;
-	  background-color: $panel-bg;
+	  background-color: var(--o-panel-bg);
 	  border: 1px solid var(--o-border);
 	  border-radius: $panel-border-radius;
-	  @include box-shadow(0 1px 1px rgba(0,0,0,.1));
+	  @include box-shadow(0 1px 1px color-mix(in srgb, var(--o-shadow-color) 10%, transparent));
 	}
 	.o_forum_message_new {
 	  	@include box-shadow(0 1px 10px rgba(92,184,92,.3));

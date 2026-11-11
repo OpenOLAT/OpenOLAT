@@ -192,7 +192,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eportfolio_add { @include o-add-icon('puzzle-piece');}
 .o_icon_eportfolio_link { @include o-add-icon('puzzle-piece');}
 .o_icon_eraser { @include o-add-icon('eraser');}
-.o_icon_error { @include o-add-icon('circle-xmark'); color: $brand-danger;}
+.o_icon_error { @include o-add-icon('circle-xmark'); color: var(--o-state-danger-text);}
 .o_icon_events { @include o-add-icon('calendar-check');}
 .o_icon_exclamation { @include o-add-icon('exclamation');}
 .o_icon_exclamation_circle { @include o-add-icon('exclamation-circle');}
@@ -258,14 +258,14 @@ $fa-css-prefix: "o_icon" !default;
 }
 .o_icon_images { @include o-add-icon('images');}
 .o_icon_impress { @include o-add-icon('info-circle');}
-.o_icon_important { @include o-add-icon('exclamation-triangle'); color: $brand-warning;}
+.o_icon_important { @include o-add-icon('exclamation-triangle'); color: var(--o-state-warning-text);}
 .o_icon_import { @include o-add-icon('upload');}
 .o_icon_incorrect_response { @include o-add-icon('times-circle', false); color: var(--o-state-danger-text);}
-.o_icon_info { @include o-add-icon('info-circle'); color: $brand-info}
+.o_icon_info { @include o-add-icon('info-circle'); color: var(--o-state-neutral-text)}
 .o_icon_info_badge { @include o-add-icon('info-circle');}
 .o_icon_info_ap { @include o-add-icon('info-circle');}
 .o_icon_info_list { @include o-add-icon('clipboard-list');}
-.o_icon_info_msg { @include o-add-icon('exclamation-circle'); color: $brand-danger}
+.o_icon_info_msg { @include o-add-icon('exclamation-circle'); color: var(--o-state-danger-text)}
 .o_icon_info_page { @include o-add-icon('info-circle');}
 .o_icon_info_resource { @include o-add-icon('info-circle');}
 .o_icon_inheritance_root { @include o-add-icon('circle-down');}
@@ -473,7 +473,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_redo { @include o-add-icon('repeat');}
 .o_icon_refresh { @include o-add-icon('refresh');}
 .o_icon_reject { @include o-add-icon('times'); color: var(--o-state-danger-text);}
-.btn-danger .o_icon_reject:before { color: $btn-danger-color;}
+.btn-danger .o_icon_reject:before { color: var(--o-btn-danger-fg);}
 .o_icon_rejected { @include o-add-icon('thumbs-down');}
 .o_icon_reload { @include o-add-icon('undo');}
 .o_icon_reminder { @include o-add-icon('bell', false);}
@@ -521,7 +521,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_search_lookup { @include o-add-icon('magnifying-glass-plus');}
 .o_icon_select { @include o-add-icon('check');}
 .o_icon_selected { @include o-add-icon('check');}
-.o_icon_selected_dot { @include o-add-icon('circle-dot', false); color:$brand-danger;}
+.o_icon_selected_dot { @include o-add-icon('circle-dot', false); color: var(--o-state-danger-text);}
 .o_icon_send { @include o-add-icon('envelope');}
 .o_icon_settings { @include o-add-icon('gears');}
 .o_icon_share { @include o-add-icon('share');}
@@ -633,8 +633,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_user_authentication { @include o-add-icon('user-shield');}
 .o_icon_update { @include o-add-icon('refresh');}
 .o_icon_upload { @include o-add-icon('upload');}
-.o_icon_validation_error { @include o-add-icon('circle-exclamation'); color: $brand-danger; }
-.o_icon_validation_warning { @include o-add-icon('triangle-exclamation'); color: $brand-warning; }
+.o_icon_validation_error { @include o-add-icon('circle-exclamation'); color: var(--o-state-danger-text); }
+.o_icon_validation_warning { @include o-add-icon('triangle-exclamation'); color: var(--o-state-warning-text); }
 .o_icon_version { @include o-add-icon('history');}
 .o_icon_video { @include o-add-icon('film');}
 .o_icon_video_play { @include o-add-icon('play');}
@@ -645,13 +645,13 @@ $fa-css-prefix: "o_icon" !default;
 	position: relative; /* special case: combined icon */ 
  	@include o-add-icon('circle');
  	@include o-add-icon('video-camera', true, false);
-	&:after { position: absolute; top: 28%; left: 50%; margin-left: -0.5em; font-size: 45%; color: white }
+	&:after { position: absolute; top: 28%; left: 50%; margin-left: -0.5em; font-size: 45%; color: var(--o-white) }
 }
 .o_icon_view_all_rubrics { @include o-add-icon('clipboard-check');}
 .o_icon_visiting_card { @include o-add-icon('address-card');}
 .o_icon_visitingcard.o_icon_waiting { @include o-add-icon('clock', false);}
 .o_icon_wait { @include o-add-icon('circle-notch');}
-.o_icon_warn { @include o-add-icon('exclamation-triangle'); color: $brand-warning;}
+.o_icon_warn { @include o-add-icon('exclamation-triangle'); color: var(--o-state-warning-text);}
 .o_icon_warning { @include o-add-icon('exclamation-triangle');}
 .o_icon_width_expand { @include o-add-icon('expand');}
 .o_icon_width_collapse { @include o-add-icon('compress');} 

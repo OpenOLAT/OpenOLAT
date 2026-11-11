@@ -1,0 +1,138 @@
+/*
+ * =================================================
+ *
+ * OpenOLAT neutral scale (OO-10043)
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ *
+ * The greys of the theme: 18 steps from 0 (white) to 1000 (black), in
+ * addition to the 14 hues of $o-palette. The scale is tinted with slate
+ * by default. modules/_palette_vars.scss emits each step as the custom
+ * property --o-neutral-{step} in theme.css, content.css and oo-docs.css.
+ *
+ * Step  Default   Source of the value
+ *    0  #FFFFFF   white
+ *   25  #F9FAFB   anchor: $panel-default-heading-bg (--o-bg-subtle)
+ *   50  #F6F7FA   luminance of palette step 50
+ *  100  #EAECF0   luminance of palette step 100
+ *  150  #E4E7EC   anchor: $panel-default-border (--o-border)
+ *  200  #D9DDE3   luminance of palette step 200
+ *  250  #D0D5DD   anchor: $input-border (--o-border-strong)
+ *  300  #C6CCD6   luminance of palette step 300
+ *  400  #B1B8C5   luminance of palette step 400
+ *  450  #8B95A7   luminance 0.30, the lightest grey with 3:1 on white
+ *  500  #657286   luminance of palette step 500
+ *  600  #4E596D   luminance of palette step 600
+ *  700  #3B485B   luminance of palette step 700
+ *  750  #344054   anchor: $text-color (--o-text)
+ *  800  #2A3649   luminance of palette step 800
+ *  900  #182233   luminance of palette step 900
+ *  950  #101828   anchor: the shadow colour rgba(16, 24, 40, a)
+ * 1000  #000000   black
+ *
+ * The anchors keep the light defaults of the semantic tokens. The scale
+ * is a fixed ramp: a client theme that sets $text-color does not change
+ * step 750. The rules do not read a neutral step directly. They read a
+ * semantic or element token, and the token reads a step.
+ *
+ * A theme config can change the tint, before the import of the light
+ * theme:
+ *
+ *   $o-neutral-hue: 30;       // OKLCH hue of the tint, default 260 (slate)
+ *   $o-neutral-chroma: 0;     // OKLCH chroma of the tint, default 0.038;
+ *                             // 0 gives pure greys
+ *
+ * The compile converts each default step to OKLCH and keeps its
+ * lightness. It turns the hue by ($o-neutral-hue - 260) and multiplies
+ * the chroma by ($o-neutral-chroma / 0.038). Each step keeps its small
+ * hue offset and its share of the chroma (the light steps have less
+ * chroma than the dark steps). A colour outside of sRGB is mapped into
+ * sRGB (local-minde, CSS Color 4). With the default values the hue turns
+ * by 0 and the chroma factor is 1: the compile gives exactly the hex
+ * values of the table (ColorTokensTest checks them). The lightness stays,
+ * so the contrast of a step on white changes by 0.08 or less for a pure
+ * grey scale.
+ *
+ * Needs Dart Sass 1.79.0 or later (colour spaces, OO-10000).
+ * =================================================
+ */
+@use "sass:color";
+@use "sass:map";
+@use "sass:math";
+@use "sass:meta";
+
+$o-neutral-hue: 260 !default;
+$o-neutral-chroma: 0.038 !default;
+
+// The steps of the neutral scale, light to dark
+$o-neutral-steps: (0, 25, 50, 100, 150, 200, 250, 300, 400, 450, 500, 600, 700, 750, 800, 900, 950, 1000);
+
+// The default steps, tinted with hue 260 and chroma 0.038 (OO-colors
+// analysis step 3, neutral_scale.py). Do not edit the values by hand.
+$o-neutral-default: (
+	0: #FFFFFF, 25: #F9FAFB, 50: #F6F7FA, 100: #EAECF0, 150: #E4E7EC, 200: #D9DDE3,
+	250: #D0D5DD, 300: #C6CCD6, 400: #B1B8C5, 450: #8B95A7, 500: #657286, 600: #4E596D,
+	700: #3B485B, 750: #344054, 800: #2A3649, 900: #182233, 950: #101828, 1000: #000000
+);
+
+// The tint of $o-neutral-default
+$o-neutral-default-hue: 260;
+$o-neutral-default-chroma: 0.038;
+
+@if meta.type-of($o-neutral-hue) != "number" or not math.compatible($o-neutral-hue, 1deg) {
+	@error "$o-neutral-hue: use an OKLCH hue angle like 260, got '#{$o-neutral-hue}'";
+}
+@if meta.type-of($o-neutral-chroma) != "number" or not math.is-unitless($o-neutral-chroma) or $o-neutral-chroma < 0 {
+	@error "$o-neutral-chroma: use an OKLCH chroma of 0 or more like 0.038, got '#{$o-neutral-chroma}'";
+}
+
+// A default step with the tint of the theme: OKLCH lightness of the step,
+// hue turned by $turn, chroma multiplied by $factor. Returns a plain sRGB
+// colour, as in $o-palette.
+@function o-neutral-tint($color, $turn, $factor) {
+	$oklch: color.to-space($color, oklch);
+	$l: color.channel($oklch, "lightness", $space: oklch);
+	$c: 0;
+	$h: $o-neutral-default-hue;
+	@if not color.is-missing($oklch, "chroma") {
+		$c: color.channel($oklch, "chroma", $space: oklch);
+	}
+	@if not color.is-missing($oklch, "hue") {
+		$h: color.channel($oklch, "hue", $space: oklch);
+	}
+	$rgb: color.to-gamut(color.to-space(oklch($l ($c * $factor) ($h + $turn)), rgb), $space: rgb, $method: local-minde);
+	@return rgb(math.round(color.channel($rgb, "red", $space: rgb)),
+		math.round(color.channel($rgb, "green", $space: rgb)),
+		math.round(color.channel($rgb, "blue", $space: rgb)));
+}
+
+// The neutral scale of the theme: step -> colour. White and black stay.
+@function o-neutral-scale($hue, $chroma) {
+	// the hue as a unitless number of degrees
+	@if not math.is-unitless($hue) {
+		$hue: math.div($hue, 1deg);
+	}
+	$turn: $hue - $o-neutral-default-hue;
+	$factor: math.div($chroma, $o-neutral-default-chroma);
+	$scale: ();
+	@each $step, $color in $o-neutral-default {
+		@if $step == 0 or $step == 1000 {
+			$scale: map.merge($scale, ($step: $color));
+		} @else {
+			$scale: map.merge($scale, ($step: o-neutral-tint($color, $turn, $factor)));
+		}
+	}
+	@return $scale;
+}
+
+$o-neutral: o-neutral-scale($o-neutral-hue, $o-neutral-chroma);
+
+// Returns the colour of a neutral step, e.g. o-neutral(150). Stops the
+// build for an unknown step.
+@function o-neutral($step) {
+	@if meta.type-of($step) != "number" or not map.has-key($o-neutral, $step) {
+		@error "o-neutral: unknown step '#{$step}', known: #{map.keys($o-neutral)}";
+	}
+	@return map.get($o-neutral, $step);
+}

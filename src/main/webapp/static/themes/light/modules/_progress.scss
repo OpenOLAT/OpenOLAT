@@ -1,0 +1,26 @@
+/*
+ * =================================================
+ *
+ * Own rules of the Bootstrap progress bars.
+ *
+ * _modules.scss imports this module directly after modules/bootstrap.
+ * The rules were in _bootstrap.scss before (OO-10043).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+body .progress {
+	margin-bottom:0;
+}
+
+body .progress-bar {
+	&[aria-valuenow="1"], &[aria-valuenow="2"] {
+		min-width: 1px;
+	}
+}
+
+/* Progress bar neutral */
+.progress-bar-neutral {
+	@include progress-bar-variant($progress-bar-neutral-bg);
+}

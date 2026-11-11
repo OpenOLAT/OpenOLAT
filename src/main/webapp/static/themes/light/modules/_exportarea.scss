@@ -37,7 +37,7 @@
 	.o_export_wait {
 		font-style: italic;
 		padding-left: 2em;
-		color: $alert-warning-text;
+		color: var(--o-state-warning-text);
 	}
 	
 	.o_export_expiration.o_labeled {

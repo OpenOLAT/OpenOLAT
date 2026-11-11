@@ -100,7 +100,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Button Variants</h3>
-      <p>Semantic button styles: default, primary (preferred), danger, and special OpenOlat variants.</p>
+      <p>Semantic button styles: default, primary (preferred), danger, and special OpenOlat variants. The danger button reads the tokens <code>--o-btn-danger-bg</code>, <code>--o-btn-danger-fg</code> and <code>--o-btn-danger-border</code> (defaults: the danger state, the border one step darker) and their shade tokens for hover, focus and active. The dirty button has the fill of the warning state and a dark text.</p>
       <div class="cl-classes">
         <code>btn-default</code> <code>btn-primary</code> <code>btn-danger</code>
         <code>o_button_dirty</code> <code>o_button_primary_light</code>
@@ -165,7 +165,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Ghost Danger Button <span class="version-badge">New in 21.1.0</span></h3>
-      <p>A ghost button for a destructive action with low emphasis. Combine <code>o_button_ghost</code> with <code>btn-danger</code> (Java: <code>link.setGhost(true)</code> plus the element CSS class <code>btn-danger</code>). The text is <code>$brand-danger</code>. On hover the border turns <code>$brand-danger</code>. The info page uses it for the "Leave course" action in the "My course" panel.</p>
+      <p>A ghost button for a destructive action with low emphasis. Combine <code>o_button_ghost</code> with <code>btn-danger</code> (Java: <code>link.setGhost(true)</code> plus the element CSS class <code>btn-danger</code>). The text is <code>--o-state-danger-text</code>. On hover the border turns <code>--o-state-danger-text</code>. The info page uses it for the "Leave course" action in the "My course" panel.</p>
       <div class="cl-classes">
         <code>btn</code> <code>o_button_ghost</code> <code>btn-danger</code>
       </div>
@@ -191,7 +191,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Button Add-on in an Input Group</h3>
-      <p>A <code>FormLink</code> with the element CSS class <code>input-group-addon</code> inside an input-group layout (<code>FormLayoutContainer.createInputGroupLayout</code>). <code>_bootstrap.scss</code> styles <code>.btn.input-group-addon</code> and <code>a.input-group-addon</code> with the button border and background. The border between field and add-on has the button border color. The text field keeps <code>$input-bg</code>, also when it is disabled.</p>
+      <p>A <code>FormLink</code> with the element CSS class <code>input-group-addon</code> inside an input-group layout (<code>FormLayoutContainer.createInputGroupLayout</code>). <code>modules/_form_bootstrap.scss</code> styles <code>.btn.input-group-addon</code> and <code>a.input-group-addon</code> with the button border and background. The border between field and add-on has the button border color. The text field keeps <code>$input-bg</code>, also when it is disabled.</p>
       <div class="cl-classes">
         <code>input-group</code> <code>input-group-addon</code> <code>btn</code> <code>btn-default</code>
       </div>

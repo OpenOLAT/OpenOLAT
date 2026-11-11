@@ -124,7 +124,7 @@
 		margin: 0;
 		border: 0;
 		background-color: inherit;
-		color: $brand-danger;	
+		color: var(--o-state-danger-text);	
 	}
 	
 	.o_warning {
@@ -132,7 +132,7 @@
 		margin: 0;
 		border: 0;
 		background-color: inherit;
-		color: $brand-warning;	
+		color: var(--o-state-warning-text);	
 	}
 	
 	.o_info {

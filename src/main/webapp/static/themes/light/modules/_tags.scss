@@ -21,48 +21,48 @@
 	&.o_tag_clickable {
 		&:hover {
 			text-decoration: none;
-			background-color: darken($o-tag-background-color, 10%);
-			border-color: darken($o-tag-background-color, 10%);
+			background-color: var(--o-tag-bg-hover);
+			border-color: var(--o-tag-bg-hover);
 		}
 		
 		&:active {
-			background-color: darken($o-tag-background-color, 15%);
-			border-color: darken($o-tag-background-color, 15%);
+			background-color: var(--o-tag-bg-active);
+			border-color: var(--o-tag-bg-active);
 		}
 	}
 	
 	&.o_tag_selected {
 		background-color: var(--o-tag-selected-bg);
-		border-color: $o-tag-selected-border-color;
+		border-color: var(--o-tag-selected-border);
 		
 		&.o_tag_clickable {
 			&:hover {
 				text-decoration: none;
-				background-color: darken($o-tag-selected-background-color, 10%);
-				border-color: darken($o-tag-selected-border-color, 10%);
+				background-color: var(--o-tag-selected-bg-hover);
+				border-color: var(--o-tag-selected-border-hover);
 			}
 			
 			&:active {
-				background-color: darken($o-tag-selected-background-color, 15%);
-				border-color: darken($o-tag-selected-border-color, 15%);
+				background-color: var(--o-tag-selected-bg-active);
+				border-color: var(--o-tag-selected-border-active);
 			}
 		}
 	}
 
 	&.o_tag_selected_remove {
 		background-color: var(--o-tag-selected-bg);
-		border-color: $o-tag-selected-border-color;
+		border-color: var(--o-tag-selected-border);
 
 		&.o_tag_clickable {
 			&:hover {
 				text-decoration: none;
-				background-color: darken($o-tag-selected-background-color, 10%);
-				border-color: darken($o-tag-selected-border-color, 10%);
+				background-color: var(--o-tag-selected-bg-hover);
+				border-color: var(--o-tag-selected-border-hover);
 			}
 
 			&:active {
-				background-color: darken($o-tag-selected-background-color, 15%);
-				border-color: darken($o-tag-selected-border-color, 15%);
+				background-color: var(--o-tag-selected-bg-active);
+				border-color: var(--o-tag-selected-border-active);
 			}
 		}
 	}
@@ -123,13 +123,13 @@
 	&.o_tag_clickable {
 		&:hover {
 			text-decoration: none;
-			background-color: darken($o-tag-selection-background-color, 10%);
-			border-color: darken($o-tag-selection-border-color, 12%);
+			background-color: var(--o-tag-selection-bg-hover);
+			border-color: var(--o-tag-selection-border-hover);
 		}
 		
 		&:active {
-			background-color: darken($o-tag-selection-background-color, 15%);
-			border-color: darken($o-tag-selection-background-color, 15%);
+			background-color: var(--o-tag-selection-bg-active);
+			border-color: var(--o-tag-selection-bg-active);
 		}
 	}
 	
@@ -141,32 +141,32 @@
 		&.o_tag_clickable {
 			&:hover {
 				text-decoration: none;
-				background-color: darken($o-tag-selection-selected-background-color, 10%);
-				border-color: darken($o-tag-selection-selected-border-color, 10%);
+				background-color: var(--o-tag-selection-selected-bg-hover);
+				border-color: var(--o-tag-selection-selected-border-hover);
 			}
 			
 			&:active {
-				background-color: darken($o-tag-selection-selected-background-color, 15%);
-				border-color: darken($o-tag-selection-selected-border-color, 15%);
+				background-color: var(--o-tag-selection-selected-bg-active);
+				border-color: var(--o-tag-selection-selected-border-active);
 			}
 		}
 	}
 
 	&.o_tag_selected_remove {
-		border-color: $o-tag-selection-remove-selected-border-color;
-		background-color: $o-tag-selection-remove-selected-background-color;
-		color: $o-tag-selection-remove-selected-font-color;
+		border-color: var(--o-tag-selection-remove-selected-border);
+		background-color: var(--o-tag-selection-remove-selected-bg);
+		color: var(--o-tag-selection-remove-selected-fg);
 
 		&.o_tag_clickable {
 			&:hover {
 				text-decoration: none;
-				background-color: darken($o-tag-selection-remove-selected-background-color, 10%);
-				border-color: darken($o-tag-selection-remove-selected-border-color, 10%);
+				background-color: var(--o-tag-selection-remove-selected-bg-hover);
+				border-color: var(--o-tag-selection-remove-selected-border-hover);
 			}
 
 			&:active {
-				background-color: darken($o-tag-selection-remove-selected-background-color, 15%);
-				border-color: darken($o-tag-selection-remove-selected-border-color, 15%);
+				background-color: var(--o-tag-selection-remove-selected-bg-active);
+				border-color: var(--o-tag-selection-remove-selected-border-active);
 			}
 		}
 	}

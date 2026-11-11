@@ -1,7 +1,33 @@
-<div class="o_block_top">
+<div class="o_block_top" id="o_gd_pal_$r.getCId()">
+<h4>Greys</h4>
+<p>The neutral scale: 18 greys from 0 (white) to 1000 (black), <code>var(--o-neutral-{step})</code> of the current theme.
+Steps 50 to 900 have the luminance of the same step of the hues below. Each cell shows the hex value and the contrast on white.
+A theme tints the scale with <code>&#36;o-neutral-hue</code> (OKLCH hue, default 260, slate) and <code>&#36;o-neutral-chroma</code> (default 0.038, 0 gives pure greys); the lightness of each step stays.
+The tab "Tokens" shows which token reads which step.</p>
+<div class="o_gd_col_scroll">
+<table class="o_gd_col_grid o_gd_tok_neutral">
+	<thead><tr>
+		<th></th>
+		#foreach($step in $neutral)
+		<th scope="col">$step.step()</th>
+		#end
+	</tr></thead>
+	<tbody><tr>
+		<th class="o_gd_col_hue" scope="row">neutral</th>
+		#foreach($step in $neutral)
+		<td class="o_gd_col_cell" data-o-neutral="$step.step()" style="background-color: var($step.property); color: $step.fg;" title="$step.property">
+			<span class="o_gd_col_hex o_gd_tok_hex"></span><br>
+			<span class="o_gd_tok_ratio"></span>
+		</td>
+		#end
+	</tr></tbody>
+</table>
+</div>
+
+<h4>Colors</h4>
 <p>14 hues with 10 steps each. Every step of a hue has the same relative luminance as the same step of the other hues,
-so a step number stands for the same lightness in every hue. Each cell shows the hex value, the contrast of its text color
-and the roles the step has in the swatches. The cell color is <code>var(--o-{hue}-{step})</code> of the current theme.
+so a step number stands for the same lightness in every hue. Each cell shows the hex value and the contrast of its text color.
+The cell color is <code>var(--o-{hue}-{step})</code> of the current theme. The tab "Swatches" shows which step a swatch role uses.
 Below the 14 hues, separated, are the theme colors: the brand colors of the current theme, generated from <code>&#36;o-theme-colors</code>
 (default <code>&#36;brand-primary</code>) with the same rule. They change with the theme; the 14 hues do not.</p>
 <div class="o_gd_col_scroll">
@@ -27,7 +53,6 @@ Below the 14 hues, separated, are the theme colors: the brand colors of the curr
 		<td class="o_gd_col_cell" style="background: var(--o-${cell.hue}-${cell.step}, $cell.hex); color: $cell.fg;" title="--o-${cell.hue}-${cell.step}, $cell.ratio:1 text, $cell.onWhite:1 on white">
 			<span class="o_gd_col_hex">$cell.hex</span><br>
 			$cell.ratio:1
-			#if($cell.roles != "")<span class="o_gd_col_roles">$cell.roles</span>#end
 		</td>
 		#end
 	</tr>
@@ -46,16 +71,35 @@ Below the 14 hues, separated, are the theme colors: the brand colors of the curr
 	<li><strong>Theme colors</strong> use the brand color itself as solid fill ("solid brand"): it replaces the step with the same text polarity and the nearest luminance. A brand color where neither white nor dark text reaches 4.5:1 uses the generated step 500. Tint is step 300 and light is step 200 (200 and 100 for a solid fill of 300), dark is two steps darker than the solid fill.</li>
 	<li>Contrast rule: 4.5:1 for every text on every fill, also for large and bold text. The theme compile fails when a pair is below.</li>
 </ul>
-
-<h4>Roles in the cells</h4>
-<dl class="o_gd_col_legend">
-	<div><dt>solid</dt><dd>default fill of the swatch</dd></div>
-	<div><dt>tint</dt><dd>lighter fill, variant <code>o_swatch_tint</code></dd></div>
-	<div><dt>light</dt><dd>lightest fill, variant <code>o_swatch_light</code></dd></div>
-	<div><dt>dark</dt><dd>dark fill, variant <code>o_swatch_dark</code></dd></div>
-	<div><dt>soft-bg</dt><dd>tinted block background</dd></div>
-	<div><dt>soft-border</dt><dd>border of the tinted block</dd></div>
-	<div><dt>soft-fg</dt><dd>text on the tinted block</dd></div>
-	<div><dt>text</dt><dd>colored text and icons on white</dd></div>
-</dl>
 </div>
+<script>
+"use strict";
+jQuery(function() {
+	var box = document.getElementById("o_gd_pal_$r.getCId()");
+	if (!box) {
+		return;
+	}
+	function channel(c) {
+		c = c / 255;
+		return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+	}
+	function two(v) {
+		var t = Math.round(v).toString(16).toUpperCase();
+		return t.length < 2 ? "0" + t : t;
+	}
+	// neutral scale: hex value and contrast on white, measured on the cell
+	jQuery(box).find("[data-o-neutral]").each(function() {
+		var c = window.getComputedStyle(this).backgroundColor;
+		var m = c ? c.match(/[\d.]+/g) : null;
+		if (!m || m.length < 3) {
+			jQuery(this).find(".o_gd_tok_hex").text("not defined");
+			return;
+		}
+		var f = c.indexOf("color(srgb") === 0 ? 255 : 1;
+		var r = m[0] * f, g = m[1] * f, b = m[2] * f;
+		var lum = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+		jQuery(this).find(".o_gd_tok_hex").text("#" + two(r) + two(g) + two(b));
+		jQuery(this).find(".o_gd_tok_ratio").text((1.05 / (lum + 0.05)).toFixed(2) + ":1");
+	});
+});
+</script>

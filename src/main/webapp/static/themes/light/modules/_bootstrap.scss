@@ -10,6 +10,16 @@
 @import "../../../bootstrap/stylesheets/bootstrap/glyphicons"; 
 */
 
+// The Bootstrap rules of the links (a, .btn-link, pagination hover, the
+// border of .nav .open > a and a.thumbnail) read the link tokens: the Sass
+// variables hold the token during the import only (OO-10043)
+$o-bootstrap-link-color: $link-color;
+$o-bootstrap-link-hover-color: $link-hover-color;
+$o-bootstrap-pagination-hover-color: $pagination-hover-color;
+$link-color: var(--o-link);
+$link-hover-color: var(--o-link-hover);
+$pagination-hover-color: var(--o-link-hover);
+
 // Core CSS
 @import "../../../bootstrap/stylesheets/bootstrap/scaffolding";
 @import "../../../bootstrap/stylesheets/bootstrap/type";
@@ -17,20 +27,27 @@
 @import "../../../bootstrap/stylesheets/bootstrap/grid";
 @import "../../../bootstrap/stylesheets/bootstrap/tables";
 @import "../../../bootstrap/stylesheets/bootstrap/forms";
-// The Bootstrap rules of .btn, .btn-default and .btn-primary read the button
-// tokens: the Sass variables hold the token during the import only (OO-10043)
+// The Bootstrap rules of .btn, .btn-default, .btn-primary and .btn-danger read
+// the button tokens: the Sass variables hold the token during the import only
+// (OO-10043)
 $o-bootstrap-btn-default-color: $btn-default-color;
 $o-bootstrap-btn-default-bg: $btn-default-bg;
 $o-bootstrap-btn-default-border: $btn-default-border;
 $o-bootstrap-btn-primary-color: $btn-primary-color;
 $o-bootstrap-btn-primary-bg: $btn-primary-bg;
 $o-bootstrap-btn-primary-border: $btn-primary-border;
+$o-bootstrap-btn-danger-color: $btn-danger-color;
+$o-bootstrap-btn-danger-bg: $btn-danger-bg;
+$o-bootstrap-btn-danger-border: $btn-danger-border;
 $btn-default-color: var(--o-btn-default-fg);
 $btn-default-bg: var(--o-btn-default-bg);
 $btn-default-border: var(--o-btn-default-border);
 $btn-primary-color: var(--o-btn-primary-fg);
 $btn-primary-bg: var(--o-btn-primary-bg);
 $btn-primary-border: var(--o-btn-primary-border);
+$btn-danger-color: var(--o-btn-danger-fg);
+$btn-danger-bg: var(--o-btn-danger-bg);
+$btn-danger-border: var(--o-btn-danger-border);
 @import "../../../bootstrap/stylesheets/bootstrap/buttons";
 $btn-default-color: $o-bootstrap-btn-default-color;
 $btn-default-bg: $o-bootstrap-btn-default-bg;
@@ -38,6 +55,9 @@ $btn-default-border: $o-bootstrap-btn-default-border;
 $btn-primary-color: $o-bootstrap-btn-primary-color;
 $btn-primary-bg: $o-bootstrap-btn-primary-bg;
 $btn-primary-border: $o-bootstrap-btn-primary-border;
+$btn-danger-color: $o-bootstrap-btn-danger-color;
+$btn-danger-bg: $o-bootstrap-btn-danger-bg;
+$btn-danger-border: $o-bootstrap-btn-danger-border;
 
 // Components
 @import "../../../bootstrap/stylesheets/bootstrap/component-animations";
@@ -71,306 +91,6 @@ $btn-primary-border: $o-bootstrap-btn-primary-border;
 // Utility classes
 @import "../../../bootstrap/stylesheets/bootstrap/utilities";
 @import "../../../bootstrap/stylesheets/bootstrap/responsive-utilities";
-
-
-/* override */
-body div.tooltip-inner, dialog div.tooltip-inner {
-	max-width: 400px;
-	min-width: 400px;
-}
-/* don't use this for tool tips that are attached to the body (default) */
-body > .tooltip div.tooltip-inner {
-	min-width: 0;
-}
-
-body div.popover,
-body dialog.popover {
-	max-width:450px;
-	input {
-		max-width: 100%;
-	}
-}
-
-body div.popover.o_wide_popover,
-body dialog.popover.o_wide_popover {
-	max-width:650px;
-}
-
-body div.popover-title,
-body dialog.popover-title {
-	background-color: white;
-	font-weight: bold;
-}
-
-body .modal-body.alert {
-	border-radius:0;
-}
-
-body .o_modal_large_login .modal-lg {
-	width: calc(100%);
-}
-
-body .o_modal_large .modal-lg {
-	width: calc(100vw - 70px);
-}
-
-body .progress {
-	margin-bottom:0;
-}
-
-body .modal-body {
-	padding: 20px;
-}
-
-/* Panels: very subtle depth */
-.panel {
-	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-}
-
-/* extend panel to contain multiple separated bodies */
-.panel-body:nth-child(n+2) {
-	border-top: 1px solid $panel-default-border;
-}
-
-/* collapsible panels must have pointer cursor to indicate clickable space*/	
-.panel .panel-heading[data-toggle="collapse"] {
-	cursor: pointer;
-}
-
-/* ---- Focus states ---- */
-.form-control:focus {
-	box-shadow: 0 0 0 3px rgba($input-border-focus, 0.15);
-	border-color: $input-border-focus;
-}
-/* ---- Transitions for modern behavior ---- */
-@media (prefers-reduced-motion: no-preference) {
-	.form-control {
-		transition: border-color 0.15s ease, box-shadow 0.15s ease;
-	}
-}
-
-/* fix misplaced error icon */
-.form-control-feedback {
-	right: 0;
-	&:before {
-		line-height: $input-height-base;
-		display: inline-block;
-		vertical-align: middle;
-	}
-}
-
-/* fix misplaced static buttons */
-.form-control-static .btn.btn-default {
-	margin-top: -2px;
-}
-
-
-.form-horizontal .has-feedback .form-control-feedback {
-	right: 0;
-}
-
-/* ---- Transitions for modern behavior ---- */
-@media (prefers-reduced-motion: no-preference) {
-	.btn {
-		transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
-	}	
-}
-
-.btn.btn-primary.o_disabled {
-	color: var(--o-btn-primary-fg) !important;
-}
-
-/* Input-group addons styled as buttons get the button border and background */
-.btn.input-group-addon,
-a.input-group-addon {
-	border-color: var(--o-btn-default-border);
-	background-color: var(--o-btn-default-bg);
-	&:hover {
-		background-color: var(--o-btn-default-bg-hover);
-		border-color: var(--o-btn-default-border-hover);
-	}
-}
-/* Dividing border between btn-addon and form-control matches button border */
-.input-group:has(> .btn.input-group-addon:last-child) .form-control,
-.input-group:has(> a.input-group-addon:last-child) .form-control {
-	border-right-color: var(--o-btn-default-border);
-}
-.input-group:has(> .btn.input-group-addon:first-child) .form-control,
-.input-group:has(> a.input-group-addon:first-child) .form-control {
-	border-left-color: var(--o-btn-default-border);
-}
-/* Text field next to a button/link addon keeps the input background, also when
-   disabled, so the field never looks greyed out. This must be $input-bg and not
-   $btn-default-bg: both are #fff in the light theme, so the two are
-   indistinguishable here, but a theme that styles default buttons darker turned
-   the whole text field into the button colour. */
-.input-group:has(> .btn.input-group-addon) .form-control,
-.input-group:has(> a.input-group-addon) .form-control {
-	background-color: $input-bg;
-}
-
-
-
-/* Primary button: subtle shadow for prominence */
-.btn-primary {
-	box-shadow: 0 1px 2px rgba($btn-primary-bg, 0.3);
-	&:hover {
-		box-shadow: 0 2px 6px rgba($btn-primary-bg, 0.35);
-	}
-}
-
-body .progress-bar {
-	&[aria-valuenow="1"], &[aria-valuenow="2"] {
-		min-width: 1px;
-	}
-}
-
-/* typically in course rights table*/
-td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
-	position: relative;
-}
-
-/* 
-	iOS: prevent browser zoom when selecting a form (iOS zooms when input element font size < 16px but does not zoom back)
-	https://stackoverflow.com/questions/2989263/disable-auto-zoom-in-input-text-tag-safari-on-iphone
-	https://stackoverflow.com/questions/30102792/css-media-query-target-only-ios-devices
-*/
-@media screen and (max-width: 768px) {
-	@supports (-webkit-overflow-scrolling: touch) {
-	  	.form-control,
-	  	.ui-widget input, .ui-widget select, .ui-widget textarea {
-    		font-size: 16px;
-  		}
-	}
-}
-
-/* fix wrong margin for navbar (e.g. folder-comp) */
-@media (min-width: 768px){
-	.navbar-right {
-		margin-right: 0;
-	}
-}
-
-/* Dropdown menus: elevated with shadow */
-.dropdown-menu {
- 	box-shadow: $o-dropdown-box-shadow; 
-}
-.dropdown-menu {
-	// Links within the dropdown menu
-	> li > a {
-		padding: 3px 10px;
-	}
-}
-
-.dropdown-header {
-	padding: 3px 10px;
-}
-
-/* more padding between inline checkboxes / radios */
-.form-horizontal .radio-inline, .form-horizontal .checkbox-inline, 
-.form-inline .radio-inline, .form-inline .checkbox-inline {
-	margin-right: 10px;
-}
-.form-horizontal .radio-inline.btn {
-	margin-right: 0;
-}
-
-// We override bootstrap defaults for tooltips of glossary terms
-.o_gloss_tooltip {
-	&.tooltip.in {
-		opacity: 1;
-	}
-
-	&.tooltip.top .tooltip-arrow {
-		border-top-color: $o-gloss-tooltip-border-color;
-	}
-
-	&.tooltip.top-left .tooltip-arrow {
-		border-top-color: $o-gloss-tooltip-border-color;
-	}
-
-	&.tooltip.top-right .tooltip-arrow {
-		border-top-color: $o-gloss-tooltip-border-color;
-	}
-
-	&.tooltip.right .tooltip-arrow {
-		border-right-color: $o-gloss-tooltip-border-color;
-	}
-
-	&.tooltip.left .tooltip-arrow {
-		border-left-color: $o-gloss-tooltip-border-color;
-	}
-
-	&.tooltip.bottom .tooltip-arrow {
-		border-bottom-color: $o-gloss-tooltip-border-color;
-	}
-
-	&.tooltip.bottom-left .tooltip-arrow {
-		border-bottom-color: $o-gloss-tooltip-border-color;
-	}
-
-	&.tooltip.bottom-right .tooltip-arrow {
-		border-bottom-color: $o-gloss-tooltip-border-color;
-	}
-
-	.tooltip-inner {
-		opacity: 1;
-		font-family: $font-family-base;
-		font-size: $font-size-base;
-		line-height: $line-height-base;
-		color: $text-color;
-		background-color: $body-bg;
-		text-align: left;
-		border-radius: 5px;
-		border: 2px solid $o-gloss-tooltip-border-color;
-	}
-}
-
-.dropdown-menu > li > label {
-  &:hover,
-  &:focus {
-    text-decoration: none;
-    color: $dropdown-link-hover-color;
-    background-color: $dropdown-link-hover-bg;
-  }
-}
-
-// Active state
-.dropdown-menu > .active > label {
-  &,
-  &:hover,
-  &:focus {
-    color: $dropdown-link-active-color;
-    text-decoration: none;
-    outline: 0;
-    background-color: $dropdown-link-active-bg;
-  }
-}
-
- .dropdown-menu > li > label {
-    display: block;
-    padding: 3px 10px;
-    margin: 0;
-    clear: both;
-    font-weight: normal;
-    line-height: $line-height-base;
-    color: $dropdown-link-color;
-    white-space: nowrap; // prevent links from randomly breaking onto new lines
-  }
-
-/* a11y: accessibility fix: visually set focus for drop-down toggles */
-.dropdown-toggle:focus-visible {
-	// Firefox drops the WebKit color of tab-focus and would keep the outline 0 of Bootstrap
-	outline: 5px auto;
-	@include tab-focus;
-}
-/* a11y: set max contrast for a11y checker tools */
-.sr-only {
-	color: #000 !important;
-	background: #fff !important;
-}
-
-/* Progress bar neutral */
-.progress-bar-neutral {
-	@include progress-bar-variant($progress-bar-neutral-bg);
-}
+$link-color: $o-bootstrap-link-color;
+$link-hover-color: $o-bootstrap-link-hover-color;
+$pagination-hover-color: $o-bootstrap-pagination-hover-color;

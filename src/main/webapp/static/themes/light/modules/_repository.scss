@@ -313,7 +313,7 @@
 }
 
 .o_repo_info_panel > .o_repo_info_panel {
-	background: white;
+	background: var(--o-bg);
 }
 
 .o_infopanel th {
@@ -677,7 +677,7 @@ a.o_repo_tools_status {
 		display: flex;
 		align-items: center;
 		.o_icon {
-			color: $brand-warning;
+			color: var(--o-state-warning-text);
 			font-size: 200%;
 		}
 		.o_fps_text {
@@ -730,7 +730,7 @@ form { .o_form { .o_radio_cards_wrapper {
 		table-layout: fixed;
 		tr {
 			th:not(:last-child), td:not(:last-child) {
-				border-right: 1px solid $table-border-color;
+				border-right: 1px solid var(--o-table-border);
 			}
 			ul {
 				 padding-left: 1em;

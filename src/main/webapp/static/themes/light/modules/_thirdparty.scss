@@ -14,9 +14,9 @@
 	border-top: none;
 	border-left: none;
 	border-right: none;
-	border-bottom:1px solid #eee;
+	border-bottom:1px solid var(--o-border-subtle);
 	
-	background: #fff;
+	background: var(--o-bg-raised);
 	font-weight: bold;
 }
 
@@ -29,7 +29,7 @@
 }
 
 .ui-dialog {
-	@include box-shadow(0px 1px 8px -1px rgba(0,0,0,.35));
+	@include box-shadow(0px 1px 8px -1px color-mix(in srgb, var(--o-shadow-color) 35%, transparent));
 	background-color: $o-dialog-window-bg;
 	
 	.ui-widget-header {
@@ -47,7 +47,7 @@
 				color: #000;
 				opacity: 0.5;
 			}
-			background: #fff !important;
+			background: var(--o-bg-raised) !important;
 			padding: 1px 0 0 1px;
 			text-indent: 0;
 			color: black;
@@ -55,7 +55,7 @@
 		
 		.ui-button.ui-corner-all {
 			border: none !important;
-			background: #fff !important;
+			background: var(--o-bg-raised) !important;
 		}
 	}
 
@@ -63,7 +63,7 @@
 		border-color: #fff;
 		padding: 5px;
 		overflow: auto;
-		background: white !important;
+		background: var(--o-bg-raised) !important;
 	}
 	
 	.ui-dialog-titlebar {
@@ -135,7 +135,7 @@
 	font-size: 16px;
 	
 	>.datepicker-picker {
-		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+		box-shadow: 0 0.5rem 1rem color-mix(in srgb, var(--o-shadow-color) 17.5%, transparent);
 	}
 	
 	.dow, .datepicker-controls .button {
@@ -153,10 +153,10 @@
 }
 .datepicker-cell.today {
 	&.focused:not(.selected) {
-		background-color: #fff;
+		background-color: var(--o-bg-raised);
 	}
 	&:not(.selected) {
-		background-color: #fff;
+		background-color: var(--o-bg-raised);
 	}
 	&:not(.selected):not(.disabled) {
 		color: var(--o-datepicker-today);
@@ -227,9 +227,9 @@
 	@include o-add-icon('xmark');
 	@include o-add-icon-font();
  	&:before {
-		color: white;
+		color: var(--o-white);
 		font-size: 200%;
-		background-color: rgba(0,0,0,.32);
+		background-color: color-mix(in srgb, var(--o-backdrop) 32%, transparent);
 		position: absolute;
 		top: 15px;
 		right: 10px;
@@ -251,8 +251,8 @@
 		max-height: calc(96vh - 40px);
 		padding: 20px;
 		
-		background-color: white;
-		border: 1px solid $modal-content-border-color;
+		background-color: var(--o-bg-raised);
+		border: 1px solid var(--o-modal-content-border);
 		border-radius: $border-radius-large;
 	}
 }

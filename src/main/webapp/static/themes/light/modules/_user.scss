@@ -42,7 +42,7 @@
 		justify-items: stretch;
 		
 		.o_user_portrait_image {
-			background-color: white;
+			background-color: var(--o-bg);
 			border-radius: 50%;
 			object-fit: cover;
 			max-width: 100%;
@@ -98,7 +98,7 @@
 		border-radius: 50%;
 		line-height: 12px;
 		border: solid 1px white;
-		background-color: white;
+		background-color: var(--o-bg);
 	}
 	@media print {
 		.o_user_portrait_im {
@@ -573,7 +573,7 @@ div.o_skype_button {
 
 .o_authentication_olat, .o_authentication_passkeys {
 	.o_labeled {
-		color: white;
+		color: var(--o-white);
 		text-transform: initial;
 		margin: -3px 0 0 1em;
 		font-weight: normal;

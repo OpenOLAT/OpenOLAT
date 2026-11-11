@@ -252,7 +252,7 @@ tr.o_rm_room_preselected {
 	
 	.o_user_info_profile {
 		border: none;
-		background-color: #fff;
+		background-color: var(--o-bg);
 		width: 100%;
 	}
 	
@@ -273,7 +273,7 @@ tr.o_rm_room_preselected {
 		padding: 12px;
 		border: 1px solid var(--o-border);
 		border-radius: $border-radius-base;
-		background-color: #fff;
+		background-color: var(--o-bg);
 		
 		.o_thumbnail, .o_visual_not_available {
 			width: 150px;
@@ -680,7 +680,7 @@ tr.o_rm_room_preselected {
 
 .o_lectures_list {
 	.o_vertical_timeline_item_details {
-		background-color: #fff;
+		background-color: var(--o-bg);
 	}
 }
 
@@ -820,7 +820,7 @@ tr.o_rm_room_preselected {
 
 		flex: 0 0 54px;
 		padding: 2px 10px;
-		border-top: 1px solid $table-border-color;
+		border-top: 1px solid var(--o-table-border);
 
 		display: flex;
 		flex-direction: column;

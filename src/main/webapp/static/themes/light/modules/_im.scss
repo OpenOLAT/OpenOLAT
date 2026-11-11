@@ -326,17 +326,17 @@
 .o_im_supervised_list table>tbody>tr.o_im_request,
 .o_im_supervised_list table>tbody>tr.o_im_request>td.o_col_sticky_left,
 .o_im_supervised_list table>tbody>tr.o_im_request>td.o_col_sticky_right {
-	background-color: $alert-warning-bg !important;
+	background-color: var(--o-state-warning-soft-bg) !important;
 }
 .o_im_supervised_list table>tbody>tr.o_im_unread,
 .o_im_supervised_list table>tbody>tr.o_im_unread>td.o_col_sticky_left,
 .o_im_supervised_list table>tbody>tr.o_im_unread>td.o_col_sticky_right {
-	background-color: $alert-info-bg !important;
+	background-color: var(--o-state-neutral-soft-bg) !important;
 }
 .o_im_supervised_list table>tbody>tr.o_im_danger,
 .o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_left,
 .o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_right {
-	background-color: $alert-danger-bg !important;
+	background-color: var(--o-state-danger-soft-bg) !important;
 }
 
 

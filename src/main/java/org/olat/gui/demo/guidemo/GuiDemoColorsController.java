@@ -49,8 +49,9 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Shows the colour palette of the current theme, the swatch roles, how to
- * use them, and which palette colours each colour chooser uses. The texts
+ * Shows the colour palette of the current theme, the neutral scale and the
+ * colour tokens, the swatch roles, how to use them, and which palette
+ * colours each colour chooser uses. The texts
  * are not translated, the page is for developers and designers.
  *
  * Initial date: 1 Nov 2026<br>
@@ -86,7 +87,16 @@ public class GuiDemoColorsController extends BasicController {
 		VelocityContainer paletteVC = createVelocityContainer("guidemo-colors-palette");
 		paletteVC.contextPut("rows", rows);
 		paletteVC.contextPut("steps", Palette.STEPS);
+		paletteVC.contextPut("neutral", GuiDemoColorTokens.neutralSteps());
 		tabPane.addTab("Palette", paletteVC);
+
+		VelocityContainer tokensVC = createVelocityContainer("guidemo-colors-tokens");
+		tokensVC.contextPut("neutral", GuiDemoColorTokens.neutralSteps());
+		tokensVC.contextPut("semantic", GuiDemoColorTokens.semanticGroups());
+		tokensVC.contextPut("roles", GuiDemoColorTokens.STATE_ROLES);
+		tokensVC.contextPut("states", GuiDemoColorTokens.stateRows());
+		tokensVC.contextPut("elements", GuiDemoColorTokens.elementGroups());
+		tabPane.addTab("Tokens", tokensVC);
 
 		VelocityContainer swatchesVC = createVelocityContainer("guidemo-colors-swatches");
 		swatchesVC.contextPut("rows", rows);

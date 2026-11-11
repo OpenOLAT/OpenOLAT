@@ -20,7 +20,7 @@
 .o_videotask_categories .btn.btn-default.o_disabled:hover,
 .o_videotask_marker,
 .o_videotask_segment {
-	color: #fcfcfc;
+	color: var(--o-neutral-0);
 	border-color: $o-video-border-color;
 
 	// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
@@ -77,7 +77,7 @@
 }
 
 .o_videotask_marker.o_video_marker_assign { 
-	background-color: $gray-dark;
+	background-color: var(--o-videotask-marker-assign-bg);
 }
 
 .o_videotask_correct_segments {
@@ -124,7 +124,7 @@
 
 .o_videotask_segments {
 	width: 100%;
-	background-color: rgba(255, 255, 255, 0.5);
+	background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
 	position: relative;
 	height: 20px;
 }

@@ -8,27 +8,27 @@
   border: solid transparent;
   background-color: $o-ct-confirmation-bg-color;
   text-align: center;
-  color: white;
+  color: var(--o-white);
 
   &.validated {
-    background-color: $o-ip-validated-bg-color;
+    background-color: var(--o-immunity-proof-validated-bg);
   }
 	
   &.claimed {
-    background-color: $o-ip-claimed-bg-color;
+    background-color: var(--o-immunity-proof-claimed-bg);
   }
 	
   &.none {
-	background-color: $o-ip-none-bg-color;	
+	background-color: var(--o-immunity-proof-none-bg);	
   }
   
   h1, h2 {
-    color: white;
+    color: var(--o-white);
     font-weight: bold;
   }
   
   h3 {
-    color: white;
+    color: var(--o-white);
   }
 }
 

@@ -4,7 +4,7 @@
 	height: $o-coursesite-rowelem-height-md;	
 	width: $o-coursesite-rowelem-width-md;
 	vertical-align: middle;
-	background: #fff;
+	background: var(--o-bg);
 	
 	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 		height: $o-coursesite-rowelem-height-sm;	
@@ -134,7 +134,7 @@
 						display: block;
 						color: var(--o-coursesite-title);
 						&:hover {
-						    color: darken($o-coursesite-meta-title-color, 10%);
+						    color: var(--o-coursesite-title-hover);
 						}			
 						@media (prefers-reduced-motion: no-preference) {
 							transition: color 0.15s ease;
@@ -637,7 +637,7 @@
 					@extend %o_undecorated;
 					color: var(--o-coursesite-title);
 					&:hover {
-					    color: darken($o-coursesite-meta-title-color, 10%);
+					    color: var(--o-coursesite-title-hover);
 					}				
 				}
 			}
@@ -770,7 +770,7 @@
 
 				border: 1px solid var(--o-coursesite-catalog-border);
 				border-top: 0;
-				background-color: rgba(255,255,255,0.8);
+				background-color: color-mix(in srgb, var(--o-scrim) 80%, transparent);
 				
 				.o_title {
 					margin: 0; /* box moves down otherwhise, replaced with padding */
@@ -786,7 +786,7 @@
 						display: block;
 						color: var(--o-coursesite-title);
 						&:hover {
-						    color: darken($o-coursesite-meta-title-color, 10%);
+						    color: var(--o-coursesite-title-hover);
 						}
 						
 						//override o_icon styles, hide the icon
@@ -880,7 +880,7 @@
 		}
 		.o_search_box {
 			border-radius: $o-coursesite-rowelem-border-radius;
-			background-color: $input-bg;
+			background-color: var(--o-input-bg);
 			padding: 1px 20px 20px 20px;
 			.o_search_row {
 				.form-group {
@@ -923,18 +923,18 @@
 		justify-content: center;
 		align-items: center;
 		.o_empty_state {
-			background-color: $input-bg;
+			background-color: var(--o-input-bg);
 		}
 		.o_empty_state:is(.o_header_bg_image *) {
 			background-color: $o-cat2-header-box-bg-color;
 			.o_empty_visual i:nth-child(2) {
-				color: lighten($o-empty-msg-color, 20%);
+				color: var(--o-text-muted);
 			}
 		}
 	}
 	.o_catalog_breadcrumb {
 		.breadcrumb {
-			background-color: $input-bg;
+			background-color: var(--o-input-bg);
 			border: 1px solid var(--o-border-strong);
 			border-radius: $input-border-radius;
 			margin-left: 15px;
@@ -1022,7 +1022,7 @@
 				width: 100%;
 				border-bottom-left-radius: $o-card-border-radius;
 				border-bottom-right-radius: $o-card-border-radius;
-				background-color: rgba(255,255,255,.8);
+				background-color: color-mix(in srgb, var(--o-scrim) 80%, transparent);
 				
 				.o_title {
 					margin: 0;

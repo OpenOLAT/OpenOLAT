@@ -71,7 +71,7 @@
 	  	font-weight: $o-dialog-header-font-weight;
 		font-family: $headings-font-family;
 	  	line-height: $headings-line-height;
-		border-bottom: 1px solid $modal-header-border-color;
+		border-bottom: 1px solid var(--o-modal-header-border);
 	}
 }
 

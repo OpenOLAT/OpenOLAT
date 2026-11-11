@@ -10,6 +10,16 @@
 
 /* Bootstrap classes. Override bootstrap variables in your _config.scss file */
 @import "modules/bootstrap";
+/* own rules of Bootstrap components, directly after Bootstrap (OO-10043) */
+@import "modules/modal";
+@import "modules/progress";
+@import "modules/panel";
+@import "modules/form_bootstrap";
+@import "modules/buttons";
+@import "modules/navbar_bootstrap";
+@import "modules/dropdown";
+@import "modules/tooltip";
+@import "modules/accessibility";
 
 /* -------- OpenOLAT modules -------- */
 @import "modules/mixins";

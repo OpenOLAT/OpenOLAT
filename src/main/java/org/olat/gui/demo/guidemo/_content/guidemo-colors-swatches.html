@@ -25,6 +25,7 @@ The contrast ratios below are measured in the browser from the computed colors; 
 	#end
 	<div class="o_gd_col_swatch o_swatch_$row.hue">
 		<h4>$row.label <small>#if($row.themeColor) <code>$row.hue</code>, #end#if($row.bright) bright #else deep #end</small></h4>
+		<p class="o_small o_gd_col_steps">Steps: #foreach($cell in $row.cells)#if($cell.roles != "")<span><strong>$cell.step</strong> $cell.roles</span> #end#end</p>
 		<div class="o_gd_col_samples">
 			<div class="o_gd_col_sample o_swatch_$row.hue o_swatch_dark">
 				<div class="o_gd_col_solid" data-o-contrast>Dark <i class="o_icon o_icon_check"> </i></div>

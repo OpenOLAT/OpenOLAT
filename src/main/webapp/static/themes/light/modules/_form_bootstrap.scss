@@ -1,0 +1,101 @@
+/*
+ * =================================================
+ *
+ * Own rules of the Bootstrap form controls, input groups and inline
+ * checkboxes and radios. _form.scss styles the OpenOlat forms.
+ *
+ * _modules.scss imports this module directly after modules/bootstrap.
+ * The rules were in _bootstrap.scss before (OO-10043).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+/* ---- Focus states ---- */
+.form-control:focus {
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--o-focus) 15%, transparent);
+	border-color: var(--o-focus);
+}
+/* ---- Transitions for modern behavior ---- */
+@media (prefers-reduced-motion: no-preference) {
+	.form-control {
+		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	}
+}
+
+/* fix misplaced error icon */
+.form-control-feedback {
+	right: 0;
+	&:before {
+		line-height: $input-height-base;
+		display: inline-block;
+		vertical-align: middle;
+	}
+}
+
+/* fix misplaced static buttons */
+.form-control-static .btn.btn-default {
+	margin-top: -2px;
+}
+
+
+.form-horizontal .has-feedback .form-control-feedback {
+	right: 0;
+}
+
+/* Input-group addons styled as buttons get the button border and background */
+.btn.input-group-addon,
+a.input-group-addon {
+	border-color: var(--o-btn-default-border);
+	background-color: var(--o-btn-default-bg);
+	&:hover {
+		background-color: var(--o-btn-default-bg-hover);
+		border-color: var(--o-btn-default-border-hover);
+	}
+}
+/* Dividing border between btn-addon and form-control matches button border */
+.input-group:has(> .btn.input-group-addon:last-child) .form-control,
+.input-group:has(> a.input-group-addon:last-child) .form-control {
+	border-right-color: var(--o-btn-default-border);
+}
+.input-group:has(> .btn.input-group-addon:first-child) .form-control,
+.input-group:has(> a.input-group-addon:first-child) .form-control {
+	border-left-color: var(--o-btn-default-border);
+}
+/* Text field next to a button/link addon keeps the input background, also when
+   disabled, so the field never looks greyed out. This must be $input-bg and not
+   $btn-default-bg: both are #fff in the light theme, so the two are
+   indistinguishable here, but a theme that styles default buttons darker turned
+   the whole text field into the button colour. */
+.input-group:has(> .btn.input-group-addon) .form-control,
+.input-group:has(> a.input-group-addon) .form-control {
+	background-color: var(--o-input-bg);
+}
+
+/* typically in course rights table*/
+td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
+	position: relative;
+}
+
+/* 
+	iOS: prevent browser zoom when selecting a form (iOS zooms when input element font size < 16px but does not zoom back)
+	https://stackoverflow.com/questions/2989263/disable-auto-zoom-in-input-text-tag-safari-on-iphone
+	https://stackoverflow.com/questions/30102792/css-media-query-target-only-ios-devices
+*/
+@media screen and (max-width: 768px) {
+	@supports (-webkit-overflow-scrolling: touch) {
+	  	.form-control,
+	  	.ui-widget input, .ui-widget select, .ui-widget textarea {
+    		font-size: 16px;
+  		}
+	}
+}
+
+/* more padding between inline checkboxes / radios */
+.form-horizontal .radio-inline, .form-horizontal .checkbox-inline, 
+.form-inline .radio-inline, .form-inline .checkbox-inline {
+	margin-right: 10px;
+}
+.form-horizontal .radio-inline.btn {
+	margin-right: 0;
+}

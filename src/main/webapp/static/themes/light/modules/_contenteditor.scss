@@ -533,7 +533,7 @@
 
 .o_ceditor_inspector {
 	border: 1px solid $o-editor-inspector-border-color;
-	background-color: white;
+	background-color: var(--o-bg);
 	min-height: 300px;
 
 	h4 {
@@ -666,7 +666,7 @@
 		&:not(.o_apply_background_color) {
 			grid-gap: 0;
 		}
-		background-color: white;
+		background-color: var(--o-bg);
 		border-right: $o-editor-layout-inner-v-border;
 		border-left: $o-editor-layout-inner-v-border;
 	}
@@ -735,19 +735,19 @@
 
 	&.o_fragment_edited {
 		&:not(.o_page_container_edit) {
-			border: 2px solid rgba($o-editor-selected-border-color, 0.8);
+			border: 2px solid color-mix(in srgb, var(--o-editor-selected-border) 80%, transparent);
 			margin: -2px;
 			border-radius: 4px;
 		}
 
 		&.o_page_container_edit {
-			border: 2px solid rgba($o-editor-selected-border-color, 0.8);
+			border: 2px solid color-mix(in srgb, var(--o-editor-selected-border) 80%, transparent);
 			margin: -1px -2px 0 -2px;
 			border-radius: 4px;
 		}
 
 		> .o_fragment_selection_frame {
-			border: 2px solid rgba($o-editor-selected-border-color, 0.8);
+			border: 2px solid color-mix(in srgb, var(--o-editor-selected-border) 80%, transparent);
 			border-radius: 4px;
 			position: absolute;
 		}
@@ -791,7 +791,7 @@
 		font-size: 18px;
 
 
-		background: white;
+		background: var(--o-bg-raised);
 		border: 1px solid $o-editor-border-color;
 		padding: 0;
 		border-radius: $border-radius-base;
@@ -832,7 +832,7 @@
 	.o_fragment_edited .o_page_element_tools>a.active,
 	&.o_fragment_edited .o_page_element_tools>a.active {
 		background-color: var(--o-editor-selected-bg);
-		color: #fff;
+		color: var(--o-white);
 	}
 
 	.o_page_element_tools>a {
@@ -847,7 +847,7 @@
 			padding: 0 5px;
 			line-height: 25px;
 			border-left: 1px solid #d9d9d9;
-			background: #fff;
+			background: var(--o-bg-raised);
 		}
 		>*:last-child {
 			border-right: 1px solid #d9d9d9;
@@ -869,7 +869,7 @@
 			line-height: $o-editor-border-width;
 			vertical-align: middle;
 			a {
-				color: #fff;
+				color: var(--o-white);
 				&:hover {
 					color: darken(#fff, 10%);
 				}
@@ -908,7 +908,7 @@
 	z-index: 9;
 	width: 235px;
 	margin-right: 0px;
-	background-color: #fff;
+	background-color: var(--o-bg-raised);
 	box-shadow: $o-editor-inspector-box-shadow;
 	opacity: 0;
 }
@@ -952,7 +952,7 @@
 			left: -10px;
 			color: $o-editor-border-color;
 			// background-color: Window; // Does not work in Safari
-			background-color: white;
+			background-color: var(--o-bg);
 			border-bottom: $o-editor-element-border-width dotted $o-editor-border-color;
 			div {
 				display: inline-block;
@@ -1016,7 +1016,7 @@
 
 .gu-mirror .o_page_element_tools>span {
 	background-color: var(--o-editor-selected-bg);
-	color: #fff;
+	color: var(--o-white);
 }
 
 .o_page_add_callout {
@@ -1194,11 +1194,11 @@
 			padding: 0;
 			border-radius: 0;
 			border: 1px solid #dcdcdc;
-			background: #fff;
+			background: var(--o-bg);
 			padding: 10px 10px 45px 10px;
-		  	-webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
-	     	-moz-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
-	      	box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
+		  	-webkit-box-shadow: 3px 3px 3px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
+	     	-moz-box-shadow: 3px 3px 3px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
+	      	box-shadow: 3px 3px 3px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
 		}
 
 		img.o_image_round {
@@ -1357,7 +1357,7 @@ table.o_ce_table {
 
 			&:hover {
 				text-decoration: none;
-				background-color: $dropdown-link-hover-bg;
+				background-color: var(--o-dropdown-link-hover-bg);
 			}
 		}
 	}
@@ -1410,7 +1410,7 @@ table.o_ce_table {
 .o_ce_preview {
 	max-height: 400px;
 	overflow: hidden;
-	background: white;
+	background: var(--o-bg);
 }
 
 .o_ce_preview img {
@@ -1426,7 +1426,7 @@ table.o_ce_table {
 
 	box-shadow: $o-cc-box-shadow;
 	background-color: mix($o-color-light-gray, white, 5%);
-	border: 1px solid $pre-border-color;
+	border: 1px solid var(--o-code-block-border);
 	border-radius: $border-radius-base;
 
 	pre {
@@ -1456,12 +1456,12 @@ table.o_ce_table {
 		right: 0;
 		padding: 3px 8px;
 
-		background-color: $pre-bg;
+		background-color: var(--o-code-block-bg);
 
 		border-bottom-left-radius: $border-radius-large;
 		border-top-right-radius: $border-radius-base;
 		border-style: solid;
-		border-color: $pre-border-color;
+		border-color: var(--o-code-block-border);
 		border-width: 0 0 1px 1px;
 
 		font-size: 12px;
@@ -1944,7 +1944,7 @@ table.o_ce_table {
 		word-break: break-word;
 		
 		.o_title_placeholder {
-			color: $input-color-placeholder;
+			color: var(--o-input-placeholder);
 		}
 	}
 
@@ -1962,13 +1962,13 @@ table.o_ce_table {
 		word-break: break-word;
 		
 		.o_text_placeholder {
-			color: $input-color-placeholder;
+			color: var(--o-input-placeholder);
 		}
 	}
 	
 	.o_ce_math_run {
 		.o_math_placeholder {
-			color: $input-color-placeholder;
+			color: var(--o-input-placeholder);
 		}
 	}
 

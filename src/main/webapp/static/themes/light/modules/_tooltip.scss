@@ -1,0 +1,90 @@
+/*
+ * =================================================
+ *
+ * Own rules of the Bootstrap tooltips and popovers, and the glossary tooltip.
+ *
+ * _modules.scss imports this module directly after modules/bootstrap.
+ * The rules were in _bootstrap.scss before (OO-10043).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+body div.tooltip-inner, dialog div.tooltip-inner {
+	max-width: 400px;
+	min-width: 400px;
+}
+/* don't use this for tool tips that are attached to the body (default) */
+body > .tooltip div.tooltip-inner {
+	min-width: 0;
+}
+
+body div.popover,
+body dialog.popover {
+	max-width:450px;
+	input {
+		max-width: 100%;
+	}
+}
+
+body div.popover.o_wide_popover,
+body dialog.popover.o_wide_popover {
+	max-width:650px;
+}
+
+body div.popover-title,
+body dialog.popover-title {
+	background-color: var(--o-bg-raised);
+	font-weight: bold;
+}
+
+// We override bootstrap defaults for tooltips of glossary terms
+.o_gloss_tooltip {
+	&.tooltip.in {
+		opacity: 1;
+	}
+
+	&.tooltip.top .tooltip-arrow {
+		border-top-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.top-left .tooltip-arrow {
+		border-top-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.top-right .tooltip-arrow {
+		border-top-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.right .tooltip-arrow {
+		border-right-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.left .tooltip-arrow {
+		border-left-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.bottom .tooltip-arrow {
+		border-bottom-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.bottom-left .tooltip-arrow {
+		border-bottom-color: $o-gloss-tooltip-border-color;
+	}
+
+	&.tooltip.bottom-right .tooltip-arrow {
+		border-bottom-color: $o-gloss-tooltip-border-color;
+	}
+
+	.tooltip-inner {
+		opacity: 1;
+		font-family: $font-family-base;
+		font-size: $font-size-base;
+		line-height: $line-height-base;
+		color: var(--o-text);
+		background-color: $body-bg;
+		text-align: left;
+		border-radius: 5px;
+		border: 2px solid $o-gloss-tooltip-border-color;
+	}
+}

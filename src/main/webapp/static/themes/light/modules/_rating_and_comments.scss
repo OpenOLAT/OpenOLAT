@@ -5,7 +5,7 @@
 	.o_rating_items {
 		white-space: nowrap;	
 		.o_icon {
-			color:$brand-warning;
+			color: var(--o-state-warning-text);
 			background: none;
 			border: none;
 			padding: 1px;
@@ -48,7 +48,7 @@
 	.o_rating_items {
 		white-space: nowrap;	
 		.o_icon {
-			color:$brand-info;
+			color: var(--o-state-neutral-text);
 		}
 		&.o_enabled a:hover {
 			.o_icon_rating_no_on {
@@ -66,7 +66,7 @@
 		}
 		
 		.btn-primary>i {
-			color: white;
+			color: var(--o-white);
 		}
 	}
 	
@@ -76,7 +76,7 @@
 }
 
 .o_table_wrapper .table-striped>tbody>tr:nth-of-type(odd) .o_rating.o_rating_yesno .o_rating_items .o_icon {
-	color: $brand-info;
+	color: var(--o-state-neutral-text);
 }
 
 .o_comments {
@@ -138,7 +138,7 @@
 			margin-left: $padding-large-horizontal;
 		}
 		.o_comment_reply_block {
-			border-left: 2px solid $blockquote-border-color;
+			border-left: 2px solid var(--o-blockquote-border);
 			padding: 5px 0 0 28px;
 			>p {
 				margin: 5px 44px 10px;
@@ -259,11 +259,11 @@
 	height: $input-height-base;
 	font-size: $font-size-base;
 	line-height: $line-height-base;
-	color: $input-color;
-	background-color: $input-bg;
+	color: var(--o-input-fg);
+	background-color: var(--o-input-bg);
 	background-image: none;
 	border-radius: $input-border-radius;
-	@include box-shadow(inset 0 1px 1px rgba(0, 0, 0, .075));
+	@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent));
 	@include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
 
 	.form-control-static {

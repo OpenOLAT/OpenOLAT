@@ -123,6 +123,6 @@ a.o_qpool_status {
 .btn-arrow-right:before,
 .btn-arrow-left:after {
 	/* hide arrow tails background */
-	background-color: white;
+	background-color: var(--o-bg);
 }
 

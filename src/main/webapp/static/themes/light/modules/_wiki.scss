@@ -75,7 +75,7 @@ div.o_wiki_wrapper {
 		border: 1px solid #ccc;
 		margin: 2px;
 		padding: 2px;
-		background-color: white;
+		background-color: var(--o-bg);
 	}
 	
 	table.gallery tr {
@@ -83,7 +83,7 @@ div.o_wiki_wrapper {
 	}
 	
 	table.gallery td {
-		background-color: #f9f9f9;
+		background-color: var(--o-bg-subtle);
 		border: solid 2px white;
 		text-align: center;
 		vertical-align: middle;

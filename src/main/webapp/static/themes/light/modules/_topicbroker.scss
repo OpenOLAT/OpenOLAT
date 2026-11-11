@@ -61,7 +61,7 @@
 					cursor: pointer;
 				}
 				height: $o-tb_topic-card-thumbnail-height;
-				background-color: #fcfcfc;
+				background-color: var(--o-bg-subtle);
 				.o_tb_topic_card_img {
 					transition: opacity 200ms ease-in-out;
 					
@@ -335,7 +335,7 @@
 	stroke: $o-d3chart-default;
 	fill: none;
 	&.o_tb_help_line {
-		stroke: $gray-light;
+		stroke: var(--o-chart-help-line);
 		stroke-width: 1;
 		opacity: 0.5;
 		&.o_tb_dash {

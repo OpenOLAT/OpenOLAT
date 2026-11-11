@@ -1,16 +1,16 @@
 .o_addremove_add_active {
-	background-color: $o-addremove-add-color !important;
+	background-color: var(--o-addremove-add-bg) !important;
 
 	&:hover {
-		background-color: darken($o-addremove-add-color, 10%);
+		background-color: var(--o-addremove-add-bg-hover);
 	}
 }
 
 .o_addremove_remove_active {	
-	background-color: $o-addremove-remove-color !important;
+	background-color: var(--o-addremove-remove-bg) !important;
 
 	&:hover {
-		background-color: darken($o-addremove-remove-color, 10%);
+		background-color: var(--o-addremove-remove-bg-hover);
 	}
 }
 

@@ -8,7 +8,7 @@
 	height: 225px;
 	background-size: cover;
 	background-repeat: no-repeat;
-	border: 1px solid #eee;	
+	border: 1px solid var(--o-border-subtle);	
 }
 
 .o_video_poster_select {
@@ -30,7 +30,7 @@
 				width: 100%;
 				display: block;
 				line-height: 3em;
-				background: #f8f8f8;
+				background: var(--o-bg-subtle);
 				opacity: 0.8;
 			}
 			&:hover {
@@ -66,7 +66,7 @@
 		width: 250px;
 		max-width: 100%;
 		height: 140px;	
-		border: 1px solid #eee;
+		border: 1px solid var(--o-border-subtle);
 	}
 	.o_timecode {
 		position: absolute;
@@ -74,7 +74,7 @@
 		right: 3px;
 		padding: 3px 4px;
 		background: #333;
-		color: #fff;
+		color: var(--o-white);
 		font-size: $font-size-small;
 		line-height: $font-size-small;
 	}
@@ -118,7 +118,7 @@
 	
 	.o_ratings_and_comments {
 		margin-top: 2em;
-		border-top: 1px solid #eee;
+		border-top: 1px solid var(--o-border-subtle);
 		padding-top: 1em;
 	}
 }
@@ -140,7 +140,7 @@
 	overflow: auto;
 	
 	#o_qti_container {
-		border: 1px solid $gray-lighter;
+		border: 1px solid var(--o-border-subtle);
 	}
 }
 
@@ -161,12 +161,12 @@
 	&.mejs__overlay {
 		width: 100%;
 		height: 100%;
-		background-color: rgba(255,255,255,0.5);
+		background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
 		z-index: 1;
 	}
 
 	#itemBody, .modalFeedback {
-		background-color: white;
+		background-color: var(--o-bg-raised);
 		opacity: 1.0;
 	}
 	
@@ -185,7 +185,7 @@
 	}
 	
 	#o_qti_container {
-		background-color: white;
+		background-color: var(--o-bg-raised);
 		padding: $padding-base-horizontal $padding-base-horizontal;
 		border-radius: $border-radius-base;
 		
@@ -229,7 +229,7 @@
     display: inline-block;
 	@include o-add-icon-font();
     &:before {
- 	    color: white;
+ 	    color: var(--o-white);
 	    font-size: 18px;
     }
 }
@@ -312,7 +312,7 @@
     margin: 11px 0 0 0;
     font-size: 11px;
     line-height: normal;
-    color: #ffffff;
+    color: var(--o-white);
 }
 
 .mejs__controls .mejs__speed-button .mejs__speed-selector {
@@ -353,7 +353,7 @@
 
 /* make button better readable on white background */
 .mejs__overlay-button {
-	filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, .5));
+	filter: drop-shadow(1px 1px 5px color-mix(in srgb, var(--o-shadow-color) 50%, transparent));
 }
 
 /* make subtitles better readable, relative to screen size but not too small or too large */
@@ -500,10 +500,10 @@
 		margin: 10% auto;
 		padding: 10px 20px 20px 20px;
 		max-width: 500px;
-		background-color: $panel-bg;
+		background-color: var(--o-panel-bg);
 		border: 1px solid transparent;
 		border-radius: $panel-border-radius;
-		@include box-shadow(0 1px 1px rgba(0,0,0,.05));
+		@include box-shadow(0 1px 1px color-mix(in srgb, var(--o-shadow-color) 5%, transparent));
 		text-align: center;
 	}
 	.o_video_resume_buttons {
@@ -582,7 +582,7 @@
 }
 
 .o_video_timeline_box {
-	background-color: $table-bg-hover;
+	background-color: var(--o-table-hover-bg);
 
 	&.o_video_active {
 		background-color: $o-table-row-selected-color;
@@ -672,11 +672,11 @@
 		height: .2em;
 		width: 80%;
 		border: none;
-		background: $gray;
+		background: var(--o-video-slider-bg);
 
 		.ui-slider-handle {
-			border-color: $gray;
-			background-color: $gray;
+			border-color: var(--o-video-slider-bg);
+			background-color: var(--o-video-slider-bg);
 			outline: 0;
 			width: 0.8em;
 			height: 0.8em;
@@ -795,7 +795,7 @@
 	}
 
 	.o_video_segment_category_placeholder {
-		color: $input-color-placeholder;
+		color: var(--o-input-placeholder);
 		display: inline-block;
 		padding: 16px;
 	}
@@ -806,7 +806,7 @@
 	left: 10px;
 	right: 10px;
 	bottom: 40px;
-	background-color: rgba(255, 255, 255, 0.5);
+	background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
 	height: 20px;
 }
 
@@ -847,14 +847,14 @@
 	margin-top: 6px;
 	margin-bottom: 6px;
 	margin-right: 10px;
-	color: white;
+	color: var(--o-white);
 }
 
 .o_video_comment_box {
 	margin-left: 10px;
 	margin-right: 10px;
 	padding: 16px 16px 6px 16px;
-	background-color: white;
+	background-color: var(--o-bg-raised);
 	border-width: medium;
 	border-style: solid;
 	border-radius: 5px;
@@ -970,7 +970,7 @@
 
 		.o_video_feed_dimensions {
 			position: absolute;
-			color: #fff;
+			color: var(--o-white);
 			opacity: 0.9;
 			font-size: 11px;
 			font-weight: bold;

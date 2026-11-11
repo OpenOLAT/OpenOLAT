@@ -454,7 +454,7 @@ $label_right_margin_dialog: 5px;
 			}
 
 			.o_category_list_item:hover {
-				background-color: $table-bg-hover;
+				background-color: var(--o-bg-hover);
 			}
 
 			.o_category_list_item:active {
@@ -486,7 +486,7 @@ $label_right_margin_dialog: 5px;
 	margin-top: 10px;
 
 	a {
-		background-color: $table-bg-hover;
+		background-color: var(--o-table-hover-bg);
 		width: 100%;
 		border-top-left-radius: 0;
 		border-bottom-left-radius: 0;

@@ -124,6 +124,35 @@
       </div>
     </div>
   </div>
+
+  <div class="cl-component" id="neutral-scale">
+    <div class="cl-component-header">
+      <h3>Neutral scale</h3>
+      <p>The greys of the theme: 18 steps from 0 (white) to 1000 (black), from <code>$o-neutral</code> in <code>themes/light/_palette_neutral.scss</code>. The default steps are tinted with slate (OKLCH hue 260, chroma 0.038). Steps 50 to 900 have the luminance of the palette steps. The anchors 25, 150, 250, 750 and 950 keep the light colours of <code>--o-bg-subtle</code>, <code>--o-border</code>, <code>--o-border-strong</code>, <code>--o-text</code> and the shadow colour. Step 450 is the lightest grey with 3:1 on white. A theme config changes the tint with <code>$o-neutral-hue</code> and <code>$o-neutral-chroma</code> (0 gives pure greys); the lightness of each step stays. The choosers do not offer the neutral scale, and the modules do not read a step directly: a semantic or element token reads it. Each cell shows the hex value and the contrast on white.</p>
+      <div class="cl-classes">
+        <code>--o-neutral-{step}</code> <code>$o-neutral</code> <code>o-neutral($step)</code> <code>$o-neutral-hue</code> <code>$o-neutral-chroma</code>
+      </div>
+    </div>
+    <div class="cl-component-body">
+      <div class="o_component_example">
+        <div class="cl-example cl-pal-wrap">
+          <table class="cl-pal-table" id="cl-neutral-table">
+            <thead><tr><th scope="col">Step</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cl-code">
+        <span class="cl-code-toggle">Show Code</span>
+        <pre>// client theme config, before the import of the light theme: a warm grey scale
+$o-neutral-hue: 30;
+// a token reads a neutral step
+$o-tokens: (
+	"text-muted": "neutral-600",
+);</pre>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="cl-section" id="swatches">
@@ -187,15 +216,15 @@
 
 <section class="cl-section" id="tokens">
   <h2>Colour Tokens</h2>
-  <p>The tokens of the three layers base, framework and component (OO-9994, OO-10043). <code>modules/_tokens.scss</code> emits all tokens on <code>:root</code> in <code>theme.css</code>, <code>content.css</code> and <code>oo-docs.css</code>, not in <code>email.css</code>. Literal colours exist only in the palette and in the shade tokens: the palette steps, <code>--o-white</code>, the base colours <code>--o-base-{name}</code> and the 20 shade tokens of the buttons. The base colours carry the colour inputs of the theme 1:1 (<code>$text-color</code>, <code>$brand-primary</code>, <code>$link-color</code>, …). Every semantic token is a <code>var()</code> reference: to its base colour, or to the palette step of its state. An element token reads another token, a palette step or its base colour <code>--o-base-{name}</code>. The modules read the tokens with <code>var(--o-*)</code> (OO-10043).</p>
+  <p>The tokens of the three layers base, framework and component (OO-9994, OO-10043). <code>modules/_tokens.scss</code> emits all tokens on <code>:root</code> in <code>theme.css</code>, <code>content.css</code> and <code>oo-docs.css</code>, not in <code>email.css</code>. Literal colours exist only in the palette and in the shade tokens: the palette steps, <code>--o-white</code>, the base colours <code>--o-base-{name}</code> and the 63 shade tokens. The base colours carry the colour inputs of the theme 1:1 (<code>$text-color</code>, <code>$brand-primary</code>, <code>$link-color</code>, …). Every semantic token is a <code>var()</code> reference: to its base colour, or to the palette step of its state. An element token reads another token, a palette step or its base colour <code>--o-base-{name}</code>. The modules read the tokens with <code>var(--o-*)</code> (OO-10043).</p>
   <p>A client theme overrides a token with the map <code>$o-tokens</code> in its config. The value is the name of any other token (<code>"primary"</code>, <code>"tree-link"</code>), a palette step <code>"{hue}-{step}"</code>, <code>"white"</code> or a colour. The compile stops for an unknown token or step, for a loop of references and for an override that breaks a contrast pair. Values and ratios below are read from the selected theme.</p>
 
   <div class="cl-component" id="semantic-tokens">
     <div class="cl-component-header">
       <h3>Semantic tokens</h3>
-      <p>"Reads" shows the declared value in the theme CSS, "Value" the resolved colour. The ratio is the contrast pair the compile checks for an override.</p>
+      <p>"Reads" shows the declared value in the theme CSS, "Value" the resolved colour. The ratio is the contrast pair the compile checks for an override. The compile also checks <code>text</code> on <code>bg-hover</code>, <code>bg-selected</code> and <code>bg-raised</code> (4.5:1). <code>shadow-color</code>, <code>backdrop</code> and <code>scrim</code> are opaque colours: a rule sets the transparency with <code>color-mix(in srgb, var(--o-backdrop) 50%, transparent)</code>.</p>
       <div class="cl-classes">
-        <code>--o-text</code> <code>--o-text-muted</code> <code>--o-heading</code> <code>--o-bg</code> <code>--o-bg-subtle</code> <code>--o-border</code> <code>--o-border-strong</code> <code>--o-primary</code> <code>--o-primary-fg</code> <code>--o-primary-hover</code> <code>--o-primary-text</code> <code>--o-link</code> <code>--o-link-hover</code> <code>--o-focus</code>
+        <code>--o-text</code> <code>--o-text-muted</code> <code>--o-heading</code> <code>--o-bg</code> <code>--o-bg-subtle</code> <code>--o-border</code> <code>--o-border-strong</code> <code>--o-primary</code> <code>--o-primary-fg</code> <code>--o-primary-hover</code> <code>--o-primary-text</code> <code>--o-link</code> <code>--o-link-hover</code> <code>--o-focus</code> <code>--o-text-disabled</code> <code>--o-bg-hover</code> <code>--o-bg-selected</code> <code>--o-bg-raised</code> <code>--o-border-subtle</code> <code>--o-shadow-color</code> <code>--o-backdrop</code> <code>--o-scrim</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -256,7 +285,7 @@ $o-tokens: (
   <div class="cl-component" id="element-tokens">
     <div class="cl-component-header">
       <h3>Element tokens</h3>
-      <p>211 colours of single elements in three layers (<code>modules/_tokens.scss</code>): the global elements of the base layer (<code>$o-token-layer-base</code>, 21), the framework elements (<code>$o-token-layer-framework</code>, 89) and the elements of one feature module (<code>$o-token-layer-component</code>, 101). "Default" shows one of two forms. A Sass variable (86 tokens) feeds the token, so a client theme that sets the variable keeps working: the token reads the first token of its list whose default has the same colour, else the palette step with the same colour, else its base colour <code>--o-base-{name}</code>. For 9 tokens the default is a Sass expression: the text colour that <code>o-a11y-color()</code> adjusts for the background of one rule. A token name in quotes (125 tokens) is a reference to another token: <code>"primary"</code> gives <code>var(--o-primary)</code>. There is no Sass variable for it; a client theme sets it with <code>$o-tokens</code>. The ratio is the contrast pair the compile checks for an override (4.5:1).</p>
+      <p>277 colours of single elements in three layers (<code>modules/_tokens.scss</code>): the global elements of the base layer (<code>$o-token-layer-base</code>, 26), the framework elements (<code>$o-token-layer-framework</code>, 135) and the elements of one feature module (<code>$o-token-layer-component</code>, 116). "Default" shows one of two forms. A Sass variable (134 tokens) feeds the token, so a client theme that sets the variable keeps working: the token reads the first token of its list whose default has the same colour, else the palette step with the same colour, else its base colour <code>--o-base-{name}</code>. For 8 tokens the default is a Sass expression: the text colour that <code>o-a11y-color()</code> adjusts for the background of one rule. A token name in quotes (143 tokens) is a reference to another token: <code>"primary"</code> gives <code>var(--o-primary)</code>. There is no Sass variable for it; a client theme sets it with <code>$o-tokens</code>. The ratio is the contrast pair the compile checks for an override (4.5:1).</p>
       <div class="cl-classes">
         <code>$o-token-layer-base</code> <code>$o-token-layer-framework</code> <code>$o-token-layer-component</code> <code>--o-{element}-{part}</code> <code>--o-base-{name}</code>
       </div>
@@ -307,16 +336,16 @@ $o-tokens: (
   <div class="cl-component" id="shade-tokens">
     <div class="cl-component-header">
       <h3>Shade tokens</h3>
-      <p>20 darker colours for the hover, focus and active state of the buttons (<code>$o-token-shades</code> in <code>modules/_tokens.scss</code>): 12 in the base layer, 8 in the component layer. The compile computes a shade token from its element token and emits a literal colour. A shade token follows an override of its element token. The map <code>$o-tokens</code> overrides a shade token like an element token. The mixin <code>button-variant</code> (<code>modules/_button_variant.scss</code>) reads the shade tokens for the hover, focus and active state. The compile checks the text token of a button on its <code>-bg-hover</code> and <code>-bg-active</code> shade tokens (4.5:1) when an override changes one of the colours.</p>
+      <p>63 darker or lighter colours of an element token or a semantic token (<code>$o-token-shades</code> in <code>modules/_tokens.scss</code>): 24 for the hover, focus and active state of the buttons, 39 for the colour maths of the modules (hover, active, edge, tint). 20 are in the base layer, 23 in the framework layer, 20 in the component layer. The name is the token name and a suffix: <code>-hover</code>, <code>-active</code>, <code>-focus</code> for a state, <code>-edge</code> for a darker edge around a fill, <code>-tint</code> for a lighter surface, <code>-stop-{n}</code> for a gradient stop. The compile computes a shade token from its token with <code>darken()</code> or <code>lighten()</code> and emits a literal colour. A shade token follows an override of its token. The map <code>$o-tokens</code> overrides a shade token like an element token. The mixin <code>button-variant</code> (<code>modules/_button_variant.scss</code>) reads the shade tokens for the hover, focus and active state. The compile checks the text token of a button and of the selection tags on its <code>-bg-hover</code> and <code>-bg-active</code> shade tokens, <code>chelp-fg</code> on <code>chelp-bg-hover</code> and <code>coursesite-title-hover</code> on <code>bg</code> (4.5:1) when an override changes one of the colours. A translucent colour is no token: the rule writes <code>color-mix(in srgb, var(--o-focus) 15%, transparent)</code> for <code>rgba($input-border-focus, 0.15)</code>.</p>
       <div class="cl-classes">
-        <code>$o-token-shades</code> <code>--o-{element}-bg-hover</code> <code>--o-{element}-bg-active</code> <code>--o-{element}-border-hover</code> <code>--o-{element}-border-focus</code>
+        <code>$o-token-shades</code> <code>--o-{element}-bg-hover</code> <code>--o-{element}-bg-active</code> <code>--o-{element}-border-hover</code> <code>--o-{element}-border-focus</code> <code>--o-{token}-edge</code> <code>--o-{token}-tint</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example cl-pal-wrap">
           <table class="table cl-tok-table" id="cl-tok-shades">
-            <thead><tr><th>Token</th><th>Colour</th><th>Button state</th><th>Value</th></tr></thead>
+            <thead><tr><th>Token</th><th>Colour</th><th>State or use</th><th>Value</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -363,10 +392,15 @@ $o-tokens: (
   var SEMANTIC = [
     ['text', 'body text', 'bg', 4.5],
     ['text-muted', 'secondary text', 'bg', 4.5],
+    ['text-disabled', 'text of a disabled control', null, 0],
     ['heading', 'headings, legend, dialog title', 'bg', 4.5],
     ['bg', 'page surface', null, 0],
     ['bg-subtle', 'panel heading, striped row', null, 0],
+    ['bg-hover', 'row or item under the pointer', null, 0],
+    ['bg-selected', 'selected row or item', null, 0],
+    ['bg-raised', 'dropdown menu, popover, dialog', null, 0],
     ['border', 'panel, divider', null, 0],
+    ['border-subtle', 'light separator line', null, 0],
     ['border-strong', 'form field', null, 0],
     ['primary', 'brand fill, primary button', null, 0],
     ['primary-fg', 'text on primary', 'primary', 4.5],
@@ -374,7 +408,10 @@ $o-tokens: (
     ['primary-text', 'brand colour as text on white', 'bg', 4.5],
     ['link', 'link', 'bg', 4.5],
     ['link-hover', 'link hover', 'bg', 4.5],
-    ['focus', 'focus ring', 'bg', 3]
+    ['focus', 'focus ring', 'bg', 3],
+    ['shadow-color', 'shadows, opaque: the rule sets the transparency', null, 0],
+    ['backdrop', 'layer behind a modal dialog, opaque', null, 0],
+    ['scrim', 'light veil over content, opaque', null, 0]
   ];
   var ELEMENT = [
     // layer, group, name, Sass variable or null, default tokens (Sass list or the reference), contrast background, ratio
@@ -384,10 +421,13 @@ $o-tokens: (
     ['base', 'Buttons', 'btn-default-bg', '$btn-default-bg', ['bg'], null, 0],
     ['base', 'Buttons', 'btn-default-fg', '$btn-default-color', ['text'], 'btn-default-bg', 4.5],
     ['base', 'Buttons', 'btn-default-border', '$btn-default-border', [], null, 0],
-    ['base', 'Buttons', 'btn-dirty-bg', '$o-button-dirty-bg', [], null, 0],
-    ['base', 'Buttons', 'btn-dirty-fg', '$o-button-dirty-color', [], 'btn-dirty-bg', 4.5],
+    ['base', 'Buttons', 'btn-dirty-bg', '$o-button-dirty-bg', ['state-warning-bg'], null, 0],
+    ['base', 'Buttons', 'btn-dirty-fg', '$o-button-dirty-color', ['state-warning-fg'], 'btn-dirty-bg', 4.5],
     ['base', 'Buttons', 'btn-dirty-border', '$o-button-dirty-border', [], null, 0],
     ['base', 'Buttons', 'btn-ghost-fg', null, ['link'], null, 0],
+    ['base', 'Buttons', 'btn-danger-bg', null, ['state-danger-bg'], null, 0],
+    ['base', 'Buttons', 'btn-danger-fg', null, ['state-danger-fg'], 'btn-danger-bg', 4.5],
+    ['base', 'Buttons', 'btn-danger-border', null, ['state-danger-border'], null, 0],
     ['base', 'Content text and headings', 'content-header', '$o-content-header-base-color', ['heading', 'text'], 'bg', 4.5],
     ['base', 'Content text and headings', 'content-link', '$o-content-link-color', ['link'], 'bg', 4.5],
     ['base', 'Content text and headings', 'content-bg', null, ['bg'], null, 0],
@@ -399,10 +439,20 @@ $o-tokens: (
     ['base', 'Content text and headings', 'content-h4', null, ['content-header'], null, 0],
     ['base', 'Content text and headings', 'content-h5', '$o-content-h5-color', ['content-header'], null, 0],
     ['base', 'Content text and headings', 'content-text', null, ['text'], null, 0],
+    ['base', 'Content text and headings', 'content-table-header-bg', '$gray-lighter', [], null, 0],
+    ['base', 'Links', 'link-subtle', 'o-a11y-color($link-color, $panel-default-heading-bg)', ['link'], 'bg-subtle', 4.5],
+    ['framework', 'Alert and message boxes', 'alert-close', '$gray-light', [], null, 0],
+    ['framework', 'Alert and message boxes', 'alert-close-hover', '$gray', [], null, 0],
+    ['framework', 'Alert and message boxes', 'message-table-border', '$gray-dark', [], null, 0],
+    ['framework', 'Blockquote and code blocks', 'blockquote-border', '$blockquote-border-color', ['border-subtle'], null, 0],
+    ['framework', 'Blockquote and code blocks', 'code-block-bg', '$pre-bg', [], null, 0],
+    ['framework', 'Blockquote and code blocks', 'code-block-fg', '$pre-color', [], null, 0],
+    ['framework', 'Blockquote and code blocks', 'code-block-border', '$pre-border-color', [], null, 0],
     ['framework', 'Bookmarks', 'bookmark', '$o-bookmark-color', [], null, 0],
     ['framework', 'Cards and fact sheet', 'card-hover', null, ['primary'], null, 0],
     ['framework', 'Cards and fact sheet', 'card-title', null, ['coursesite-title'], null, 0],
     ['framework', 'Cards and fact sheet', 'fact-icon', null, ['primary'], null, 0],
+    ['framework', 'Charts', 'chart-help-line', '$gray-light', [], null, 0],
     ['framework', 'Context help', 'chelp-bg', '$o-chelp-bg', ['btn-primary-bg'], null, 0],
     ['framework', 'Context help', 'chelp-border', '$o-chelp-border', ['btn-primary-border'], null, 0],
     ['framework', 'Context help', 'chelp-fg', null, ['btn-primary-fg'], 'chelp-bg', 4.5],
@@ -412,6 +462,10 @@ $o-tokens: (
     ['framework', 'Date component and date picker', 'datepicker-today-border', null, ['primary'], null, 0],
     ['framework', 'Date component and date picker', 'datepicker-today', null, ['primary'], null, 0],
     ['framework', 'Dialogs', 'dialog-header', '$o-dialog-header-color', ['primary-text', 'primary'], 'bg', 4.5],
+    ['framework', 'Dropdown menus', 'dropdown-link', '$dropdown-link-color', [], null, 0],
+    ['framework', 'Dropdown menus', 'dropdown-link-hover', '$dropdown-link-hover-color', [], null, 0],
+    ['framework', 'Dropdown menus', 'dropdown-link-hover-bg', '$dropdown-link-hover-bg', ['bg-hover'], null, 0],
+    ['framework', 'Dropdown menus', 'dropdown-divider', '$dropdown-divider-bg', [], null, 0],
     ['framework', 'Empty state and indicators', 'box-plot-values', null, ['primary'], null, 0],
     ['framework', 'Empty state and indicators', 'empty-msg', '$o-empty-msg-color', ['text'], null, 0],
     ['framework', 'Empty state and indicators', 'empty-panel-icon', null, ['primary'], null, 0],
@@ -424,6 +478,8 @@ $o-tokens: (
     ['framework', 'Footer', 'footer-inner-bg', '$o-footer-inner-bg', [], null, 0],
     ['framework', 'Footer', 'footer-text', '$o-footer-default-color', ['text-muted'], 'footer-inner-bg', 4.5],
     ['framework', 'Footer', 'footer-link', '$o-footer-default-link-color', ['text-muted'], 'footer-inner-bg', 4.5],
+    ['framework', 'Form elements', 'addremove-add-bg', '$o-addremove-add-color', ['state-success-soft-bg'], null, 0],
+    ['framework', 'Form elements', 'addremove-remove-bg', '$o-addremove-remove-color', ['state-danger-soft-bg'], null, 0],
     ['framework', 'Form elements', 'autocomplete-suggestion-bg', null, ['btn-primary-bg'], null, 0],
     ['framework', 'Form elements', 'autocomplete-suggestion-fg', null, ['btn-primary-fg'], 'autocomplete-suggestion-bg', 4.5],
     ['framework', 'Form elements', 'file-upload-border', null, ['text-muted'], null, 0],
@@ -436,14 +492,27 @@ $o-tokens: (
     ['framework', 'Form elements', 'toggle-on-bg', null, ['primary'], null, 0],
     ['framework', 'Form elements', 'toggle-on-border', null, ['primary'], null, 0],
     ['framework', 'Form elements', 'toggle-text', null, ['text-muted'], null, 0],
+    ['framework', 'Form elements', 'tinymce-danger-bg', null, ['state-danger-soft-bg'], null, 0],
+    ['framework', 'Form elements', 'input-bg', null, ['bg'], null, 0],
+    ['framework', 'Form elements', 'input-fg', '$input-color', [], null, 0],
+    ['framework', 'Form elements', 'input-disabled-bg', null, ['bg-subtle'], null, 0],
+    ['framework', 'Form elements', 'input-placeholder', '$input-color-placeholder', [], null, 0],
+    ['framework', 'Form elements', 'legend', '$legend-color', [], null, 0],
+    ['framework', 'Form elements', 'legend-border', '$legend-border-color', [], null, 0],
     ['framework', 'Login page', 'login-header', '$o-login-header-color', ['primary-text', 'primary'], null, 0],
     ['framework', 'Login page', 'login-help-link', '$o-login-help-link-color', ['link'], null, 0],
-    ['framework', 'Menu tree', 'tree-link', '$o-tree-link-color', [], null, 0],
-    ['framework', 'Menu tree', 'tree-link-hover', '$o-tree-link-hover-color', [], null, 0],
+    ['framework', 'Menu tree', 'tree-link', '$o-tree-link-color', ['nav-link'], null, 0],
+    ['framework', 'Menu tree', 'tree-link-hover', '$o-tree-link-hover-color', ['nav-link-hover'], null, 0],
     ['framework', 'Menu tree', 'tree-link-hover-bg', '$o-tree-link-hover-bg', [], null, 0],
     ['framework', 'Menu tree', 'tree-link-active', '$o-tree-link-active-color', ['link'], null, 0],
     ['framework', 'Menu tree', 'tree-link-active-hover', '$o-tree-link-active-hover-color', ['link-hover'], null, 0],
     ['framework', 'Menu tree', 'tree-link-active-hover-bg', '$o-tree-link-active-hover-bg', [], null, 0],
+    ['framework', 'Menu tree', 'tree-link-active-parent', '$o-tree-link-active-parent-color', ['tree-link'], null, 0],
+    ['framework', 'Menu tree', 'tree-link-active-parent-hover', '$o-tree-link-active-parent-hover-color', ['tree-link-hover'], null, 0],
+    ['framework', 'Modal dialogs and popovers', 'modal-content-border', '$modal-content-border-color', ['border'], null, 0],
+    ['framework', 'Modal dialogs and popovers', 'modal-header-border', '$modal-header-border-color', [], null, 0],
+    ['framework', 'Modal dialogs and popovers', 'popover-bg', null, ['bg-raised'], null, 0],
+    ['framework', 'Modal dialogs and popovers', 'popover-border', '$popover-border-color', [], null, 0],
     ['framework', 'Navigation bar', 'navbar-bg', '$o-navbar-bg', ['bg'], null, 0],
     ['framework', 'Navigation bar', 'navbar-text', '$o-navbar-color', [], 'navbar-bg', 4.5],
     ['framework', 'Navigation bar', 'navbar-link', '$o-navbar-link-color', [], 'navbar-bg', 4.5],
@@ -460,29 +529,48 @@ $o-tokens: (
     ['framework', 'Navigation bar', 'navbar-brand', '$o-navbar-brand-color', [], null, 0],
     ['framework', 'Navigation bar', 'navbar-brand-hover', '$o-navbar-brand-hover-color', [], null, 0],
     ['framework', 'Navigation bar', 'navbar-brand-hover-bg', '$o-navbar-brand-hover-bg', [], null, 0],
+    ['framework', 'Navigation links', 'nav-link', '$navbar-default-link-color', [], 'bg', 4.5],
+    ['framework', 'Navigation links', 'nav-link-hover', '$navbar-default-link-hover-color', [], 'bg', 4.5],
+    ['framework', 'Panels, progress bars and thumbnails', 'panel-bg', '$panel-bg', ['bg'], null, 0],
+    ['framework', 'Panels, progress bars and thumbnails', 'progress-bar-fg', '$progress-bar-color', [], null, 0],
+    ['framework', 'Panels, progress bars and thumbnails', 'thumbnail-border', '$thumbnail-border', [], null, 0],
     ['framework', 'Portal and portlets', 'portlet-border', null, ['border'], null, 0],
     ['framework', 'Portal and portlets', 'portlet-header-bg', null, ['bg-subtle'], null, 0],
+    ['framework', 'Segments', 'segments-tab-link', null, ['link'], 'bg', 4.5],
     ['framework', 'Scope selection', 'scope-toggle-border', null, ['primary'], null, 0],
     ['framework', 'Scope selection', 'scope-toggle-fg', null, ['text'], null, 0],
     ['framework', 'Scope selection', 'scope-toggle-on-bg', '$o-scope-toggle-on-bg-color', ['primary'], null, 0],
     ['framework', 'Table', 'table-header', null, ['text'], null, 0],
-    ['framework', 'Table', 'table-link', '$o-table-link-color', ['link'], null, 0],
-    ['framework', 'Table', 'table-striped-link', 'o-a11y-color($link-color, $table-bg-accent)', ['table-link', 'link'], null, 0],
+    ['framework', 'Table', 'table-link', null, ['link-subtle'], null, 0],
+    ['framework', 'Table', 'table-striped-link', null, ['link-subtle'], null, 0],
+    ['framework', 'Table', 'table-border', '$table-border-color', [], null, 0],
+    ['framework', 'Table', 'table-striped-bg', '$table-bg-accent', ['bg-subtle'], null, 0],
+    ['framework', 'Table', 'table-hover-bg', null, ['bg-hover'], null, 0],
     ['framework', 'Tags', 'tag-bg', '$o-tag-background-color', ['primary'], null, 0],
     ['framework', 'Tags', 'tag-selected-bg', '$o-tag-selected-background-color', ['btn-dirty-bg'], null, 0],
+    ['framework', 'Tags', 'tag-selected-border', '$o-tag-selected-border-color', ['btn-dirty-border'], null, 0],
     ['framework', 'Tags', 'tag-selection-bg', '$o-tag-selection-background-color', ['btn-default-bg'], null, 0],
     ['framework', 'Tags', 'tag-selection-border', '$o-tag-selection-border-color', ['border-strong'], null, 0],
     ['framework', 'Tags', 'tag-selection-fg', null, ['btn-default-fg'], 'tag-selection-bg', 4.5],
     ['framework', 'Tags', 'tag-selection-selected-bg', '$o-tag-selection-selected-background-color', ['btn-primary-bg'], null, 0],
     ['framework', 'Tags', 'tag-selection-selected-border', '$o-tag-selection-selected-border-color', ['btn-primary-border'], null, 0],
     ['framework', 'Tags', 'tag-selection-selected-fg', null, ['btn-primary-fg'], 'tag-selection-selected-bg', 4.5],
+    ['framework', 'Tags', 'tag-selection-remove-selected-bg', '$o-tag-selection-remove-selected-background-color', ['btn-danger-bg'], null, 0],
+    ['framework', 'Tags', 'tag-selection-remove-selected-border', '$o-tag-selection-remove-selected-border-color', ['btn-danger-border'], null, 0],
+    ['framework', 'Tags', 'tag-selection-remove-selected-fg', '$o-tag-selection-remove-selected-font-color', ['btn-danger-fg'], 'tag-selection-remove-selected-bg', 4.5],
     ['framework', 'Timeline and swiper', 'swiper-button-bg', null, ['btn-default-bg'], null, 0],
     ['framework', 'Timeline and swiper', 'swiper-button-fg', null, ['btn-default-fg'], 'swiper-button-bg', 4.5],
     ['framework', 'Timeline and swiper', 'swiper-button-hover', null, ['primary'], null, 0],
     ['framework', 'Timeline and swiper', 'timeline-path', null, ['border'], null, 0],
     ['framework', 'Toolbar and breadcrumb', 'toolbar-breadcrumb-bg', '$o-toolbar-breadcrumb-bg-color', ['bg-subtle'], null, 0],
-    ['framework', 'Toolbar and breadcrumb', 'toolbar-breadcrumb-link', '$o-toolbar-breadcrumb-link-color', ['link'], 'toolbar-breadcrumb-bg', 4.5],
+    ['framework', 'Toolbar and breadcrumb', 'toolbar-close', '$o-toolbar-close-color', ['state-danger-text'], 'bg', 4.5],
+    ['framework', 'Toolbar and breadcrumb', 'toolbar-breadcrumb-link', null, ['link-subtle'], 'toolbar-breadcrumb-bg', 4.5],
     ['framework', 'Toolbar and breadcrumb', 'toolbar-dropdown-active', null, ['link'], null, 0],
+    ['framework', 'Toolbar and breadcrumb', 'toolbar-link', '$o-toolbar-link-color', ['nav-link'], null, 0],
+    ['framework', 'Toolbar and breadcrumb', 'toolbar-link-hover', '$o-toolbar-link-hover-color', ['nav-link-hover'], null, 0],
+    ['framework', 'Toolbar and breadcrumb', 'toolbar-link-active', '$o-toolbar-link-active-color', ['link'], null, 0],
+    ['framework', 'Toolbar and breadcrumb', 'toolbar-nav-link', null, ['toolbar-link'], null, 0],
+    ['framework', 'Toolbar and breadcrumb', 'toolbar-nav-link-hover', null, ['toolbar-link-hover'], null, 0],
     ['framework', 'Toolbar and breadcrumb', 'toolbar-nav-border', null, ['border-strong'], null, 0],
     ['framework', 'Wizard', 'wizard-step-main-active-bg', null, ['btn-primary-bg'], null, 0],
     ['framework', 'Wizard', 'wizard-step-main-active-fg', null, ['btn-primary-fg'], 'wizard-step-main-active-bg', 4.5],
@@ -493,30 +581,33 @@ $o-tokens: (
     ['component', 'Absences and lectures', 'lecture-timeline-running-bg', null, ['state-neutral-soft-bg'], null, 0],
     ['component', 'Absences and lectures', 'lecture-timeline-running-border', null, ['state-neutral-border'], null, 0],
     ['component', 'Absences and lectures', 'lecture-timeline-path', null, ['border'], null, 0],
-    ['component', 'Badges', 'badge-row-expanded-link', 'o-a11y-color($brand-primary, $o-table-details-bg)', ['primary'], null, 0],
-    ['component', 'Badges', 'badge-row-expanded-link-hover', 'o-a11y-color($brand-primary, darken($o-table-details-bg, 10%))', ['badge-row-expanded-link', 'primary'], null, 0],
-    ['component', 'Badges', 'badge-status-info', 'o-a11y-color($btn-info-border, $o-toolbar-bg-color)', [], null, 0],
-    ['component', 'Badges', 'badge-status-success', 'o-a11y-color($btn-success-border, $o-toolbar-bg-color)', [], null, 0],
-    ['component', 'Badges', 'badge-status-warning', 'o-a11y-color($btn-warning-border, $o-toolbar-bg-color)', [], null, 0],
-    ['component', 'Badges', 'badge-status-danger', 'o-a11y-color($btn-danger-border, $o-toolbar-bg-color)', [], null, 0],
+    ['component', 'Badges', 'badge-row-expanded-link', 'o-a11y-color($link-color, $o-table-details-bg)', ['link'], null, 0],
+    ['component', 'Badges', 'badge-row-expanded-link-hover', 'o-a11y-color($link-color, darken($o-table-details-bg, 10%))', ['badge-row-expanded-link', 'link'], null, 0],
+    ['component', 'Badges', 'badge-status-info', 'o-a11y-color(o-state-color("neutral", "text"), $o-toolbar-bg-color)', ['state-neutral-text'], null, 0],
+    ['component', 'Badges', 'badge-status-success', 'o-a11y-color(o-state-color("success", "text"), $o-toolbar-bg-color)', ['state-success-text'], null, 0],
+    ['component', 'Badges', 'badge-status-warning', 'o-a11y-color(o-state-color("warning", "text"), $o-toolbar-bg-color)', ['state-warning-text'], null, 0],
+    ['component', 'Badges', 'badge-status-danger', 'o-a11y-color(o-state-color("danger", "text"), $o-toolbar-bg-color)', ['state-danger-text'], null, 0],
     ['component', 'Chat', 'im-summary-bg', '$o-im-summary-bg', [], null, 0],
     ['component', 'Chat', 'im-buddies-link', null, ['link'], null, 0],
     ['component', 'Chat', 'im-buddies-link-hover', null, ['link-hover'], null, 0],
     ['component', 'Chat', 'im-chat-date', null, ['text-muted'], null, 0],
     ['component', 'Chat', 'im-groupchat-user', null, ['text'], null, 0],
     ['component', 'Competences', 'competence-selected', null, ['btn-dirty-bg'], null, 0],
+    ['component', 'Competences', 'competence-selected-border', '$o-competences-selected-border-color', ['btn-dirty-border'], null, 0],
     ['component', 'Content editor', 'editor-inspector-title', null, ['primary'], null, 0],
     ['component', 'Content editor', 'editor-layout-pseudo-icon-bg-active', null, ['primary'], null, 0],
     ['component', 'Content editor', 'editor-selected-border', '$o-editor-selected-border-color', ['primary'], null, 0],
     ['component', 'Content editor', 'editor-selected-bg', null, ['primary'], null, 0],
+    ['component', 'Content editor', 'editor-media-unavailable', '$gray-lighter', [], null, 0],
     ['component', 'Course', 'course-style-image-bg', '$o-cn-style-image-bg', ['primary'], null, 0],
-    ['component', 'Course', 'course-style-link', 'o-a11y-color($link-color, $o-cn-style-bg)', ['link'], null, 0],
-    ['component', 'Course', 'course-style-peekview-link', 'o-a11y-color($link-color, $o-cn-style-peekview-bg)', ['link'], null, 0],
+    ['component', 'Course', 'course-style-link', null, ['link-subtle'], null, 0],
+    ['component', 'Course', 'course-style-peekview-link', 'o-a11y-color($link-color, mix($o-cn-style-peekview-bg on $o-cn-style-bg))', ['link'], null, 0],
     ['component', 'Course', 'course-assessment-part-bg', null, ['bg-subtle'], null, 0],
     ['component', 'Course', 'course-state-failed', null, ['state-danger-text'], null, 0],
     ['component', 'Course', 'course-state-passed', '$o-course-state-passed-color', ['state-success-text'], null, 0],
     ['component', 'Course', 'course-state-unknown', null, ['state-warning-text'], null, 0],
     ['component', 'Course', 'course-file-box-border', '$o-dialog-cn-box-border-color', ['border'], null, 0],
+    ['component', 'Course', 'course-node-deleted', '$o-course-node-deleted', ['text-disabled'], null, 0],
     ['component', 'Course', 'lp-pagination-in-progress-border', null, ['state-neutral-text'], null, 0],
     ['component', 'Course', 'lp-pagination-in-progress-icon', null, ['state-neutral-text'], null, 0],
     ['component', 'Course', 'lp-pagination-in-progress-icon-hover', null, ['state-neutral-text'], null, 0],
@@ -533,8 +624,8 @@ $o-tokens: (
     ['component', 'Course site and repository', 'coursesite-start-bg', '$o-coursesite-start-bg', ['btn-primary-bg', 'primary'], null, 0],
     ['component', 'Course site and repository', 'coursesite-start-fg', '$o-coursesite-start-color', [], 'coursesite-start-bg', 4.5],
     ['component', 'Course site and repository', 'coursesite-start-border', '$o-coursesite-start-border', [], null, 0],
-    ['component', 'Course site and repository', 'coursesite-book-bg', '$o-coursesite-book-bg', [], null, 0],
-    ['component', 'Course site and repository', 'coursesite-book-fg', '$o-coursesite-book-color', [], 'coursesite-book-bg', 4.5],
+    ['component', 'Course site and repository', 'coursesite-book-bg', '$o-coursesite-book-bg', ['state-warning-bg'], null, 0],
+    ['component', 'Course site and repository', 'coursesite-book-fg', '$o-coursesite-book-color', ['state-warning-fg'], 'coursesite-book-bg', 4.5],
     ['component', 'Course site and repository', 'coursesite-book-border', '$o-coursesite-book-border', [], null, 0],
     ['component', 'Course site and repository', 'coursesite-border', '$o-coursesite-rowelem-border', ['border-strong'], null, 0],
     ['component', 'Course site and repository', 'coursesite-title', '$o-coursesite-meta-title-color', ['heading', 'text'], 'bg', 4.5],
@@ -553,17 +644,24 @@ $o-tokens: (
     ['component', 'Forum', 'forum-message-footer-border', null, ['forum-message-header-border'], null, 0],
     ['component', 'Forum', 'forum-message-header-bg', '$o-forum-message-header-bg', ['bg-subtle'], null, 0],
     ['component', 'Forum', 'forum-message-header-border', null, ['border'], null, 0],
-    ['component', 'Forum', 'forum-message-header-author', '$o-forum-message-header-author-color', ['link'], 'forum-message-header-bg', 4.5],
-    ['component', 'Forum', 'forum-message-header-modified', '$o-forum-message-header-modified-color', [], 'forum-message-header-bg', 4.5],
-    ['component', 'Forum', 'forum-message-footer-attachment', '$o-forum-message-footer-attachment-color', ['forum-message-header-author', 'link'], 'forum-message-footer-bg', 4.5],
+    ['component', 'Forum', 'forum-message-header-author', null, ['link-subtle'], 'forum-message-header-bg', 4.5],
+    ['component', 'Forum', 'forum-message-header-modified', '$o-forum-message-header-modified-color', ['state-warning-text'], 'forum-message-header-bg', 4.5],
+    ['component', 'Forum', 'forum-message-footer-attachment', null, ['forum-message-header-author'], 'forum-message-footer-bg', 4.5],
     ['component', 'Forum', 'forum-quote-author', null, ['text-muted'], null, 0],
+    ['component', 'Immunity proof', 'immunity-proof-validated-bg', '$o-ip-validated-bg-color', [], null, 0],
+    ['component', 'Immunity proof', 'immunity-proof-claimed-bg', '$o-ip-claimed-bg-color', [], null, 0],
+    ['component', 'Immunity proof', 'immunity-proof-none-bg', '$o-ip-none-bg-color', [], null, 0],
     ['component', 'High score', 'highscore-bar-myself', null, ['primary'], null, 0],
     ['component', 'High score', 'highscore-score', null, ['text-muted'], null, 0],
     ['component', 'Practice', 'practice-challenge-progress-bg', null, ['primary'], null, 0],
     ['component', 'Practice', 'practice-level-disc', null, ['primary'], null, 0],
     ['component', 'Practice', 'practice-play-main-border', null, ['primary'], null, 0],
     ['component', 'Practice', 'practice-rank-me', null, ['primary'], null, 0],
+    ['component', 'Room management', 'room-status-inactive', '$gray-light', [], null, 0],
     ['component', 'Selectus', 'selectus-review-glow', null, ['primary'], null, 0],
+    ['component', 'Selectus', 'selectus-review-comment-link', null, ['link'], 'bg', 4.5],
+    ['component', 'Selectus', 'selectus-review-comments-bg', '$navbar-default-bg', ['bg'], null, 0],
+    ['component', 'Selectus', 'selectus-review-comments-border', '$navbar-default-border', [], null, 0],
     ['component', 'Tests and question pool (QTI 2.1)', 'drawing-border', null, ['primary'], null, 0],
     ['component', 'Tests and question pool (QTI 2.1)', 'drawing-select-border', null, ['primary'], null, 0],
     ['component', 'Tests and question pool (QTI 2.1)', 'qpool-arrow-selected-bg', null, ['navbar-link-active-bg'], null, 0],
@@ -582,18 +680,24 @@ $o-tokens: (
     ['component', 'Tests and question pool (QTI 2.1)', 'qti-status-correct', null, ['state-success-text'], null, 0],
     ['component', 'Tests and question pool (QTI 2.1)', 'qti-status-incorrect', null, ['state-danger-text'], null, 0],
     ['component', 'Tests and question pool (QTI 2.1)', 'qti-status-review', null, ['state-warning-text'], null, 0],
+    ['component', 'Tests and question pool (QTI 2.1)', 'qti-gaptext-alternative-bg', '$gray-lighter', [], null, 0],
+    ['component', 'Tests and question pool (QTI 2.1)', 'qti-gaptext-alternative-fg', '$gray', [], null, 0],
+    ['component', 'Tests and question pool (QTI 2.1)', 'qti-help', '$gray-light', [], null, 0],
     ['component', 'Topic broker', 'topicbroker-enrolled', null, ['state-success-text'], null, 0],
     ['component', 'Topic broker', 'topicbroker-fillin', null, ['text-muted'], null, 0],
     ['component', 'Topic broker', 'topicbroker-waiting', null, ['state-warning-text'], null, 0],
     ['component', 'Topic broker', 'topicbroker-title-abbr-bg', null, ['btn-primary-bg'], null, 0],
     ['component', 'Topic broker', 'topicbroker-title-abbr-fg', null, ['btn-primary-fg'], 'topicbroker-title-abbr-bg', 4.5],
     ['component', 'User authentication', 'authentication-label-bg', null, ['primary'], null, 0],
-    ['component', 'Video task', 'video-startbox-main-border', null, ['primary'], null, 0]
+    ['component', 'Video', 'video-slider-bg', '$gray', [], null, 0],
+    ['component', 'Video task', 'video-startbox-main-border', null, ['primary'], null, 0],
+    ['component', 'Video task', 'videotask-marker-assign-bg', '$gray-dark', [], null, 0]
   ];
   // shade tokens ($o-token-shades): [layer, element], each element has the 4 shades of SHADE_PARTS
   var SHADE_ELEMENTS = [
     ['base', 'btn-primary'],
     ['base', 'btn-default'],
+    ['base', 'btn-danger'],
     ['base', 'btn-dirty'],
     ['component', 'coursesite-start'],
     ['component', 'coursesite-book']
@@ -604,6 +708,48 @@ $o-tokens: (
     ['bg-active', 'bg', 17, 'background: active together with hover or focus'],
     ['border-hover', 'border', 12, 'border: hover, active'],
     ['border-focus', 'border', 25, 'border: focus, active together with hover or focus']
+  ];
+  // shade tokens of the module colour maths: [layer, shade, token, percent darker (negative: lighter), use]
+  var MODULE_SHADES = [
+    ['base', 'content-h5-hover', 'content-h5', 10, 'linked title of a course element: hover'],
+    ['base', 'content-dimmed-hover', 'content-dimmed', 10, 'linked title of a course element: small text, hover'],
+    ['base', 'focus-edge', 'focus', 10, 'dashboard edit mode: dashed line of the drop place'],
+    ['base', 'file-upload-btn-bg-hover', 'btn-default-bg', 5, 'file upload: button of the drop area, hover'],
+    ['framework', 'chelp-bg-hover', 'chelp-bg', 8, 'context help: background, hover'],
+    ['framework', 'chelp-border-hover', 'chelp-border', 12, 'context help: border, hover'],
+    ['framework', 'tag-bg-hover', 'tag-bg', 10, 'clickable tag: background and border, hover'],
+    ['framework', 'tag-bg-active', 'tag-bg', 15, 'clickable tag: background and border, active'],
+    ['framework', 'tag-selected-bg-hover', 'tag-selected-bg', 10, 'selected tag: background, hover'],
+    ['framework', 'tag-selected-bg-active', 'tag-selected-bg', 15, 'selected tag: background, active'],
+    ['framework', 'tag-selection-bg-hover', 'tag-selection-bg', 10, 'selection tag: background, hover'],
+    ['framework', 'tag-selection-bg-active', 'tag-selection-bg', 15, 'selection tag: background and border, active'],
+    ['framework', 'tag-selection-border-hover', 'tag-selection-border', 12, 'selection tag: border, hover'],
+    ['framework', 'tag-selection-selected-bg-hover', 'tag-selection-selected-bg', 10, 'selected selection tag: background, hover'],
+    ['framework', 'tag-selection-selected-bg-active', 'tag-selection-selected-bg', 15, 'selected selection tag: background, active'],
+    ['framework', 'tag-selection-selected-border-hover', 'tag-selection-selected-border', 10, 'selected selection tag: border, hover'],
+    ['framework', 'tag-selection-selected-border-active', 'tag-selection-selected-border', 15, 'selected selection tag: border, active'],
+    ['framework', 'tag-selected-border-hover', 'tag-selected-border', 10, 'selected tag: border, hover'],
+    ['framework', 'tag-selected-border-active', 'tag-selected-border', 15, 'selected tag: border, active'],
+    ['framework', 'tag-selection-remove-selected-bg-hover', 'tag-selection-remove-selected-bg', 10, 'selected tag of a remove selection: background, hover'],
+    ['framework', 'tag-selection-remove-selected-bg-active', 'tag-selection-remove-selected-bg', 15, 'selected tag of a remove selection: background, active'],
+    ['framework', 'tag-selection-remove-selected-border-hover', 'tag-selection-remove-selected-border', 10, 'selected tag of a remove selection: border, hover'],
+    ['framework', 'tag-selection-remove-selected-border-active', 'tag-selection-remove-selected-border', 15, 'selected tag of a remove selection: border, active'],
+    ['framework', 'addremove-add-bg-hover', 'addremove-add-bg', 10, 'add toggle: background, hover'],
+    ['framework', 'addremove-remove-bg-hover', 'addremove-remove-bg', 10, 'remove toggle: background, hover'],
+    ['framework', 'toolbar-close-hover', 'toolbar-close', 15, 'close icon of toolbar and breadcrumb: hover'],
+    ['framework', 'tinymce-danger-bg-edge', 'tinymce-danger-bg', 25, 'HTML editor with too many characters: border'],
+    ['component', 'coursesite-title-hover', 'coursesite-title', 10, 'linked title in course site and catalog: hover'],
+    ['component', 'competence-selected-border-hover', 'competence-selected-border', 10, 'selected competence: border, hover'],
+    ['component', 'competence-selected-border-active', 'competence-selected-border', 15, 'selected competence: border, active'],
+    ['component', 'immunity-proof-validated-bg-tint', 'immunity-proof-validated-bg', -31, 'immunity proof page'],
+    ['component', 'immunity-proof-validated-fg', 'immunity-proof-validated-bg', -33, 'text on the status fill'],
+    ['component', 'immunity-proof-validated-bg-edge', 'immunity-proof-validated-bg', 31, 'text stroke on the status fill'],
+    ['component', 'immunity-proof-claimed-bg-tint', 'immunity-proof-claimed-bg', -45, 'immunity proof page'],
+    ['component', 'immunity-proof-claimed-fg', 'immunity-proof-claimed-bg', -45, 'text on the status fill'],
+    ['component', 'immunity-proof-claimed-bg-edge', 'immunity-proof-claimed-bg', 23, 'text stroke on the status fill'],
+    ['component', 'immunity-proof-none-bg-tint', 'immunity-proof-none-bg', -48, 'immunity proof page'],
+    ['component', 'immunity-proof-none-fg', 'immunity-proof-none-bg', -48, 'text on the status fill'],
+    ['component', 'immunity-proof-none-bg-edge', 'immunity-proof-none-bg', 25, 'text stroke on the status fill']
   ];
   var STATES = ['neutral', 'success', 'warning', 'critical', 'danger', 'finished', 'inactive', 'highlight'];
   var ROLES = ['text', 'bg', 'fg', 'border', 'soft-bg', 'soft-fg', 'soft-border'];
@@ -827,6 +973,30 @@ $o-tokens: (
         val.appendChild(hex);
       });
     });
+    var moduleLayer = null;
+    MODULE_SHADES.forEach(function(m) {
+      if (m[0] !== moduleLayer) {
+        moduleLayer = m[0];
+        var gr = tbody.insertRow();
+        gr.className = 'cl-tok-group';
+        var th = document.createElement('th');
+        th.colSpan = 4;
+        th.textContent = 'Module colour maths, ' + moduleLayer + ' layer';
+        gr.appendChild(th);
+      }
+      var tr = tbody.insertRow();
+      tr.insertCell().innerHTML = '<code>--o-' + m[1] + '</code>';
+      var from = tr.insertCell();
+      from.className = 'cl-tok-ref';
+      from.textContent = m[2] + ', ' + Math.abs(m[3]) + (m[3] < 0 ? '% lighter' : '% darker');
+      tr.insertCell().textContent = m[4];
+      var val = tr.insertCell();
+      val.appendChild(chip(m[1]));
+      var hex = document.createElement('span');
+      hex.className = 'cl-tok-hex';
+      hex.textContent = (value(m[1]) || 'missing').toUpperCase();
+      val.appendChild(hex);
+    });
   }
 
   function render() {
@@ -847,6 +1017,7 @@ $o-tokens: (
 (function() {
   var HUES = ['red', 'orange', 'yellow', 'lime', 'green', 'teal', 'cyan', 'blue', 'violet', 'magenta', 'pink', 'brown', 'slate', 'gray'];
   var STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+  var NEUTRAL_STEPS = [0, 25, 50, 100, 150, 200, 250, 300, 400, 450, 500, 600, 700, 750, 800, 900, 950, 1000];
   var TEXT_MIN = 4.5;
   var BORDER_MIN = 3;
 
@@ -999,8 +1170,45 @@ $o-tokens: (
     rows.forEach(fillRow);
   }
 
+  // one row: hex value and contrast on white per step; light steps get dark text
+  function renderNeutral() {
+    var root = document.documentElement;
+    var table = document.getElementById('cl-neutral-table');
+    var headRow = table.tHead.rows[0];
+    var tbody = table.tBodies[0];
+    while (headRow.cells.length > 1) headRow.deleteCell(1);
+    tbody.innerHTML = '';
+    var tr = tbody.insertRow();
+    var th = document.createElement('th');
+    th.scope = 'row';
+    th.textContent = 'neutral';
+    tr.appendChild(th);
+    NEUTRAL_STEPS.forEach(function(step) {
+      var name = '--o-neutral-' + step;
+      var h = document.createElement('th');
+      h.scope = 'col';
+      h.textContent = step;
+      headRow.appendChild(h);
+      var bg = prop(root, name);
+      var td = tr.insertCell();
+      td.className = 'cl-pal-cell';
+      td.title = name;
+      if (!bg) {
+        td.textContent = 'missing';
+        return;
+      }
+      var ratio = contrast(bg, '#FFFFFF');
+      td.style.backgroundColor = 'var(' + name + ')';
+      td.style.color = step <= 400 ? 'var(--o-neutral-1000)' : 'var(--o-neutral-0)';
+      td.innerHTML = '<span class="cl-pal-hex"></span><span class="cl-pal-ratio"></span>';
+      td.firstChild.textContent = bg.toUpperCase();
+      td.lastChild.textContent = isNaN(ratio) ? 'n/a' : ratio.toFixed(2) + ':1';
+    });
+  }
+
   function render() {
     renderPalette();
+    renderNeutral();
     renderSwatches();
   }
 

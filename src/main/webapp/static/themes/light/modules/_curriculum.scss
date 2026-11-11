@@ -3,7 +3,7 @@
 		color: $o-curriculum-element-inactive-color;
 	}
 	tr.o_curriculum_element_unfiltered, tr.o_curriculum_element_unfiltered td, tr.o_curriculum_element_unfiltered td span, tr.o_curriculum_element_unfiltered td a {
-		color: lighten($o-curriculum-element-inactive-color, 20%);
+		color: var(--o-text-muted);
 	}
 	tr.o_curriculum_element_deleted, tr.o_curriculum_element_deleted td, tr.o_curriculum_element_deleted td span, tr.o_curriculum_element_deleted td a {
 		color: $o-curriculum-element-inactive-color;
@@ -232,7 +232,7 @@ a.o_validation_open_results {
 	.o_curriculum_widget_course_staff {
 		border: $o-curriculum-widget-card-border;
 		border-radius: $o-curriculum-widget-card-border-radius;
-		background-color: #fff;
+		background-color: var(--o-bg);
 		padding: 5px 0;
 	}
 	
@@ -252,7 +252,7 @@ a.o_validation_open_results {
 		padding: 5px;
 		border: $o-curriculum-widget-card-border;
 		border-radius: $o-curriculum-widget-card-border-radius;
-		background-color: #fff;
+		background-color: var(--o-bg);
 		
 		h4 {
 			font-size: $font-size-h4;
@@ -372,7 +372,7 @@ a.o_validation_open_results {
 		padding: 10px;
 		border: $o-curriculum-widget-card-border;
 		border-radius: $o-curriculum-widget-card-border-radius;
-		background-color: #fff;
+		background-color: var(--o-bg);
 	}
 	.o_curriculum_offer_card_content {
 		display: grid;
@@ -635,7 +635,7 @@ a.o_validation_open_results {
 				padding: math.div($o-curriculum-outline-padding, 2) 0px;
 				margin-right: 10px;
 				
-				background: #fff;
+				background: var(--o-bg);
 				img {
 					border-radius: $o-curriculum-outline-thumb-border-radius;
 					height: 100%;

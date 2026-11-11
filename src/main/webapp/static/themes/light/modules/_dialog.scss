@@ -91,7 +91,7 @@ div.o_callout_overlay {
 	top: 0; left: 0; 
 	width:100%; height:100%; 
 	zoom:1;  
-	background: #000; 
+	background: var(--o-backdrop); 
 	@include opacity(0);
 }
 
@@ -116,13 +116,13 @@ div.o_callout_overlay {
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;
 		border-top: 0;
-		@include box-shadow(0px 2px 10px -1px rgba(0,0,0,.8));
+		@include box-shadow(0px 2px 10px -1px color-mix(in srgb, var(--o-shadow-color) 80%, transparent));
 		
 		.o_alert_close {
 			float: right;
-			color: $gray-light;
+			color: var(--o-alert-close);
 			&:hover {
-				color: $gray;			
+				color: var(--o-alert-close-hover);			
 			}
 		}
 		@media (min-width: $screen-sm-min) {
@@ -135,9 +135,9 @@ div.o_callout_overlay {
 /* Sticky info (admins can create stick-messages that will show for all users) */
 #o_msg_sticky, #o_msg_sticky_preview { 	
 	position: relative;
-	color: $state-danger-text;
-	background-color: $state-danger-bg; 
-	border: 1px solid $state-danger-border;
+	color: var(--o-state-danger-text);
+	background-color: var(--o-state-danger-soft-bg);
+	border: 1px solid var(--o-state-danger-soft-border);
 	padding: $padding-large-vertical $padding-large-horizontal $padding-large-vertical $line-height-computed * 3;
 	min-height: $line-height-computed * 2 + ($padding-large-vertical * 2);
 	
@@ -206,22 +206,22 @@ dialog.popover {
 	
 	.popover-title {
 		margin-top: 10px;
-  		background-color: $popover-bg;
+  		background-color: var(--o-popover-bg);
 		border: 1px solid $popover-fallback-border-color;
-		border: 1px solid $popover-border-color;
+		border: 1px solid var(--o-popover-border);
 		border-bottom: 1px solid darken($popover-title-bg, 5%);
   		border-top-left-radius: $border-radius-large;
   		border-top-right-radius: $border-radius-large;
-		@include box-shadow(0 5px 10px rgba(0, 0, 0, .2));
+		@include box-shadow(0 5px 10px color-mix(in srgb, var(--o-shadow-color) 20%, transparent));
 	}
 	
 	.popover-content {
 		margin-top: 10px;
-  		background-color: $popover-bg;
+  		background-color: var(--o-popover-bg);
 		border: 1px solid $popover-fallback-border-color;
-		border: 1px solid $popover-border-color;
+		border: 1px solid var(--o-popover-border);
 		border-radius: $border-radius-large;
-		@include box-shadow(0 5px 10px rgba(0, 0, 0, .2));
+		@include box-shadow(0 5px 10px color-mix(in srgb, var(--o-shadow-color) 20%, transparent));
 	}
 	
 	.popover-title ~ .popover-content {
@@ -245,7 +245,7 @@ dialog.popover {
 }
 
 dialog::backdrop {
-	background: rgba(0,0,0,.5);
+	background: color-mix(in srgb, var(--o-backdrop) 50%, transparent);
 }
 
 dialog.popover::backdrop {

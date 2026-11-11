@@ -131,10 +131,10 @@
 		
 		li .active_parent.o_tree_link {
 			a {
-				color : $o-tree-link-active-parent-color;
+				color : var(--o-tree-link-active-parent);
 				&:hover,
 				&:focus {
-					color: $o-tree-link-active-parent-hover-color;
+					color: var(--o-tree-link-active-parent-hover);
 				}
 			}
 			font-weight: $o-tree-link-active-parent-font-weight;

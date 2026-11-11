@@ -54,6 +54,7 @@ the light theme and extends on top of it.
 - _palette.scss: the colour palette for all user colour choosers (14 hues x 10 steps), the swatch roles
   and the semantic states of the status labels ($o-states)
 - _palette_theme.scss: the theme colours, the brand colours of the theme the choosers offer after the 14 hues
+- _palette_neutral.scss: the neutral scale, the 18 greys of the theme (--o-neutral-{step})
 - modules/*: tons of include files for different aspects of OpenOLAT
 
 
@@ -91,6 +92,16 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     colour reaches 4.5:1 on it. The choosers show them as "Theme 1" ... "Theme n" after the 14 hues.
     An entry can also be a map with all 10 steps (50: ..., 900: ...). The theme colours need
     Dart Sass 1.79.0 or later.
+  - for the greys: light/_palette_neutral.scss. The neutral scale has 18 steps: 0 (white), 25,
+    50, 100, 150, 200, 250, 300, 400, 450, 500, 600, 700, 750, 800, 900, 950 and 1000 (black),
+    emitted as --o-neutral-{step}. The default greys are tinted with slate. To change the tint,
+    set the OKLCH hue and chroma in your config:
+      $o-neutral-hue: 30;        // default 260 (slate)
+      $o-neutral-chroma: 0;      // default 0.038; 0 gives pure greys
+    The compile keeps the lightness of each step, so the contrast on white stays almost the
+    same. The choosers do not offer the neutral scale. The modules do not read a step directly:
+    they read a semantic or element token, and a token can read a step, e.g.
+      $o-tokens: ("text-muted": "neutral-600");
   - for the status colours: light/_palette.scss. Status labels, badges and status icons use 8
     semantic states (neutral, success, warning, critical, danger, finished, inactive, highlight).
     $o-states assigns a palette hue to each state. To change it, set the full map with all 8 states
@@ -99,8 +110,9 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     o_state_tint, o_state_light) or "o_labeled_light o_state_<name>" (outline). In SCSS use
     o-state-color($state, $role, $style) for a component colour.
   - the colours are CSS custom properties (colour tokens) in three layers:
-      base       the palette (--o-{hue}-{step}, --o-white and the base colours --o-base-*), the
-                 semantic tokens (--o-text, --o-heading, --o-primary, ...), the state tokens
+      base       the palette (--o-{hue}-{step}, the neutral scale --o-neutral-{step}, --o-white
+                 and the base colours --o-base-*), the semantic tokens (--o-text, --o-heading,
+                 --o-primary, --o-bg-hover, ...), the state tokens
                  (--o-state-{state}-{role}) and the global elements (buttons, content text and
                  headings, e.g. --o-btn-default-fg, --o-content-h1)
       framework  layout and generic UI elements, e.g. --o-navbar-bg, --o-footer-link,
@@ -112,9 +124,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     before. An element token (base, framework or component) has one of two defaults:
       - a Sass variable of the theme config ($o-navbar-bg, $btn-default-color, $o-bookmark-color,
         ...): keep setting the variable as before, it gives the default of the token. For a link
-        or status text on a coloured background (e.g. --o-course-style-link, --o-table-striped-link,
-        --o-badge-status-info) the default is the text colour that o-a11y-color() adjusts for
-        that background. When you set such a token with $o-tokens, check the contrast yourself;
+        or status text on a coloured background (e.g. --o-link-subtle, --o-badge-status-info)
+        the default is the text colour that o-a11y-color() adjusts for that background. When you set such a token with $o-tokens, check the contrast yourself;
       - a reference to another token, e.g. --o-selectus-review-glow reads --o-primary and
         --o-qti-menu-link reads --o-tree-link. There is no Sass variable: set the token with
         $o-tokens.
@@ -123,15 +134,82 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     --o-btn-primary-bg-hover and --o-btn-primary-border-focus. The compile computes them as the
     darker colour of --o-btn-primary-bg and --o-btn-primary-border, so they follow your button
     colours. Set a shade token with $o-tokens only when you want a different state colour. When
-    you override a button background with $o-tokens, override its border token too. For your own
+    you override a button background with $o-tokens, override its border token too. Other
+    elements have shade tokens too: the compile computes them with the darken() or lighten()
+    percentage of the module from the element token, so your Sass variable gives the same
+    colour as before. The name is the token name and a suffix:
+      -hover, -active, -focus   the colour of a state, e.g. --o-tag-bg-hover, --o-chelp-bg-hover
+      -edge                     a darker edge around a fill, e.g. --o-focus-edge
+      -tint                     a lighter tint as a surface, e.g. --o-immunity-proof-none-bg-tint
+      -stop-{n}                 the stop n of a gradient
+    A translucent colour is no token. A rule mixes the token with transparent and keeps the
+    alpha, e.g. color-mix(in srgb, var(--o-focus) 15%, transparent). An override of the token
+    changes the translucent colour too. For your own
     button rules use the mixin button-variant with colours as before, or with tokens:
       @include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
     To override a token, set the map $o-tokens in your config. The key is the token name without
     "--o-". The value is the name of any other token ("primary", "tree-link"), a palette step
-    "{hue}-{step}", "white" or a colour, e.g.
+    "{hue}-{step}", a neutral step "neutral-{step}", "white" or a colour, e.g.
       $o-tokens: ("text-muted": "slate-600", "state-success-bg": "green-600", "state-success-fg": "white");
       $o-tokens: ("navbar-bg": "primary", "navbar-text": "primary-fg", "navbar-link": "primary-fg", "navbar-tools": "primary-fg", "bookmark": "red-600");
       $o-tokens: ("qti-menu-link": "link", "selectus-review-glow": "orange-500");
+    The semantic tokens for surfaces, lines and veils read Bootstrap variables:
+      --o-bg-hover       $table-bg-hover            row or item under the pointer
+      --o-bg-selected    $table-bg-active           selected row or item
+      --o-bg-raised      $dropdown-bg               dropdown menu, popover, dialog
+      --o-border-subtle  $hr-border                 light separator line
+      --o-text-disabled  $btn-link-disabled-color   text of a disabled control
+      --o-backdrop       $modal-backdrop-bg         layer behind a modal dialog
+      --o-shadow-color   black                      colour of the shadows
+      --o-scrim          white                      light veil over content
+    --o-shadow-color, --o-backdrop and --o-scrim are opaque. A rule sets the transparency, e.g.
+      box-shadow: 0 4px 16px color-mix(in srgb, var(--o-shadow-color) 10%, transparent);
+    The black shadows, the layer behind a dialog or a lightbox and the light veils of the modules
+    read them this way.
+    The Bootstrap colour variables that the modules read are framework tokens. Keep setting the
+    Bootstrap variable, it gives the default of the token:
+      --o-input-fg, --o-input-placeholder       $input-color, $input-color-placeholder
+      --o-input-bg, --o-input-disabled-bg       reference "bg", "bg-subtle" (set with $o-tokens)
+      --o-table-border, --o-table-striped-bg    $table-border-color, $table-bg-accent
+      --o-table-hover-bg                        reference "bg-hover"
+      --o-dropdown-link, -link-hover, -link-hover-bg, -divider   $dropdown-*
+      --o-popover-border, --o-popover-bg        $popover-border-color, reference "bg-raised"
+      --o-modal-content-border, --o-modal-header-border          $modal-*-border-color
+      --o-code-block-bg, -fg, -border           $pre-bg, $pre-color, $pre-border-color
+      --o-legend, --o-legend-border             $legend-color, $legend-border-color
+      --o-panel-bg, --o-progress-bar-fg, --o-thumbnail-border, --o-blockquote-border
+    The Bootstrap greys ($gray, $gray-light, $gray-dark, $gray-lighter) that a module reads are
+    element tokens of that element, e.g. --o-alert-close, --o-chart-help-line, --o-qti-help.
+    Links have four colour families. --o-link and --o-link-hover ($link-color, $link-hover-color)
+    colour the standard links (a, .btn-link, pagination); an override of "link" reaches them.
+    --o-link-subtle is the link colour adjusted to 4.5:1 on the subtle background: breadcrumb,
+    table, course element and forum links read it ($o-table-link-color,
+    $o-toolbar-breadcrumb-link-color, $o-forum-message-header-author-color and
+    $o-forum-message-footer-attachment-color are removed, set the tokens with $o-tokens).
+    --o-content-link ($o-content-link-color) colours the links in the content. --o-nav-link and
+    --o-nav-link-hover ($navbar-default-link-color, $navbar-default-link-hover-color) colour the
+    menu tree and toolbar links (--o-tree-link, --o-toolbar-link) when their Sass variables have
+    the same colour. The navigation bar, the footer and the login help have own tokens: set
+    them separately. These
+    link tokens have the reference "link", set them with $o-tokens:
+      --o-segments-tab-link            the filter tab row above a table: tab text, line of the
+                                       selected tab, line under the row
+      --o-selectus-review-comment-link the links in the review comments of selectus
+    e.g.
+      $o-tokens: ("segments-tab-link": "content-link");
+    The status colours of the modules (icons, texts, tints, the danger button, the dirty button
+    and the book button of the course site) read the state tokens, not $brand-success,
+    $brand-info, $brand-warning, $brand-danger or $state-*. Your values of these Bootstrap
+    variables reach only the Bootstrap rules (.btn-success, .btn-info, .btn-warning, alerts,
+    labels, progress bars) and the message boxes. To change a status colour everywhere, set
+    the state tokens, e.g.
+      $o-tokens: ("state-danger-bg": "red-600", "state-danger-text": "red-600");
+    The danger button has own tokens with the danger state as default: btn-danger-bg,
+    btn-danger-fg, btn-danger-border (one step darker). To change the danger button alone:
+      $o-tokens: ("btn-danger-bg": "red-600", "btn-danger-border": "red-700");
+    The dirty button ($o-button-dirty-bg) and the book button ($o-coursesite-book-bg) have the
+    fill of the warning state and a dark text. When you set their Sass variable, the text is
+    the adjusted white as before.
     The compile stops for an unknown token or step, for a loop of references and for an override
     below the contrast of its pair (4.5:1 text, 3:1 borders and focus). An override changes every
     rule that reads the token; a rule that still reads the Sass variable keeps the Sass value. Do

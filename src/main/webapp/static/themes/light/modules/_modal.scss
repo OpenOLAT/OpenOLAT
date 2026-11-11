@@ -1,0 +1,27 @@
+/*
+ * =================================================
+ *
+ * Own rules of the Bootstrap modal dialogs.
+ *
+ * _modules.scss imports this module directly after modules/bootstrap.
+ * The rules were in _bootstrap.scss before (OO-10043).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+body .modal-body.alert {
+	border-radius:0;
+}
+
+body .o_modal_large_login .modal-lg {
+	width: calc(100%);
+}
+
+body .o_modal_large .modal-lg {
+	width: calc(100vw - 70px);
+}
+
+body .modal-body {
+	padding: 20px;
+}

@@ -40,7 +40,7 @@ a.o_dev {
 	/* wrapper for the component */
 	.o_dev_c {
 		position: relative;
-		border : 1px dotted $gray-lighter;
+		border : 1px dotted var(--o-border-subtle);
 		/* info box */
 		.o_dev_i {
 			position:absolute; 

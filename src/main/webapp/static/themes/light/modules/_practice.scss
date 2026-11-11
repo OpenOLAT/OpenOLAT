@@ -108,7 +108,7 @@ svg {
 	margin: 0 0 15px 0;
 	padding: 0.5em;
 	.o_icon_refresh:before {
-		color: $brand-warning;
+		color: var(--o-state-warning-text);
 	}
 }
 

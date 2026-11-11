@@ -5,10 +5,11 @@
  *
  * Three token layers (doc/openolat-frontend.md, chapter 26):
  *
- *   base        the palette with the literal colours: --o-{hue}-{step} and
- *               --o-theme{n}-{step} (_palette_vars.scss), --o-white and the
- *               base colours --o-base-{name} of this file; the semantic
- *               tokens --o-text, --o-heading, --o-primary, ...; the state
+ *   base        the palette with the literal colours: --o-{hue}-{step},
+ *               --o-theme{n}-{step} and the neutral scale --o-neutral-{step}
+ *               (_palette_vars.scss), --o-white and the base colours
+ *               --o-base-{name} of this file; the semantic tokens --o-text,
+ *               --o-heading, --o-primary, --o-bg-hover, ...; the state
  *               tokens --o-state-{state}-{role}; the tokens of the global
  *               elements: buttons, content text and headings
  *               ($o-token-layer-base)
@@ -38,7 +39,8 @@
  *       holds a colour: "none" or "!important" stops the compile.
  *       The default can also be a Sass expression: the text colour that
  *       o-a11y-color() adjusts for the background of one rule, e.g.
- *       o-a11y-color($link-color, $o-cn-style-bg) for --o-course-style-link.
+ *       o-a11y-color($link-color, $panel-default-heading-bg) for
+ *       --o-link-subtle.
  *       The rule reads the token and does not call the function. An
  *       override with $o-tokens gets no adjustment: check the contrast of
  *       the new colour.
@@ -50,7 +52,8 @@
  * A client theme overrides a token with the map $o-tokens in its config,
  * before the import of the light theme. The key is the token name without
  * "--o-". The value is the name of another token ("primary", "tree-link"),
- * a palette step "{hue}-{step}" (also "theme1-500" or "white") or a colour:
+ * a palette step "{hue}-{step}" (also "theme1-500", "neutral-600" or
+ * "white") or a colour:
  *
  *   $o-tokens: (
  *       "text-muted": "slate-600",
@@ -65,22 +68,39 @@
  *       "selectus-review-glow": "orange-500",
  *   );
  *
- * A token name gives var(--o-{name}), a palette step var(--o-{hue}-{step}),
- * any other colour a literal value. The compile stops for an unknown token,
+ * A token name gives var(--o-{name}), a palette step var(--o-{hue}-{step})
+ * or var(--o-neutral-{step}), any other colour a literal value. The compile stops for an unknown token,
  * an unknown palette step, a value that is not a colour, a loop of
  * references and an override that breaks a contrast pair (4.5:1 text, 3:1
  * border and focus). With
  * $o-contrast-check: "warn"; in the client config the compile reports the
  * broken pair and accepts it (_functions.scss).
  *
- * A shade token is the darker colour of an element token for a state
- * (hover, focus, active), e.g. --o-btn-primary-bg-hover. The compile
- * computes it from the colour of its token ($o-token-shades): there is no
- * colour maths in the browser. A shade token follows an override of its
- * token, and $o-tokens overrides it like every other token. A stylesheet
- * that redefines a token at run time (dark mode) redefines its shade tokens
- * too. The mixin button-variant reads the shade tokens of the buttons
- * (_button_variant.scss).
+ * A shade token is the darker or lighter colour of an element token or a
+ * semantic token, e.g. --o-btn-primary-bg-hover. The compile computes it
+ * from the colour of its token with darken() or lighten() ($o-token-shades):
+ * there is no colour maths in the browser. A shade token follows an
+ * override of its token, and $o-tokens overrides it like every other token.
+ * A stylesheet that redefines a token at run time (dark mode) redefines its
+ * shade tokens too. The mixin button-variant reads the shade tokens of the
+ * buttons (_button_variant.scss). The name of a shade token is the name of
+ * its token and a suffix:
+ *
+ *   -hover, -active, -focus   the colour of a state of a control
+ *   -edge                     a darker edge: border, outline or text stroke
+ *                             around a fill (--o-focus-edge)
+ *   -tint                     a lighter tint of the colour as a surface
+ *   -stop-{n}                 the stop n of a gradient, from 1
+ *
+ * A shade for an element without an own token for the role takes the name
+ * of the element and the role, e.g. --o-file-upload-btn-bg-hover from
+ * btn-default-bg, or --o-immunity-proof-validated-fg (text) from
+ * immunity-proof-validated-bg.
+ *
+ * A translucent colour is no token. The rule mixes the token with
+ * transparent and keeps the alpha:
+ * color-mix(in srgb, var(--o-focus) 15%, transparent) is the colour of
+ * rgba($input-border-focus, 0.15).
  *
  * An override changes every rule that reads the token. A rule that still
  * reads the Sass variable (colour maths, Bootstrap) keeps the Sass value:
@@ -108,11 +128,21 @@ $o-tokens: () !default;
 $o-token-base: (
 	"text": $text-color,
 	"text-muted": $text-muted,
+	// text of a disabled control: the Bootstrap disabled colour ($gray-light)
+	"text-disabled": $btn-link-disabled-color,
 	// Bootstrap default of $headings-color is "inherit": the headings use the text colour
 	"heading": if(meta.type-of($headings-color) == "color", $headings-color, $text-color),
 	"bg": $body-bg,
 	"bg-subtle": $panel-default-heading-bg,
+	// background of a row or an item under the pointer
+	"bg-hover": $table-bg-hover,
+	// background of the selected (active) row or item
+	"bg-selected": $table-bg-active,
+	// surface above the page: dropdown menu, popover, dialog
+	"bg-raised": $dropdown-bg,
 	"border": $panel-default-border,
+	// light separator line: hr, list item, blockquote
+	"border-subtle": $hr-border,
 	"border-strong": $input-border,
 	"primary": $brand-primary,
 	"primary-fg": o-a11y-color(#fff, $brand-primary),
@@ -120,7 +150,16 @@ $o-token-base: (
 	"primary-text": $o-brand-text,
 	"link": $link-color,
 	"link-hover": $link-hover-color,
-	"focus": $input-border-focus
+	"focus": $input-border-focus,
+	// Opaque colours of the shadows and veils. The rule sets the
+	// transparency: color-mix(in srgb, var(--o-backdrop) 50%, transparent).
+	// shadow-color: the Bootstrap shadows, rgba(0, 0, 0, a)
+	"shadow-color": #000000,
+	// backdrop: the layer behind a modal dialog ($modal-backdrop-bg)
+	"backdrop": $modal-backdrop-bg,
+	// scrim: the light veil over content, an image or a video below a text
+	// or a progress indicator, rgba(255, 255, 255, a)
+	"scrim": #FFFFFF
 );
 
 // The swatch roles of the state tokens --o-state-{state}-{role}
@@ -136,10 +175,17 @@ $o-token-layer-base: (
 	"btn-default-bg":                             ($btn-default-bg, ("bg",)),
 	"btn-default-fg":                             ($btn-default-color, ("text",)),
 	"btn-default-border":                         ($btn-default-border, ()),
-	"btn-dirty-bg":                               ($o-button-dirty-bg, ()),
-	"btn-dirty-fg":                               ($o-button-dirty-color, ()),
+	"btn-dirty-bg":                               ($o-button-dirty-bg, ("state-warning-bg",)),
+	"btn-dirty-fg":                               ($o-button-dirty-color, ("state-warning-fg",)),
 	"btn-dirty-border":                           ($o-button-dirty-border, ()),
 	"btn-ghost-fg":                               "link",
+	// the danger button: the danger state, the border one step darker
+	"btn-danger-bg":                              "state-danger-bg",
+	"btn-danger-fg":                              "state-danger-fg",
+	"btn-danger-border":                          "state-danger-border",
+	// Links: the link on the subtle background (breadcrumb, table, course
+	// element, forum), adjusted to 4.5:1
+	"link-subtle":                                (o-a11y-color($link-color, $panel-default-heading-bg), ("link",)),
 	// Content text and headings
 	"content-header":                             ($o-content-header-base-color, ("heading", "text")),
 	"content-link":                               ($o-content-link-color, ("link",)),
@@ -151,10 +197,51 @@ $o-token-layer-base: (
 	"content-h3":                                 "content-header",
 	"content-h4":                                 "content-header",
 	"content-h5":                                 ($o-content-h5-color, ("content-header",)),
-	"content-text":                               "text"
+	"content-text":                               "text",
+	// header cells of the tables of the HTML editor ($gray-lighter)
+	"content-table-header-bg":                    ($gray-lighter, ())
 );
 
 $o-token-layer-framework: (
+	// Bootstrap components: the colour variables of Bootstrap that the modules
+	// read. A client theme keeps setting the Bootstrap variable.
+	// Blockquote and code blocks (pre)
+	"blockquote-border":                          ($blockquote-border-color, ("border-subtle",)),
+	"code-block-bg":                              ($pre-bg, ()),
+	"code-block-fg":                              ($pre-color, ()),
+	"code-block-border":                          ($pre-border-color, ()),
+	// Dropdown menus
+	"dropdown-link":                              ($dropdown-link-color, ()),
+	"dropdown-link-hover":                        ($dropdown-link-hover-color, ()),
+	"dropdown-link-hover-bg":                     ($dropdown-link-hover-bg, ("bg-hover",)),
+	"dropdown-divider":                           ($dropdown-divider-bg, ()),
+	// Form elements: input fields and legends
+	"input-bg":                                   "bg",
+	"input-fg":                                   ($input-color, ()),
+	"input-disabled-bg":                          "bg-subtle",
+	"input-placeholder":                          ($input-color-placeholder, ()),
+	"legend":                                     ($legend-color, ()),
+	"legend-border":                              ($legend-border-color, ()),
+	// Modal dialogs and popovers
+	"modal-content-border":                       ($modal-content-border-color, ("border",)),
+	"modal-header-border":                        ($modal-header-border-color, ()),
+	"popover-bg":                                 "bg-raised",
+	"popover-border":                             ($popover-border-color, ()),
+	// Panels, progress bars and thumbnails
+	"panel-bg":                                   ($panel-bg, ("bg",)),
+	"progress-bar-fg":                            ($progress-bar-color, ()),
+	"thumbnail-border":                           ($thumbnail-border, ()),
+	// Tables
+	"table-border":                               ($table-border-color, ()),
+	"table-striped-bg":                           ($table-bg-accent, ("bg-subtle",)),
+	"table-hover-bg":                             "bg-hover",
+	// Alert and message boxes: the close icon ($gray-light, $gray) and
+	// the border of a bordered table in a message box ($gray-dark)
+	"alert-close":                                ($gray-light, ()),
+	"alert-close-hover":                          ($gray, ()),
+	"message-table-border":                       ($gray-dark, ()),
+	// Charts: the help line of a function or grading chart ($gray-light)
+	"chart-help-line":                            ($gray-light, ()),
 	// Bookmarks
 	"bookmark":                                   ($o-bookmark-color, ()),
 	// Cards and fact sheet
@@ -189,6 +276,9 @@ $o-token-layer-framework: (
 	"footer-text":                                ($o-footer-default-color, ("text-muted",)),
 	"footer-link":                                ($o-footer-default-link-color, ("text-muted",)),
 	// Form elements
+	// the add and remove toggle (AddRemoveElement): the soft fills of the states
+	"addremove-add-bg":                           ($o-addremove-add-color, ("state-success-soft-bg",)),
+	"addremove-remove-bg":                        ($o-addremove-remove-color, ("state-danger-soft-bg",)),
 	"autocomplete-suggestion-bg":                 "btn-primary-bg",
 	"autocomplete-suggestion-fg":                 "btn-primary-fg",
 	"file-upload-border":                  "text-muted",
@@ -201,16 +291,20 @@ $o-token-layer-framework: (
 	"toggle-on-bg":                               "primary",
 	"toggle-on-border":                           "primary",
 	"toggle-text":                                "text-muted",
+	// the HTML editor with too many characters: the soft fill of the danger state
+	"tinymce-danger-bg":                          "state-danger-soft-bg",
 	// Login page
 	"login-header":                               ($o-login-header-color, ("primary-text", "primary")),
 	"login-help-link":                            ($o-login-help-link-color, ("link",)),
 	// Menu tree
-	"tree-link":                                  ($o-tree-link-color, ()),
-	"tree-link-hover":                            ($o-tree-link-hover-color, ()),
+	"tree-link":                                  ($o-tree-link-color, ("nav-link",)),
+	"tree-link-hover":                            ($o-tree-link-hover-color, ("nav-link-hover",)),
 	"tree-link-hover-bg":                         ($o-tree-link-hover-bg, ()),
 	"tree-link-active":                           ($o-tree-link-active-color, ("link",)),
 	"tree-link-active-hover":                     ($o-tree-link-active-hover-color, ("link-hover",)),
 	"tree-link-active-hover-bg":                  ($o-tree-link-active-hover-bg, ()),
+	"tree-link-active-parent":                    ($o-tree-link-active-parent-color, ("tree-link",)),
+	"tree-link-active-parent-hover":              ($o-tree-link-active-parent-hover-color, ("tree-link-hover",)),
 	// Navigation bar
 	"navbar-bg":                                  ($o-navbar-bg, ("bg",)),
 	"navbar-text":                                ($o-navbar-color, ()),
@@ -228,26 +322,37 @@ $o-token-layer-framework: (
 	"navbar-brand":                               ($o-navbar-brand-color, ()),
 	"navbar-brand-hover":                         ($o-navbar-brand-hover-color, ()),
 	"navbar-brand-hover-bg":                      ($o-navbar-brand-hover-bg, ()),
+	// Navigation links: the neutral link colour of tree, toolbar and QTI menu
+	"nav-link":                                   ($navbar-default-link-color, ()),
+	"nav-link-hover":                             ($navbar-default-link-hover-color, ()),
 	// Portal and portlets
 	"portlet-border":                             "border",
 	"portlet-header-bg":                          "bg-subtle",
+	// Segments: the filter tab row above a table (text of the tabs, line of
+	// the selected tab, line under the row)
+	"segments-tab-link":                          "link",
 	// Scope selection
 	"scope-toggle-border":                        "primary",
 	"scope-toggle-fg":                            "text",
 	"scope-toggle-on-bg":                         ($o-scope-toggle-on-bg-color, ("primary",)),
 	// Table
 	"table-header":                               "text",
-	"table-link":                                 ($o-table-link-color, ("link",)),
-	"table-striped-link":                         (o-a11y-color($link-color, $table-bg-accent), ("table-link", "link")),
+	"table-link":                                 "link-subtle",
+	"table-striped-link":                         "link-subtle",
 	// Tags
 	"tag-bg":                                     ($o-tag-background-color, ("primary",)),
 	"tag-selected-bg":                            ($o-tag-selected-background-color, ("btn-dirty-bg",)),
+	"tag-selected-border":                        ($o-tag-selected-border-color, ("btn-dirty-border",)),
 	"tag-selection-bg":                           ($o-tag-selection-background-color, ("btn-default-bg",)),
 	"tag-selection-border":                       ($o-tag-selection-border-color, ("border-strong",)),
 	"tag-selection-fg":                           "btn-default-fg",
 	"tag-selection-selected-bg":                  ($o-tag-selection-selected-background-color, ("btn-primary-bg",)),
 	"tag-selection-selected-border":              ($o-tag-selection-selected-border-color, ("btn-primary-border",)),
 	"tag-selection-selected-fg":                  "btn-primary-fg",
+	// the selected tag of a remove selection: the danger button
+	"tag-selection-remove-selected-bg":           ($o-tag-selection-remove-selected-background-color, ("btn-danger-bg",)),
+	"tag-selection-remove-selected-border":       ($o-tag-selection-remove-selected-border-color, ("btn-danger-border",)),
+	"tag-selection-remove-selected-fg":           ($o-tag-selection-remove-selected-font-color, ("btn-danger-fg",)),
 	// Timeline and swiper
 	"swiper-button-bg":                           "btn-default-bg",
 	"swiper-button-fg":                           "btn-default-fg",
@@ -255,8 +360,15 @@ $o-token-layer-framework: (
 	"timeline-path":                              "border",
 	// Toolbar and breadcrumb
 	"toolbar-breadcrumb-bg":                      ($o-toolbar-breadcrumb-bg-color, ("bg-subtle",)),
-	"toolbar-breadcrumb-link":                    ($o-toolbar-breadcrumb-link-color, ("link",)),
+	// the close icon of the toolbar and the breadcrumb
+	"toolbar-close":                              ($o-toolbar-close-color, ("state-danger-text",)),
+	"toolbar-breadcrumb-link":                    "link-subtle",
 	"toolbar-dropdown-active":                    "link",
+	"toolbar-link":                               ($o-toolbar-link-color, ("nav-link",)),
+	"toolbar-link-hover":                         ($o-toolbar-link-hover-color, ("nav-link-hover",)),
+	"toolbar-link-active":                        ($o-toolbar-link-active-color, ("link",)),
+	"toolbar-nav-link":                           "toolbar-link",
+	"toolbar-nav-link-hover":                     "toolbar-link-hover",
 	"toolbar-nav-border":                         "border-strong",
 	// Wizard
 	"wizard-step-main-active-bg":                 "btn-primary-bg",
@@ -273,12 +385,13 @@ $o-token-layer-component: (
 	"lecture-timeline-running-border":            "state-neutral-border",
 	"lecture-timeline-path":                      "border",
 	// Badges
-	"badge-row-expanded-link":                    (o-a11y-color($brand-primary, $o-table-details-bg), ("primary",)),
-	"badge-row-expanded-link-hover":              (o-a11y-color($brand-primary, darken($o-table-details-bg, 10%)), ("badge-row-expanded-link", "primary")),
-	"badge-status-info":                          (o-a11y-color($btn-info-border, $o-toolbar-bg-color), ()),
-	"badge-status-success":                       (o-a11y-color($btn-success-border, $o-toolbar-bg-color), ()),
-	"badge-status-warning":                       (o-a11y-color($btn-warning-border, $o-toolbar-bg-color), ()),
-	"badge-status-danger":                        (o-a11y-color($btn-danger-border, $o-toolbar-bg-color), ()),
+	"badge-row-expanded-link":                    (o-a11y-color($link-color, $o-table-details-bg), ("link",)),
+	"badge-row-expanded-link-hover":              (o-a11y-color($link-color, darken($o-table-details-bg, 10%)), ("badge-row-expanded-link", "link")),
+	// the text of a badge status: the text of the state, adjusted for the toolbar background
+	"badge-status-info":                          (o-a11y-color(o-state-color("neutral", "text"), $o-toolbar-bg-color), ("state-neutral-text",)),
+	"badge-status-success":                       (o-a11y-color(o-state-color("success", "text"), $o-toolbar-bg-color), ("state-success-text",)),
+	"badge-status-warning":                       (o-a11y-color(o-state-color("warning", "text"), $o-toolbar-bg-color), ("state-warning-text",)),
+	"badge-status-danger":                        (o-a11y-color(o-state-color("danger", "text"), $o-toolbar-bg-color), ("state-danger-text",)),
 	// Chat
 	"im-summary-bg":                              ($o-im-summary-bg, ()),
 	"im-buddies-link":                            "link",
@@ -287,20 +400,27 @@ $o-token-layer-component: (
 	"im-groupchat-user":                          "text",
 	// Competences
 	"competence-selected":                     "btn-dirty-bg",
+	"competence-selected-border":                 ($o-competences-selected-border-color, ("btn-dirty-border",)),
 	// Content editor
 	"editor-inspector-title":                     "primary",
 	"editor-layout-pseudo-icon-bg-active":        "primary",
 	"editor-selected-border":                     ($o-editor-selected-border-color, ("primary",)),
 	"editor-selected-bg":                            "primary",
+	// icon of a media without preview ($gray-lighter)
+	"editor-media-unavailable":                   ($gray-lighter, ()),
 	// Course
 	"course-style-image-bg":                      ($o-cn-style-image-bg, ("primary",)),
-	"course-style-link":                          (o-a11y-color($link-color, $o-cn-style-bg), ("link",)),
-	"course-style-peekview-link":                 (o-a11y-color($link-color, $o-cn-style-peekview-bg), ("link",)),
+	"course-style-link":                          "link-subtle",
+	// The peekview background is translucent: the link is adjusted for the
+	// peekview background on top of the background of the course element
+	"course-style-peekview-link":                 (o-a11y-color($link-color, color.mix(color.change($o-cn-style-peekview-bg, $alpha: 1), $o-cn-style-bg, color.channel($o-cn-style-peekview-bg, "alpha") * 100%)), ("link",)),
 	"course-assessment-part-bg":                  "bg-subtle",
 	"course-state-failed":                        "state-danger-text",
 	"course-state-passed":                        ($o-course-state-passed-color, ("state-success-text",)),
 	"course-state-unknown":                       "state-warning-text",
 	"course-file-box-border":                     ($o-dialog-cn-box-border-color, ("border",)),
+	// text of a deleted course element in the editor overview
+	"course-node-deleted":                        ($o-course-node-deleted, ("text-disabled",)),
 	"lp-pagination-in-progress-border":           "state-neutral-text",
 	"lp-pagination-in-progress-icon":             "state-neutral-text",
 	"lp-pagination-in-progress-icon-hover":       "state-neutral-text",
@@ -319,8 +439,8 @@ $o-token-layer-component: (
 	"coursesite-start-bg":                        ($o-coursesite-start-bg, ("btn-primary-bg", "primary")),
 	"coursesite-start-fg":                        ($o-coursesite-start-color, ()),
 	"coursesite-start-border":                    ($o-coursesite-start-border, ()),
-	"coursesite-book-bg":                         ($o-coursesite-book-bg, ()),
-	"coursesite-book-fg":                         ($o-coursesite-book-color, ()),
+	"coursesite-book-bg":                         ($o-coursesite-book-bg, ("state-warning-bg",)),
+	"coursesite-book-fg":                         ($o-coursesite-book-color, ("state-warning-fg",)),
 	"coursesite-book-border":                     ($o-coursesite-book-border, ()),
 	"coursesite-border":                          ($o-coursesite-rowelem-border, ("border-strong",)),
 	"coursesite-title":                           ($o-coursesite-meta-title-color, ("heading", "text")),
@@ -342,10 +462,14 @@ $o-token-layer-component: (
 	"forum-message-footer-border":                "forum-message-header-border",
 	"forum-message-header-bg":                    ($o-forum-message-header-bg, ("bg-subtle",)),
 	"forum-message-header-border":                "border",
-	"forum-message-header-author":                ($o-forum-message-header-author-color, ("link",)),
-	"forum-message-header-modified":              ($o-forum-message-header-modified-color, ()),
-	"forum-message-footer-attachment":            ($o-forum-message-footer-attachment-color, ("forum-message-header-author", "link")),
+	"forum-message-header-author":                "link-subtle",
+	"forum-message-header-modified":              ($o-forum-message-header-modified-color, ("state-warning-text",)),
+	"forum-message-footer-attachment":            "forum-message-header-author",
 	"forum-quote-author":                         "text-muted",
+	// Immunity proof: the fill of the status, one per state
+	"immunity-proof-validated-bg":                ($o-ip-validated-bg-color, ()),
+	"immunity-proof-claimed-bg":                  ($o-ip-claimed-bg-color, ()),
+	"immunity-proof-none-bg":                     ($o-ip-none-bg-color, ()),
 	// High score
 	"highscore-bar-myself":                       "primary",
 	"highscore-score":                            "text-muted",
@@ -354,8 +478,14 @@ $o-token-layer-component: (
 	"practice-level-disc":                        "primary",
 	"practice-play-main-border":                  "primary",
 	"practice-rank-me":                           "primary",
+	// Room management: the status of an inactive room ($gray-light)
+	"room-status-inactive":                       ($gray-light, ()),
 	// Selectus
 	"selectus-review-glow":                       "primary",
+	"selectus-review-comment-link":               "link",
+	// the comment area below a review ($navbar-default-bg, $navbar-default-border)
+	"selectus-review-comments-bg":                ($navbar-default-bg, ("bg",)),
+	"selectus-review-comments-border":            ($navbar-default-border, ()),
 	// Tests and question pool (QTI 2.1)
 	"drawing-border":                             "primary",
 	"drawing-select-border":                      "primary",
@@ -365,6 +495,11 @@ $o-token-layer-component: (
 	"qti-gap-border":                             ($o-qti-gap-border-color, ("border-strong",)),
 	"qti-gap-drag-border":                        "primary",
 	"qti-gap-selected-border":                    "primary",
+	// the alternatives of a gap text ($gray-lighter, $gray)
+	"qti-gaptext-alternative-bg":                 ($gray-lighter, ()),
+	"qti-gaptext-alternative-fg":                 ($gray, ()),
+	// help text of the item container ($gray-light)
+	"qti-help":                                   ($gray-light, ()),
 	"qti-hottext-checked":                        "text",
 	"qti-hottext":                                "text",
 	"qti-menu-link-active":                       "tree-link-active",
@@ -383,17 +518,24 @@ $o-token-layer-component: (
 	"topicbroker-title-abbr-fg":                  "btn-primary-fg",
 	// User authentication
 	"authentication-label-bg":                    "primary",
+	// Video: the track and the handle of the slider ($gray)
+	"video-slider-bg":                            ($gray, ()),
 	// Video task
-	"video-startbox-main-border":                 "primary"
+	"video-startbox-main-border":                 "primary",
+	// marker of an assigned segment ($gray-dark)
+	"videotask-marker-assign-bg":                 ($gray-dark, ())
 );
 
 $o-token-elements: map.merge(map.merge($o-token-layer-base, $o-token-layer-framework), $o-token-layer-component);
 
-// Shade tokens --o-{name}: the colour of another element token, darkened at
-// compile time: ("token", percent). A shade token follows an override of
-// its token. $o-tokens overrides a shade token like every other token.
+// Shade tokens --o-{name}: the colour of an element token or a semantic
+// token, darkened or lightened at compile time: ("token", percent) darkens,
+// ("token", percent, "lighten") lightens. A shade token follows an override
+// of its token. $o-tokens overrides a shade token like every other token.
 // The states of the mixin button-variant (_button_variant.scss) read the
-// shade tokens of the buttons, with the percentages of Bootstrap.
+// shade tokens of the buttons, with the percentages of Bootstrap. The other
+// shade tokens keep the percentages of the colour maths of their module, so
+// that a client theme gets the colour of its Sass variable as before.
 $o-token-shades: (
 	"btn-primary-bg-hover":                       ("btn-primary-bg", 10%),
 	"btn-primary-bg-active":                      ("btn-primary-bg", 17%),
@@ -407,6 +549,10 @@ $o-token-shades: (
 	"btn-dirty-bg-active":                        ("btn-dirty-bg", 17%),
 	"btn-dirty-border-hover":                     ("btn-dirty-border", 12%),
 	"btn-dirty-border-focus":                     ("btn-dirty-border", 25%),
+	"btn-danger-bg-hover":                        ("btn-danger-bg", 10%),
+	"btn-danger-bg-active":                       ("btn-danger-bg", 17%),
+	"btn-danger-border-hover":                    ("btn-danger-border", 12%),
+	"btn-danger-border-focus":                    ("btn-danger-border", 25%),
 	"coursesite-start-bg-hover":                  ("coursesite-start-bg", 10%),
 	"coursesite-start-bg-active":                 ("coursesite-start-bg", 17%),
 	"coursesite-start-border-hover":              ("coursesite-start-border", 12%),
@@ -414,8 +560,65 @@ $o-token-shades: (
 	"coursesite-book-bg-hover":                   ("coursesite-book-bg", 10%),
 	"coursesite-book-bg-active":                  ("coursesite-book-bg", 17%),
 	"coursesite-book-border-hover":               ("coursesite-book-border", 12%),
-	"coursesite-book-border-focus":               ("coursesite-book-border", 25%)
+	"coursesite-book-border-focus":               ("coursesite-book-border", 25%),
+	// Add and remove toggle: the toggle under the pointer
+	"addremove-add-bg-hover":                     ("addremove-add-bg", 10%),
+	"addremove-remove-bg-hover":                  ("addremove-remove-bg", 10%),
+	// Competences: the selected competence under the pointer and pressed
+	"competence-selected-border-hover":           ("competence-selected-border", 10%),
+	"competence-selected-border-active":          ("competence-selected-border", 15%),
+	// Context help
+	"chelp-bg-hover":                             ("chelp-bg", 8%),
+	"chelp-border-hover":                         ("chelp-border", 12%),
+	// Content and course site: the hover of a linked title
+	"content-h5-hover":                           ("content-h5", 10%),
+	"content-dimmed-hover":                       ("content-dimmed", 10%),
+	"coursesite-title-hover":                     ("coursesite-title", 10%),
+	// Dashboard edit mode: the dashed line of the drop place
+	"focus-edge":                                 ("focus", 10%),
+	// File upload: the button of the drop area under the pointer
+	"file-upload-btn-bg-hover":                   ("btn-default-bg", 5%),
+	// Immunity proof: the page tint, the text on the fill and the text stroke
+	"immunity-proof-validated-bg-tint":           ("immunity-proof-validated-bg", 31%, "lighten"),
+	"immunity-proof-validated-fg":                ("immunity-proof-validated-bg", 33%, "lighten"),
+	"immunity-proof-validated-bg-edge":           ("immunity-proof-validated-bg", 31%),
+	"immunity-proof-claimed-bg-tint":             ("immunity-proof-claimed-bg", 45%, "lighten"),
+	"immunity-proof-claimed-fg":                  ("immunity-proof-claimed-bg", 45%, "lighten"),
+	"immunity-proof-claimed-bg-edge":             ("immunity-proof-claimed-bg", 23%),
+	"immunity-proof-none-bg-tint":                ("immunity-proof-none-bg", 48%, "lighten"),
+	"immunity-proof-none-fg":                     ("immunity-proof-none-bg", 48%, "lighten"),
+	"immunity-proof-none-bg-edge":                ("immunity-proof-none-bg", 25%),
+	// Tags: the clickable tag under the pointer and pressed
+	"tag-bg-hover":                               ("tag-bg", 10%),
+	"tag-bg-active":                              ("tag-bg", 15%),
+	"tag-selected-bg-hover":                      ("tag-selected-bg", 10%),
+	"tag-selected-bg-active":                     ("tag-selected-bg", 15%),
+	"tag-selection-bg-hover":                     ("tag-selection-bg", 10%),
+	"tag-selection-bg-active":                    ("tag-selection-bg", 15%),
+	"tag-selection-border-hover":                 ("tag-selection-border", 12%),
+	"tag-selection-selected-bg-hover":            ("tag-selection-selected-bg", 10%),
+	"tag-selection-selected-bg-active":           ("tag-selection-selected-bg", 15%),
+	"tag-selection-selected-border-hover":        ("tag-selection-selected-border", 10%),
+	"tag-selection-selected-border-active":       ("tag-selection-selected-border", 15%),
+	"tag-selected-border-hover":                  ("tag-selected-border", 10%),
+	"tag-selected-border-active":                 ("tag-selected-border", 15%),
+	"tag-selection-remove-selected-bg-hover":     ("tag-selection-remove-selected-bg", 10%),
+	"tag-selection-remove-selected-bg-active":    ("tag-selection-remove-selected-bg", 15%),
+	"tag-selection-remove-selected-border-hover": ("tag-selection-remove-selected-border", 10%),
+	"tag-selection-remove-selected-border-active": ("tag-selection-remove-selected-border", 15%),
+	// HTML editor: the border of the field with too many characters
+	"tinymce-danger-bg-edge":                     ("tinymce-danger-bg", 25%),
+	// Toolbar and breadcrumb: the close icon under the pointer
+	"toolbar-close-hover":                        ("toolbar-close", 15%)
 );
+
+// The colour of a shade token: its token colour darkened or lightened
+@function o-token-shade($color, $def) {
+	@if list.length($def) > 2 and list.nth($def, 3) == "lighten" {
+		@return lighten($color, list.nth($def, 2));
+	}
+	@return darken($color, list.nth($def, 2));
+}
 
 // An element token with a reference to another token as default
 @function o-token-is-reference-default($def) {
@@ -426,6 +629,9 @@ $o-token-shades: (
 $o-token-contrast-pairs: (
 	("text", "bg", 4.5),
 	("text-muted", "bg", 4.5),
+	("text", "bg-hover", 4.5),
+	("text", "bg-selected", 4.5),
+	("text", "bg-raised", 4.5),
 	("heading", "bg", 4.5),
 	("link", "bg", 4.5),
 	("link-hover", "bg", 4.5),
@@ -441,6 +647,10 @@ $o-token-contrast-pairs: (
 	("btn-default-fg", "btn-default-bg-active", 4.5),
 	("btn-dirty-fg", "btn-dirty-bg-hover", 4.5),
 	("btn-dirty-fg", "btn-dirty-bg-active", 4.5),
+	("btn-danger-fg", "btn-danger-bg", 4.5),
+	("btn-danger-fg", "btn-danger-bg-hover", 4.5),
+	("btn-danger-fg", "btn-danger-bg-active", 4.5),
+	("tag-selection-remove-selected-fg", "tag-selection-remove-selected-bg", 4.5),
 	("navbar-text", "navbar-bg", 4.5),
 	("navbar-link", "navbar-bg", 4.5),
 	("navbar-tools", "navbar-bg", 4.5),
@@ -449,6 +659,11 @@ $o-token-contrast-pairs: (
 	("dialog-header", "bg", 4.5),
 	("content-header", "bg", 4.5),
 	("content-link", "bg", 4.5),
+	("link-subtle", "bg-subtle", 4.5),
+	("nav-link", "bg", 4.5),
+	("nav-link-hover", "bg", 4.5),
+	("segments-tab-link", "bg", 4.5),
+	("selectus-review-comment-link", "bg", 4.5),
 	("toolbar-breadcrumb-link", "toolbar-breadcrumb-bg", 4.5),
 	("coursesite-start-fg", "coursesite-start-bg", 4.5),
 	("coursesite-book-fg", "coursesite-book-bg", 4.5),
@@ -460,10 +675,16 @@ $o-token-contrast-pairs: (
 	("coursesite-title", "bg", 4.5),
 	("autocomplete-suggestion-fg", "autocomplete-suggestion-bg", 4.5),
 	("chelp-fg", "chelp-bg", 4.5),
+	("chelp-fg", "chelp-bg-hover", 4.5),
+	("coursesite-title-hover", "bg", 4.5),
 	("datecomp-day-fg", "datecomp-day-bg", 4.5),
 	("swiper-button-fg", "swiper-button-bg", 4.5),
 	("tag-selection-fg", "tag-selection-bg", 4.5),
 	("tag-selection-selected-fg", "tag-selection-selected-bg", 4.5),
+	("tag-selection-fg", "tag-selection-bg-hover", 4.5),
+	("tag-selection-fg", "tag-selection-bg-active", 4.5),
+	("tag-selection-selected-fg", "tag-selection-selected-bg-hover", 4.5),
+	("tag-selection-selected-fg", "tag-selection-selected-bg-active", 4.5),
 	("wizard-step-main-active-fg", "wizard-step-main-active-bg", 4.5),
 	("reminder-marker-fg", "reminder-marker-bg", 4.5),
 	("topicbroker-title-abbr-fg", "topicbroker-title-abbr-bg", 4.5),
@@ -563,12 +784,15 @@ $o-token-progress: true;
 	@if map.has-key($o-token-defaults, $name) {
 		@error "_tokens.scss: the shade token '#{$name}' exists already as token";
 	}
-	@if not map.has-key($o-token-elements, list.nth($def, 1)) {
-		@error "_tokens.scss: the shade token '#{$name}' needs an element token, got '#{list.nth($def, 1)}'";
+	@if not map.has-key($o-token-elements, list.nth($def, 1)) and not map.has-key($o-token-base, list.nth($def, 1)) {
+		@error "_tokens.scss: the shade token '#{$name}' needs an element token or a semantic token, got '#{list.nth($def, 1)}'";
+	}
+	@if list.length($def) > 2 and list.nth($def, 3) != "lighten" {
+		@error "_tokens.scss: the shade token '#{$name}' has the unknown function '#{list.nth($def, 3)}', use \"lighten\" or nothing (darken)";
 	}
 }
 @each $name, $def in $o-token-shades {
-	$o-token-defaults: map.merge($o-token-defaults, ($name: darken(map.get($o-token-defaults, list.nth($def, 1)), list.nth($def, 2))));
+	$o-token-defaults: map.merge($o-token-defaults, ($name: o-token-shade(map.get($o-token-defaults, list.nth($def, 1)), $def)));
 }
 // The shade tokens that the mixin button-variant read before this file
 @if meta.global-variable-exists("o-button-variant-tokens") {
@@ -602,17 +826,23 @@ $o-token-progress: true;
 		@if $dash != null {
 			$hue: string.slice($value, 1, $dash - 1);
 			$step-name: string.slice($value, $dash + 1);
+			$steps: null;
 			@if map.has-key($o-palette, $hue) {
-				@each $step, $color in map.get($o-palette, $hue) {
+				$steps: map.get($o-palette, $hue);
+			} @else if $hue == "neutral" {
+				$steps: $o-neutral;
+			}
+			@if $steps != null {
+				@each $step, $color in $steps {
 					@if "#{$step}" == $step-name {
 						@return $color;
 					}
 				}
 			}
 		}
-		@error "$o-tokens: '#{$name}' has the unknown token or palette step '#{$value}', use a token name (e.g. \"primary\"), \"{hue}-{step}\" (e.g. \"slate-600\"), \"white\" or a colour";
+		@error "$o-tokens: '#{$name}' has the unknown token or palette step '#{$value}', use a token name (e.g. \"primary\"), \"{hue}-{step}\" (e.g. \"slate-600\"), \"neutral-{step}\" (e.g. \"neutral-600\"), \"white\" or a colour";
 	}
-	@error "$o-tokens: '#{$name}' needs a token name, a palette step like \"slate-600\", \"white\" or a colour, got '#{$value}'";
+	@error "$o-tokens: '#{$name}' needs a token name, a palette step like \"slate-600\" or \"neutral-600\", \"white\" or a colour, got '#{$value}'";
 }
 
 // The client overrides: a colour (palette step or literal), or a reference
@@ -651,7 +881,8 @@ $o-token-follows: ();
 	}
 }
 
-// A shade token without override follows its token and darkens the colour
+// A shade token without override follows its token and darkens or lightens
+// the colour
 $o-token-shade-follows: ();
 @each $name, $def in $o-token-shades {
 	@if not map.has-key($o-tokens, $name) {
@@ -671,7 +902,7 @@ $o-token-progress: true;
 		@if not map.has-key($o-token-pending, $target) {
 			$o-token-value: map.get($o-token-values, $target);
 			@if map.has-key($o-token-shade-follows, $name) {
-				$o-token-value: darken($o-token-value, list.nth(map.get($o-token-shades, $name), 2));
+				$o-token-value: o-token-shade($o-token-value, map.get($o-token-shades, $name));
 			}
 			$o-token-values: map.merge($o-token-values, ($name: $o-token-value));
 			$o-token-pending: map.remove($o-token-pending, $name);
@@ -726,7 +957,10 @@ $o-token-progress: true;
 
 // A colour as token value: var(--o-{hue}-{step}) for a palette step,
 // var(--o-white) for white, else the literal value. $hue is searched first.
-@function o-token-ref($color, $hue: null) {
+// With $neutral true, a colour of the neutral scale gives
+// var(--o-neutral-{step}): only for the colour of an override, so that the
+// default value of a token does not change.
+@function o-token-ref($color, $hue: null, $neutral: false) {
 	@if meta.type-of($color) != "color" {
 		@return $color;
 	}
@@ -744,6 +978,13 @@ $o-token-progress: true;
 	@if $color == #FFFFFF {
 		@return var(--o-white);
 	}
+	@if $neutral {
+		@each $step, $value in $o-neutral {
+			@if $value == $color {
+				@return var(--o-neutral-#{$step});
+			}
+		}
+	}
 	@return o-token-literal($color);
 }
 
@@ -759,7 +1000,7 @@ $o-token-progress: true;
 		@if map.has-key($o-token-references, $name) {
 			--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
 		} @else if map.has-key($o-token-overrides, $name) {
-			--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name))};
+			--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name), $neutral: true)};
 		} @else {
 			--o-#{$name}: var(--o-base-#{$name});
 		}
@@ -772,7 +1013,7 @@ $o-token-progress: true;
 			@if map.has-key($o-token-references, $name) {
 				--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
 			} @else {
-				--o-#{$name}: #{o-token-ref(map.get($o-token-values, $name), $hue)};
+				--o-#{$name}: #{o-token-ref(map.get($o-token-values, $name), $hue, map.has-key($o-token-overrides, $name))};
 			}
 		}
 	}
@@ -788,7 +1029,7 @@ $o-token-progress: true;
 		} @else if map.has-key($o-token-follows, $name) {
 			$ref: var(--o-#{map.get($o-token-follows, $name)});
 		} @else {
-			$ref: o-token-ref($value);
+			$ref: o-token-ref($value, $neutral: map.has-key($o-token-overrides, $name));
 			@if "#{$ref}" == "#{o-token-literal($value)}" {
 				--o-base-#{$name}: #{$ref};
 				$ref: var(--o-base-#{$name});
@@ -798,12 +1039,12 @@ $o-token-progress: true;
 	}
 
 	// shade tokens: the reference or the colour of $o-tokens, else the
-	// darker colour of its token, computed at compile time
+	// darker or lighter colour of its token, computed at compile time
 	@each $name, $def in $o-token-shades {
 		@if map.has-key($o-token-references, $name) {
 			--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
 		} @else if map.has-key($o-token-overrides, $name) {
-			--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name))};
+			--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name), $neutral: true)};
 		} @else {
 			--o-#{$name}: #{o-token-literal(map.get($o-token-values, $name))};
 		}

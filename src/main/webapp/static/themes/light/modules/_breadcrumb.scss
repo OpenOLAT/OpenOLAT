@@ -13,9 +13,9 @@
 		vertical-align: middle;
 		a {
 			line-height: $o-toolbar-breadcrumb-line-height;
-			color: $o-toolbar-close-color;
+			color: var(--o-toolbar-close);
 			&:hover {
-				color: darken($o-toolbar-close-color, 15%);
+				color: var(--o-toolbar-close-hover);
 			}
 			i {
 				font-size: floor($o-toolbar-breadcrumb-font-size * 1.5);

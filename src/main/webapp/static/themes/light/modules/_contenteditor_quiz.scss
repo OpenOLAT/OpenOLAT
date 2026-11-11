@@ -1,5 +1,6 @@
 // Answer feedback: colours of the semantic states (o-state-color, OO-10042)
-$brand-primary-bg : rgba($brand-primary, 0.1);
+// the light tint of the brand colour: the primary token with 10% opacity
+$brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 
 
 .o_page_layout.o_apply_background_color {
@@ -38,8 +39,8 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 
 			.o_progress-sm {
 				height: 10px;
-				background-color: white;
-				border: 1px solid $modal-content-border-color;
+				background-color: var(--o-bg);
+				border: 1px solid var(--o-modal-content-border);
 			}
 		}
 
@@ -49,7 +50,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 	}
 
 	.o_quiz {
-		border: 1px solid $modal-content-border-color;
+		border: 1px solid var(--o-modal-content-border);
 		border-radius: $border-radius-base;
 		background-color: #f2f2f2;
 		padding: 12px 20px 20px 20px;
@@ -68,7 +69,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 
 		.o_quiz_question {
 			border-radius: $border-radius-base;
-			background-color: white;
+			background-color: var(--o-bg);
 			padding: 12px 20px 20px 20px;
 
 			.itemTitle {
@@ -99,7 +100,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 						&:after {
 							margin-left: -24px;
 							color: var(--o-state-success-text);
-							background-color: white;
+							background-color: var(--o-bg);
 						}
 					}
 
@@ -110,7 +111,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 						&:after {
 							margin-left: -24px;
 							color: var(--o-state-danger-text);
-							background-color: white;
+							background-color: var(--o-bg);
 						}
 					}
 				}
@@ -420,7 +421,7 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 	.o_quiz_panel {
 		position: absolute;
 		border-radius: $border-radius-large;
-		background-color: white;
+		background-color: var(--o-bg);
 		padding: 12px 5% 20px 5%;
 		left: 50%;
 		top: 50%;
@@ -526,17 +527,17 @@ $brand-primary-bg : rgba($brand-primary, 0.1);
 		background-color: rgba(0, 0, 0, 0.6);
 		border-radius: $border-radius-base;
 		z-index: 100;
-		color: #fff;
+		color: var(--o-white);
 
 		.o_icon {
 			font-size: 3rem;
 			margin-bottom: 1rem;
-			color: #fff;
+			color: var(--o-white);
 		}
 
 		.o_essay_ai_correction_message {
 			font-size: 1.1rem;
-			color: #fff;
+			color: var(--o-white);
 		}
 	}
 

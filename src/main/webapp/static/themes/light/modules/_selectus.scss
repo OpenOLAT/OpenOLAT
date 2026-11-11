@@ -209,7 +209,7 @@ div.form-group.o_document_config .help-block {
 }
 
 .o_document_maxsize, .o_document_types {
-	color: lighten($text-color, 25%);
+	color: var(--o-text-muted);
 }
 
 div.o_tabled_form {
@@ -274,7 +274,7 @@ div.o_app_details_categories {
 div.o_position {
 	padding: 0 0 0 1em;
 	margin: 1em 0;
-	border: 1px solid $table-border-color;
+	border: 1px solid var(--o-table-border);
 	border-radius: 5px;
 }
 
@@ -338,8 +338,8 @@ td.col-right {
 
 .o_review_comments {
 	padding: 0 15px;
-	border-top: 1px solid $navbar-default-border;
-	background-color: $navbar-default-bg;
+	border-top: 1px solid var(--o-selectus-review-comments-border);
+	background-color: var(--o-selectus-review-comments-bg);
 }
 
 @for $i from 0 through 11 {
@@ -349,16 +349,16 @@ td.col-right {
 }
 
 .panel.o_review.o_review_with_comments {
-	background: linear-gradient(0deg, $navbar-default-bg 25px, #fff 20px);
+	background: linear-gradient(0deg, var(--o-selectus-review-comments-bg) 25px, var(--o-bg) 20px);
 }
 
 .o_review_comment a {
-	color: $o-selectus-review-comment-link-color;
+	color: var(--o-selectus-review-comment-link);
 	text-decoration: none;
 }
 
 .o_review_comment a:hover {
-	color: $o-selectus-review-comment-link-color;
+	color: var(--o-selectus-review-comment-link);
 	text-decoration: underline;
 }
 
@@ -390,7 +390,7 @@ ul.o_review_legend {
 	white-space: pre-wrap;
 	height: auto;
 	font-family: $font-family-monospace;
-	color: $input-color !important;
+	color: var(--o-input-fg) !important;
 }
 
 .o_toolbar .o_tool a.o_add_review_button span {
@@ -490,7 +490,7 @@ table.table tr.fx_r_mail_disabled {
 .o_doc_image_preview {
 	border: 1px solid #ddd;
 	border-radius: 4px;
-	background-color: #fcfcfc;
+	background-color: var(--o-bg-subtle);
 	margin-bottom: 5px;
 	height: 302px;
 	width: 302px;
@@ -546,7 +546,7 @@ fieldset.o_letter_preview legend {
 }
 
 .o_applications_steps .o_labeled {
-	color: white;
+	color: var(--o-white);
 	padding: 2px 12px;
 	border-radius: 3px;
 	font-weight: bold;

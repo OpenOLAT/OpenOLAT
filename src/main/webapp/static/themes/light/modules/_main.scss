@@ -61,15 +61,15 @@
 				border: 1px solid $o-tree-border-color;
 				border-left: none;
 				@include border-right-radius($o-tree-border-radius);
-				background-color: #fbfbfb;
-				@include box-shadow(2px 0px 4px 1px rgba(0,0,0,.15));
+				background-color: var(--o-bg-subtle);
+				@include box-shadow(2px 0px 4px 1px color-mix(in srgb, var(--o-shadow-color) 15%, transparent));
 				color: var(--o-primary);
 			}
 			
 			&.o_offcanvas {
 				z-index: 4;
-				background: #fbfbfb;
-				@include box-shadow(0px 0px 6px 1px rgba(0,0,0,.20));
+				background: var(--o-bg-subtle);
+				@include box-shadow(0px 0px 6px 1px color-mix(in srgb, var(--o-shadow-color) 20%, transparent));
 				min-width: 250px;
 			}
 		}

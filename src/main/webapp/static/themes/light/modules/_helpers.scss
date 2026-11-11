@@ -252,10 +252,10 @@
 		border-color: $o-button-ghost-hover-border-color;
 	}
 	&.btn-danger {
-		color: $brand-danger;
+		color: var(--o-state-danger-text);
 		&:hover {
-			color: $brand-danger;
-			border-color: $brand-danger;
+			color: var(--o-state-danger-text);
+			border-color: var(--o-state-danger-text);
 		}
 	}
 }
@@ -509,7 +509,7 @@
 }	
 /* highlight a row on hover event */
 .o_highlight_on_hover:hover { 
-	background-color: $table-bg-hover;
+	background-color: var(--o-bg-hover);
 }
 	
 /* clickable elements that should indicate this with a cursor change */
@@ -534,8 +534,8 @@
   	font-family: $font-family-monospace;
   	padding: 2px 4px;
   	font-size: 85%;
-  	color: $pre-color;
- 	background-color: $pre-bg;
+  	color: var(--o-code-block-fg);
+ 	background-color: var(--o-code-block-bg);
   	border-radius: $border-radius-base;
   	
   	input,textarea {
@@ -679,7 +679,7 @@
 		pointer-events: none;
 		position: absolute;
 		top: 20px;
-		box-shadow: 0 3px 8px 0 rgba(0,0,0,0.2);
+		box-shadow: 0 3px 8px 0 color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
 		opacity: 0;
 		transition: 0.3s opacity;
 		width: 10px;	

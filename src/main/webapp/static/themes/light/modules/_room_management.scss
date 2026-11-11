@@ -61,7 +61,7 @@
 		flex-flow: wrap;
 		gap: 8px;
 		justify-content: center;
-		background: rgba(255, 255, 255, 0.85);
+		background: color-mix(in srgb, var(--o-scrim) 85%, transparent);
 		
 		a {
 			z-index: 1000;
@@ -74,7 +74,7 @@
 }
 
 .o_building_room_status_inactive {
-	color: $gray-light;
+	color: var(--o-room-status-inactive);
 }
 
 .o_building_color_ref {
@@ -208,14 +208,14 @@
 	overflow-y: auto;
 	
 	&.o_room_card_warning {
-		border-color: $brand-warning;
+		border-color: var(--o-state-warning-text);
 		margin-bottom: 4px;
 
 		.o_room_card_warning_text {
 			grid-column: 1 / -1;
 			
 			.o_room_card_warning_icon {
-				color: $brand-warning;
+				color: var(--o-state-warning-text);
 			}
 		}
 		
@@ -303,7 +303,7 @@
 		width: 85vw;
 		max-width: 850px;
 		padding: 4rem;
-		background-color: white;
+		background-color: var(--o-bg-raised);
 		border-radius: $border-radius-large;
 	}
 }
@@ -398,7 +398,7 @@
 .o_table_filters_wrapper .o_table_filters_row > ul.o_table_filters .o_table_filter.o_filter_active {
 	.o_building_filter, .o_room_filter {
 		&.text-muted {
-			color: #fff;
+			color: var(--o-white);
 		}	
 	}
 }

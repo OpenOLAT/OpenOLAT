@@ -14,7 +14,7 @@
 			margin: 0;
 		}
 		tfoot {
-			border-top:solid $table-border-color 2px;
+			border-top:solid var(--o-table-border) 2px;
 		}
 		
 		.o_multiselect {
@@ -139,7 +139,7 @@
 	.o_col_sticky_left,
 	.o_col_sticky_right {	
 		position: sticky;
-		background: white;
+		background: var(--o-bg);
 		z-index: 1; /* above normal columns that are positioned */
 		transition: 0.3s background;
 	}
@@ -206,7 +206,7 @@
   		> tbody > tr:nth-child(odd):not(.o_table_row_expanded) {
   			.o_col_sticky_right,
   			.o_col_sticky_left {		
-		    	background-color: $table-bg-accent;
+		    	background-color: var(--o-table-striped-bg);
 		    }
 		}
 		/* fix a11y contrast on stipped cols */
@@ -246,7 +246,7 @@
   			display: none;
   		}
   		tbody>tr {
-  			background-color: #fff;
+  			background-color: var(--o-bg);
   			display: flex;
   		}
   		tbody>tr>td {
@@ -260,7 +260,7 @@
   		> tbody > tr:not(.o_table_row_expanded):hover {
   			.o_col_sticky_right,
   			.o_col_sticky_left {		
-    			background-color: $table-bg-hover;
+    			background-color: var(--o-bg-hover);
   			}
 		}
 	}
@@ -748,7 +748,7 @@ a.o_orderby, a.o_orderby:hover {
 	font-size:80%;
 	
 	a {
-		color: $brand-danger;
+		color: var(--o-state-danger-text);
 	}
 }
 
@@ -778,9 +778,9 @@ a.o_orderby, a.o_orderby:hover {
 	}
 	
 	input[type='text']:focus ~ a.btn	 {
-		$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+		$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
 		outline: 0;
-		@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+		@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
 		border-color: var(--o-focus);
 	}
 	
@@ -796,7 +796,7 @@ a.o_orderby, a.o_orderby:hover {
 		border-bottom-left-radius: 0;
 		border-top-left-radius: 0;
 		vertical-align: baseline;
-		@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
+		@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent));
 	
 		>span {
 			display: none;
@@ -894,7 +894,7 @@ a.o_orderby, a.o_orderby:hover {
 .o_info, o_note, o_important, o_warning, o_error {
 	.table-bordered td,
 	.table-bordered th {
-		border-color: $gray-dark;
+		border-color: var(--o-message-table-border);
 	}
 }
 

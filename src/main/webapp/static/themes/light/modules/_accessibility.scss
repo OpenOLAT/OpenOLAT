@@ -1,0 +1,18 @@
+/*
+ * =================================================
+ *
+ * Own accessibility rules of Bootstrap classes. Only theme.css imports this
+ * module, content.css does not.
+ *
+ * _modules.scss imports this module directly after modules/bootstrap.
+ * The rules were in _bootstrap.scss before (OO-10043).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+/* a11y: set max contrast for a11y checker tools */
+.sr-only {
+	color: #000 !important;
+	background: #fff !important;
+}

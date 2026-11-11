@@ -42,7 +42,7 @@ ul.sessionControl {
 }
 
 .association_box {
-	background-color: white;
+	background-color: var(--o-bg);
 }
 
 .prompt {
@@ -117,7 +117,7 @@ ul.sessionControl {
 .o_item_container_help, .o_items_container_help {
 	font-size: 90%;
 	font-style: italic;
-	color: $gray-light;
+	color: var(--o-qti-help);
 	padding: 5px;
 	
 	p {
@@ -254,17 +254,17 @@ img.o_hotspot_responsive[usemap] {
 }
 
 .o_qti_gaptext_alternatives {
-	background-color: $gray-lighter;
-	color: $gray;
-	border: 1px solid $gray-lighter;
+	background-color: var(--o-qti-gaptext-alternative-bg);
+	color: var(--o-qti-gaptext-alternative-fg);
+	border: 1px solid var(--o-border-subtle);
 	border-radius: $border-radius-base;
 	padding: 2px 5px;
 }
 
 .o_qti_gaptext_alternative {
-	background-color: $gray-lighter;
-	color: $gray;
-	border: 1px solid $gray-lighter;
+	background-color: var(--o-qti-gaptext-alternative-bg);
+	color: var(--o-qti-gaptext-alternative-fg);
+	border: 1px solid var(--o-border-subtle);
 	border-radius: $border-radius-base;
 	padding: 2px 5px;
 	
@@ -282,7 +282,7 @@ img.o_hotspot_responsive[usemap] {
 
 span.o_qti_gaptext_score_alternative {
 	padding-left: 2em;
-	color: $gray;
+	color: var(--o-qti-gaptext-alternative-fg);
 }
 
 .o_gap_bounds {
@@ -350,7 +350,7 @@ span.o_qti_gaptext_score_alternative {
 	white-space: pre-wrap;
 	height: auto;
 	font-family: $font-family-monospace;
-	color: $input-color !important;
+	color: var(--o-input-fg) !important;
 }
 
 .o_qti_assistance.o_assistance_accordion {
@@ -638,7 +638,7 @@ li.o_assessmentitem_order_item {
 	margin-bottom: 10px;
 	border: 2px $o-qti-order-source-border-style var(--o-qti-gap-border);
 	border-radius: $o-qti-order-border-radius;
-	background-color: #ffffff;
+	background-color: var(--o-bg);
 	background: $o-qti-order-source-bg;
 	list-style-type: none;
 	@include clearfix;
@@ -679,7 +679,7 @@ body>li.o_assessmentitem_order_item  {
 			font-size: 0.8em;
 			line-height: 1.2em;
 			color: var(--o-text);		
-			background: #fff;	
+			background: var(--o-bg);	
 			
 		}
 		.o_qti_item_meta {
@@ -733,7 +733,7 @@ body>li.o_assessmentitem_order_item  {
 		min-height: $o-qti-item-min-height;
 		margin: 0;
 		padding: $padding-small-vertical $padding-small-horizontal;
-		background-color: $panel-bg;
+		background-color: var(--o-panel-bg);
 		border-left: 1px solid $o-qti-item-border-color;
 		border-right: 1px solid $o-qti-item-border-color;
 		font-size: $font-size-base;
@@ -803,7 +803,7 @@ body>li.o_assessmentitem_order_item  {
 		border: 1px solid transparent;
 		font-size: 0.8em;
 		line-height: 1.2em;
-		color: #fff;
+		color: var(--o-white);
 
 		// correct, ended, incorrect, answered, notAnswered, notPresented, review and reviewNotSeen:
 		// semantic states in _states.scss (OO-10042)
@@ -922,7 +922,7 @@ body>li.o_assessmentitem_order_item  {
 .o_assessmentitem_top_buttons {
 	margin: 0;
 	padding: $padding-small-horizontal $padding-small-horizontal 0px $padding-small-horizontal;
-	background-color: $panel-bg;
+	background-color: var(--o-panel-bg);
 	border-left: 1px solid $o-qti-item-border-color;
 	border-right: 1px solid $o-qti-item-border-color;
 }
@@ -1033,7 +1033,7 @@ tr.choiceinteraction {
 		line-height: 1.5; /* smaller than #itemBody */
 		border: 1px solid $o-qti-textEntryInteraction-border-color;
 		border-radius: $input-border-radius;
-    	@include box-shadow(inset 0 1px 1px rgba(0, 0, 0, .075)); // Redeclare so transitions work
+    	@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent)); // Redeclare so transitions work
 		background: $o-qti-textEntryInteraction-bg;
 		padding: 1px 3px;
 		color: $o-qti-textEntryInteraction-color;
@@ -1043,7 +1043,7 @@ tr.choiceinteraction {
 		&:disabled,
 		&.o_input_value_wrapper {
 			color: $o-qti-textEntryInteraction-filled-color;
-			background: $input-bg-disabled;		
+			background: var(--o-input-disabled-bg);		
 			border: 1px solid $o-qti-textEntryInteraction-filled-border-color;
 		}
 		
@@ -1174,7 +1174,7 @@ table.o_qti_item_kprim {
 	margin-bottom: 10px;
 	border: 2px $o-qti-match-source-border-style var(--o-qti-gap-border);
 	border-radius: $o-qti-match-border-radius;
-	background-color: #ffffff;
+	background-color: var(--o-bg);
 	background: $o-qti-match-source-bg;
 	@include clearfix;
 	
@@ -1519,7 +1519,7 @@ table.o_qti_item_kprim {
 .o_assessmentitem .mathEntryInteraction {
 	border: 1px solid #ddedfc;
 	background-color: #edf1f6;
-	background: linear-gradient(to top, #edf1f6 0%, #f6f9fb 100%);
+	background: linear-gradient(to top, #edf1f6 0%, var(--o-neutral-50) 100%);
 	border-radius: $border-radius-base;
 	padding: 20px 0;
 
@@ -1734,7 +1734,7 @@ table.o_qti_item_kprim {
 		.o_assessmentitem_attempts {
 			padding: 0.3em;
 			border-radius: 2px;
-			background-color: #fafafa;
+			background-color: var(--o-bg-subtle);
 			color: var(--o-qti-attempts);
 			font-size: 0.7em;
 		}
@@ -2135,7 +2135,7 @@ div.o_qti_statistics {
 	div.o_qti_statistics_legend {
 		padding-top: 10px;
 		width: 470px;
-		border: 1px solid $table-border-color;
+		border: 1px solid var(--o-table-border);
 		border-radius: $panel-border-radius;
 		ul li {
 			.bar_green { background-color: var(--o-state-success-border); }

@@ -3,8 +3,10 @@
  *
  * Palette primitives as CSS custom properties:
  * --o-{hue}-{step}, e.g. --o-blue-500. Values from $o-palette
- * in _palette.scss. Not used in email.scss, mail clients do
- * not support custom properties.
+ * in _palette.scss. The neutral scale --o-neutral-{step}, e.g.
+ * --o-neutral-150, from $o-neutral in _palette_neutral.scss.
+ * Not used in email.scss, mail clients do not support custom
+ * properties.
  *
  * @author gnaegi,  www.frentix.com
  * @date October 2026
@@ -21,5 +23,10 @@
 	// theme colours (_palette_theme.scss): the solid fill, Java reads its step
 	@each $key, $step in $o-theme-bg-steps {
 		--o-#{$key}: #{o-hex(map.get(map.get($o-palette, $key), $step))};
+	}
+	// neutral scale (_palette_neutral.scss): the greys, 0 is white, 1000 is
+	// black. Java does not read it as a hue (Palette.NEUTRAL).
+	@each $step, $value in $o-neutral {
+		--o-neutral-#{$step}: #{o-hex($value)};
 	}
 }
