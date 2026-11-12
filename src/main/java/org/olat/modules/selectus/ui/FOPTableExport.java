@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
@@ -148,7 +149,7 @@ public class FOPTableExport {
 	}
 	
 	public void transform(Document doc, OutputStream out, String templateName) 
-	throws TransformerException, FOPException {
+	throws TransformerException, FOPException, TransformerFactoryConfigurationError, URISyntaxException {
         // Setup output
     	// configure fopFactory as desired
 		

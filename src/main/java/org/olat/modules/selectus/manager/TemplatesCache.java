@@ -22,6 +22,8 @@ package org.olat.modules.selectus.manager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,6 +43,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XMLFactories;
 import org.olat.modules.selectus.ui.PositionController;
+import org.olat.modules.selectus.ui.RecruitingMainController;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,15 +59,21 @@ public class TemplatesCache {
 	public static final String STATIC_FOLDER = "/customizing/selectus/";
 
 	public Transformer getTransformer(String templateName)
-	throws TransformerConfigurationException, TransformerFactoryConfigurationError {
+	throws TransformerConfigurationException, TransformerFactoryConfigurationError, URISyntaxException {
 		File path = new File(WebappHelper.getUserDataRoot(), STATIC_FOLDER);
 		if(!path.exists() && !path.mkdirs()) {
 			log.error("/customizing/selectus/ folder cannot be created");
 		}
 		File customTemplateFile = new File(path, templateName);
-		final File templateFile = customTemplateFile.exists()
-				? customTemplateFile
-				: new File(new File(WebappHelper.getSourcePath().replace("/java", "/resources"),"org/olat/modules/selectus/ui"), templateName);
+		final File templateFile;
+		if(customTemplateFile.exists()) {
+			templateFile = customTemplateFile;
+		} else if(Settings.isDebuging()) {
+			templateFile = new File(new File(WebappHelper.getSourcePath().replace("/java", "/resources"),"org/olat/modules/selectus/ui"), templateName);
+		} else {
+			URL url = RecruitingMainController.class.getResource(templateName);
+			templateFile = new File(url.toURI());
+		}
 
 		Templates template;
 		if (Settings.isDebuging()) {			

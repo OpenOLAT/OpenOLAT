@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
@@ -371,7 +373,7 @@ public class PDFApplicationCombinedHelper {
 	}
 	
 	private InputStream addForMerge(Document doc, String stylesheet) 
-	throws FOPException, TransformerException, IOException {
+	throws FOPException, TransformerException, IOException, TransformerFactoryConfigurationError, URISyntaxException {
 		ByteArrayOutputStream coverOut = new ByteArrayOutputStream();
 		transform(doc,  coverOut, stylesheet);
 		coverOut.flush();
@@ -398,7 +400,7 @@ public class PDFApplicationCombinedHelper {
 	}
 	
 	private void transform(Document doc, OutputStream out, String xsltName) 
-	throws TransformerException, FOPException {
+	throws TransformerException, FOPException, TransformerFactoryConfigurationError, URISyntaxException {
 		// Setup output
 		// configure fopFactory as desired
 		URI defaultBaseUri = new File(WebappHelper.getContextRoot()).toURI();
