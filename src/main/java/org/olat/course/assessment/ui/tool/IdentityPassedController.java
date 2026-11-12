@@ -98,7 +98,6 @@ public class IdentityPassedController extends BasicController {
 		
 		completionItem = ProgressBarFactory.createProgressBar("completion", mainVC, getLocale());
 		completionItem.setMax(100);
-		completionItem.setUnitLabel("%");
 		completionItem.setLabelFormat(LabelFormat.percent);
 		completionItem.setRenderStyle(RenderStyle.radial);
 		completionItem.setRenderSize(RenderSize.small);

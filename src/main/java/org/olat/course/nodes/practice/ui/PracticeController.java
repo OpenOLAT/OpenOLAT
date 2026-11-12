@@ -672,6 +672,13 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			layoutCont.contextPut("currentSeries", currentSeries);
 			layoutCont.contextPut("previousSeriesProgress", Double.valueOf(previousSeriesProgress));
 			layoutCont.contextPut("currentSeriesProgress", Double.valueOf(currentSeriesProgress));
+			
+			ProgressBar seriesProgressBar = ProgressBarFactory.createProgressBar("series.progress", getLocale());
+			seriesProgressBar.setMax(100);
+			seriesProgressBar.setAriaHidden(true);
+			seriesProgressBar.setCssClass("o_practice_series_moving");
+			ProgressBarFactory.setValue(seriesProgressBar, (float)currentSeriesProgress, BarColor.primary);
+			layoutCont.put("series.progress", seriesProgressBar);
 		}
 		
 		@Override

@@ -72,6 +72,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+import org.olat.core.gui.components.progressbar.ProgressBar.SegmentLabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -169,7 +173,6 @@ import org.olat.modules.selectus.ui.comparator.IdentityLastnameComparator;
 import org.olat.modules.selectus.ui.components.AcademicalDateCellRenderer;
 import org.olat.modules.selectus.ui.components.ApplicationURLCellRenderer;
 import org.olat.modules.selectus.ui.components.AssignmentsCellRenderer;
-import org.olat.modules.selectus.ui.components.BarItem;
 import org.olat.modules.selectus.ui.components.CategoriesCellRenderer;
 import org.olat.modules.selectus.ui.components.DateCellRenderer;
 import org.olat.modules.selectus.ui.components.DateTimeCellRenderer;
@@ -181,7 +184,6 @@ import org.olat.modules.selectus.ui.components.ParallelApplicationsCellRenderer;
 import org.olat.modules.selectus.ui.components.ProjectCellRenderer;
 import org.olat.modules.selectus.ui.components.ReferencesStatsCellRenderer;
 import org.olat.modules.selectus.ui.components.SingleRatingCellRenderer;
-import org.olat.modules.selectus.ui.components.StackedProgressBarItem;
 import org.olat.modules.selectus.ui.components.TooltipCellRenderer;
 import org.olat.modules.selectus.ui.copy.CopyApplication1PositionStep;
 import org.olat.modules.selectus.ui.copy.CopyApplicationContext;
@@ -281,8 +283,8 @@ public class PositionApplicationsController extends FormBasicController implemen
 	private FormLink copyApplicationsButton;
 	private FormLink addComparativeExpertsButton;
 	
-	private StackedProgressBarItem myStatisticsItem;
-	private StackedProgressBarItem allStatisticsItem;
+	private ProgressBarItem myStatisticsItem;
+	private ProgressBarItem allStatisticsItem;
 	private FormLayoutContainer statisticsContainer;
 	
 	private Link exportAllCombinedPdfLink;
@@ -478,10 +480,10 @@ public class PositionApplicationsController extends FormBasicController implemen
 		statisticsContainer.setVisible(false);
 		formLayout.add(statisticsContainer);
 		
-		myStatisticsItem = new StackedProgressBarItem("myStatisticsItem");
-		statisticsContainer.add("myStatisticsItem", myStatisticsItem);
-		allStatisticsItem = new StackedProgressBarItem("allStatisticsItem");
-		statisticsContainer.add("allStatisticsItem", allStatisticsItem);
+		myStatisticsItem = uifactory.addProgressBar("myStatisticsItem", null, statisticsContainer);
+		myStatisticsItem.setSegmentLabelFormat(SegmentLabelFormat.label);
+		allStatisticsItem = uifactory.addProgressBar("allStatisticsItem", null, statisticsContainer);
+		allStatisticsItem.setSegmentLabelFormat(SegmentLabelFormat.label);
 		
 		toggleAssignmentStatisticsLink = uifactory.addFormLink("toogle.statistics", "toogle.assignments.statistics.all",
 				null, statisticsContainer, Link.LINK);
@@ -1627,23 +1629,11 @@ public class PositionApplicationsController extends FormBasicController implemen
 				Integer.toString(allStatistics.getApplicationsDone()), Integer.toString(allStatistics.getNumOfApplications())
 			});
 		
-		myStatisticsItem.setWidth(myStatistics.getNumOfAssignments());
-		List<BarItem> myItems = new ArrayList<>();
-		myItems.add(new BarItem(translate("rating.2"), "progress-bar-success", myStatistics.getRating(2)));
-		myItems.add(new BarItem(translate("rating.1"), "o_bar_rating_on", myStatistics.getRating(1)));
-		myItems.add(new BarItem(translate("rating.0"), "o_bar_rating_on", myStatistics.getRating(0)));
-		myItems.add(new BarItem(translate("abstain.title"), "o_bar_rating_on o_bar_rating_on o_bar_rating_abstain", myStatistics.getAbstention()));
-		myItems.add(new BarItem("", "progress-bar-info", myStatistics.getNotActive()));
-		myStatisticsItem.setBarItems(myItems);
+		myStatisticsItem.setMax(myStatistics.getNumOfAssignments());
+		myStatisticsItem.setSegments(getStatisticsSegments(myStatistics));
 		
-		allStatisticsItem.setWidth(allStatistics.getNumOfApplications());
-		List<BarItem> allItems = new ArrayList<>();
-		allItems.add(new BarItem(translate("rating.2"), "progress-bar-success", allStatistics.getRating(2)));
-		allItems.add(new BarItem(translate("rating.1"), "o_bar_rating_on", allStatistics.getRating(1)));
-		allItems.add(new BarItem(translate("rating.0"), "o_bar_rating_on", allStatistics.getRating(0)));
-		allItems.add(new BarItem(translate("abstain.title"), "o_bar_rating_on o_bar_rating_on o_bar_rating_abstain", allStatistics.getAbstention()));
-		allItems.add(new BarItem("", "progress-bar-info", allStatistics.getNotActive()));
-		allStatisticsItem.setBarItems(allItems);
+		allStatisticsItem.setMax(allStatistics.getNumOfApplications());
+		allStatisticsItem.setSegments(getStatisticsSegments(allStatistics));
 		
 		statisticsContainer.contextPut("allStatisticsMsg", allMessage);
 		statisticsContainer.contextPut("allStatistics", allStatistics);
@@ -1660,6 +1650,15 @@ public class PositionApplicationsController extends FormBasicController implemen
 			myStatisticsItem.setVisible(my);
 			allStatisticsItem.setVisible(!my);
 		}
+	}
+	
+	private List<Segment> getStatisticsSegments(ApplicationStatistics statistics) {
+		return List.of(
+				new Segment(statistics.getRating(2), BarColor.success, translate("rating.2")),
+				new Segment(statistics.getRating(1), BarColor.primary, "o_bar_rating_b", translate("rating.1")),
+				new Segment(statistics.getRating(0), BarColor.primary, "o_bar_rating_c", translate("rating.0")),
+				new Segment(statistics.getAbstention(), BarColor.primary, "o_bar_rating_abstain", translate("abstain.title")),
+				new Segment(statistics.getNotActive(), BarColor.info, translate("statistics.not.active")));
 	}
 	
 	private void doToogleAssignmentsStatistics() {

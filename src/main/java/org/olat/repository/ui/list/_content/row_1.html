@@ -88,11 +88,7 @@
 					#if($r.isNotEmpty($row.completionInPercents) && $row.completionInPercents == "100")
 					<i class="o_icon o_icon_circle_color"> </i>
 					#else
-					<span class="o_progress">
-						<span class="progress o_progress-sm" style="width:100px;">
-							<span class="progress-bar progress-bar-neutral" style="width:${row.completionInPercents}px" title="${row.completionInPercents}%"></span>
-						</span>
-					</span>
+					$completionRenderer.render($row.completionInPercents)
 					#end
 					${row.completionInPercents}&#37;</span>
 				#end

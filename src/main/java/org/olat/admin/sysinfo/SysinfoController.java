@@ -27,9 +27,13 @@ package org.olat.admin.sysinfo;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
@@ -41,6 +45,13 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelPosition;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+import org.olat.core.gui.components.progressbar.ProgressBar.SegmentLabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarCallback;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.WindowControl;
@@ -59,6 +70,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 * @author Felix Jost
 */
 public class SysinfoController extends FormBasicController {
+	
+	private static final BarColor[] MEMORY_COLORS = { BarColor.success, BarColor.warning, BarColor.info };
 	
 	@Autowired
 	private McpIdentityCache mcpIdentityCache;
@@ -91,8 +104,10 @@ public class SysinfoController extends FormBasicController {
 		uifactory.addStaticTextElement("runtime.time", "runtime.time", time, runtimeCont);
 
 		//memory
-		uifactory.addMemoryView("memoryHeap", "runtime.memory", MemoryType.HEAP, runtimeCont);
-		uifactory.addMemoryView("memoryNonHeap", "runtime.memory.permGen", MemoryType.NON_HEAP, runtimeCont);
+		addMemoryBar("memoryHeap", "runtime.memory", MemoryType.HEAP,
+				ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax(), runtimeCont);
+		addMemoryBar("memoryNonHeap", "runtime.memory.permGen", MemoryType.NON_HEAP,
+				ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage().getMax(), runtimeCont);
 		
 		//controllers
 		int controllerCnt = DefaultController.getControllerCount();
@@ -194,6 +209,41 @@ public class SysinfoController extends FormBasicController {
 			logError("", e);
 		}
 		uifactory.addStaticTextElement("sysinfo.olatdata.db", "sysinfo.olatdata.db", fsDbStatus, serverCont);
+	}
+
+	private void addMemoryBar(String name, String i18nLabel, MemoryType type, long max, FormItemContainer formLayout) {
+		ProgressBarItem memoryEl = uifactory.addProgressBar(name, i18nLabel, formLayout);
+		memoryEl.setNoMax(max == -1);
+		memoryEl.setProgressCallback(new MemoryCallback(type, max));
+		memoryEl.setLabelFormat(LabelFormat.value);
+		memoryEl.setUnitLabel("MB");
+		memoryEl.setLabelPosition(LabelPosition.after);
+		memoryEl.setSegmentLabelFormat(SegmentLabelFormat.valueAndLabel);
+		memoryEl.setAriaLabel(translate(i18nLabel));
+	}
+	
+	private static float toMB(long val) {
+		return val / (1024f * 1024f);
+	}
+	
+	private record MemoryCallback(MemoryType type, long max) implements ProgressBarCallback {
+		
+		@Override
+		public float getMax() {
+			return toMB(max);
+		}
+		
+		@Override
+		public List<Segment> getSegments() {
+			List<Segment> segments = new ArrayList<>(5);
+			for(MemoryPoolMXBean pool:ManagementFactory.getMemoryPoolMXBeans()) {
+				if(pool.getType() == type) {
+					BarColor color = MEMORY_COLORS[segments.size() % MEMORY_COLORS.length];
+					segments.add(new Segment(toMB(pool.getUsage().getUsed()), color, "MB (" + pool.getName() + ")"));
+				}
+			}
+			return segments;
+		}
 	}
 
 	/**

@@ -19,11 +19,16 @@
  */
 package org.olat.course.nodes.practice.ui.renders;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.nodes.practice.ui.Levels;
 
@@ -33,34 +38,30 @@ import org.olat.course.nodes.practice.ui.Levels;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LevelBarsCellRenderer implements FlexiCellRenderer {
+public class LevelBarsCellRenderer extends ProgressBarCellRenderer {
+
+	public LevelBarsCellRenderer() {
+		super(RenderStyle.horizontal, RenderSize.medium, LabelFormat.none, BarColor.primary);
+	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof Levels) {
-			Levels levels = (Levels)cellValue;
-			target.append("<div class='progress' style='width:100%;'>");
-			for(int i=1; i<=levels.getNumOfLevels(); i++) {
-				int val = levels.getLevel(i);
-				if(val > 0) {
-					render(target, "o_practice_progress_l" + i, val, levels.getTotal());
-				}
-			}
-			if(levels.getNot() > 0) {
-				render(target, "o_practice_progress_not", levels.getNot(), levels.getTotal());
-			}
-			target.append("</div>");
+	protected ProgressBar createProgressBar(Object cellValue, Translator translator) {
+		if (cellValue instanceof Levels levels) {
+			ProgressBar progressBar = createProgressBar(translator.getLocale());
+			progressBar.setMax(levels.getTotal());
+			progressBar.setSegments(getSegments(levels, translator));
+			return progressBar;
 		}
+		return null;
 	}
 	
-	private void render(StringOutput target, String cssClass, int val, int total) {
-		double percentValue = 0.0d;
-		if(total > 0) {
-			percentValue = (val / (double)total) * 100.0d;
+	public static List<Segment> getSegments(Levels levels, Translator translator) {
+		List<Segment> segments = new ArrayList<>(levels.getNumOfLevels() + 1);
+		for (int i = 1; i <= levels.getNumOfLevels(); i++) {
+			segments.add(new Segment(levels.getLevel(i), BarColor.primary, levels.getCssClass(i),
+					translator.translate("level.stat.percent") + " " + i));
 		}
-		target.append("<div class='progress-bar ").append(cssClass).append("' style='width:").append(percentValue)
-		      .append("%' title=\"").append(percentValue).append("%\">")
-		      .append("</div>");
+		segments.add(new Segment(levels.getNot(), BarColor.primary, levels.getNotCssClass(), translator.translate("level.stat.not")));
+		return segments;
 	}
 }

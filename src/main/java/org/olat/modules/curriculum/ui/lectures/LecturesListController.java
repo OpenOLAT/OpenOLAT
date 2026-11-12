@@ -144,7 +144,7 @@ public class LecturesListController extends FormBasicController implements Expor
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.absentLectures));
 		}
 		// add progress
-		FlexiColumnModel progressCol = new DefaultFlexiColumnModel(StatsCols.progress, new LectureStatisticsCellRenderer());
+		FlexiColumnModel progressCol = new DefaultFlexiColumnModel(StatsCols.progress, new LectureStatisticsCellRenderer(getLocale()));
 		progressCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(progressCol);
 		

@@ -17,12 +17,11 @@
 			</div>
 			<div class="col-xs-6 o_practice_data o_practice_challenge">
 				<div class="o_practice_series_progress">
-					<div class="progress" style="width: 100%;">
-						<div class="progress-bar progress-bar-neutral" style="width: ${currentSeriesProgress}%; animation: moveprogress 1s;"> </div>
-					</div>
+					$r.render("series.progress")
 					<i class="o_challenge"> </i>
 				</div>
 				<style>
+				.o_practice_series_moving .progress-bar { animation: moveprogress 1s; }
 				@keyframes moveprogress {
 				  0%   { width: ${previousSeriesProgress}%;}
 				  100% { width: ${currentSeriesProgress}%;}

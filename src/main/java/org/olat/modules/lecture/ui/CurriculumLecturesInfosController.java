@@ -92,7 +92,7 @@ public class CurriculumLecturesInfosController extends FormBasicController {
 			
 			String warning = new RateWarningCellRenderer(getTranslator()).render(statistics);
 			flc.contextPut("warning", warning);
-			String progress = new LectureStatisticsCellRenderer().render(statistics);
+			String progress = new LectureStatisticsCellRenderer(getLocale()).render(statistics, getTranslator());
 			flc.contextPut("progress", progress);
 		}
 	}

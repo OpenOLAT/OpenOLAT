@@ -31,10 +31,12 @@ import java.util.Locale;
 import org.junit.Test;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelPosition;
 import org.olat.core.gui.components.progressbar.ProgressBar.Marker;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+import org.olat.core.gui.components.progressbar.ProgressBar.SegmentLabelFormat;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 
@@ -107,6 +109,46 @@ public class ProgressBarRendererTest {
 	}
 	
 	@Test
+	public void shouldRenderLabelAfterMediumBar() {
+		ProgressBar progressBar = createProgressBar(100);
+		progressBar.setLabelFormat(LabelFormat.value);
+		progressBar.setLabelPosition(LabelPosition.after);
+		ProgressBarFactory.setValue(progressBar, 40, BarColor.neutral);
+		
+		String html = render(progressBar);
+		
+		assertThat(html)
+				.contains("o_progress_label_after")
+				.contains("<span class='progress'>")
+				.contains("</span><span class='o_progress_label_wrapper'>");
+	}
+	
+	@Test
+	public void shouldRenderSegmentLabelsInSegments() {
+		ProgressBar progressBar = createProgressBar(10);
+		progressBar.setSegments(List.of(new Segment(6, BarColor.success, "active"), new Segment(2, BarColor.warning, null)));
+		progressBar.setSegmentLabelFormat(SegmentLabelFormat.valueAndLabel);
+		
+		String html = render(progressBar);
+		
+		assertThat(html)
+				.contains("o_progress_segment_labels")
+				.contains("aria-hidden='true'>6 active</span>")
+				.contains("aria-hidden='true'></span>");
+	}
+	
+	@Test
+	public void shouldRenderOnlyLabelInSegments() {
+		ProgressBar progressBar = createProgressBar(10);
+		progressBar.setSegments(List.of(new Segment(6, BarColor.success, "A")));
+		progressBar.setSegmentLabelFormat(SegmentLabelFormat.label);
+		
+		String html = render(progressBar);
+		
+		assertThat(html).contains("title=\"6 A\" aria-hidden='true'>A</span>");
+	}
+	
+	@Test
 	public void shouldSizeInnerWidthInPercentOfBar() {
 		ProgressBar progressBar = createProgressBar(100);
 		ProgressBarFactory.setValue(progressBar, 40, BarColor.neutral);
@@ -150,6 +192,19 @@ public class ProgressBarRendererTest {
 	}
 	
 	@Test
+	public void shouldSkipEmptySegmentsWithoutLabelInStackedName() {
+		ProgressBar progressBar = createProgressBar(10);
+		progressBar.setSegments(List.of(
+				new Segment(6, BarColor.success, "active"),
+				new Segment(0, BarColor.danger, "failed"),
+				new Segment(0, BarColor.info, null)));
+		
+		String html = render(progressBar);
+		
+		assertThat(html).contains("aria-label=\"6 active, 0 failed of 10\"");
+	}
+	
+	@Test
 	public void shouldUseAriaLabelAsName() {
 		ProgressBar progressBar = createProgressBar(100);
 		ProgressBarFactory.setValue(progressBar, 40, BarColor.neutral);
@@ -158,6 +213,19 @@ public class ProgressBarRendererTest {
 		String html = render(progressBar);
 		
 		assertThat(html).contains("role='progressbar' aria-label=\"Course progress\"");
+	}
+	
+	@Test
+	public void shouldReadValueOfMaxWithUnitLabel() {
+		ProgressBar progressBar = createProgressBar(50);
+		progressBar.setUnitLabel("participants");
+		ProgressBarFactory.setValue(progressBar, 3, BarColor.primary);
+		
+		String html = render(progressBar);
+		
+		assertThat(html)
+				.contains("aria-valuenow='6'")
+				.contains("aria-valuetext=\"3 of 50 participants\"");
 	}
 	
 	@Test
@@ -239,6 +307,26 @@ public class ProgressBarRendererTest {
 		assertThat(html)
 				.contains("aria-hidden='true'>")
 				.doesNotContain("role=");
+	}
+	
+	@Test
+	public void shouldReadPercentWithUnitLabel() {
+		ProgressBar progressBar = createProgressBar(100);
+		progressBar.setUnitLabel("%");
+		progressBar.setLabelFormat(LabelFormat.percent);
+		ProgressBarFactory.setValue(progressBar, 45, BarColor.neutral);
+		
+		String html = render(progressBar);
+		
+		assertThat(html).contains("aria-valuetext=\"45%\"");
+	}
+	
+	@Test
+	public void shouldReuseCellTranslatorOfSameLocale() {
+		Translator translator = mock(Translator.class);
+		when(translator.getLocale()).thenReturn(Locale.ENGLISH);
+		
+		assertThat(ProgressBarCellRenderer.getTranslator(translator, ProgressBar.class, Locale.ENGLISH)).isSameAs(translator);
 	}
 	
 	@Test

@@ -278,7 +278,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.absentLectures));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rateWarning, new RateWarningCellRenderer(getTranslator())));
 		DefaultFlexiColumnModel rateColumn = new DefaultFlexiColumnModel(LecturesCols.rate, new PercentCellRenderer());
 		rateColumn.setFooterCellRenderer(new PercentCellRenderer());

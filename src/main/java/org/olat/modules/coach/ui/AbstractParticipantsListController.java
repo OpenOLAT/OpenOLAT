@@ -239,7 +239,7 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.completion,
             		new CompletionCellRenderer(getTranslator())));
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.successStatus,
-            		new SuccessStatusCellRenderer()));
+            		new SuccessStatusCellRenderer(getLocale())));
         }
         
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.certificates,

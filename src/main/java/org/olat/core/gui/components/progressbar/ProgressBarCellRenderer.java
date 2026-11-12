@@ -32,6 +32,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -45,6 +46,7 @@ public class ProgressBarCellRenderer implements FlexiCellRenderer {
 	private final RenderSize renderSize;
 	private final LabelFormat labelFormat;
 	private final BarColor barColor;
+	private Translator barTranslator;
 	
 	public ProgressBarCellRenderer(RenderStyle renderStyle, RenderSize renderSize, LabelFormat labelFormat, BarColor barColor) {
 		this.renderStyle = renderStyle;
@@ -56,15 +58,15 @@ public class ProgressBarCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		ProgressBar progressBar = createProgressBar(cellValue, translator.getLocale());
+		ProgressBar progressBar = createProgressBar(cellValue, translator);
 		if (progressBar != null) {
-			ProgressBarRenderer.renderProgressBar(target, progressBar, null);
+			ProgressBarRenderer.render(target, progressBar, null, () -> getBarTranslator(translator.getLocale()));
 		}
 	}
 	
-	protected ProgressBar createProgressBar(Object cellValue, Locale locale) {
+	protected ProgressBar createProgressBar(Object cellValue, Translator translator) {
 		if (cellValue instanceof Number number) {
-			ProgressBar progressBar = createProgressBar(locale);
+			ProgressBar progressBar = createProgressBar(translator.getLocale());
 			progressBar.setMax(1);
 			ProgressBarFactory.setValue(progressBar, number.floatValue(), barColor);
 			return progressBar;
@@ -78,6 +80,18 @@ public class ProgressBarCellRenderer implements FlexiCellRenderer {
 		progressBar.setRenderSize(renderSize);
 		progressBar.setLabelFormat(labelFormat);
 		return progressBar;
+	}
+	
+	private Translator getBarTranslator(Locale locale) {
+		barTranslator = getTranslator(barTranslator, ProgressBar.class, locale);
+		return barTranslator;
+	}
+	
+	static Translator getTranslator(Translator cached, Class<?> packageClass, Locale locale) {
+		if (cached == null || !locale.equals(cached.getLocale())) {
+			return Util.createPackageTranslator(packageClass, locale);
+		}
+		return cached;
 	}
 	
 }

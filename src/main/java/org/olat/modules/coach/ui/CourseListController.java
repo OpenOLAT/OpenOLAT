@@ -71,6 +71,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.CompletionBarRenderer;
 import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -183,7 +184,7 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 	private static final String BOOKMARK_TAB_ID = "Bookmarks";
 	private static final String ACCESS_FOR_COACH_TAB_ID = "AccessForCoach";
 
-	private final SuccessStatusCellRenderer successStatusCellRenderer = new SuccessStatusCellRenderer();
+	private final SuccessStatusCellRenderer successStatusCellRenderer = new SuccessStatusCellRenderer(getLocale());
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab bookmarkTab;
@@ -359,6 +360,7 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		row.setTranslator(getTranslator());
+		row.contextPut("completionRenderer", new CompletionBarRenderer(getLocale()));
 		tableEl.setRowRenderer(row, this);
 		
 		if(config.withFilters()) {

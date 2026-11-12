@@ -34,9 +34,11 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelPosition;
 import org.olat.core.gui.components.progressbar.ProgressBar.Marker;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBar.SegmentLabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -83,7 +85,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 	static void render(StringOutput target, ProgressBar bar, String domId, Supplier<Translator> barTranslator) {
 		boolean horizontal = bar.getRenderStyle() == RenderStyle.horizontal;
 		boolean inline = bar.getRenderSize() == RenderSize.inline;
-		boolean labelAfter = inline || (horizontal && bar.getRenderSize() == RenderSize.small);
+		boolean labelAfter = inline || bar.getLabelPosition() == LabelPosition.after || (horizontal && bar.getRenderSize() == RenderSize.small);
 		
 		target.append("<span class='o_progress")
 			.append(" o_progress_inline", inline)
@@ -113,6 +115,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			.append(" o_progress-sm", bar.getRenderSize() == RenderSize.small)
 			.append(" o_progress-lg", bar.getRenderSize() == RenderSize.large)
 			.append(" o_progress_with_markers", !bar.getMarkers().isEmpty())
+			.append(" o_progress_segment_labels", bar.getSegmentLabelFormat() != SegmentLabelFormat.none)
 			.append("'>");
 		
 		for (SegmentWidth segmentWidth : getSegmentWidths(bar)) {
@@ -125,7 +128,15 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 				.append(" progress-bar-striped active", bar.isProgressAnimationEnabled())
 				.append(" " + segment.cssClass(), StringHelper.containsNonWhitespace(segment.cssClass()))
 				.append("' style='width:").append(toPercent(segmentWidth.width())).append("%;' title=\"")
-				.append(getSegmentTitle(segmentWidth)).append("\" aria-hidden='true'></span>");
+				.append(getSegmentTitle(segmentWidth)).append("\" aria-hidden='true'>");
+			if (StringHelper.containsNonWhitespace(segment.label())) {
+				if (bar.getSegmentLabelFormat() == SegmentLabelFormat.label) {
+					target.append(StringHelper.escapeHtml(segment.label()));
+				} else if (bar.getSegmentLabelFormat() == SegmentLabelFormat.valueAndLabel) {
+					target.append(StringHelper.escapeHtml(getSegmentText(segment)));
+				}
+			}
+			target.append("</span>");
 		}
 		
 		float base = getBase(bar);
@@ -292,19 +303,22 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			if (!bar.isNoMax()) {
 				target.append(" aria-valuemin='0' aria-valuemax='100' aria-valuenow='").append(getPercent(bar)).append("'");
 			}
-			target.append(" aria-valuetext=\"").append(StringHelper.escapeHtml(getAriaValueText(bar))).append("\"");
+			target.append(" aria-valuetext=\"").append(StringHelper.escapeHtml(getAriaValueText(bar, barTranslator))).append("\"");
 		} else {
 			target.append(" role='img' aria-label=\"").append(StringHelper.escapeHtml(getAriaLabel(bar, barTranslator))).append("\"");
 		}
 	}
 	
-	private static String getAriaValueText(ProgressBar bar) {
+	private static String getAriaValueText(ProgressBar bar, Supplier<Translator> barTranslator) {
 		if (bar.isNoMax()) {
 			return getValueText(bar);
 		}
 		return switch (bar.getLabelFormat()) {
 			case value -> getValueText(bar);
 			case percentAndValue -> getPercent(bar) + "% (" + getValueText(bar) + ")";
+			case none -> StringHelper.containsNonWhitespace(bar.getUnitLabel())
+					? barTranslator.get().translate("progress.aria.of", String.valueOf(Math.round(Math.min(bar.getTotal(), bar.getMax()))), getMaxText(bar))
+					: getPercent(bar) + "%";
 			default -> getPercent(bar) + "%";
 		};
 	}
@@ -312,7 +326,9 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 	static String getAriaLabel(ProgressBar bar, Supplier<Translator> barTranslator) {
 		List<String> segmentTexts = new ArrayList<>();
 		for (Segment segment : bar.getSegments()) {
-			segmentTexts.add(getSegmentText(segment));
+			if (segment.value() > 0 || StringHelper.containsNonWhitespace(segment.label())) {
+				segmentTexts.add(getSegmentText(segment));
+			}
 		}
 		String label = String.join(", ", segmentTexts);
 		if (!bar.isNoMax()) {

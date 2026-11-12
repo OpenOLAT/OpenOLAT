@@ -559,22 +559,11 @@
 		.o_overview_passed {
 			flex: 3 0 auto;
 			display: flex;
-			.o_assessment_chart {
-				&.radial-progress {
-					width: $o-course-assessment-chart-size;
-					height: $o-course-assessment-chart-size;
-					padding: $o-course-assessment-chart-padding;
-					margin: unset;
-					.o_passed_slice {
-						stroke: var(--o-course-state-passed);
-					}
-					.o_failed_slice {
-						stroke: var(--o-course-state-failed);
-					}
-					.o_done_slice {
-						stroke: var(--o-primary);
-					}
-				}
+			.o_assessment_chart .radial-progress {
+				width: $o-course-assessment-chart-size;
+				height: $o-course-assessment-chart-size;
+				padding: $o-course-assessment-chart-padding;
+				margin: unset;
 			}
 			.o_overview_passed_fig {
 				display: flex;
@@ -603,14 +592,6 @@
 		.o_values {
 			flex-shrink: 0;
 		}	
-	}
-}
-.progress-bar {
-	&.o_passed_progress_bar {
-		background-color: var(--o-course-state-passed);
-	}
-	&.o_failed_progress_bar {
-		background-color: var(--o-course-state-failed);
 	}
 }
 .o_assessment_grade_stats {

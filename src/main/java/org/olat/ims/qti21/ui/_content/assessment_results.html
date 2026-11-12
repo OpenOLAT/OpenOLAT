@@ -205,49 +205,10 @@
 	#if(${testResults.hasScore()} && ${testResults.hasMaxScore()})			
 	<div class="o_qti_metainfo_visual col-xs-12 col-sm-5 col-md-4 col-lg-3"> ## START right column
 	<div class="o_block_centered_wrapper"><div class="o_block_centered_content">
-		<span class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getCalculatedPassed().booleanValue()}) radial-progress-success o_progress_passed #elseif(!${testResults.getCalculatedPassed().booleanValue()}) radial-progress-danger o_progress_failed #end #end " id="o_performance_summary_visual" data-progress="0"
-			#if(${testResults.hasPass()})
-				#if(${testResults.getCalculatedPassed().booleanValue()}) 
-					title="$r.translateInAttribute("passed.success.status") $r.translateInAttribute("passed.yes") " 
-				#elseif(!${testResults.getCalculatedPassed().booleanValue()}) 
-					title="$r.translateInAttribute("passed.success.status") $r.translateInAttribute("passed.no") " 
-				#end
-			#end											
-		>
-			<svg viewBox='0 0 32 32'>
-				<circle r='16' cx='16' cy='16' class='radial-bg'/>
-				<circle r='16' cx='16' cy='16' class='radial-bar'/>
-			</svg>
-			
-			<span class="percentage">
-				<span class="centeredWrapper">
-					<span class="number">
-						<span>${testResults.scorePercent}%</span>
-					</span>
-
-					<span class="addon">
-						<span class="o_score">
-							$r.translate("table.header.score"): 
-							<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$testResults.score</span>
-						</span>
-						#if(${itemResult.hasMaxScore()})
-						<span class="o_score_max o_small">
-							$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$testResults.maxScore</span>
-						</span>
-						#end
-					</span>						
-				
-				</span>
-			</span>
-		</span> ## END of radial-progress
+		$scoreRenderer.renderTest($testResults, "o_performance_summary_visual")
 	</div></div> ## END o_block_centered_wrapper
 	</div> ## END right column / o_qti_metainfo_visual
 			
-	<script>
-	setTimeout(function() {
-		o_animateRadialProgress('#o_performance_summary_visual', ${testResults.scorePercent});
-	});
-	</script>
 	#end
 	
 	</div> ## END row
@@ -263,46 +224,9 @@
 
 		#if(${itemResult.hasScore()})			
 		<div class="o_qti_section_visual">
-			<span class="radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success o_progress_passed #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger o_progress_failed #end #end " id="$foreach.count" data-progress="0"
-			#if(${testResults.hasPass()})
-				#if(${testResults.getCalculatedPassed().booleanValue()}) 
-					title="$r.translateInAttribute("passed.success.status") $r.translateInAttribute("passed.yes") " 
-				#elseif(!${testResults.getCalculatedPassed().booleanValue()}) 
-					title="$r.translateInAttribute("passed.success.status") $r.translateInAttribute("passed.no") " 
-				#end
-			#end											
-			>
-				<svg viewBox='0 0 32 32'>
-					<circle r='16' cx='16' cy='16' class='radial-bg'/>
-					<circle r='16' cx='16' cy='16' class='radial-bar'/>
-				</svg>
-				<span class="percentage">
-					<span class="centeredWrapper">
-						<span class="number">
-							<span>${itemResult.scorePercent}%</span>
-						</span>
-						<span class="addon">
-							<span class="o_score">
-								$r.translate("table.header.score"): 
-								<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
-							</span>
-							#if(${itemResult.hasMaxScore()})
-							<span class="o_score_max">
-								$r.translate("results.of") <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
-							</span>
-							#end
-						</span>						
-					
-					</span>
-				</span>
-			</span> ## END of radial-progress
+			$scoreRenderer.renderSection($itemResult, "o_qti_section_visual_${foreach.count}")
 			
-			## Animate radial score progress via JS
-			<script>
-			setTimeout(function() {
-				o_animateRadialProgress('#${foreach.count}', ${itemResult.scorePercent});
-			});
-			</script>			
+		
 		</div>  ## END of o_performance_summary
 		#end
 		
@@ -442,11 +366,7 @@
 					</div>
 					#if(${itemResult.hasMaxScore()})
 					<div class="col-xs-6 col-md-8">
-						<div class="progress" style="width:100%;">
-							<div class="progress-bar" role="progressbar" aria-valuenow="$itemResult.score" aria-valuemin="0" aria-valuemax="$itemResult.maxScore" style="width:${itemResult.scorePercent}%;">
-					      		<span class="sr-only">${itemResult.scorePercent}%</span>
-					      	</div>
-						</div>
+						$scoreRenderer.renderItem($itemResult)
 					</div>
 					<div class="col-xs-1">${itemResult.scorePercent}%</div>
 					#end

@@ -18,9 +18,7 @@
 				</div>
 				<h5>$r.translate("current.challenge")</h5>
 				<div class="o_practice_series_progress">
-					<div class="progress" style="width: 100%">
-						<div class="progress-bar progress-bar-neutral" style="width: ${currentSeriesProgress}%"> </div>
-					</div>
+					$r.render("series.progress")
 					<i class="o_challenge"> </i>
 				</div>
 				<span>$r.escapeHtml($currentSeries)</span>
@@ -104,12 +102,7 @@
 									<div class="o_practice_metrics_progress">
 									
 										#if($r.isNotNull($globalLevels))
-										<div class="progress" style="width:100%;">
-											#foreach($i in ${globalLevels.getLevels()})
-												<div class='progress-bar ${globalLevels.getCssClass($i)}' style='width:${globalLevels.getLevelPercent($i)}%' title="${globalLevels.getLevelPercent($i)}%"></div>
-											#end
-											<div class='progress-bar ${globalLevels.getNotCssClass()}' style='width:${globalLevels.getNotPercent()}%' title="${globalLevels.getNotPercent()}%"></div>
-										</div>
+										$r.render("levels.progress")
 										<div class="o_numbers">$r.render("global.levels")</div>
 										#end
 									</div>

@@ -21,11 +21,16 @@ package org.olat.modules.assessment.ui.component;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
+import org.olat.core.gui.components.progressbar.ProgressBarRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.CodeHelper;
 
 /**
  * 
@@ -41,25 +46,18 @@ public class CompletionRenderer extends DefaultComponentRenderer {
 		
 		CompletionComponent ccp = (CompletionComponent) source;
 
-		double percent = 100.0d;
-		double completion = ccp.getCompletion() == null ? 0.0d : ccp.getCompletion().doubleValue();
-		double percentCompletion = percent * completion;
-		if(percentCompletion < 0.0d) {
-			percentCompletion = 0.0d;
-		} else if(percentCompletion > percent) {
-			percentCompletion = percent;
-		}
+		Translator completionTranslator = ccp.getCompletionTranslator();
 		
 		sb.append("<div id='").append(ccp.getFormItem().getFormDispatchId()).append("'");
 		if(ccp.isEnded()) {
-			sb.append(" class='o_sel_ended'>").append(ccp.getCompletionTranslator().translate("run.ended"));
+			sb.append(" class='o_sel_ended'>").append(completionTranslator.translate("run.ended"));
 		} else {
-			sb.append(" class='progress' style=\"width:100%;\"><div class='progress-bar progress-bar-neutral' style=\"width:")
-				.append(Math.round(percentCompletion))
-				.append("%\" title=\"")
-				.append(Math.round(percentCompletion))
-				.append("%\">")
-				.append("</div>");
+			sb.append(">");
+			ProgressBar progressBar = ProgressBarFactory.createProgressBar("completion-" + CodeHelper.getRAMUniqueID(), completionTranslator.getLocale());
+			progressBar.setMax(1);
+			ProgressBarFactory.setValue(progressBar, ccp.getCompletion() == null ? 0.0f : ccp.getCompletion().floatValue(), BarColor.neutral);
+			progressBar.setAriaLabel(completionTranslator.translate("table.header.completion"));
+			ProgressBarRenderer.renderProgressBar(sb, progressBar, null);
 		}
 		sb.append("</div>");
 	}

@@ -25,9 +25,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelPosition;
 import org.olat.core.gui.components.progressbar.ProgressBar.Marker;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBar.SegmentLabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
 
 /**
@@ -140,6 +142,22 @@ public class ProgressBarItem extends FormItemImpl {
 	
 	public void setProgressAnimationEnabled(boolean progressAnimationEnabled) {
 		component.setProgressAnimationEnabled(progressAnimationEnabled);
+	}
+	
+	public LabelPosition getLabelPosition() {
+		return component.getLabelPosition();
+	}
+	
+	public void setLabelPosition(LabelPosition labelPosition) {
+		component.setLabelPosition(labelPosition);
+	}
+	
+	public SegmentLabelFormat getSegmentLabelFormat() {
+		return component.getSegmentLabelFormat();
+	}
+	
+	public void setSegmentLabelFormat(SegmentLabelFormat segmentLabelFormat) {
+		component.setSegmentLabelFormat(segmentLabelFormat);
 	}
 	
 	public boolean isAriaHidden() {

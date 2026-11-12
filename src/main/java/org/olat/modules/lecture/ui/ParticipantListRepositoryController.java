@@ -197,7 +197,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures,
 						new LongCellRenderer("o_sel_absences")));
 			}
-			FlexiColumnModel progressCol = new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer());
+			FlexiColumnModel progressCol = new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer(getLocale()));
 			progressCol.setExportable(false);
 			columnsModel.addFlexiColumnModel(progressCol);
 		}

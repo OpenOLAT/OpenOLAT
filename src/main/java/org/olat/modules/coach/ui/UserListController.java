@@ -112,7 +112,7 @@ public class UserListController extends FormBasicController implements Activatea
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countCourse));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.initialLaunch, new LightIconRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new SuccessStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new SuccessStatusCellRenderer(getLocale())));
 		
 		model = new StudentsTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);

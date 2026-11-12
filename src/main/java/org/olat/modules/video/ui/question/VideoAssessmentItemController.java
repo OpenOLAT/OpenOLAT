@@ -30,6 +30,9 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -265,6 +268,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 	private class VideoAssessmentItemsDisplayController extends AssessmentItemDisplayController {
 
 		private AssessmentResult assessmentResult;
+		private ProgressBar completionBar;
 		
 		public VideoAssessmentItemsDisplayController(UserRequest ureq, WindowControl wControl,
 				RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
@@ -274,6 +278,10 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 			super(ureq, wControl, entry, subIdent, testEntry, assessmentEntry, authorMode,
 					resolvedAssessmentItem, fUnzippedDirRoot, itemFile, videoQuestionId,
 					deliveryOptions, outcomesListener, candidateAuditLogger);
+			if(!authorMode) {
+				completionBar = ProgressBarFactory.createProgressBar("completion", mainVC, getLocale());
+				completionBar.setMax(1);
+			}
 		}
 		
 		public void setTimeLimit(long seconds) {
@@ -289,14 +297,9 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		}
 
 		public void updateCompletion(double completion) {
-			double completionInPercent = completion * 100.0d;
-			if(completionInPercent < 0.0d) {
-				completionInPercent = 0.0d;
-			} else if(completionInPercent > 100.0d) {
-				completionInPercent = 100.0d;
+			if(completionBar != null) {
+				ProgressBarFactory.setValue(completionBar, (float)completion, BarColor.neutral);
 			}
-			mainVC.contextPut("enableCompletion", Boolean.valueOf(!authorMode));
-			mainVC.contextPut("completion", Double.toString(completionInPercent));
 		}
 		
 		@Override

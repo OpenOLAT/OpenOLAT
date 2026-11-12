@@ -34,12 +34,19 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.table.IconCssCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -62,9 +69,6 @@ import org.olat.course.assessment.ui.tool.event.SelectionEvents;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.modules.assessment.ui.AssessmentStatsController.GroupTableModel.GroupCols;
 import org.olat.modules.assessment.ui.AssessmentStatsController.LaunchTableModel.LaunchCols;
-import org.olat.modules.assessment.ui.component.DoneChart;
-import org.olat.modules.assessment.ui.component.PassedChart;
-import org.olat.modules.assessment.ui.component.PassedChart.PassedPercent;
 import org.olat.modules.assessment.ui.component.ScoreChart;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.modules.coach.ui.CourseListController;
@@ -95,8 +99,8 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	private FormLink doneLink;
 	private FormLink notDoneLink;
 	private ScoreChart scoreChart;
-	private PassedChart passedChart;
-	private DoneChart doneChart;
+	private ProgressBar passedChart;
+	private ProgressBar doneChart;
 	private LaunchTableModel launchTableModel;
 	private FlexiTableElement launchTableEl;
 	private GroupTableModel groupTableModel;
@@ -187,8 +191,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			undefinedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed_undefined o_noinfo");
 			undefinedLink.setEnabled(!readOnly);
 			
-			passedChart = new PassedChart("passed.chart");
-			flc.put("passed.chart", passedChart);
+			passedChart = createChart("passed.chart");
 		} else if (PercentStat.status == percentStat) {
 			doneLink = uifactory.addFormLink("num.done", "num.done", null, null, formLayout, Link.NONTRANSLATED);
 			doneLink.setIconLeftCSS("o_icon o_icon-fw o_black_led");
@@ -198,8 +201,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			notDoneLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed o_grey_led");
 			notDoneLink.setEnabled(!readOnly);
 
-			doneChart = new DoneChart("done.chart");
-			flc.put("done.chart", doneChart);
+			doneChart = createChart("done.chart");
 		}
 		
 		// Participants
@@ -227,7 +229,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			}
 		}
 		if (PercentStat.passed == percentStat) {
-			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new SuccessStatusCellRenderer()));
+			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new SuccessStatusCellRenderer(getLocale())));
 		} else if (PercentStat.status == percentStat) {
 			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status, new StatusStatsRenderer()));
 		}
@@ -248,7 +250,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.scoreAvg, new ScoreCellRenderer()));
 		}
 		if (PercentStat.passed == percentStat) {
-			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new SuccessStatusCellRenderer()));
+			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new SuccessStatusCellRenderer(getLocale())));
 		} else if (PercentStat.status == percentStat) {
 			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status, new StatusStatsRenderer()));
 		}
@@ -341,7 +343,10 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			String numOfUndefinedText = translate("assessment.tool.num.undefined", Integer.toString(statistics.getCountUndefined()), Integer.toString(numOfUndefinedPercent));
 			undefinedLink.setI18nKey(numOfUndefinedText);
 			
-			passedChart.setPassedPercent(new PassedPercent(numOfPassedPercent, numOfFailedPercent));
+			passedChart.setMax(statistics.getCountTotal());
+			passedChart.setSegments(List.of(
+					new Segment(statistics.getCountPassed(), BarColor.passed, null),
+					new Segment(statistics.getCountFailed(), BarColor.failed, null)));
 		} else if (PercentStat.status == percentStat) {
 			int numOfDonePercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountDone() / statistics.getCountTotal()) : 0;
 			String numOfDoneText = translate("assessment.tool.num.done", Integer.toString(statistics.getCountDone()), Integer.toString(numOfDonePercent));
@@ -351,10 +356,20 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			String numOfNotDoneText = translate("assessment.tool.num.not.done", Integer.toString(statistics.getCountNotDone()), Integer.toString(numOfNotDonePercent));
 			notDoneLink.setI18nKey(numOfNotDoneText);
 			
-			doneChart.setDonePercent(numOfDonePercent);
+			doneChart.setMax(statistics.getCountTotal());
+			ProgressBarFactory.setValue(doneChart, statistics.getCountDone(), BarColor.primary);
 		}
 	}
 
+	private ProgressBar createChart(String name) {
+		ProgressBar chart = ProgressBarFactory.createProgressBar(name, getLocale());
+		chart.setRenderStyle(RenderStyle.pie);
+		chart.setCssClass("o_assessment_chart");
+		chart.setAriaHidden(true);
+		flc.put(name, chart);
+		return chart;
+	}
+	
 	private void updateLaunchModel() {
 		List<LaunchRow> rows = new ArrayList<>(2);
 		
@@ -766,7 +781,11 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		}
 	}
 
-	public class StatusStatsRenderer implements FlexiCellRenderer {
+	public class StatusStatsRenderer extends ProgressBarCellRenderer {
+		
+		public StatusStatsRenderer() {
+			super(RenderStyle.horizontal, RenderSize.medium, LabelFormat.none, BarColor.primary);
+		}
 		
 		@Override
 		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
@@ -778,10 +797,8 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 					int notDonePercent = Math.round(100f * (groupRow.getNumNotDone() / (float)groupRow.getNumIdentities()));
 					
 					String tooltip = translate("done.tooltip", Integer.toString(donePercent), Integer.toString(notDonePercent));
-					target.append("<div class='o_assessment_progress'>");
-					target.append("<div class='progress' title='").append(tooltip).append("'>");
-					appendBar(target, donePercent, "o_done_progress_bar");
-					target.append("</div>");
+					target.append("<div class='o_assessment_progress' title='").append(tooltip).append("'>");
+					super.render(renderer, target, groupRow, row, source, ubu, translator);
 					target.append(" <div class='o_values'>").append(groupRow.getNumDone()).append(" / ").append(groupRow.getNumNotDone())
 							.append("</div>");
 					target.append("</div>");
@@ -789,10 +806,17 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			}
 		}
 
-		private void appendBar(StringOutput sb, int percent, String cssClass) {
-			sb.append("<div class='progress-bar ").append(cssClass).append("' style='width:").append(percent).append("%'>");
-			sb.append("<div class='sr-only'>").append(percent).append("%</div>");
-			sb.append("</div>");
+		@Override
+		protected ProgressBar createProgressBar(Object cellValue, Translator translator) {
+			if (cellValue instanceof GroupRow groupRow) {
+				ProgressBar progressBar = createProgressBar(translator.getLocale());
+				progressBar.setMax(groupRow.getNumIdentities());
+				progressBar.setUnitLabel(translate("participants"));
+				ProgressBarFactory.setValue(progressBar, groupRow.getNumDone(), BarColor.primary);
+				progressBar.setAriaLabel(translate("table.header.done"));
+				return progressBar;
+			}
+			return null;
 		}
 	}
 

@@ -46,6 +46,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
@@ -272,7 +275,11 @@ public class PracticeParticipantController extends FormBasicController {
 			currentSeriesProgress = (currentNumOfSeries / (double)seriesPerChallenge) * 100.0d;
 		}
 		
-		flc.contextPut("currentSeriesProgress", Double.valueOf(currentSeriesProgress));
+		ProgressBar seriesProgressBar = ProgressBarFactory.createProgressBar("series.progress", getLocale());
+		seriesProgressBar.setMax(100);
+		seriesProgressBar.setAriaHidden(true);
+		ProgressBarFactory.setValue(seriesProgressBar, (float)currentSeriesProgress, BarColor.primary);
+		flc.put("series.progress", seriesProgressBar);
 		
 		long duration = 0l;
 		long numOfDuration = 0l;
@@ -356,6 +363,11 @@ public class PracticeParticipantController extends FormBasicController {
 		}
 		
 		flc.contextPut("globalLevels", globalLevels);
+		ProgressBar levelsProgressBar = ProgressBarFactory.createProgressBar("levels.progress", getLocale());
+		levelsProgressBar.setMax(globalLevels.getTotal());
+		levelsProgressBar.setAriaLabel(translate("table.header.learn.pro.levels"));
+		levelsProgressBar.setSegments(LevelBarsCellRenderer.getSegments(globalLevels, getTranslator()));
+		flc.put("levels.progress", levelsProgressBar);
 		String globalLinkValue = globalLevels.getTotal() == 1
 				? translate("num.question")
 				: translate("num.questions", Integer.toString(globalLevels.getTotal()));

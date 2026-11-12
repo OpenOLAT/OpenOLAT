@@ -21,7 +21,6 @@
 package org.olat.gui.demo.guidemo;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,6 +40,7 @@ import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -200,9 +200,9 @@ public class GuiDemoProgressBarController extends FormBasicController {
 		}
 		
 		@Override
-		protected ProgressBar createProgressBar(Object cellValue, Locale locale) {
+		protected ProgressBar createProgressBar(Object cellValue, Translator translator) {
 			if (cellValue instanceof DemoRow row) {
-				ProgressBar progressBar = createProgressBar(locale);
+				ProgressBar progressBar = createProgressBar(translator.getLocale());
 				progressBar.setMax(row.attended() + row.absent() + row.excused());
 				progressBar.setAriaLabel("Lectures");
 				progressBar.setSegments(List.of(

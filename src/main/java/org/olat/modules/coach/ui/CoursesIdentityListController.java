@@ -258,7 +258,7 @@ public class CoursesIdentityListController extends FormBasicController implement
 
 		if (lectureModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lecturesProgress,
-					new LectureStatisticsCellRenderer(true)));
+					new LectureStatisticsCellRenderer(getLocale(), true)));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.plannedLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.attendedLectures));
 			if (lectureModule.isAuthorizedAbsenceEnabled()) {

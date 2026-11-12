@@ -1600,6 +1600,9 @@ ul.o_assessment_docs>li:last-child {
 		width: 250px;
 		max-width: 100%;
 	}
+	&.o_progress_completion .progress {
+		width: 100px;
+	}
 	.o_progress_label, 
 	.o_progress_info {
 		display: inline-block;
@@ -1611,6 +1614,7 @@ ul.o_assessment_docs>li:last-child {
 	.progress {
 		position: relative;
 		display: inline-block;
+		vertical-align: top;
 		width: 100%;
 		text-shadow: 1px 1px 2px var(--o-shadow-color);
 		font-size: $font-size-small;
@@ -1637,6 +1641,11 @@ ul.o_assessment_docs>li:last-child {
 				border-top-right-radius: inherit;
 				border-bottom-right-radius: inherit;
 			}
+		}
+		&.o_progress_segment_labels .progress-bar {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 		.o_progress_marker {
 			position: absolute;
@@ -1687,6 +1696,20 @@ ul.o_assessment_docs>li:last-child {
 		&.progress-bar {
 			background-color: $progress-bar-neutral-bg;
 		}
+	}
+}
+
+.o_form_cell > .o_progress {
+	display: flex;
+	align-items: center;
+	min-height: $input-height-base;
+	&.o_progress_inline {
+		display: inline-flex;
+		vertical-align: top;
+	}
+	.o_progress-lg {
+		margin-top: ($input-height-base - 40px) * 0.5;
+		margin-bottom: ($input-height-base - 40px) * 0.5;
 	}
 }
 

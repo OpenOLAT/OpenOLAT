@@ -52,6 +52,8 @@ public class ProgressBar extends AbstractComponent implements FormBaseComponent 
 	public enum RenderSize {inline, small, medium, large}
 	public enum BarColor {primary, success, info, warning, danger, passed, failed, neutral }
 	public enum LabelFormat {none, percent, value, percentAndValue}
+	public enum LabelPosition {auto, after}
+	public enum SegmentLabelFormat {none, label, valueAndLabel}
 	
 	public record Segment(float value, BarColor color, String cssClass, String label) {
 	
@@ -74,7 +76,9 @@ public class ProgressBar extends AbstractComponent implements FormBaseComponent 
 	private LabelFormat labelFormat = LabelFormat.none;
 	private RenderStyle renderStyle = RenderStyle.horizontal;
 	private RenderSize renderSize = RenderSize.medium;
+	private LabelPosition labelPosition = LabelPosition.auto;
 	private boolean progressAnimationEnabled = false;
+	private SegmentLabelFormat segmentLabelFormat = SegmentLabelFormat.none;
 	private boolean ariaHidden = false;
 	private String ariaLabel;
 	private String unitLabel;
@@ -221,12 +225,39 @@ public class ProgressBar extends AbstractComponent implements FormBaseComponent 
 		setDirty(true);
 	}
 	
+	public LabelPosition getLabelPosition() {
+		return labelPosition;
+	}
+	
+	/**
+	 * @param labelPosition auto: after inline and small horizontal bars, inside
+	 *                      all others
+	 */
+	public void setLabelPosition(LabelPosition labelPosition) {
+		this.labelPosition = labelPosition;
+		setDirty(true);
+	}
+	
 	public boolean isProgressAnimationEnabled() {
 		return progressAnimationEnabled;
 	}
 	
 	public void setProgressAnimationEnabled(boolean progressAnimationEnabled) {
 		this.progressAnimationEnabled = progressAnimationEnabled;
+		setDirty(true);
+	}
+	
+	public SegmentLabelFormat getSegmentLabelFormat() {
+		return segmentLabelFormat;
+	}
+	
+	/**
+	 * @param segmentLabelFormat The text inside the segments of a horizontal
+	 *                           bar. The tooltip shows always the value and the
+	 *                           label.
+	 */
+	public void setSegmentLabelFormat(SegmentLabelFormat segmentLabelFormat) {
+		this.segmentLabelFormat = segmentLabelFormat;
 		setDirty(true);
 	}
 	

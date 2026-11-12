@@ -19,17 +19,26 @@
  */
 package org.olat.modules.coach.ui.component;
 
+import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
+import org.olat.modules.coach.ui.CourseListController;
 
 /**
  *
@@ -37,16 +46,23 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SuccessStatusCellRenderer implements FlexiCellRenderer, CustomCellRenderer {
+public class SuccessStatusCellRenderer extends ProgressBarCellRenderer implements CustomCellRenderer {
 
 	private final Translator customTranslator;
+	private final Translator coachTranslator;
 
-	public SuccessStatusCellRenderer() {
-		this.customTranslator = null;
+	public SuccessStatusCellRenderer(Locale locale) {
+		this(null, locale);
 	}
 
 	public SuccessStatusCellRenderer(Translator translator) {
-		this.customTranslator = translator;
+		this(translator, translator.getLocale());
+	}
+	
+	private SuccessStatusCellRenderer(Translator customTranslator, Locale locale) {
+		super(RenderStyle.horizontal, RenderSize.medium, LabelFormat.none, BarColor.passed);
+		this.customTranslator = customTranslator;
+		this.coachTranslator = Util.createPackageTranslator(CourseListController.class, locale);
 	}
 
 	@Override
@@ -74,27 +90,23 @@ public class SuccessStatusCellRenderer implements FlexiCellRenderer, CustomCellR
 					String.valueOf(failed), String.valueOf(failedPercent),
 					String.valueOf(undefined), String.valueOf(undefinedPercent));
 			target.append("<div class='o_coaching_status' title='").append(StringHelper.escapeForHtmlAttribute(tooltip)).append("'>");
-			renderBars(target, status, total, passedPercent, failedPercent);
+			super.render(null, target, status, 0, null, null, translator);
 			renderNumber(target, status);
 			target.append("</div>");
 		}
 	}
 	
-	private void renderBars(StringOutput target, SuccessStatus status, long total, long passedPercent, long failedPercent) {
-		target.append("<div class='progress'>");
-
-		//passed
-		target.append("<div class='progress-bar o_passed_progress_bar' role='progressbar' aria-valuenow='").append(status.numPassed())
-		      .append("' aria-valuemin='0' aria-valuemax='").append(total)
-		      .append("' style='width: ").append(passedPercent).append("%;'>")
-		      .append("<span class='sr-only'>").append(passedPercent).append("%</span></div>");
-		//failed
-		target.append("<div class='progress-bar o_failed_progress_bar' role='progressbar' aria-valuenow='").append(status.numFailed())
-	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
-	      .append("' style='width: ").append(max100Percent(failedPercent, passedPercent)).append("%;'>")
-	      .append("<span class='sr-only'>").append(failedPercent).append("%</span></div>");
-
-		target.append("</div>");
+	@Override
+	protected ProgressBar createProgressBar(Object cellValue, Translator translator) {
+		if (cellValue instanceof SuccessStatus status) {
+			ProgressBar progressBar = createProgressBar(translator.getLocale());
+			progressBar.setMax(status.numPassed() + status.numFailed() + status.numUndefined());
+			progressBar.setSegments(List.of(
+					new Segment(status.numPassed(), BarColor.passed, coachTranslator.translate("passed.true")),
+					new Segment(status.numFailed(), BarColor.failed, coachTranslator.translate("passed.false"))));
+			return progressBar;
+		}
+		return null;
 	}
 	
 	private long max100Percent(long val, long... precedentVals) {

@@ -228,10 +228,10 @@
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 		
-		&.o_progress_failed .percentage:before {
+		.o_progress_failed & .percentage:before {
 			color: #efe5e5 !important;
 		}
-		&.o_progress_passed .percentage:before {
+		.o_progress_passed & .percentage:before {
 			color: #e5efe5 !important;
 		}
 		&[data-progress="0"] .percentage:before {

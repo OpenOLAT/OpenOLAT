@@ -26,7 +26,6 @@
 package org.olat.core.gui.components.form.flexible;
 
 import java.io.File;
-import java.lang.management.MemoryType;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -58,7 +57,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IconSelectorElement;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
-import org.olat.core.gui.components.form.flexible.elements.MemoryElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -95,7 +93,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.IconSelectorElem
 import org.olat.core.gui.components.form.flexible.impl.elements.IntegerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
-import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElementImpl;
@@ -1586,13 +1583,6 @@ public class FormUIFactory {
 		return cancel;
 	}
 
-	public MemoryElement addMemoryView(String name, String i18nLabel, MemoryType type, FormItemContainer formLayout) {
-		MemoryElementImpl fte = new MemoryElementImpl(name, type);
-		setLabelIfNotNull(i18nLabel, fte);
-		formLayout.add(fte);
-		return fte;
-	}
-	
 	public ProgressBarItem addProgressBar(String name, String i18nLabel, FormItemContainer formLayout) {
 		ProgressBarItem fte = new ProgressBarItem(name);
 		setLabelIfNotNull(i18nLabel, fte);

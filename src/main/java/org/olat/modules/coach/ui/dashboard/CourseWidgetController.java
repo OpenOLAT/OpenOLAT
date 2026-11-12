@@ -109,7 +109,7 @@ public class CourseWidgetController extends TableWidgetController
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		completionCellRenderer = new CompletionCellRenderer(getTranslator());
-		successStatusCellRenderer = new SuccessStatusCellRenderer();
+		successStatusCellRenderer = new SuccessStatusCellRenderer(getLocale());
 		
 		initForm(ureq);
 	}

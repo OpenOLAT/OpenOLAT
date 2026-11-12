@@ -127,6 +127,13 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 					margin-top: 2px; 
 					font-size:0.5em;
 				}					
+				.o_progress_info >span {
+					display: block;
+				}
+				.o_progress_info >span+span {
+					margin-top: 2px;
+					font-size: 0.83em;
+				}
 			}
 		}
 	

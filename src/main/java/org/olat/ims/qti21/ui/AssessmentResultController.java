@@ -221,6 +221,7 @@ public class AssessmentResultController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("options", options);
+			layoutCont.contextPut("scoreRenderer", new AssessmentResultScoreRenderer(getTranslator()));
 			layoutCont.contextPut("mapperUri", mapperUri);
 			// mapperUri is the default
 			layoutCont.contextPut("submissionMapperUri", submissionMapperUri == null ? mapperUri : submissionMapperUri);

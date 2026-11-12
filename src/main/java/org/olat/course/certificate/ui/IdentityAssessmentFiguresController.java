@@ -167,7 +167,6 @@ public class IdentityAssessmentFiguresController extends BasicController {
 
 		completionItem = ProgressBarFactory.createProgressBar("completion", mainVC, getLocale());
 		completionItem.setMax(100);
-		completionItem.setUnitLabel("%");
 		completionItem.setRenderStyle(RenderStyle.radial);
 		completionItem.setRenderSize(RenderSize.small);
 		

@@ -20,7 +20,6 @@
 package org.olat.modules.assessment.ui.component;
 
 import java.util.Comparator;
-import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.progressbar.ProgressBar;
@@ -30,6 +29,7 @@ import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBarFactory;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -44,12 +44,12 @@ public class LearningProgressCompletionCellRenderer extends ProgressBarCellRende
 	}
 	
 	@Override
-	protected ProgressBar createProgressBar(Object cellValue, Locale locale) {
+	protected ProgressBar createProgressBar(Object cellValue, Translator translator) {
 		if (cellValue instanceof CompletionPassed completionPassed && completionPassed.getCompletion() != null) {
 			BarColor barColor = completionPassed.getPassed() == null || completionPassed.getPassed().booleanValue()
 					? BarColor.success
 					: BarColor.danger;
-			ProgressBar progressBar = createProgressBar(locale);
+			ProgressBar progressBar = createProgressBar(translator.getLocale());
 			progressBar.setMax(1);
 			ProgressBarFactory.setValue(progressBar, completionPassed.getCompletion().floatValue(), barColor);
 			return progressBar;

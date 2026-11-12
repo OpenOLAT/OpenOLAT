@@ -69,6 +69,7 @@ import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.CompletionBarRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
@@ -321,6 +322,7 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		row.contextPut("completionRenderer", new CompletionBarRenderer(getLocale()));
 		if (gradeModule.isEnabled()) {
 			row.contextPut("gradeEnabled", Boolean.TRUE);
 			row.contextPut("gradeRenderer", new GradeCellRenderer(getLocale()));
