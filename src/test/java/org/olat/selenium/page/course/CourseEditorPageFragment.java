@@ -484,10 +484,12 @@ public class CourseEditorPageFragment {
 	
 		By entriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab");
 		OOGraphene.waitElement(entriesBy, browser);
-		By myEntriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_my.btn-primary");
-		if(!browser.findElements(myEntriesBy).isEmpty()) {
-			browser.findElement(By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_my")).click();
-			OOGraphene.waitElement(myEntriesBy, browser);
+		// Use the "All" tab, not "My <resource>": a freshly created/imported resource
+		// is in Preparation status, which the "My ..." tab of this dialog excludes.
+		By allEntriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_all.btn");
+		if(!browser.findElements(allEntriesBy).isEmpty()) {
+			browser.findElement(By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_all")).click();
+			OOGraphene.waitElement(allEntriesBy, browser);
 		}
 
 		//find the row
