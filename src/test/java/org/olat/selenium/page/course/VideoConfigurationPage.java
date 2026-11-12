@@ -75,7 +75,7 @@ public class VideoConfigurationPage {
 	public VideoConfigurationPage selectVideoResource(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_video_configuration_form .o_re_reference .btn.btn-primary");
 		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
-		fragment.chooseResourceModern(chooseBy, resourceTitle);
+		fragment.chooseResourceModernV2(chooseBy, resourceTitle);
 		return this;
 	}
 	

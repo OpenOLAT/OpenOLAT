@@ -69,6 +69,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,7 +149,36 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
 		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
-				RESOURCE_TYPES, defaultOrganisations, emptyStateConfig, selectionTitle, this);
+				RESOURCE_TYPES, defaultOrganisations, emptyStateConfig, selectionTitle, this) {
+			@Override
+			public boolean useNewSelectionDialog() {
+				return true;
+			}
+
+			@Override
+			public String getMyTabLabel() {
+				return translate("my.videos");
+			}
+
+			@Override
+			public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+				return new EmptyScreenData("o_FileResource-MOVIE_icon",
+						translate("select.no.video.yet"),
+						translate("select.no.video.yet.hint"));
+			}
+
+			@Override
+			public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+				return new EmptyScreenData("o_FileResource-MOVIE_icon",
+						translate("select.no.videos.in.view"),
+						translate("select.no.videos.in.view.hint"));
+			}
+
+			@Override
+			public String getEnterSearchTermMessage() {
+				return translate("select.enter.search.term");
+			}
+		};
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, videoEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		configurationVC.put("reference", referenceCtrl.getInitialComponent());
