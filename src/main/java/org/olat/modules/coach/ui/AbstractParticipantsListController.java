@@ -120,6 +120,7 @@ implements Activateable2, OnlineStatusFactory {
 	protected static final String FILTER_WITH_COURSES = "with-courses";
 	protected static final String FILTER_WITHOUT_COURSES = "without-courses";
 	protected static final String FILTER_ASSESSMENT = "assessment";
+	protected static final String FILTER_ROLES = "roles";
 
 	protected static final String ASSESSMENT_PASSED_NONE = "assessment-passed-none";
 	protected static final String ASSESSMENT_PASSED_PARTIALLY = "assessment-passed-partially";
@@ -277,7 +278,7 @@ implements Activateable2, OnlineStatusFactory {
         
         initFilters(withReservations, withWithoutCourses);
         initFiltersPresets(ureq, withReservations, withWithoutCourses);
-        tableEl.setAndLoadPersistedPreferences(ureq, "coaching-" + tableId + "-v1.2");
+        tableEl.setAndLoadPersistedPreferences(ureq, "coaching-" + tableId + "-v1.3");
     }
     
     protected void initFilters(boolean withReservations, boolean withWithoutCourses) {

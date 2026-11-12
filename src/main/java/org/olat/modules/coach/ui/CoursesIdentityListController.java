@@ -402,7 +402,7 @@ public class CoursesIdentityListController extends FormBasicController implement
 		List<EfficiencyStatementEntry> statements = coachingService
 				.getEfficencyStatements(assessedIdentity, courses, List.of(), getLocale());
 		Map<Long, EfficiencyStatementEntry> statementsMap = statements.stream()
-				.collect(Collectors.toMap(EfficiencyStatementEntry::getRepositoryEntryKey, eff -> eff, (u, v) -> u));
+				.collect(Collectors.toMap(EfficiencyStatementEntry::getRepositoryEntryKey, eff -> eff, (u, _) -> u));
 
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
 		Map<Long, CertificateLight> certificateMap = new HashMap<>();
@@ -421,7 +421,7 @@ public class CoursesIdentityListController extends FormBasicController implement
 
 		List<UserCourseInformations> userCourseInfos = userCourseInformationsMgr.getUserCourseInformations(assessedIdentity);
 		Map<Long, UserCourseInformations> userCourseInfosMap = userCourseInfos.stream()
-				.collect(Collectors.toMap(infos -> infos.getResource().getKey(), infos -> infos, (u, v) -> u));
+				.collect(Collectors.toMap(infos -> infos.getResource().getKey(), infos -> infos, (u, _) -> u));
 
 		Map<Long, LectureBlockStatistics> lecturesMap = new HashMap<>();
 		if (lectureModule.isEnabled()) {

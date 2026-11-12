@@ -234,7 +234,7 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		educationalTypes = repositoryManager.getAllEducationalTypes();
 		educationalTypesMap = educationalTypes.stream()
-				.collect(Collectors.toMap(RepositoryEntryEducationalType::getKey, t -> t, (u, v) -> u));
+				.collect(Collectors.toMap(RepositoryEntryEducationalType::getKey, t -> t, (u, _) -> u));
 		this.runtimeTypesGroup = runtimeTypesGroup;
 		curriculumElement = null;
 		this.config = config;
@@ -251,7 +251,7 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
 		educationalTypes = repositoryManager.getAllEducationalTypes();
 		educationalTypesMap = educationalTypes.stream()
-				.collect(Collectors.toMap(RepositoryEntryEducationalType::getKey, t -> t, (u, v) -> u));
+				.collect(Collectors.toMap(RepositoryEntryEducationalType::getKey, t -> t, (u, _) -> u));
 		runtimeTypesGroup = CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular;
 		this.curriculumElement = curriculumElement;
 		this.config = config;
@@ -447,7 +447,7 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 				rolesPK.add(SelectionValues.entry(CoachingRoles.mastercoach.name(), translate("lectures.mastercoach.menu.title")));
 			}
 			if(roles.contains(CoachingRoles.coach)) {
-				rolesPK.add(SelectionValues.entry(CoachingRoles.coach.name(), translate("lectures.teacher.menu.title")));
+				rolesPK.add(SelectionValues.entry(CoachingRoles.coach.name(), translate("lectures.coach.menu.title")));
 			}
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.roles"),
 					FILTER_ROLES, rolesPK, true));

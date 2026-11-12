@@ -72,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
-public class CoursesIdentityController extends BasicController implements NextPreviousController, Activateable2 {
+public class CoursesIdentityController extends BasicController implements NextPreviousController {
 
 	private static final String CMD_ALL_COURSES = "List";
 	private static final String CMD_IMPLEMENTATIONS_LIST = "Implementations";
