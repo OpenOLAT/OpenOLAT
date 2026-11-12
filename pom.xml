@@ -75,7 +75,7 @@
 		<apache.poi>5.5.1</apache.poi>
 		<apache.log4j>2.26.1</apache.log4j>
 		<org.slf4j>2.0.20</org.slf4j>
-		<org.bouncycastle>1.86</org.bouncycastle>
+		<org.bouncycastle>1.87</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.4.4.Final</io.undertow>
 		<io.undertow.ee>2.0.3.Final</io.undertow.ee>
@@ -2220,7 +2220,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.26.0</version>
+			<version>1.26.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
