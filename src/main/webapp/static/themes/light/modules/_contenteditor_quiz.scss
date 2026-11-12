@@ -21,7 +21,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 	}
 	.o_background_placeholder {
 		position: relative;
-		background-color: $o-qti-box-bg;
+		background-color: var(--o-qti-box-bg);
 
 		img {
 			width: 100%;
@@ -554,7 +554,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 
 .o_essay_ai_correction_box {
 	margin-top: 1.25rem;
-	background-color: $o-box-warning-bg;
+	background-color: var(--o-box-warning-bg);
 	border: 1px solid var(--o-box-warning-border);
 	border-radius: $border-radius-base;
 	padding: 1rem 1.25rem;

@@ -17,70 +17,70 @@
 
 .progress-bar {
 	&.o_practice_progress_not {
-		background-color: $o-practice-progress-not-bg-color;
+		background-color: var(--o-practice-progress-not-bg);
 	}
 	&.o_practice_progress_l1 {
-		background-color: $o-practice-progress-l1-bg-color;
+		background-color: var(--o-practice-progress-l1-bg);
 	}
 	&.o_practice_progress_l2 {
-		background-color: $o-practice-progress-l2-bg-color;
+		background-color: var(--o-practice-progress-l2-bg);
 	}
 	&.o_practice_progress_l3 {
-		background-color: $o-practice-progress-l3-bg-color;
+		background-color: var(--o-practice-progress-l3-bg);
 	}
 	&.o_practice_progress_l4 {
-		background-color: $o-practice-progress-l4-bg-color;
+		background-color: var(--o-practice-progress-l4-bg);
 	}
 	&.o_practice_progress_l5 {
-		background-color: $o-practice-progress-l5-bg-color;
+		background-color: var(--o-practice-progress-l5-bg);
 	}
 }
 
 .o_practice_statistics_legend i {
 	&.o_practice_progress_not {
-		color: $o-practice-progress-not-bg-color;
+		color: var(--o-practice-progress-not-bg);
 	}
 	&.o_practice_progress_l1 {
-		color: $o-practice-progress-l1-bg-color;
+		color: var(--o-practice-progress-l1-bg);
 	}
 	&.o_practice_progress_l2 {
-		color: $o-practice-progress-l2-bg-color;
+		color: var(--o-practice-progress-l2-bg);
 	}
 	&.o_practice_progress_l3 {
-		color: $o-practice-progress-l3-bg-color;
+		color: var(--o-practice-progress-l3-bg);
 	}
 	&.o_practice_progress_l4 {
-		color: $o-practice-progress-l4-bg-color;
+		color: var(--o-practice-progress-l4-bg);
 	}
 	&.o_practice_progress_l5 {
-		color: $o-practice-progress-l5-bg-color;
+		color: var(--o-practice-progress-l5-bg);
 	}
 }
 
 svg {
 	.o_practice_progress_not {
-		fill: $o-practice-progress-not-bg-color;
-		stroke: $o-practice-progress-not-bg-color;
+		fill: var(--o-practice-progress-not-bg);
+		stroke: var(--o-practice-progress-not-bg);
 	}
 	.o_practice_progress_l1 {
-		fill: $o-practice-progress-l1-bg-color;
-		stroke: $o-practice-progress-l1-bg-color;
+		fill: var(--o-practice-progress-l1-bg);
+		stroke: var(--o-practice-progress-l1-bg);
 	}
 	.o_practice_progress_l2 {
-		fill: $o-practice-progress-l2-bg-color;
-		stroke: $o-practice-progress-l2-bg-color;
+		fill: var(--o-practice-progress-l2-bg);
+		stroke: var(--o-practice-progress-l2-bg);
 	}
 	.o_practice_progress_l3 {
-		fill: $o-practice-progress-l3-bg-color;
-		stroke: $o-practice-progress-l3-bg-color;
+		fill: var(--o-practice-progress-l3-bg);
+		stroke: var(--o-practice-progress-l3-bg);
 	}
 	.o_practice_progress_l4 {
-		fill: $o-practice-progress-l4-bg-color;
-		stroke: $o-practice-progress-l4-bg-color;
+		fill: var(--o-practice-progress-l4-bg);
+		stroke: var(--o-practice-progress-l4-bg);
 	}
 	.o_practice_progress_l5 {
-		fill: $o-practice-progress-l5-bg-color;
-		stroke: $o-practice-progress-l5-bg-color;
+		fill: var(--o-practice-progress-l5-bg);
+		stroke: var(--o-practice-progress-l5-bg);
 	}
 }
 
@@ -113,13 +113,13 @@ svg {
 }
 
 .o_practice_correct {
-	@include o-make-message-box($o-box-success-bg, var(--o-box-success-border), 'circle-check', var(--o-box-success-text));
+	@include o-make-message-box(var(--o-box-success-bg), var(--o-box-success-border), 'circle-check', var(--o-box-success-text));
 	margin: 0;
 	border-radius: 0;
 }
 
 .o_practice_incorrect {
-	@include o-make-message-box($o-box-error-bg, var(--o-box-error-border), 'circle-xmark', var(--o-box-error-text));
+	@include o-make-message-box(var(--o-box-error-bg), var(--o-box-error-border), 'circle-xmark', var(--o-box-error-text));
 	margin: 0;
 	border-radius: 0;
 }
@@ -127,9 +127,9 @@ svg {
 .o_practice_ranklist {
 	padding: 1em;
 	margin-top: 1em;
-	border: 1px solid $o-practice-play-border-color;
+	border: 1px solid var(--o-practice-play-border);
 	border-radius: $o-practice-play-border-radius;
-	background-color: $o-practice-play-bg-color;
+	background-color: var(--o-practice-play-bg);
 	
 	table>tbody>tr>td {
 		line-height: 2em;
@@ -137,7 +137,7 @@ svg {
 	}
 	
 	.o_practice_rank_me {
-		background-color: $o-practice-play-main-bg-color;
+		background-color: var(--o-practice-play-main-bg);
 		
 		
 		td {
@@ -208,7 +208,7 @@ svg {
 	
 	border: 1px solid var(--o-practice-play-main-border);
 	border-radius: $o-practice-play-border-radius;
-	background-color: $o-practice-play-main-bg-color;
+	background-color: var(--o-practice-play-main-bg);
 	
 	.o_practice_shuffle_play {
 		border-right: 1px solid var(--o-practice-play-main-border);
@@ -248,9 +248,9 @@ svg {
 		flex-direction: column;
 		justify-content: space-between;
 		
-		border: 1px solid $o-practice-play-border-color;
+		border: 1px solid var(--o-practice-play-border);
 		border-radius: $o-practice-play-border-radius;
-		background-color: $o-practice-play-bg-color;
+		background-color: var(--o-practice-play-bg);
 	
 		span>i {
 			color: var(--o-practice-icon);
@@ -261,7 +261,7 @@ svg {
 			width: 100%;
 			max-width: 200px;
 			margin: 0 auto;
-			background-color: $o-practice-play-start-link-bg-color;
+			background-color: var(--o-practice-play-start-link-bg);
 		}
 	}
 }
@@ -302,9 +302,9 @@ svg {
 
 .o_practice_statistics_graph {
 	padding: 1em 2em;
-	border: 1px solid $o-practice-play-border-color;
+	border: 1px solid var(--o-practice-play-border);
 	border-radius: $o-practice-play-border-radius;
-	background-color: $o-practice-play-bg-color;
+	background-color: var(--o-practice-play-bg);
 	
 	.o_practice_statistics_legend {
 		margin: 0.5em 2em;

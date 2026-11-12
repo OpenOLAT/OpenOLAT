@@ -7,7 +7,7 @@
 	}
   	@include clearfix();
 
-	border: 1px solid $o-toolbar-border-color;
+	border: 1px solid var(--o-toolbar-border);
  	@media (min-width: $grid-float-breakpoint) {
     	@include border-top-radius($o-toolbar-border-radius);
     	@include border-bottom-radius($o-toolbar-border-radius);
@@ -64,7 +64,7 @@
 	  	position: relative;
 	  	@include clearfix();
 
-	  	background-color: $o-toolbar-bg-color;
+	  	background-color: var(--o-toolbar-bg);
 	  	box-shadow: $o-toolbar-box-shadow;
     	@include border-bottom-radius($o-toolbar-border-radius); // don't hide background
 		
@@ -101,7 +101,7 @@
 	    	}
 			&.active {
 				color: var(--o-toolbar-link-active);
-				background-color: $o-toolbar-link-active-bg;
+				background-color: var(--o-toolbar-link-active-bg);
 			}
 	    }
 	    a.btn-primary, a.o_chelp {
@@ -114,14 +114,14 @@
 		    	display: block;
 		    	&.active {
 					color: var(--o-toolbar-dropdown-active);
-					background-color: $o-toolbar-dropdown-active-bg;
+					background-color: var(--o-toolbar-dropdown-active-bg);
 		    	}
 		    }
 	    }
 	}
 	// add border when directly after a breadcrumb as a separator
 	.o_breadcrumb + .o_tools_container {
-		border-top: 1px solid $o-toolbar-border-color;
+		border-top: 1px solid var(--o-toolbar-border);
 	}
 	
 	.o_tools {
@@ -247,7 +247,7 @@
 		padding: 0;
 		margin-top: floor($o-toolbar-nav-size-icon-md * 0.25);
 		border: 1px solid var(--o-toolbar-nav-border);
-		background-color: $o-toolbar-nav-bg-color;
+		background-color: var(--o-toolbar-nav-bg);
 		a {
 			color: var(--o-toolbar-nav-link);
 			&:hover {
@@ -532,15 +532,15 @@
 	.o_tools_container {
 		background: repeating-linear-gradient(
 	    	300deg,
-		    $o-toolbar-edit_stripe-color,
-		    $o-toolbar-edit_stripe-color 10px,
-		    $o-toolbar-edit-bg-color 10px,
-		    $o-toolbar-edit-bg-color 20px
+		    var(--o-toolbar-edit-stripe),
+		    var(--o-toolbar-edit-stripe) 10px,
+		    var(--o-toolbar-edit-bg) 10px,
+		    var(--o-toolbar-edit-bg) 20px
 		);
 	}
 	/* in QTI 1.2 there is a toolbar below the toolbar - only render the first one in edit mode style */
 	.o_edit_mode .o_tools_container {
-		background: $o-toolbar-bg-color;
+		background: var(--o-toolbar-bg);
 	}
 }
 .o_breadcrump_edit_mode {
@@ -548,10 +548,10 @@
 		>.breadcrumb {
 			background: repeating-linear-gradient(
 				300deg,
-				$o-toolbar-edit_stripe-color,
-				$o-toolbar-edit_stripe-color 10px,
-				$o-toolbar-edit-bg-color 10px,
-				$o-toolbar-edit-bg-color 20px
+				var(--o-toolbar-edit-stripe),
+				var(--o-toolbar-edit-stripe) 10px,
+				var(--o-toolbar-edit-bg) 10px,
+				var(--o-toolbar-edit-bg) 20px
 			);
 		}
 	}

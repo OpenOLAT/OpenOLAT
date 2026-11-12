@@ -45,35 +45,35 @@ body dialog.popover-title {
 	}
 
 	&.tooltip.top .tooltip-arrow {
-		border-top-color: $o-gloss-tooltip-border-color;
+		border-top-color: var(--o-gloss-tooltip-border);
 	}
 
 	&.tooltip.top-left .tooltip-arrow {
-		border-top-color: $o-gloss-tooltip-border-color;
+		border-top-color: var(--o-gloss-tooltip-border);
 	}
 
 	&.tooltip.top-right .tooltip-arrow {
-		border-top-color: $o-gloss-tooltip-border-color;
+		border-top-color: var(--o-gloss-tooltip-border);
 	}
 
 	&.tooltip.right .tooltip-arrow {
-		border-right-color: $o-gloss-tooltip-border-color;
+		border-right-color: var(--o-gloss-tooltip-border);
 	}
 
 	&.tooltip.left .tooltip-arrow {
-		border-left-color: $o-gloss-tooltip-border-color;
+		border-left-color: var(--o-gloss-tooltip-border);
 	}
 
 	&.tooltip.bottom .tooltip-arrow {
-		border-bottom-color: $o-gloss-tooltip-border-color;
+		border-bottom-color: var(--o-gloss-tooltip-border);
 	}
 
 	&.tooltip.bottom-left .tooltip-arrow {
-		border-bottom-color: $o-gloss-tooltip-border-color;
+		border-bottom-color: var(--o-gloss-tooltip-border);
 	}
 
 	&.tooltip.bottom-right .tooltip-arrow {
-		border-bottom-color: $o-gloss-tooltip-border-color;
+		border-bottom-color: var(--o-gloss-tooltip-border);
 	}
 
 	.tooltip-inner {
@@ -82,9 +82,9 @@ body dialog.popover-title {
 		font-size: $font-size-base;
 		line-height: $line-height-base;
 		color: var(--o-text);
-		background-color: $body-bg;
+		background-color: var(--o-bg);
 		text-align: left;
 		border-radius: 5px;
-		border: 2px solid $o-gloss-tooltip-border-color;
+		border: 2px solid var(--o-gloss-tooltip-border);
 	}
 }

@@ -55,12 +55,12 @@
 				}
 				
 				.radio {
-					background-color: $o-evaluation-step-background-color;
+					background-color: var(--o-evaluation-step-bg);
 					padding: 0px;
 					margin-top: 0px;
 					text-align: center;
 					&:hover {
-						background-color: $o-evaluation-slider-hover-background-color;
+						background-color: var(--o-evaluation-slider-hover-bg);
 					}
 				}
 			}
@@ -439,12 +439,12 @@
 		justify-content: space-between;
 				
 		.radio {
-			background-color: $o-evaluation-step-background-color;
+			background-color: var(--o-evaluation-step-bg);
 			padding: 0px;
 			margin-top: 0px;
 			text-align: center;
 			&:hover {
-				background-color: $o-evaluation-slider-hover-background-color;
+				background-color: var(--o-evaluation-slider-hover-bg);
 			}
 		}
 	}
@@ -602,7 +602,7 @@
 	.o_evaluation_discrete_radio .o_slider .o_evaluation_steps div.radio {
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
-		background-color: $o-evaluation-step-background-color !important;
+		background-color: var(--o-evaluation-step-bg) !important;
 	}
 	.o_icon_rubric_insufficient::before {
 		color: var(--o-evaluation-insufficient-text) !important;

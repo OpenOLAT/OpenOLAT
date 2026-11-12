@@ -39,10 +39,10 @@
   &,
   &:hover,
   &:focus {
-    color: $dropdown-link-active-color;
+    color: var(--o-dropdown-link-active);
     text-decoration: none;
     outline: 0;
-    background-color: $dropdown-link-active-bg;
+    background-color: var(--o-dropdown-link-active-bg);
   }
 }
 

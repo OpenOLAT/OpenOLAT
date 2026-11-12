@@ -179,7 +179,7 @@
 	}
 }
 blockquote.o_quote, blockquote.b_quote { 
-	color: $o-forum-quote-color; 
+	color: var(--o-forum-quote); 
 	font-size: $o-forum-quote-font-size; 
 	margin-top: $padding-base-vertical; 
 	padding: 0 $padding-base-horizontal;

@@ -77,7 +77,7 @@
 			}
 			
 			.o_author {
-				color: $o-coursesite-meta-author-color;
+				color: var(--o-coursesite-meta-author);
 				white-space: normal;
 			}
 		}
@@ -606,8 +606,8 @@
 
 
 .o_ac_billing_address {
-	background-color: $o-ac-ba-bg-color;
-	border: $o-ac-ba-border;
+	background-color: var(--o-ac-billing-address-bg);
+	border: $o-ac-ba-border-width $o-ac-ba-border-style var(--o-ac-billing-address-border);
 	border-radius: $o-ac-ba-border-radius;
 	padding: $o-ac-ba-padding;
 	min-width: $o-ac-ba-min-width;
@@ -627,7 +627,7 @@
 		margin-bottom: .5em;
 	}
 	&.o_ac_billing_address_temporary {
-		background-color: $o-ac-ba-no-ident-bg-color;
+		background-color: var(--o-ac-billing-address-temporary-bg);
 	}
 }
 .o_labeled_light {
@@ -779,7 +779,7 @@ form { .o_form { .o_radio_cards_wrapper {
 
 /* Repository info */
 .o_repo_info {
-	border: $o-repo-info-border;
+	border: $o-repo-info-border-style $o-repo-info-border-width var(--o-repo-info-border);
 	border-radius: $o-repo-info-border-radius;
 	padding: $o-repo-info-padding;
 	
@@ -818,7 +818,7 @@ form { .o_form { .o_radio_cards_wrapper {
 	}
 	
 	.o_repo_info_separator {
-		border-top: $o-repo-info-separator-border;
+		border-top: $o-repo-info-separator-border-width $o-repo-info-separator-border-style var(--o-repo-info-separator-border);
 	}
 	
 	.o_repo_info_items {

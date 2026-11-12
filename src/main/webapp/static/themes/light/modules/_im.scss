@@ -26,7 +26,7 @@
 	}
 	#o_im_summary {
 		.badge {
-			color: $o-im-summary-color;
+			color: var(--o-im-summary-fg);
 			background-color: var(--o-im-summary-bg);
 		}
 	}
@@ -82,7 +82,7 @@
 	}
 	
 	.o_im_resource_infos {
-		border-right: 1px solid $o-im-chat-border;
+		border-right: 1px solid var(--o-im-chat-border);
 		background-color: var(--o-im-chat-roster-bg);
 		align-self: center;
 	}
@@ -102,13 +102,13 @@
 	}
 	
 	.o_im_roster {
-		border-right: 1px solid $o-im-chat-border;
-		border-top: 1px solid $o-im-chat-border;
+		border-right: 1px solid var(--o-im-chat-border);
+		border-top: 1px solid var(--o-im-chat-border);
 		background-color: var(--o-im-chat-roster-bg);
 	}
 	
 	.o_im_chat {
-		border-top: 1px solid $o-im-chat-border;
+		border-top: 1px solid var(--o-im-chat-border);
 		display: flex;
 		flex-direction: column;
 		
@@ -121,7 +121,7 @@
 		.o_im_chat_history {
 			flex: 1 1 160px;
 			font-size: 90%;
-			border: 1px solid $o-im-chat-history-border; 
+			border: 1px solid var(--o-im-chat-history-border); 
 			
 			/* scrollbar */
 			margin: 0 0 1em 0; 
@@ -165,7 +165,7 @@
 	min-height: 40px;		
 	position: relative;
 	border-radius: $o-im-chat-message-border-radius;
-	background: $o-im-chat-message-bg;
+	background: var(--o-im-chat-message-bg);
 	
 	&.o_im_message_end {
 		display: none;
@@ -176,7 +176,7 @@
 		min-height: 12px;
 		margin: 3px 3px;
 		border-radius: $o-im-chat-message-border-radius;
-		background-color: $o-im-chat-message-bg-status;
+		background-color: var(--o-im-chat-message-status-bg);
 	}
 	
 	&.o_im_message_error {
@@ -184,14 +184,14 @@
 		min-height: 12px;
 		margin: 3px 3px;
 		border-radius: $o-im-chat-message-border-radius;
-		background-color: $o-im-chat-message-bg-error;
+		background-color: var(--o-im-chat-message-error-bg);
 	}
 	
 	&.o_im_message_me {
 		padding: 0 7px;
 		margin: 3px 3px 3px 70px;
 		border-radius: $o-im-chat-message-border-radius;
-		background-color: $o-im-chat-message-bg-me;
+		background-color: var(--o-im-chat-message-me-bg);
 	}
 	
 	.o_portrait {
@@ -251,10 +251,10 @@
 		color: var(--o-im-groupchat-user);
 		
 		&.o_vip {
-			color: $o-im-groupchat-vip-color ;
+			color: var(--o-im-groupchat-vip) ;
 		}	
 		&.o_anonymous {
-			color: $o-im-groupchat-anonymous-color;
+			color: var(--o-im-groupchat-anonymous);
 		}	
 	}
 

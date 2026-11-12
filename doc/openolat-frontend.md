@@ -1195,7 +1195,7 @@ Widgets are rendered in a responsive CSS Grid. Each widget is a card with a head
 
 | Class | Description |
 |---|---|
-| `o_fact_sheet` | Box with border (`$o-fact-sheet-border`), radius and 20px padding |
+| `o_fact_sheet` | Box with border (`$o-fact-sheet-border-width`, `$o-fact-sheet-border-style`, token `fact-sheet-border`), radius and 20px padding |
 | `o_fact_sheet_title` | `h3`, 18px, bold, separator line below |
 | `o_facts` | CSS Grid, columns of at least 320px (`$o-fact-min-width`), gap 20px |
 | `o_fact_icon` | 32px circle, icon in `$brand-primary` on 10% tint |
@@ -1351,12 +1351,12 @@ Every colour token belongs to one of three layers. The layer tells which code ow
 | Layer | Holds | Example | Map in `modules/_tokens.scss` | Tokens |
 |---|---|---|---|---|
 | Base | the palette with the literal colours: `--o-{hue}-{step}`, `--o-theme{n}-{step}`, the neutral scale `--o-neutral-{step}`, `--o-white`, the base colours `--o-base-{name}`; the semantic tokens; the state tokens `--o-state-{state}-{role}`; the tokens of the global elements: buttons, content text and headings | `--o-yellow-400`, `--o-base-text`, `--o-primary`, `--o-state-success-text`, `--o-btn-default-fg`, `--o-content-h1` | `$o-token-base` (base colours), `$o-token-layer-base` (global elements) | 22 semantic, 56 state, 50 element tokens, 53 shade tokens; 18 neutral steps |
-| Framework | layout and generic UI elements of `org.olat.core.gui` and `org.olat.core.commons.services`: navigation bar, footer, login page, dialogs, menu tree, toolbar, scope selection, table, wizard, form elements, tags, date picker, ... | `--o-navbar-bg`, `--o-tree-link`, `--o-tag-bg` | `$o-token-layer-framework` | 213 element tokens, 55 shade tokens |
-| Component | the elements of one feature module: course, course site, tests and question pool (QTI 2.1), practice, forum, chat, lectures, topic broker, folder, selectus, ... | `--o-coursesite-start-bg`, `--o-qti-menu-link`, `--o-selectus-review-glow` | `$o-token-layer-component` | 208 element tokens, 42 shade tokens |
+| Framework | layout and generic UI elements of `org.olat.core.gui` and `org.olat.core.commons.services`: navigation bar, footer, login page, dialogs, menu tree, toolbar, scope selection, table, wizard, form elements, tags, date picker, ... | `--o-navbar-bg`, `--o-tree-link`, `--o-tag-bg` | `$o-token-layer-framework` | 258 element tokens, 55 shade tokens |
+| Component | the elements of one feature module: course, course site, tests and question pool (QTI 2.1), practice, forum, chat, lectures, topic broker, folder, selectus, ... | `--o-coursesite-start-bg`, `--o-qti-menu-link`, `--o-selectus-review-glow` | `$o-token-layer-component` | 217 element tokens, 42 shade tokens |
 
 The palette steps come from `_palette.scss`, `_palette_theme.scss`, `_palette_neutral.scss` and `modules/_palette_vars.scss`. All other tokens come from `modules/_tokens.scss`.
 
-An **element token** is a token of the maps `$o-token-layer-base`, `$o-token-layer-framework` and `$o-token-layer-component`: 473 tokens `--o-{element}-{part}`. A **shade token** is the darker or lighter colour of an element token or a semantic token for a state, an edge or a tint, e.g. `--o-btn-primary-bg-hover` (26.5). The layer of a shade token is the layer of its token. Literal colours exist only in the palette and in the shade tokens. Every other token is a `var()` reference: to a semantic token, to a palette step, to another token or to its base colour.
+An **element token** is a token of the maps `$o-token-layer-base`, `$o-token-layer-framework` and `$o-token-layer-component`: 844 tokens `--o-{element}-{part}`. A **shade token** is the darker or lighter colour of an element token or a semantic token for a state, an edge or a tint, e.g. `--o-btn-primary-bg-hover` (26.5). The layer of a shade token is the layer of its token. Literal colours exist only in the palette and in the shade tokens. Every other token is a `var()` reference: to a semantic token, to a palette step, to another token or to its base colour.
 
 Goal: the modules read every colour with `var(--o-*)`. A client theme changes a colour with one CSS line, a dark mode redefines the semantic tokens, and the removal of Bootstrap ports modules that already read tokens. Spec and module inventory: OO-10043.
 
@@ -1465,12 +1465,12 @@ The light and openolat values of the last 8 tokens: `text-disabled` `#777777`, `
 
 **State tokens:** `--o-state-{state}-{role}` for the 8 states of `$o-states` (26.2) and the roles `text`, `bg`, `fg`, `border`, `soft-bg`, `soft-fg`, `soft-border` (56 tokens). Each one reads the palette step of its hue, e.g. `--o-state-success-bg: var(--o-green-400)`, `--o-state-danger-fg: var(--o-white)`. The word "neutral" names two things: the state `neutral` (`--o-state-neutral-*`, blue: information, planned, running; the Bootstrap name is `info`) and the neutral scale of greys (`--o-neutral-{step}`, 6.1). The prefix `state-` keeps them apart (decision D6).
 
-**Element tokens:** `--o-{element}-{part}` holds the colour of one element: a global element (base layer), a framework element or a component element (26.1). 473 tokens in `$o-token-layer-base`, `$o-token-layer-framework` and `$o-token-layer-component` of `modules/_tokens.scss`. The default of an element token has one of two forms:
+**Element tokens:** `--o-{element}-{part}` holds the colour of one element: a global element (base layer), a framework element or a component element (26.1). 844 tokens in `$o-token-layer-base`, `$o-token-layer-framework` and `$o-token-layer-component` of `modules/_tokens.scss`. The default of an element token has one of two forms:
 
 | Default | Tokens | Meaning | Example |
 |---|---|---|---|
-| `($sass-default, (tokens))` | 324 | A Sass value feeds the token. For 242 tokens it is a Sass variable of the theme config: a client theme that sets the Sass variable keeps working. For 36 tokens it is a Sass expression: the text colour that `o-a11y-color()` adjusts for the background of one rule (`"link-subtle": (o-a11y-color($link-color, $panel-default-heading-bg), ("link",))`; also for a pressed fill or the navigation bar: `competence-selected`, `toggle-text`, `navbar-tab-close`, `selectus-rating-b-fg`; the focus rings `navbar-focus` and `footer-focus`, 3:1 on the navigation bar and the footer, decision D24), a fill that `o-a11y-color()` adjusts for its text (`selectus-rating-c-bg`), a text or a mark that `o-a11y-color()` adjusts for the darkest of the page background, the striped and the hovered table row (`o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)`: `selectus-rating-b-text` and `selectus-rating-c-text` 4.5:1, `selectus-rating-b-marker` 3:1, decisions D18 and D26), the text of a state while the Sass variable of the element has its default (`box-*-text`, `evaluation-*-text`), the text of a hover or pressed state on its fill (`o-contrast-shade-text()`, decision D13: `btn-primary-light-fg-hover`, `-fg-active`, the same for `btn-danger-light`, `table-filter`, `table-filter-active`, and `scope-toggle-on-hover-fg`), or a computed fill (`page-code-box-bg`). For 46 tokens it is a fixed colour without a Sass variable: a palette step (`"rating-star": (o-palette("yellow", 400), ())`) or a literal colour (`labeled-fg`, `navbar-highlight`, `not-available-dark`, `selectus-rating-a-bg`, `course-style-border`; since decision D29 the colours of today of the one-time code field `otp-*`, the selectus status icons `selectus-status-*`, the recorder `recorder-*`, the sticky table columns, the drop target of the menu tree and 5 more). The Sass value must be a colour or `transparent`: `none` or `!important` stops the compile. A rule reads the token or an element token with a reference to it. No module calls `o-a11y-color()`. | `"navbar-bg": ($o-navbar-bg, ("bg",))` |
-| `"token-name"` | 149 | A reference to another token. There is no Sass variable: a client theme changes the token with `$o-tokens`. A loop or an unknown name stops the compile. | `"selectus-review-glow": "primary"` emits `--o-selectus-review-glow: var(--o-primary)`; `"qti-menu-link": "tree-link"` emits `var(--o-tree-link)` |
+| `($sass-default, (tokens))` | 692 | A Sass value feeds the token. For 570 tokens it is a Sass variable of the theme config: a client theme that sets the Sass variable keeps working. For 56 tokens it is a Sass expression: the text colour that `o-a11y-color()` adjusts for the background of one rule (`"link-subtle": (o-a11y-color($link-color, $panel-default-heading-bg), ("link",))`; also for a pressed fill or the navigation bar: `competence-selected`, `toggle-text`, `navbar-tab-close`, `selectus-rating-b-fg`; the focus rings `navbar-focus` and `footer-focus`, 3:1 on the navigation bar and the footer, decision D24), a fill that `o-a11y-color()` adjusts for its text (`selectus-rating-c-bg`), a text or a mark that `o-a11y-color()` adjusts for the darkest of the page background, the striped and the hovered table row (`o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)`: `selectus-rating-b-text` and `selectus-rating-c-text` 4.5:1, `selectus-rating-b-marker` 3:1, decisions D18 and D26), the text of a state while the Sass variable of the element has its default (`box-*-text`, `evaluation-*-text`), the text of a hover or pressed state on its fill (`o-contrast-shade-text()`, decision D13: `btn-primary-light-fg-hover`, `-fg-active`, the same for `btn-danger-light`, `table-filter`, `table-filter-active`, and `scope-toggle-on-hover-fg`), or a computed fill (`page-code-box-bg`), or a state colour in a style without a state token (`lecture-rollcall-pending`: `o-state-color("inactive", "border", "light")`), or the colour of a removed shorthand border (`activity-add-border`: `o-state-color("success", "bg")`), or a swatch role or a state style of today (`figure-card-icon-blue`: `o-swatch-color("blue", "tint-fg")`, `user-status-inactive-border`: `o-state-color("inactive", "border", "tint")`; slice 18; `qpool-arrow-draft-border`: `o-state-color("neutral", "border", "tint")`, slice 19), or a function of the theme config (`highscore-position-title`: `o-hs-position-title-color()`, decision D32 E2). For 66 tokens it is a fixed colour without a Sass variable: a palette step (`"rating-star": (o-palette("yellow", 400), ())`) or a literal colour (`labeled-fg`, `navbar-highlight`, `not-available-dark`, `selectus-rating-a-bg`, `course-style-border` and the borders of the removed shorthand variables `card-border`, `widget-border`, `dashboard-widget-border`, `table-details-container-border`, `repo-info-border`, `repo-info-separator-border`, `empty-border`, `icon-panel-border`, `assessment-inspection-border`, `curriculum-widget-border`, `curriculum-widget-card-border`, `highscore-podium-border`, `user-info-border`, `user-info-profile-border`, `user-info-portrait-border`, `panel-authentication-border`, `step-border`, `ac-billing-address-border`, `folder-row-thumbnail-image-border`, `topicbroker-placeholder-title-abbr-border`; since decision D29 the colours of today of the one-time code field `otp-*`, the selectus status icons `selectus-status-*`, the recorder `recorder-*`, the sticky table columns, the drop target of the menu tree and 5 more). The Sass value must be a colour or `transparent`: `none` or `!important` stops the compile. A named Sass variable with a translucent default feeds the token with that value (decision D31 Q2): `"login-bg": ($o-login-bg-color, ())` emits `--o-base-login-bg: color-mix(in srgb, var(--o-scrim) 95%, transparent)`; such a token has no contrast pair and no shade token (the compile stops). A rule reads the token or an element token with a reference to it. No module calls `o-a11y-color()`. | `"navbar-bg": ($o-navbar-bg, ("bg",))` |
+| `"token-name"` | 152 | A reference to another token. There is no Sass variable: a client theme changes the token with `$o-tokens`. A loop or an unknown name stops the compile. | `"selectus-review-glow": "primary"` emits `--o-selectus-review-glow: var(--o-primary)`; `"qti-menu-link": "tree-link"` emits `var(--o-tree-link)` |
 
 An element token reads, in this order:
 
@@ -1482,7 +1482,7 @@ An element token reads, in this order:
 
 The light theme has these defaults. "Sass default" is `-` for a token with a reference default. The groups are the comments of the maps in `modules/_tokens.scss`.
 
-**Base layer: global elements** (`$o-token-layer-base`, 50 tokens: 39 with a Sass default, 11 with a reference default):
+**Base layer: global elements** (`$o-token-layer-base`, 55 tokens: 44 with a Sass default, 11 with a reference default):
 
 | Group | Token | Sass default | Default in light |
 |---|---|---|---|
@@ -1533,11 +1533,16 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Content text and headings | `--o-content-h4` | - | `var(--o-content-header)` |
 | Content text and headings | `--o-content-h5` | `$o-content-h5-color` | `var(--o-content-header)` |
 | Content text and headings | `--o-content-text` | - | `var(--o-text)` |
+| Content text and headings | `--o-content-hr` | `$o-content-hr-color` | `#EEEEEE` (base colour) |
+| Content text and headings | `--o-content-fieldset-legend` | `$o-content-fieldset-legend-color` | `var(--o-text)` |
+| Content text and headings | `--o-content-border-box-border` | `$o-content-border-box-border` | `#777777` (base colour) |
+| Content text and headings | `--o-content-table-border` | `$o-content-table-border` | `#777777` (base colour) |
+| Content text and headings | `--o-content-border-img-border` | `$o-content-border-img-border` | `var(--o-thumbnail-border)` |
 | Content text and headings | `--o-content-table-header-bg` | `$gray-lighter` | `#EEEEEE` (base colour) |
 | Content text and headings | `--o-content-table-bordered-header-bg` | `$gray-base` | `#000000` (base colour) |
 | Links | `--o-link-subtle` | `o-a11y-color($link-color, $panel-default-heading-bg)` | `var(--o-link)` |
 
-**Framework layer** (`$o-token-layer-framework`, 215 tokens: 159 with a Sass default, 56 with a reference default):
+**Framework layer** (`$o-token-layer-framework`, 363 tokens: 305 with a Sass default, 58 with a reference default):
 
 | Group | Token | Sass default | Default in light |
 |---|---|---|---|
@@ -1553,6 +1558,19 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Cards and fact sheet | `--o-card-hover` | - | `var(--o-primary)` |
 | Cards and fact sheet | `--o-card-title` | - | `var(--o-coursesite-title)` |
 | Cards and fact sheet | `--o-fact-icon` | - | `var(--o-primary)` |
+| Cards and fact sheet | `--o-widget-subtitle` | `$o-widget-subtitle-color` | `#777777` (base colour) |
+| Cards and fact sheet | `--o-widget-text-additional` | `$o-widget-text-additional-color` | `#777777` (base colour) |
+| Cards and fact sheet | `--o-widget-figure-desc` | `$o-widget-figure-desc-color` | `#2D2926` (base colour) |
+| Cards and fact sheet | `--o-dashboard-widget-bg` | `$o-dashboard-widget-bg-color` | `var(--o-panel-bg)` |
+| Cards and fact sheet | `--o-dashboard-widget-header-footer-bg` | `$o-dashboard-widget-header-footer-bg-color` | `#FCFCFC` (base colour) |
+| Cards and fact sheet | `--o-dashboard-widget-table-bg` | `$o-dashboard-widget-table-bg-color` | `var(--o-white)` |
+| Cards and fact sheet | `--o-fact-icon-bg` | `$o-fact-icon-bg-color` | `color-mix(in srgb, var(--o-primary) 10%, transparent)` (base value) |
+| Cards and fact sheet | `--o-card-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
+| Cards and fact sheet | `--o-card-bg` | `$o-card-bg-color` | `#F9FAFB` (base colour) |
+| Cards and fact sheet | `--o-widget-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
+| Cards and fact sheet | `--o-fact-sheet-border` | - | `var(--o-repo-info-border)` |
+| Cards and fact sheet | `--o-fact-sheet-separator-border` | - | `var(--o-repo-info-separator-border)` |
+| Cards and fact sheet | `--o-dashboard-widget-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
 | Charts | `--o-chart-help-line` | `$gray-light` | `#777777` (base colour) |
 | Charts | `--o-chart-bar-light` | `$o-d3chart-light` | `#6193D9` (base colour) |
 | Charts | `--o-chart-bar-dark` | `$o-d3chart-dark` | `#1F4881` (base colour) |
@@ -1560,27 +1578,85 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Context help | `--o-chelp-border` | `$o-chelp-border` | `var(--o-btn-primary-border)` |
 | Context help | `--o-chelp-fg` | - | `var(--o-btn-primary-fg)` |
 | Context help | `--o-chelp-tooltip` | `$o-chelp-tooltip-color` | `var(--o-text-muted)` |
+| Glossary | `--o-gloss-tooltip-border` | `$o-gloss-tooltip-border-color` | `#AAAAAA` (base colour) |
 | Date component and date picker | `--o-datecomp-day-bg` | - | `var(--o-bg)` |
 | Date component and date picker | `--o-datecomp-day-fg` | - | `var(--o-text)` |
 | Date component and date picker | `--o-datecomp-month-bg` | - | `var(--o-primary)` |
+| Date component and date picker | `--o-datecomp-month-fg` | `$o-datecomp-month-color` | `var(--o-white)` |
+| Date component and date picker | `--o-datecomp-border` | `$o-datecomp-border` | `#555555` (base colour) |
 | Date component and date picker | `--o-datepicker-today-border` | - | `var(--o-primary)` |
 | Date component and date picker | `--o-datepicker-today` | - | `var(--o-primary)` |
+| Date component and date picker | `--o-day-nav-day-bg` | `$o-day-nav-day-bg-color` | `var(--o-white)` |
+| Date component and date picker | `--o-day-nav-day-hover-border` | `$o-day-nav-day-hover-border-color` | `#98A2B3` (base colour) |
+| Date component and date picker | `--o-day-nav-day-selected-bg` | `$o-day-nav-day-selected-bg-color` | `#3273DC` (base colour) |
+| Date component and date picker | `--o-day-nav-day-selected-fg` | `$o-day-nav-day-selected-color` | `var(--o-white)` |
+| Date component and date picker | `--o-day-nav-day-weekend-bg` | `$o-day-nav-day-weekend-bg-color` | `#FCFCFC` (base colour) |
 | Dialogs | `--o-dialog-header` | `$o-dialog-header-color` | `var(--o-primary-text)` |
+| Dialogs | `--o-dialog-header-bg` | `$o-dialog-header-background` | `#F9FAFB` (base colour) |
+| Dialogs | `--o-dialog-footer-bg` | `$o-dialog-footer-background` | `var(--o-dialog-header-bg)` |
 | Dropdown menus | `--o-dropdown-link` | `$dropdown-link-color` | `#333333` (base colour) |
 | Dropdown menus | `--o-dropdown-link-hover` | `$dropdown-link-hover-color` | `#262626` (base colour) |
 | Dropdown menus | `--o-dropdown-link-hover-bg` | `$dropdown-link-hover-bg` | `var(--o-bg-hover)` |
 | Dropdown menus | `--o-dropdown-divider` | `$dropdown-divider-bg` | `#E5E5E5` (base colour) |
+| Dropdown menus | `--o-dropdown-link-active` | `$dropdown-link-active-color` | `var(--o-white)` |
+| Dropdown menus | `--o-dropdown-link-active-bg` | `$dropdown-link-active-bg` | `var(--o-primary)` |
 | Empty state and indicators | `--o-box-plot-values` | - | `var(--o-primary)` |
 | Empty state and indicators | `--o-box-plot-quartile-fill` | `$o-box-plot-quartile-fill` | `#DCE7F7` (base colour) |
+| Empty state and indicators | `--o-box-plot-axis` | `$o-box-plot-axis-color` | `#333333` (base colour) |
 | Empty state and indicators | `--o-empty-msg` | `$o-empty-msg-color` | `var(--o-text)` |
 | Empty state and indicators | `--o-empty-panel-icon` | - | `var(--o-primary)` |
+| Empty state and indicators | `--o-empty-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
+| Empty state and indicators | `--o-empty-indicator` | `$o-empty-indicator-color` | `#495057` (base colour) |
+| Empty state and indicators | `--o-empty-icon` | `$o-empty-icon-color` | `#C6C9CD` (base colour) |
+| Empty state and indicators | `--o-empty-panel-icon-bg` | `$o-empty-panel-icon-bg-color` | `color-mix(in srgb, var(--o-primary) 10%, transparent)` (base value) |
+| Empty state and indicators | `--o-icon-panel-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
+| Empty state and indicators | `--o-icon-panel-icon-bg` | `$o-icon-panel-icon-bg-color` | `#F9FAFB` (base colour) |
+| Empty state and indicators | `--o-icon-panel-content-bg` | `$o-icon-panel-content-bg-color` | `var(--o-panel-bg)` |
 | Empty state and indicators | `--o-not-available-dark` | `#000000` | `#000000` (base colour) |
 | Empty state and indicators | `--o-not-available-light` | `#FFFFFF` | `var(--o-white)` |
 | Empty state and indicators | `--o-indicator-label` | - | `var(--o-text-muted)` |
+| Empty state and indicators | `--o-indicator-separator-border` | `$o-dialog-cn-box-border-color` | `var(--o-border)` |
+| Empty state and indicators | `--o-speedometer-not-border` | `$o-o_speedometer-not-border-color` | `#EEEEEE` (base colour) |
+| Empty state and indicators | `--o-speedometer-default-border` | `$o-o_speedometer-default-border-color` | `var(--o-state-neutral-border)` |
+| Empty state and indicators | `--o-speedometer-success-border` | `$o-o_speedometer-success-border-color` | `var(--o-state-success-border)` |
+| Empty state and indicators | `--o-speedometer-warning-border` | `$o-o_speedometer-warning-border-color` | `var(--o-state-warning-border)` |
+| Empty state and indicators | `--o-speedometer-danger-border` | `$o-o_speedometer-danger-border-color` | `var(--o-state-danger-border)` |
+| Empty state and indicators | `--o-speedometer-default-text` | `$o-o_speedometer-default-border-color` | `var(--o-speedometer-default-border)` |
+| Empty state and indicators | `--o-speedometer-success-text` | `$o-o_speedometer-success-border-color` | `var(--o-speedometer-success-border)` |
+| Empty state and indicators | `--o-speedometer-warning-text` | `$o-o_speedometer-warning-border-color` | `var(--o-speedometer-warning-border)` |
+| Empty state and indicators | `--o-speedometer-danger-text` | `$o-o_speedometer-danger-border-color` | `var(--o-speedometer-danger-border)` |
 | Empty state and indicators | `--o-radial-progress-addon` | - | `var(--o-text-muted)` |
+| Empty state and indicators | `--o-radial-progress-inset-bg` | `$o-radial-progress-inset-color` | `var(--o-white)` |
+| Empty state and indicators | `--o-radial-progress-circle-bg` | `$o-radial-progress-circle-bg` | `#EEEEEE` (base colour) |
+| Empty state and indicators | `--o-radial-progress-circle` | `$o-radial-progress-circle-color` | `var(--o-progress-bar-bg)` |
+| Empty state and indicators | `--o-radial-progress-number` | `$o-radial-progress-number-color` | `var(--o-progress-bar-bg)` |
+| Empty state and indicators | `--o-radial-progress-circle-success` | `$o-radial-progress-circle-success-color` | `var(--o-state-success-bg)` |
+| Empty state and indicators | `--o-radial-progress-percentage-success` | `$o-radial-progress-percentage-success-color` | `var(--o-state-success-text)` |
+| Empty state and indicators | `--o-radial-progress-circle-neutral` | `$o-radial-progress-circle-neutral-color` | `var(--o-progress-bar-neutral-bg)` |
+| Empty state and indicators | `--o-radial-progress-percentage-neutral` | `$o-radial-progress-percentage-neutral-color` | `var(--o-state-success-text)` |
+| Empty state and indicators | `--o-radial-progress-circle-info` | `$o-radial-progress-circle-info-color` | `var(--o-state-neutral-bg)` |
+| Empty state and indicators | `--o-radial-progress-percentage-info` | `$o-radial-progress-percentage-info-color` | `var(--o-state-neutral-text)` |
+| Empty state and indicators | `--o-radial-progress-circle-danger` | `$o-radial-progress-circle-danger-color` | `var(--o-state-danger-bg)` |
+| Empty state and indicators | `--o-radial-progress-percentage-danger` | `$o-radial-progress-percentage-danger-color` | `var(--o-state-danger-text)` |
+| Empty state and indicators | `--o-radial-progress-circle-warning` | `$o-radial-progress-circle-warning-color` | `var(--o-state-warning-bg)` |
+| Empty state and indicators | `--o-radial-progress-percentage-warning` | `$o-radial-progress-percentage-warning-color` | `var(--o-state-warning-text)` |
 | Figure cards | `--o-figure-card-chevron` | - | `var(--o-text-muted)` |
 | Figure cards | `--o-figure-card-figure` | - | `var(--o-primary)` |
 | Figure cards | `--o-figure-card-icon` | `$o-figure-card-icon-color` | `var(--o-primary)` |
+| Figure cards | `--o-figure-card-bg` | `$o-figure-card-bg-color` | `var(--o-white)` |
+| Figure cards | `--o-figure-card-icon-bg` | `$o-figure-card-icon-bg-color` | `color-mix(in srgb, var(--o-primary) 10%, transparent)` (base value) |
+| Figure cards | `--o-figure-card-icon-blue` | `o-swatch-color("blue", "tint-fg")` | `var(--o-blue-900)` |
+| Figure cards | `--o-figure-card-icon-blue-bg` | `o-swatch-color("blue", "tint-bg")` | `var(--o-blue-300)` |
+| Figure cards | `--o-figure-card-icon-green` | `o-swatch-color("green", "tint-fg")` | `var(--o-green-900)` |
+| Figure cards | `--o-figure-card-icon-green-bg` | `o-swatch-color("green", "tint-bg")` | `var(--o-green-300)` |
+| Figure cards | `--o-figure-card-icon-yellow` | `o-swatch-color("yellow", "tint-fg")` | `var(--o-yellow-900)` |
+| Figure cards | `--o-figure-card-icon-yellow-bg` | `o-swatch-color("yellow", "tint-bg")` | `var(--o-yellow-300)` |
+| Figure cards | `--o-figure-card-icon-orange` | `o-swatch-color("orange", "tint-fg")` | `var(--o-orange-900)` |
+| Figure cards | `--o-figure-card-icon-orange-bg` | `o-swatch-color("orange", "tint-bg")` | `var(--o-orange-300)` |
+| Figure cards | `--o-figure-card-icon-red` | `o-swatch-color("red", "tint-fg")` | `var(--o-red-900)` |
+| Figure cards | `--o-figure-card-icon-red-bg` | `o-swatch-color("red", "tint-bg")` | `var(--o-red-300)` |
+| Figure cards | `--o-figure-card-icon-grey` | `o-swatch-color("gray", "tint-fg")` | `var(--o-gray-900)` |
+| Figure cards | `--o-figure-card-icon-grey-bg` | `o-swatch-color("gray", "tint-bg")` | `var(--o-gray-300)` |
 | Footer | `--o-footer-bg` | `$o-footer-outer-bg` | `#F9FAFB` (base colour) |
 | Footer | `--o-footer-inner-bg` | `$o-footer-inner-bg` | `#F9FAFB` (base colour) |
 | Footer | `--o-footer-text` | `$o-footer-default-color` | `var(--o-text-muted)` |
@@ -1596,9 +1672,18 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Form elements | `--o-addremove-remove-bg` | `$o-addremove-remove-color` | `var(--o-state-danger-soft-bg)` |
 | Form elements | `--o-autocomplete-suggestion-bg` | - | `var(--o-btn-primary-bg)` |
 | Form elements | `--o-autocomplete-suggestion-fg` | - | `var(--o-btn-primary-fg)` |
+| Form elements | `--o-autocomplete-fg` | `$o-autocomplete-color` | `var(--o-input-fg)` |
+| Form elements | `--o-autocomplete-bg` | `$o-autocomplete-bg-color` | `var(--o-input-bg)` |
 | Form elements | `--o-file-upload-border` | - | `var(--o-text-muted)` |
 | Form elements | `--o-panel-placeholder-border-active` | - | `var(--o-primary)` |
 | Form elements | `--o-panel-placeholder-border` | `$o-panel-placeholder-border-color` | `#D0D5DD` (base colour) |
+| Form elements | `--o-panel-placeholder-bg` | `$o-panel-placeholder-bg` | `var(--o-white)` |
+| Form elements | `--o-panel-placeholder-fg` | `$o-panel-placeholder-color` | `#667085` (base colour) |
+| Form elements | `--o-panel-placeholder-bg-active` | `$o-panel-placeholder-bg-active` | `#F9FAFB` (base colour) |
+| Image text and activity log | `--o-imagebg-text-bg` | `$o-imagebg-text-background` | `color-mix(in srgb, var(--o-scrim) 80%, transparent)` (base value) |
+| Image text and activity log | `--o-activity-add-border` | `o-state-color("success", "bg")` | `var(--o-state-success-bg)` |
+| Image text and activity log | `--o-activity-modify-border` | `o-state-color("warning", "bg")` | `var(--o-state-warning-bg)` |
+| Image text and activity log | `--o-activity-remove-border` | `o-swatch-color("gray", "border")` | `var(--o-gray-600)` |
 | Form elements | `--o-radio-card-border` | - | `var(--o-border-strong)` |
 | Form elements | `--o-radio-card-image-border` | - | `var(--o-border-strong)` |
 | Form elements | `--o-radio-card-label-hover` | - | `var(--o-btn-default-fg)` |
@@ -1607,8 +1692,14 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Form elements | `--o-radio-card-checked-border` | `$o-radio-card-border-color-checked` | `#1D7ECC` (base colour) |
 | Form elements | `--o-radio-card-checked-bg` | `$o-radio-card-bg-checked` | `#ECF5FC` (base colour) |
 | Form elements | `--o-radio-card-checked-label` | `$o-radio-card-label-color-checked` | `#1D7ECC` (base colour) |
+| Form elements | `--o-radio-card-bg` | `$o-radio-card-bg` | `var(--o-input-bg)` |
+| Form elements | `--o-color-picker-selected-fg` | `$o-bright-text-and-border` | `#FCFCFC` (base colour) |
 | Form elements | `--o-slider-handler-bg` | - | `var(--o-primary)` |
 | Form elements | `--o-slider-handler-border` | - | `var(--o-primary)` |
+| Form elements | `--o-slider-border` | `$o-slider-border` | `#AAAAAA` (base colour) |
+| Form elements | `--o-slider-bg` | `$o-slider-background` | `#F9F9F9` (base colour) |
+| jQuery UI dialog | `--o-dialog-window-bg` | `$o-dialog-window-bg` | `var(--o-white)` |
+| jQuery UI dialog | `--o-dialog-window-bar-bg` | `$o-dialog-window-bar-bg` | `#F2F4F7` (base colour) |
 | Form elements | `--o-toggle-on-bg` | - | `var(--o-primary)` |
 | Form elements | `--o-toggle-on-border` | - | `var(--o-primary)` |
 | Form elements | `--o-toggle-text` | `o-a11y-color($text-muted, $o-toggle-bg)`: the muted text, adjusted to 4.5:1 on the track | `#626B7F` (base colour) |
@@ -1618,6 +1709,11 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Form elements | `--o-toggle-on-handle` | `$o-toggle-on-color` | `#EEEEEE` (base colour) |
 | Form elements | `--o-toggle-on-text` | `$o-toggle-on-text-color` | `#EEEEEE` (base colour) |
 | Form elements | `--o-tinymce-danger-bg` | - | `var(--o-state-danger-soft-bg)` |
+| Icons | `--o-icon-changes` | `$o-base-blue-color` | `#105CAD` (base colour) |
+| Icons | `--o-colored-icon-blue` | `$o-base-blue-color` | `#105CAD` (base colour) |
+| Icons | `--o-colored-icon-green` | `$o-base-green-color` | `#268000` (base colour) |
+| Icons | `--o-colored-icon-orange` | `$o-base-orange-color` | `#D17A00` (base colour) |
+| Icons | `--o-icon-mandatory` | `$o-base-orange-color` | `#D17A00` (base colour) |
 | Labels without a status class | `--o-labeled-fg` | `#FFFFFF` | `var(--o-white)` |
 | Labels without a status class | `--o-labeled-bg` | `o-palette("gray", 600)` | `var(--o-gray-600)` |
 | Labels without a status class | `--o-labeled-border` | `o-palette("gray", 700)` | `var(--o-gray-700)` |
@@ -1626,6 +1722,13 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Labels without a status class | `--o-labeled-light-border` | `o-palette("gray", 600)` | `var(--o-gray-600)` |
 | Login page | `--o-login-header` | `$o-login-header-color` | `var(--o-primary-text)` |
 | Login page | `--o-login-help-link` | `$o-login-help-link-color` | `#2C66B7` (base colour) |
+| Login page | `--o-login-lead` | `$o-login-lead-color` | `var(--o-text)` |
+| Login page | `--o-login-lead-header` | `$o-login-lead-header-color` | `var(--o-content-header)` |
+| Login page | `--o-login-infomessage-border` | `$o-login-infomessage-border` | `transparent` (base colour) |
+| Login page | `--o-login-help-bg` | `$o-login-help-bg-color` | `#E4E7EC` (base colour) |
+| Login page | `--o-login-border` | `$o-login-border-color` | `#E4E7EC` (base colour) |
+| Login page | `--o-login-bg` | `$o-login-bg-color` | `color-mix(in srgb, var(--o-scrim) 95%, transparent)` (base value) |
+| Login page | `--o-login-infomessage-bg` | `$o-login-infomessage-bg` | `color-mix(in srgb, var(--o-scrim) 50%, transparent)` (base value) |
 | Login page | `--o-otp-cell-bg` | `#EEEEEE` | `#EEEEEE` (base colour) |
 | Login page | `--o-otp-cell-active-bg` | `#BBBBBB` | `#BBBBBB` (base colour) |
 | Login page | `--o-otp-caret` | `#222222` | `var(--o-gray-900)` |
@@ -1638,6 +1741,14 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Menu tree | `--o-tree-link-active-parent` | `$o-tree-link-active-parent-color` | `var(--o-tree-link)` |
 | Menu tree | `--o-tree-link-active-parent-hover` | `$o-tree-link-active-parent-hover-color` | `var(--o-tree-link-hover)` |
 | Menu tree | `--o-tree-dnd-over-bg` | `#FFFF60` | `#FFFF60` (base colour) |
+| Menu tree | `--o-tree-border` | `$o-tree-border-color` | `var(--o-gray-200)` |
+| Menu tree | `--o-tree-insertion-disabled` | `$o-tree-insertion-disabled-color` | `#777777` (base colour) |
+| Menu tree | `--o-tree-insertion-source-border` | `$o-tree-insertion-source-border` | `#FFDBAC` (base colour) |
+| Menu tree | `--o-tree-insertion-source-bg` | `$o-tree-insertion-source-bg` | `#FFCF91` (base colour) |
+| Menu tree | `--o-tree-insertion-source-fg` | `$o-tree-insertion-source-color` | `#522D00` (base colour) |
+| Main layout | `--o-main-outer-bg` | `$o-main-outer-bg` | `var(--o-white)` |
+| Main layout | `--o-main-inner-bg` | `$o-main-inner-bg` | `var(--o-white)` |
+| Main layout | `--o-main-left-bg` | `$o-main-left-bg` | `var(--o-white)` |
 | Message boxes of a state | `--o-box-info-border` | `$o-box-info-color` | `var(--o-state-neutral-bg)` |
 | Message boxes of a state | `--o-box-info-text` | `$o-box-info-color`; with its default the text of the state `neutral` | `var(--o-state-neutral-text)` |
 | Message boxes of a state | `--o-box-success-border` | `$o-box-success-color` | `var(--o-state-success-bg)` |
@@ -1651,12 +1762,24 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Message boxes of a state | `--o-box-success-bg` | `$o-box-success-bg` | `#F3F9F5` (base colour) |
 | Message boxes of a state | `--o-box-warning-bg` | `$o-box-warning-bg` | `#FEFDF8` (base colour) |
 | Message boxes of a state | `--o-box-error-bg` | `$o-box-error-bg` | `#FFF8F6` (base colour) |
+| Message boxes | `--o-box-note-border` | `$o-box-note-color` | `#666666` (base colour) |
+| Message boxes | `--o-box-note-text` | `$o-box-note-color` | `var(--o-box-note-border)` |
+| Message boxes | `--o-box-tip-bg` | `$o-box-tip-bg` | `#F2F5F4` (base colour) |
+| Message boxes | `--o-box-tip-border` | `$o-box-tip-color` | `#345566` (base colour) |
+| Message boxes | `--o-box-important-bg` | `$o-box-important-bg` | `#F4FAFA` (base colour) |
+| Message boxes | `--o-box-important-border` | `$o-box-important-color` | `#41BBDB` (base colour) |
+| Message boxes | `--o-message-line-warning-bg` | `$o-line-warning-bg` | `var(--o-orange-300)` |
+| Message boxes | `--o-message-line-warning-fg` | `$o-line-warning-color` | `var(--o-orange-900)` |
+| Message boxes | `--o-message-line-error-bg` | `$o-line-error-bg` | `var(--o-red-300)` |
+| Message boxes | `--o-message-line-error-fg` | `$o-line-error-color` | `var(--o-red-900)` |
 | Message boxes of a state | `--o-brand-box-border` | `$o-brand-box-border` | `#295FAA` (base colour) |
+| Message boxes of a state | `--o-brand-box-bg` | `$o-brand-box-bg` | `color-mix(in srgb, var(--o-primary) 10%, transparent)` (base value) |
 | Modal dialogs and popovers | `--o-modal-content-border` | `$modal-content-border-color` | `var(--o-border)` |
 | Modal dialogs and popovers | `--o-modal-header-border` | `$modal-header-border-color` | `#E5E5E5` (base colour) |
 | Modal dialogs and popovers | `--o-popover-bg` | - | `var(--o-bg-raised)` |
 | Modal dialogs and popovers | `--o-popover-border` | `$popover-border-color` | `rgba(0, 0, 0, 0.2)` (base colour) |
 | Modal dialogs and popovers | `--o-popover-title-bg` | `$popover-title-bg` | `#F7F7F7` (base colour) |
+| Modal dialogs and popovers | `--o-popover-fallback-border` | `$popover-fallback-border-color` | `#CCCCCC` (base colour) |
 | Navigation bar | `--o-navbar-bg` | `$o-navbar-bg` | `var(--o-bg)` |
 | Navigation bar | `--o-navbar-text` | `$o-navbar-color` (default `o-a11y-color($navbar-default-color, $o-navbar-bg)`, decision D23) | `#747474` (base colour) |
 | Navigation bar | `--o-navbar-link` | `$o-navbar-link-color` | `#475467` (base colour) |
@@ -1679,13 +1802,22 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Navigation bar | `--o-dropdown-tab-close-hover` | `$o-navbar-tab-close-hover-color` | `var(--o-state-danger-text-hover)` |
 | Navigation bar | `--o-navbar-focus` | `o-a11y-color(o-contrast-hover($o-focus-color, $o-navbar-link-color, $o-navbar-bg, 3), $o-navbar-bg, 3)` | `var(--o-focus)` |
 | Navigation bar | `--o-navbar-highlight` | `#FFFFFF` | `var(--o-white)` |
+| Navigation bar | `--o-navbar-logout` | `$o-navbar-logout-color` | `var(--o-state-danger-text)` |
 | Navigation links | `--o-nav-link` | `$navbar-default-link-color` | `#475467` (base colour) |
 | Navigation links | `--o-nav-link-hover` | `$navbar-default-link-hover-color` | `#333333` (base colour) |
 | Offcanvas menu | `--o-offcanvas-logout` | `$o-offcanvas-logout-color` | `#FF8B9B` (base colour) |
 | Offcanvas menu | `--o-offcanvas-logout-hover` | `$o-offcanvas-logout-hover-color` | `#FF586F` (base colour) |
 | Offcanvas menu | `--o-offcanvas-link-hover` | `$o-offcanvas-link-hover-color` | `#939393` (base colour) |
 | Offcanvas menu | `--o-offcanvas-category-border` | `#888888` | `#888888` (base colour) |
+| Offcanvas menu | `--o-offcanvas-link` | `$o-offcanvas-link-color` | `#ACACAC` (base colour) |
+| Offcanvas menu | `--o-offcanvas-link-hover-bg` | `$o-offcanvas-link-hover-bg` | `transparent` (base colour) |
+| Offcanvas menu | `--o-offcanvas-dropdown-bg` | `$o-offcanvas-dropdown-bg` | `var(--o-gray-900)` |
+| Offcanvas menu | `--o-offcanvas-link-active-bg` | `$o-offcanvas-link-active-bg` | `#090909` (base colour) |
+| Offcanvas menu | `--o-offcanvas-link-active` | `$o-offcanvas-link-active-color` | `var(--o-white)` |
+| Offcanvas menu | `--o-offcanvas-bg` | `$o-offcanvas-bg` | `var(--o-gray-900)` |
+| Offcanvas menu | `--o-offcanvas-border` | `$o-offcanvas-border` | `#090909` (base colour) |
 | Panels, progress bars and thumbnails | `--o-panel-bg` | `$panel-bg` | `var(--o-bg)` |
+| Panels, progress bars and thumbnails | `--o-panel-default-border` | `$panel-default-border` | `#E4E7EC` (base colour) |
 | Panels, progress bars and thumbnails | `--o-progress-bar-fg` | `$progress-bar-color` | `var(--o-white)` |
 | Panels, progress bars and thumbnails | `--o-progress-bar-bg` | `$progress-bar-bg` | `var(--o-primary)` |
 | Panels, progress bars and thumbnails | `--o-progress-bar-neutral-bg` | `$progress-bar-neutral-bg` | `var(--o-base-progress-bar-neutral-bg)` |
@@ -1694,6 +1826,7 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Portal and portlets | `--o-portlet-header-bg` | - | `var(--o-bg-subtle)` |
 | Portal and portlets | `--o-portlet-edit-bg` | `$o-portlet-edit-bg` | `var(--o-state-warning-soft-bg)` |
 | Portal and portlets | `--o-portlet-edit-border` | `$o-portlet-edit-border` | `var(--o-state-warning-soft-border)` |
+| Portal and portlets | `--o-portlet-bg` | `$o-portlet-bg` | `var(--o-panel-bg)` |
 | Scope selection | `--o-scope-toggle-border` | - | `var(--o-primary)` |
 | Scope selection | `--o-scope-toggle-fg` | - | `var(--o-text)` |
 | Scope selection | `--o-scope-toggle-on-bg` | `$o-scope-toggle-on-bg-color` | `var(--o-primary)` |
@@ -1711,6 +1844,12 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Table | `--o-table-link` | - | `var(--o-link-subtle)` |
 | Table | `--o-table-striped-link` | - | `var(--o-link-subtle)` |
 | Table | `--o-table-details-bg` | `$o-table-details-bg` | `#F6FBFD` (base colour) |
+| Table | `--o-table-details-container-bg` | `$o-table-details-container-bg` | `var(--o-white)` |
+| Table | `--o-table-edit-border` | `$o-table-edit-border` | `#FF9900` (base colour) |
+| Table | `--o-table-edit-bg` | `$o-table-edit-bg` | `#FEFBF6` (base colour) |
+| Table | `--o-table-row-selected-bg` | `$o-table-row-selected-color` | `var(--o-state-neutral-soft-bg)` |
+| Table | `--o-table-filter-collapse-border` | `$o-table-filter-collapse-color` | `#E4E7EC` (base colour) |
+| Table | `--o-table-details-container-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
 | Table | `--o-table-sticky-col-bg` | `#FAFAFA` | `#FAFAFA` (base colour) |
 | Table | `--o-table-sticky-col-striped-bg` | `#F5F5F5` | `#F5F5F5` (base colour) |
 | Table | `--o-table-filter-fg` | `$o-table-filter-color` | `var(--o-btn-primary-border)` |
@@ -1736,10 +1875,14 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Tags | `--o-tag-selection-remove-selected-bg` | `$o-tag-selection-remove-selected-background-color` | `var(--o-btn-danger-bg)` |
 | Tags | `--o-tag-selection-remove-selected-border` | `$o-tag-selection-remove-selected-border-color` | `var(--o-btn-danger-border)` |
 | Tags | `--o-tag-selection-remove-selected-fg` | `$o-tag-selection-remove-selected-font-color` | `var(--o-btn-danger-fg)` |
+| Tags | `--o-tag-fg` | `$o-tag-font-color` | `var(--o-white)` |
 | Timeline and swiper | `--o-swiper-button-bg` | - | `var(--o-btn-default-bg)` |
 | Timeline and swiper | `--o-swiper-button-fg` | - | `var(--o-btn-default-fg)` |
 | Timeline and swiper | `--o-swiper-button-hover` | - | `var(--o-primary)` |
+| Timeline and swiper | `--o-swiper-theme` | `$o-swiper-color` | `var(--o-btn-primary-bg)` |
+| Timeline and swiper | `--o-swiper-button-border` | `$btn-default-border` | `var(--o-btn-default-border)` |
 | Timeline and swiper | `--o-timeline-path` | - | `var(--o-border)` |
+| Timeline and swiper | `--o-timeline-row-bg` | `$o-v-timeline-row-bg` | `var(--o-white)` |
 | Toolbar and breadcrumb | `--o-toolbar-breadcrumb-bg` | `$o-toolbar-breadcrumb-bg-color` | `var(--o-bg-subtle)` |
 | Toolbar and breadcrumb | `--o-toolbar-close` | `$o-toolbar-close-color` | `var(--o-state-danger-text)` |
 | Toolbar and breadcrumb | `--o-toolbar-breadcrumb-link` | - | `var(--o-link-subtle)` |
@@ -1752,12 +1895,22 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Toolbar and breadcrumb | `--o-toolbar-link-disabled` | `$o-toolbar-link-disabled-color` | `var(--o-text-disabled)` |
 | Toolbar and breadcrumb | `--o-toolbar-nav-link-disabled` | `$o-toolbar-nav-link-disabled-color` | `var(--o-toolbar-link-disabled)` |
 | Toolbar and breadcrumb | `--o-toolbar-nav-border` | - | `var(--o-border-strong)` |
+| Toolbar and breadcrumb | `--o-toolbar-border` | `$o-toolbar-border-color` | `#EAECF0` (base colour) |
+| Toolbar and breadcrumb | `--o-toolbar-bg` | `$o-toolbar-bg-color` | `var(--o-white)` |
+| Toolbar and breadcrumb | `--o-toolbar-link-active-bg` | `$o-toolbar-link-active-bg` | `transparent` (base colour) |
+| Toolbar and breadcrumb | `--o-toolbar-dropdown-active-bg` | `$o-toolbar-dropdown-active-bg` | `transparent` (base colour) |
+| Toolbar and breadcrumb | `--o-toolbar-nav-bg` | `$o-toolbar-nav-bg-color` | `#EEEEEE` (base colour) |
+| Toolbar and breadcrumb | `--o-toolbar-edit-bg` | `$o-toolbar-edit-bg-color` | `var(--o-white)` |
+| Toolbar and breadcrumb | `--o-toolbar-edit-stripe` | `$o-toolbar-edit-stripe-color` | `#FFF0D9` (base colour) |
 | Wizard | `--o-wizard-step-main-active-bg` | - | `var(--o-btn-primary-bg)` |
 | Wizard | `--o-wizard-step-main-active-fg` | - | `var(--o-btn-primary-fg)` |
 | Wizard | `--o-wizard-step-sub-active-border` | - | `var(--o-primary)` |
 | Wizard | `--o-wizard-step-sub-active` | - | `var(--o-text)` |
+| Wizard | `--o-wizard-steps-border` | `$o-wizard-steps-border-color` | `#D0D5DD` (base colour) |
+| Wizard | `--o-wizard-steps-bg` | `$o-wizard-steps-bg-color` | `#F9FAFB` (base colour) |
+| Wizard | `--o-wizard-step-bg` | `$o-wizard-step-bg-color` | `#EAECF0` (base colour) |
 
-**Component layer** (`$o-token-layer-component`, 208 tokens: 126 with a Sass default, 82 with a reference default):
+**Component layer** (`$o-token-layer-component`, 426 tokens: 343 with a Sass default, 83 with a reference default):
 
 | Group | Token | Sass default | Default in light |
 |---|---|---|---|
@@ -1766,11 +1919,18 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Absences and lectures | `--o-lecture-timeline-running-bg` | - | `var(--o-state-neutral-soft-bg)` |
 | Absences and lectures | `--o-lecture-timeline-running-border` | - | `var(--o-state-neutral-border)` |
 | Absences and lectures | `--o-lecture-timeline-path` | - | `var(--o-border)` |
+| Absences and lectures | `--o-lecture-rollcall-pending` | `o-state-color("inactive", "border", "light")` | `var(--o-slate-500)` |
+| Absences and lectures | `--o-lecture-current-border` | `$o-lm-current-border-color` | `transparent` (base colour) |
+| Absences and lectures | `--o-lecture-current-bg` | `$o-lm-current-bg` | `var(--o-white)` |
+| Absences and lectures | `--o-lecture-excluded` | `$o-lm-excluded-color` | `var(--o-state-danger-text)` |
+| Absences and lectures | `--o-lecture-timeline-row-bg` | `$o-lm-timeline-row-bg` | `var(--o-white)` |
 | AI feedback | `--o-ai-mark-correct` | - | `var(--o-state-success-bg)` |
 | AI feedback | `--o-ai-mark-ambiguous` | - | `var(--o-state-warning-bg)` |
 | AI feedback | `--o-ai-mark-wrong` | - | `var(--o-state-danger-bg)` |
 | Appointments | `--o-appointment-planned` | `$o-ap-planned-color` | `var(--o-state-warning-bg)` |
 | Appointments | `--o-appointment-select-icon` | `$o-ap-select-icon-color` | `var(--o-state-warning-fg)` |
+| Appointments | `--o-appointment-confirmed` | `$o-ap-confirmed-color` | `var(--o-state-success-bg)` |
+| Calendar | `--o-cal-desc-bg` | `$o-cal-desc-background-color` | `var(--o-white)` |
 | Badges | `--o-badge-row-expanded-link` | `o-a11y-color($link-color, $o-table-details-bg)` | `var(--o-link)` |
 | Badges | `--o-badge-row-expanded-link-hover` | `o-a11y-color($link-color, darken($o-table-details-bg, 10%))` | `#2B64B3` (base colour) |
 | Badges | `--o-badge-status-info` | `o-a11y-color(o-state-color("neutral", "text"), $o-toolbar-bg-color)` | `var(--o-state-neutral-text)` |
@@ -1778,6 +1938,21 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Badges | `--o-badge-status-warning` | `o-a11y-color(o-state-color("warning", "text"), $o-toolbar-bg-color)` | `var(--o-state-warning-text)` |
 | Badges | `--o-badge-status-danger` | `o-a11y-color(o-state-color("danger", "text"), $o-toolbar-bg-color)` | `var(--o-state-danger-text)` |
 | Badges | `--o-badge-template-selected-bg` | `#DDDDDD` | `var(--o-gray-200)` |
+| Badges | `--o-export-area-meta` | `$o-export-area-meta-color` | `#777777` (base colour) |
+| Credit points | `--o-creditpoint-withdraw` | `$o-cp-withdraw-color` | `var(--o-state-danger-text)` |
+| Credit points | `--o-creditpoint-deposit` | `$o-cp-deposit-color` | `var(--o-state-success-text)` |
+| Course quota | `--o-course-quota-intern-quota` | `$o-course-quota-progress-iq-text-color` | `var(--o-cyan-500)` |
+| Course quota | `--o-course-quota-intern` | `$o-course-quota-progress-i-text-color` | `var(--o-orange-500)` |
+| Course quota | `--o-course-quota-extern` | `$o-course-quota-progress-ex-text-color` | `var(--o-magenta-700)` |
+| Course quota | `--o-course-quota-intern-quota-bg` | `$o-course-quota-progress-iq-bg-color` | `var(--o-cyan-400)` |
+| Course quota | `--o-course-quota-intern-bg` | `$o-course-quota-progress-i-bg-color` | `var(--o-orange-400)` |
+| Course quota | `--o-course-quota-extern-bg` | `$o-course-quota-progress-ex-bg-color` | `var(--o-magenta-700)` |
+| Contact tracing | `--o-contact-tracing-confirmation-bg` | `$o-ct-confirmation-bg-color` | `#32CD32` (base colour) |
+| Course element File dialog | `--o-dialog-cn-label-new-border` | `$o-dialog-cn-label-new-border-color` | `#555555` (base colour) |
+| Course element File dialog | `--o-dialog-cn-label-new` | `$o-dialog-cn-label-new-color` | `#8A7400` (base colour) |
+| To-dos | `--o-todo-overdue` | `$o-todo-overdue-color` | `var(--o-state-danger-text)` |
+| Certification | `--o-certification-certified` | `$o-base-green-color` | `#268000` (base colour) |
+| Certification | `--o-certification-certifying` | `$o-base-blue-color` | `#105CAD` (base colour) |
 | Chat | `--o-im-summary-bg` | `$o-im-summary-bg` | `#667085` (base colour) |
 | Chat | `--o-im-buddies-link` | - | `var(--o-link)` |
 | Chat | `--o-im-buddies-link-hover` | - | `var(--o-link-hover)` |
@@ -1785,12 +1960,25 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Chat | `--o-im-groupchat-user` | - | `var(--o-text)` |
 | Chat | `--o-im-chat-from` | `$o-im-chat-from-color` | `#777777` (base colour) |
 | Chat | `--o-im-chat-roster-bg` | `$o-im-chat-roster-bg` | `#FBFBFB` (base colour) |
+| Chat | `--o-im-summary-fg` | `$o-im-summary-color` | `var(--o-white)` |
+| Chat | `--o-im-chat-border` | `$o-im-chat-border` | `#EEEEEE` (base colour) |
+| Chat | `--o-im-chat-history-border` | `$o-im-chat-history-border` | `#EEEEEE` (base colour) |
+| Chat | `--o-im-chat-message-bg` | `$o-im-chat-message-bg` | `var(--o-white)` |
+| Chat | `--o-im-chat-message-status-bg` | `$o-im-chat-message-bg-status` | `var(--o-state-warning-soft-bg)` |
+| Chat | `--o-im-chat-message-error-bg` | `$o-im-chat-message-bg-error` | `var(--o-state-danger-soft-bg)` |
+| Chat | `--o-im-chat-message-me-bg` | `$o-im-chat-message-bg-me` | `#EEEEEE` (base colour) |
+| Chat | `--o-im-groupchat-vip` | `$o-im-groupchat-vip-color` | `var(--o-state-success-text)` |
+| Chat | `--o-im-groupchat-anonymous` | `$o-im-groupchat-anonymous-color` | `var(--o-state-neutral-text)` |
 | Chat | `--o-im-newmessage` | `$o-im-newmessage-color` | `var(--o-state-danger-text)` |
 | Chat | `--o-im-newmessage-hover` | `$o-im-newmessage-hover-color` | `var(--o-state-warning-text)` |
+| Chat | `--o-im-status-available` | `$o-im-status-available-color` | `var(--o-state-success-text)` |
+| Chat | `--o-im-status-dnd` | `$o-im-status-dnd-color` | `var(--o-state-critical-text)` |
+| Chat | `--o-im-status-unavailable` | `$o-im-status-unavailable-color` | `var(--o-state-danger-text)` |
 | Competences | `--o-competence-selected` | `o-a11y-color($o-button-dirty-color, darken(#FFFFFF, 15%))`: the text of the selected tag, adjusted to 4.5:1 on the pressed competence fill | `var(--o-tag-selected-fg)` |
 | Competences | `--o-competence-selected-border` | `$o-competences-selected-border-color` | `var(--o-btn-dirty-border)` |
 | Competences | `--o-competence-bg` | `#FFFFFF` | `var(--o-white)` |
 | Competences | `--o-competence-border` | `$o-competences-color` | `#295FAA` (base colour) |
+| Competences | `--o-competence-fg` | `$o-competences-font-color` | `var(--o-competence-border)` |
 | Content editor | `--o-editor-inspector-title` | - | `var(--o-primary)` |
 | Content editor | `--o-editor-layout-pseudo-icon-bg-active` | - | `var(--o-primary)` |
 | Content editor | `--o-editor-selected-border` | `$o-editor-selected-border-color` | `var(--o-primary)` |
@@ -1798,6 +1986,17 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Content editor | `--o-editor-media-unavailable` | `$gray-lighter` | `#EEEEEE` (base colour) |
 | Content editor | `--o-editor-part-toolbar-link` | `#FFFFFF` | `var(--o-white)` |
 | Content editor | `--o-editor-image-shadow-border` | `$gray` | `#555555` (base colour) |
+| Content editor | `--o-editor-border` | `$o-editor-border-color` | `#D0D5DD` (base colour) |
+| Content editor | `--o-editor-hover-text` | `$o-editor-border-color` | `var(--o-editor-border)` |
+| Content editor | `--o-editor-inspector-border` | `$o-editor-inspector-border-color` | `var(--o-editor-border)` |
+| Content editor | `--o-editor-layout-inner-h-border` | `$o-editor-border-color` | `var(--o-editor-border)` |
+| Content editor | `--o-editor-layout-inner-v-border` | `$o-editor-border-color` | `var(--o-editor-border)` |
+| Content editor | `--o-editor-layout-pseudo-icon-border` | `$o-editor-layout-pseudo-icon-border-color` | `#808080` (base colour) |
+| Content editor | `--o-editor-layout-pseudo-icon-bg` | `$o-editor-layout-pseudo-icon-bg-color` | `#EAECF0` (base colour) |
+| Content editor | `--o-editor-container-border` | `$o-editor-container-border-color` | `#EAECF0` (base colour) |
+| Content editor | `--o-editor-hover-border` | `$o-editor-hover-border-color` | `#EF00EF` (base colour) |
+| Content editor | `--o-editor-edit-bg` | `$o-editor-edit-background-color` | `#F2F4F7` (base colour) |
+| Content editor | `--o-editor-alert-box-active-border` | `$o-color-light-gray` | `var(--o-gray-700)` |
 | Content editor | `--o-page-code-box-bg` | `color.mix($o-color-light-gray, #FFFFFF, 5%)` | `#F6F6F6` (base colour) |
 | Content editor | `--o-page-table-border` | `$gray-base` | `#000000` (base colour) |
 | Content editor | `--o-milkdown-table-border` | `$gray-base` | `#000000` (base colour) |
@@ -1808,15 +2007,37 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Course | `--o-course-style-link` | - | `var(--o-link-subtle)` |
 | Course | `--o-course-style-peekview-link` | `o-a11y-color($link-color, mix(...))`: the peekview background `$o-cn-style-peekview-bg` (translucent) on `$o-cn-style-bg` | `var(--o-link)` |
 | Course | `--o-course-assessment-part-bg` | - | `var(--o-bg-subtle)` |
+| Course | `--o-assessment-mode-today-border` | `$o-assessment-mode-today-border-color` | `var(--o-state-success-text)` |
+| Course | `--o-assessment-mode-today-bg` | `$o-assessment-mode-today-bg` | `var(--o-state-success-soft-bg)` |
+| Course | `--o-assessment-mode-end-soon-border` | `$o-assessment-mode-end-soon-border-color` | `var(--o-state-danger-text)` |
+| Course | `--o-assessment-mode-end-soon-bg` | `$o-assessment-mode-end-soon-bg` | `var(--o-state-danger-soft-bg)` |
+| Course | `--o-assessment-inspection-border` | `#D0D5DD` | `#D0D5DD` (base colour) |
 | Course | `--o-course-state-failed` | - | `var(--o-state-danger-text)` |
 | Course | `--o-course-state-passed` | `$o-course-state-passed-color` | `var(--o-state-success-text)` |
 | Course | `--o-course-state-unknown` | - | `var(--o-state-warning-text)` |
 | Course | `--o-course-file-box-border` | `$o-dialog-cn-box-border-color` | `var(--o-border)` |
 | Course | `--o-course-node-deleted` | `$o-course-node-deleted` | `var(--o-text-disabled)` |
+| Course | `--o-course-style-cover-text-bg` | `$o-cn-style-cover-text-bg` | `color-mix(in srgb, var(--o-scrim) 95%, transparent)` (base value) |
+| Course | `--o-edu-type-standard-course` | `$o-edu-type-standard-course-color` | `#555555` (base colour) |
+| Course | `--o-edu-type-exam-course` | `$o-edu-type-exam-course-color` | `var(--o-red-500)` |
+| Course | `--o-edu-type-certification-course` | `$o-edu-type-certification-course-color` | `var(--o-orange-500)` |
+| Course | `--o-edu-type-date-course` | `$o-edu-type-date-course-color` | `var(--o-magenta-700)` |
+| Course | `--o-edu-type-seminar-course` | `$o-edu-type-seminar-course-color` | `var(--o-cyan-500)` |
+| Course | `--o-edu-type-lecture-course` | `$o-edu-type-lecture-course-color` | `var(--o-lime-500)` |
+| Course | `--o-edu-type-blendedlearning-course` | `$o-edu-type-blendedlearning-course-color` | `var(--o-yellow-500)` |
+| Course | `--o-edu-type-selfstudy-course` | `$o-edu-type-selfstudy-course-color` | `var(--o-green-500)` |
 | Course | `--o-lp-in-progress` | `$o-lp-in-progress` | `var(--o-state-neutral-text)` |
 | Course | `--o-lp-pagination-in-progress-border` | - | `var(--o-state-neutral-text)` |
 | Course | `--o-lp-pagination-in-progress-icon` | - | `var(--o-state-neutral-text)` |
 | Course | `--o-lp-pagination-in-progress-icon-hover` | - | `var(--o-state-neutral-text)` |
+| Course | `--o-lp-border` | `$navbar-default-border` | `#EAECF0` (base colour) |
+| Course | `--o-lp-bg` | `$o-lp-bg` | `color-mix(in srgb, var(--o-backdrop) 2.5%, transparent)` (base value) |
+| Course | `--o-lp-icon-bg` | `$o-lp-icon-bg-color` | `var(--o-white)` |
+| Course | `--o-lp-pagination-done-bg` | `$o-lp-pagination-done-bgcolor` | `var(--o-state-success-text)` |
+| Course | `--o-lp-pagination-done-border` | `$o-lp-pagination-done-border-color` | `#2E5C2E` (base colour) |
+| Course | `--o-lp-pagination-done-fg` | `$o-lp-pagination-done-color` | `var(--o-white)` |
+| Course | `--o-lp-pagination-in-progress-bg` | `$o-lp-pagination-in-progress-bgcolor` | `color-mix(in srgb, var(--o-lp-in-progress) 20%, transparent)` (base value) |
+| Course | `--o-lp-pagination-in-progress-icon-bg` | `$o-lp-pagination-in-progress-icon-bgcolor` | `#FCFCFC` (base colour) |
 | Course | `--o-reminder-marker-bg` | - | `var(--o-btn-primary-bg)` |
 | Course | `--o-reminder-marker-fg` | - | `var(--o-btn-primary-fg)` |
 | Course | `--o-course-peekview-bg` | - | `var(--o-bg)` |
@@ -1828,6 +2049,13 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Course element Task | `--o-step-status-expired` | - | `var(--o-state-danger-text)` |
 | Course element Task | `--o-step-status-extended` | - | `var(--o-state-neutral-text)` |
 | Course element Task | `--o-step-status-late` | - | `var(--o-state-critical-text)` |
+| Process steps | `--o-step-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
+| Process steps | `--o-step-border-header-bg` | `$o-step-border-header-bg-color` | `#F9FAFB` (base colour) |
+| Process steps | `--o-step-marker` | `$o-step-color` | `#999999` (base colour) |
+| Process steps | `--o-step-active-marker` | `$o-step-active-marker-color` | `var(--o-step-marker)` |
+| Process steps | `--o-step-notavailable` | `$o-step-notavailable-color` | `var(--o-step-marker)` |
+| Process steps | `--o-step-notavailable-marker` | `$o-step-notavailable-marker-color` | `var(--o-step-notavailable)` |
+| Process steps | `--o-step-expired-marker` | `$o-step-expired-marker-color` | `var(--o-step-marker)` |
 | Course site and repository | `--o-coursesite-start-bg` | `$o-coursesite-start-bg` | `var(--o-btn-primary-bg)` |
 | Course site and repository | `--o-coursesite-start-fg` | `$o-coursesite-start-color` | `var(--o-white)` |
 | Course site and repository | `--o-coursesite-start-border` | `$o-coursesite-start-border` | `#295FAA` (base colour) |
@@ -1840,11 +2068,33 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Course site and repository | `--o-coursesite-start-xs-bg` | - | `var(--o-coursesite-start-bg)` |
 | Course site and repository | `--o-coursesite-start-xs-fg` | `$o-coursesite-go-xs-color` | `var(--o-coursesite-start-fg)` |
 | Course site and repository | `--o-coursesite-meta-lifecycle` | - | `var(--o-text)` |
+| Course site and repository | `--o-coursesite-meta-author` | `$o-coursesite-meta-author-color` | `var(--o-text)` |
 | Course site and repository | `--o-coursesite-sidecol-bg` | - | `var(--o-bg-subtle)` |
 | Course site and repository | `--o-coursesite-sidecol-border` | - | `var(--o-border)` |
 | Course site and repository | `--o-coursesite-row-hover` | `$gray-light` | `#777777` (base colour) |
+| Course site and repository | `--o-coursesite-row-bg` | `$o-coursesite-rowelem-bg` | `var(--o-white)` |
+| Course site and repository | `--o-coursesite-row-hover-bg` | `$o-coursesite-rowelem-hover-bg` | `color-mix(in srgb, var(--o-coursesite-row-hover) 1%, transparent)` (base value) |
+| Course site and repository | `--o-coursesite-progress-icon` | `$progress-bar-neutral-bg` | `var(--o-progress-bar-neutral-bg)` |
+| Course site and repository | `--o-entry-benefit-border` | `$o-entry-benefit-border-color` | `var(--o-blue-500)` |
+| Course site and repository | `--o-entry-benefit` | `$o-entry-benefit-color` | `var(--o-blue-500)` |
+| Course site and repository | `--o-catalog-header-box-bg` | `$o-cat2-header-box-bg-color` | `color-mix(in srgb, var(--o-scrim) 70%, transparent)` (base value) |
+| Course site and repository | `--o-repo-info-border` | `#D4D4D4` | `#D4D4D4` (base colour) |
+| Course site and repository | `--o-repo-info-separator-border` | `#D4D4D4` | `#D4D4D4` (base colour) |
+| Course site and repository | `--o-ac-billing-address-bg` | `$o-ac-ba-bg-color` | `#F9FAFB` (base colour) |
+| Course site and repository | `--o-ac-billing-address-border` | `#D0D5DD` | `#D0D5DD` (base colour) |
+| Course site and repository | `--o-ac-billing-address-temporary-bg` | `$o-ac-ba-no-ident-bg-color` | `#FEFDF8` (base colour) |
 | Curriculum | `--o-curriculum-avatar-bg` | - | `var(--o-primary)` |
 | Curriculum | `--o-curriculum-widget-template-label` | - | `var(--o-text)` |
+| Curriculum | `--o-curriculum-element-inactive` | `$o-curriculum-element-inactive-color` | `#777777` (base colour) |
+| Curriculum | `--o-curriculum-avatar-fg` | `$o-curriculum-avatar-color` | `var(--o-white)` |
+| Curriculum | `--o-curriculum-widget-card-border` | `#D0D5DD` | `#D0D5DD` (base colour) |
+| Curriculum | `--o-curriculum-widget-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
+| Curriculum | `--o-curriculum-widget-bg` | `$o-curriculum-widget-bg-color` | `var(--o-panel-bg)` |
+| Curriculum | `--o-curriculum-widget-template-label-bg` | `$o-curriculum-widget-template-label-bg` | `var(--o-white)` |
+| Curriculum | `--o-curriculum-import-error-bg` | `$o-curriculum-import-bg-error` | `#FFF8F6` (base colour) |
+| Curriculum | `--o-curriculum-import-new-bg` | `$o-curriculum-import-bg-new` | `#F3F9F5` (base colour) |
+| Curriculum | `--o-curriculum-import-changed-bg` | `$o-curriculum-import-bg-changed` | `#FCFCFC` (base colour) |
+| Curriculum | `--o-curriculum-import-ignored-bg` | `$o-curriculum-import-bg-ignored` | `#FAFAFB` (base colour) |
 | Evaluation form and quality | `--o-evaluation-insufficient` | `$o-evaluation-insufficient-color` | `var(--o-state-danger-bg)` |
 | Evaluation form and quality | `--o-evaluation-insufficient-text` | `$o-evaluation-insufficient-color`; with its default the text of the state `danger` | `var(--o-state-danger-text)` |
 | Evaluation form and quality | `--o-evaluation-insufficient-fill` | `$o-evaluation-insufficient-fill` | `var(--o-red-200)` |
@@ -1854,9 +2104,15 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Evaluation form and quality | `--o-evaluation-sufficient` | `$o-evaluation-sufficient-color` | `var(--o-state-success-bg)` |
 | Evaluation form and quality | `--o-evaluation-sufficient-text` | `$o-evaluation-sufficient-color`; with its default the text of the state `success` | `var(--o-state-success-text)` |
 | Evaluation form and quality | `--o-evaluation-sufficient-fill` | `$o-evaluation-sufficient-fill` | `var(--o-green-200)` |
+| Evaluation form and quality | `--o-evaluation-step-bg` | `$o-evaluation-step-background-color` | `var(--o-table-striped-bg)` |
+| Evaluation form and quality | `--o-evaluation-slider-hover-bg` | `$o-evaluation-slider-hover-background-color` | `var(--o-table-hover-bg)` |
+| Evaluation form and quality | `--o-quality-heatmap-base-bg` | `$o-qual-hm-base-background-color` | `#337AB7` (base colour) |
+| Evaluation form and quality | `--o-quality-unrated` | `$o-qual-hm-base-background-color` | `var(--o-quality-heatmap-base-bg)` |
 | Folder | `--o-folder-card-thumbnail-folder-icon` | - | `var(--o-primary)` |
 | Folder | `--o-folder-muted` | - | `var(--o-text-muted)` |
 | Folder | `--o-folder-row-thumbnail-folder-icon` | - | `var(--o-primary)` |
+| Folder | `--o-folder-row-thumbnail-image-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
+| Folder | `--o-folder-card-thumbnail-icon` | `$o-folder-card-thumbnail-icon-color` | `#CCCCCC` (base colour) |
 | Forum | `--o-forum-message-footer-bg` | - | `var(--o-forum-message-header-bg)` |
 | Forum | `--o-forum-message-footer-border` | - | `var(--o-forum-message-header-border)` |
 | Forum | `--o-forum-message-header-bg` | `$o-forum-message-header-bg` | `var(--o-bg-subtle)` |
@@ -1865,15 +2121,26 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Forum | `--o-forum-message-header-modified` | `$o-forum-message-header-modified-color` | `var(--o-state-warning-text)` |
 | Forum | `--o-forum-message-footer-attachment` | - | `var(--o-forum-message-header-author)` |
 | Forum | `--o-forum-quote-author` | - | `var(--o-text-muted)` |
+| Forum | `--o-forum-quote` | `$o-forum-quote-color` | `#555555` (base colour) |
+| Forum | `--o-citation-quote` | `$o-cit-quote-color` | `#555555` (base colour) |
 | Forum | `--o-forum-message-new-glow` | - | `var(--o-state-success-bg)` |
 | Forum | `--o-forum-message-highlight-glow` | - | `var(--o-state-warning-bg)` |
 | High score | `--o-highscore-bar-myself` | - | `var(--o-primary)` |
 | High score | `--o-highscore-score` | - | `var(--o-text-muted)` |
 | High score | `--o-highscore-podium-first-bg` | `$o-hs-podium-first-bg` | `#FFD700` (base colour) |
+| High score | `--o-highscore-position-title` | `o-hs-position-title-color()` | `var(--o-text)` |
 | High score | `--o-highscore-podium-second-bg` | `$o-hs-podium-second-bg` | `#C0C0C0` (base colour) |
 | High score | `--o-highscore-podium-third-bg` | `$o-hs-podium-third-bg` | `#CD7F32` (base colour) |
 | High score | `--o-highscore-bar-myself-hover` | `$o-hs-histogram-bar-myself-hover-color` | `#4C85D4` (base colour) |
 | High score | `--o-highscore-bar-other-hover` | `$o-hs-histogram-bar-other-hover-color` | `#919191` (base colour) |
+| High score | `--o-highscore-podium-border` | `#D9D9D9` | `#D9D9D9` (base colour) |
+| High score | `--o-highscore-rank-first` | `$o-hs-rank-first-color` | `#666666` (base colour) |
+| High score | `--o-highscore-rank-second` | `$o-hs-rank-second-color` | `#666666` (base colour) |
+| High score | `--o-highscore-rank-third` | `$o-hs-rank-third-color` | `#666666` (base colour) |
+| High score | `--o-highscore-histogram-text` | `$o-hs-histogram-text-color` | `#888888` (base colour) |
+| High score | `--o-highscore-histogram-axis` | `$o-hs-histogram-axis-color` | `#888888` (base colour) |
+| High score | `--o-highscore-bar-other` | `$o-hs-histogram-bar-other-color` | `#777777` (base colour) |
+| High score | `--o-highscore-bar-empty` | `$o-hs-histogram-bar-empty-color` | `#000000` (base colour) |
 | Immunity proof | `--o-immunity-proof-validated-bg` | `$o-ip-validated-bg-color` | `#61E868` (base colour) |
 | Immunity proof | `--o-immunity-proof-claimed-bg` | `$o-ip-claimed-bg-color` | `#FFB100` (base colour) |
 | Immunity proof | `--o-immunity-proof-none-bg` | `$o-ip-none-bg-color` | `#E82A0C` (base colour) |
@@ -1881,17 +2148,52 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Portfolio | `--o-portfolio-lead-border` | `$o-portfolio-lead-border-color` | `#D9D9D9` (base colour) |
 | Portfolio | `--o-portfolio-lead-ended-bg` | `$o-portfolio-lead-ended-background-color` | `#EEB1B4` (base colour) |
 | Portfolio | `--o-portfolio-lead-ended-border` | `$o-portfolio-lead-ended-border-color` | `#E5878C` (base colour) |
+| Projects | `--o-proj-avatar-fg` | `$o-proj-avatar-color` | `var(--o-white)` |
+| Projects | `--o-proj-timeline-overdue` | `$o-proj-timeline-overdue-color` | `var(--o-state-danger-bg)` |
+| Projects | `--o-proj-timeline-today` | `$o-proj-timeline-today-color` | `var(--o-state-neutral-bg)` |
+| Portfolio | `--o-portfolio-assignment` | `$o-portfolio-assignment-color` | `var(--o-state-danger-bg)` |
+| Portfolio | `--o-portfolio-assignment-bg` | `$o-portfolio-assignment-background-color` | `var(--o-state-danger-soft-bg)` |
+| Portfolio | `--o-portfolio-media-content-bg` | `$o-portfolio-media-content-background-color` | `#F9FAFB` (base colour) |
+| Portfolio | `--o-media-version-label-border` | `$o-media-version-label-color` | `var(--o-state-neutral-text)` |
+| Portfolio | `--o-media-version-label-fg` | `$o-media-version-label-text` | `var(--o-state-neutral-text)` |
+| Portfolio | `--o-media-version-label-bg` | `$o-media-version-label-bg` | `var(--o-state-neutral-soft-bg)` |
 | Practice | `--o-practice-challenge-progress-bg` | - | `var(--o-primary)` |
 | Practice | `--o-practice-level-disc` | - | `var(--o-primary)` |
 | Practice | `--o-practice-play-main-border` | - | `var(--o-primary)` |
 | Practice | `--o-practice-rank-me` | - | `var(--o-primary)` |
 | Practice | `--o-practice-icon` | `#CCCCCC` | `#CCCCCC` (base colour) |
+| Practice | `--o-practice-progress-not-bg` | `$o-practice-progress-not-bg-color` | `#CCCCCC` (base colour) |
+| Practice | `--o-practice-progress-l1-bg` | `$o-practice-progress-l1-bg-color` | `var(--o-cyan-400)` |
+| Practice | `--o-practice-progress-l2-bg` | `$o-practice-progress-l2-bg-color` | `var(--o-magenta-700)` |
+| Practice | `--o-practice-progress-l3-bg` | `$o-practice-progress-l3-bg-color` | `var(--o-orange-400)` |
+| Practice | `--o-practice-progress-l4-bg` | `$o-practice-progress-l4-bg-color` | `var(--o-yellow-400)` |
+| Practice | `--o-practice-progress-l5-bg` | `$o-practice-progress-l5-bg-color` | `var(--o-lime-400)` |
+| Practice | `--o-practice-play-bg` | `$o-practice-play-bg-color` | `#F9FAFB` (base colour) |
+| Practice | `--o-practice-play-border` | `$o-practice-play-border-color` | `#E4E7EC` (base colour) |
+| Practice | `--o-practice-play-main-bg` | `$o-practice-play-main-bg-color` | `color-mix(in srgb, var(--o-primary) 10%, transparent)` (base value) |
+| Practice | `--o-practice-play-start-link-bg` | `$o-practice-play-start-link-bg-color` | `#F2F4F7` (base colour) |
 | Rating | `--o-rating-star` | `o-palette("yellow", 400)` | `var(--o-yellow-400)` |
 | Room management | `--o-room-status-inactive` | `$gray-light` | `#777777` (base colour) |
+| Users and authentication | `--o-user-info-portrait-border` | `#FFFFFF` | `var(--o-white)` |
+| Users and authentication | `--o-user-initials-fg` | `$o-user-initials-color` | `var(--o-white)` |
+| Users and authentication | `--o-user-initials-base-bg` | `$o-user-initials-base-bg-color` | `#667085` (base colour) |
+| Users and authentication | `--o-user-info-profile-border` | `#CCCCCC` | `#CCCCCC` (base colour) |
+| Users and authentication | `--o-user-status-inactive-border` | `o-state-color("inactive", "border", "tint")` | `var(--o-slate-500)` |
+| Users and authentication | `--o-user-status-deleted-border` | `o-state-color("inactive", "border", "dark")` | `var(--o-slate-800)` |
+| Users and authentication | `--o-user-info-border` | `#D4D4D4` | `#D4D4D4` (base colour) |
+| Users and authentication | `--o-user-info-divider-border` | - | `var(--o-user-info-border)` |
+| Users and authentication | `--o-panel-authentication-border` | `#E4E7EC` | `#E4E7EC` (base colour) |
+| Users and authentication | `--o-authentication-level1` | `$o-authentication-color-level1` | `#793E02` (base colour) |
+| Users and authentication | `--o-authentication-level2` | `$o-authentication-color-level2` | `#0E375F` (base colour) |
+| Users and authentication | `--o-authentication-level3` | `$o-authentication-color-level3` | `#274E15` (base colour) |
 | Selectus | `--o-selectus-review-glow` | - | `var(--o-primary)` |
 | Selectus | `--o-selectus-review-comment-link` | - | `var(--o-link)` |
 | Selectus | `--o-selectus-review-comments-bg` | `$navbar-default-bg` | `var(--o-bg)` |
 | Selectus | `--o-selectus-review-comments-border` | `$navbar-default-border` | `#EAECF0` (base colour) |
+| Selectus | `--o-selectus-onhold` | `$o-selectus-onhold-color` | `#9E9E9E` (base colour) |
+| Selectus | `--o-selectus-review-comment-glow` | `$o-selectus-review-comment-glowing-color` | `var(--o-state-warning-bg)` |
+| Selectus | `--o-selectus-review-comment-date` | `$o-selectus-review-comment-date-color` | `#777777` (base colour) |
+| Selectus | `--o-selectus-mail-disabled` | `$o-selectus-mail-disabled-color` | `#9E9E9E` (base colour) |
 | Selectus | `--o-selectus-rating-a-bg` | `green` | `#008000` (base colour) |
 | Selectus | `--o-selectus-rating-a-fg` | `white` | `var(--o-white)` |
 | Selectus | `--o-selectus-rating-b-bg` | `#FFCD00` | `#FFCD00` (base colour) |
@@ -1919,10 +2221,19 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Selectus | `--o-selectus-status-deactivated` | `#CCCCCC` | `#CCCCCC` (base colour) |
 | Tests and question pool | `--o-drawing-border` | - | `var(--o-primary)` |
 | Tests and question pool | `--o-drawing-select-border` | - | `var(--o-primary)` |
+| Tests and question pool | `--o-drawing-select-bg` | `$o-drawing-select-bg` | `color-mix(in srgb, var(--o-primary) 50%, transparent)` (base value) |
 | Tests and question pool | `--o-qpool-arrow-selected-bg` | - | `var(--o-navbar-link-active-bg)` |
 | Tests and question pool | `--o-qpool-arrow-selected-fg` | - | `var(--o-navbar-link-active)` |
+| Tests and question pool | `--o-qpool-arrow-bg` | `$o-qpool-arrow-bg-color` | `var(--o-white)` |
+| Tests and question pool | `--o-qpool-arrow-draft-border` | `o-state-color("neutral", "border", "tint")` | `var(--o-blue-500)` |
 | Tests and question pool | `--o-qti-attempts` | - | `var(--o-text-muted)` |
 | Tests and question pool | `--o-qti-gap-border` | `$o-qti-gap-border-color` | `var(--o-border-strong)` |
+| Tests and question pool | `--o-qti-text-entry-border` | `$o-qti-textEntryInteraction-border-color` | `var(--o-qti-gap-border)` |
+| Tests and question pool | `--o-qti-text-entry-bg` | `$o-qti-textEntryInteraction-bg` | `var(--o-white)` |
+| Tests and question pool | `--o-qti-text-entry-fg` | `$o-qti-textEntryInteraction-color` | `var(--o-text)` |
+| Tests and question pool | `--o-qti-text-entry-filled-fg` | `$o-qti-textEntryInteraction-filled-color` | `var(--o-text)` |
+| Tests and question pool | `--o-qti-text-entry-filled-bg` | `$o-qti-textEntryInteraction-filled-bg` | `var(--o-state-neutral-soft-bg)` |
+| Tests and question pool | `--o-qti-text-entry-filled-border` | `$o-qti-textEntryInteraction-filled-border-color` | `var(--o-state-neutral-soft-border)` |
 | Tests and question pool | `--o-qti-gap-drag-border` | - | `var(--o-primary)` |
 | Tests and question pool | `--o-qti-gap-selected-border` | - | `var(--o-primary)` |
 | Tests and question pool | `--o-qti-text-gap-border` | `#000000` | `#000000` (base colour) |
@@ -1945,19 +2256,73 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Tests and question pool | `--o-qti-status-correct` | - | `var(--o-state-success-text)` |
 | Tests and question pool | `--o-qti-status-incorrect` | - | `var(--o-state-danger-text)` |
 | Tests and question pool | `--o-qti-status-review` | - | `var(--o-state-warning-text)` |
+| Tests and question pool | `--o-qti-status-ended` | `$o-qti-status-ended-color` | `var(--o-state-finished-text)` |
+| Tests and question pool | `--o-qti-status-invalid` | `$o-qti-status-invalid-color` | `var(--o-state-danger-text)` |
+| Tests and question pool | `--o-qti-status-not-presented` | `$o-qti-status-notPresented-color` | `var(--o-slate-500)` |
+| Tests and question pool | `--o-qti-status-not-answered` | `$o-qti-status-notAnswered-color` | `var(--o-state-critical-text)` |
 | Tests and question pool | `--o-qti-bad-response-warning` | `$o-qti-badResponse-warning-color` | `var(--o-state-warning-text)` |
+| Tests and question pool | `--o-qti-bad-response` | `$o-qti-badResponse-color` | `var(--o-state-danger-text)` |
 | Tests and question pool | `--o-qti-success-bg` | `$o-qti-success` | `var(--o-state-success-bg)` |
 | Tests and question pool | `--o-qti-failure-bg` | `$o-qti-failure` | `var(--o-state-warning-bg)` |
 | Tests and question pool | `--o-qti-error-bg` | `$o-qti-error` | `var(--o-state-danger-bg)` |
 | Tests and question pool | `--o-qti-error-fg` | - | `var(--o-state-danger-fg)` |
+| Tests and question pool | `--o-qti-menu-bg` | `$o-qti-menu-bg` | `var(--o-white)` |
+| Tests and question pool | `--o-qti-menu-border` | `$o-qti-menu-border-color` | `var(--o-toolbar-border)` |
+| Tests and question pool | `--o-qti-run-infos-bg` | `$o-qti-run-infos-bg` | `var(--o-qti-menu-bg)` |
+| Tests and question pool | `--o-qti-run-infos-border` | `$o-qti-run-infos-border-color` | `var(--o-qti-menu-border)` |
+| Tests and question pool | `--o-qti-run-infos-progress-bg` | `$o-qti-run-infos-progress-bg` | `#EEEEEE` (base colour) |
+| Tests and question pool | `--o-qti-run-infos-score-progress-bg` | `$o-qti-run-infos-score-progress-color` | `var(--o-progress-bar-neutral-bg)` |
+| Tests and question pool | `--o-qti-run-infos-question-progress-bg` | `$o-qti-run-infos-question-progress-color` | `var(--o-progress-bar-neutral-bg)` |
+| Tests and question pool | `--o-qti-item-title-bg` | `$o-qti-item-title-bg` | `var(--o-qti-menu-bg)` |
+| Tests and question pool | `--o-qti-item-title-border` | `$o-qti-item-title-border-color` | `var(--o-qti-menu-border)` |
+| Tests and question pool | `--o-qti-item-border` | `$o-qti-item-border-color` | `var(--o-qti-menu-border)` |
+| Tests and question pool | `--o-qti-item-controls-bg` | `$o-qti-item-controls-bg` | `var(--o-qti-menu-bg)` |
+| Tests and question pool | `--o-qti-item-controls-border` | `$o-qti-item-controls-border-color` | `var(--o-qti-menu-border)` |
+| Tests and question pool | `--o-qti-item-max-score-border` | `$o-qti-item-max-score-border-color` | `#000000` (base colour) |
+| Tests and question pool | `--o-qti-order-source-bg` | `$o-qti-order-source-bg` | `var(--o-state-warning-soft-bg)` |
+| Tests and question pool | `--o-qti-order-sources-bg` | `$o-qti-order-sources-bg` | `var(--o-qti-run-infos-bg)` |
+| Tests and question pool | `--o-qti-order-sources-border` | `$o-qti-order-sources-border-color` | `var(--o-qti-run-infos-border)` |
+| Tests and question pool | `--o-qti-order-target-bg` | `$o-qti-order-target-bg` | `var(--o-state-neutral-soft-bg)` |
+| Tests and question pool | `--o-qti-order-target-border` | `$o-qti-order-target-border-color` | `var(--o-state-neutral-bg)` |
+| Tests and question pool | `--o-qti-choice-tablelayout-bg` | `$o-qti-choice-tablelayout-bg` | `#E7E7E7` (base colour) |
+| Tests and question pool | `--o-qti-match-kprim-correct-bg` | `$o-qti-match-kprim-correct-bg` | `var(--o-state-success-soft-bg)` |
+| Tests and question pool | `--o-qti-match-sources-bg` | `$o-qti-match-sources-bg` | `var(--o-qti-run-infos-bg)` |
+| Tests and question pool | `--o-qti-match-sources-border` | `$o-qti-match-sources-border-color` | `var(--o-qti-run-infos-border)` |
+| Tests and question pool | `--o-qti-match-source-bg` | `$o-qti-match-source-bg` | `var(--o-state-warning-soft-bg)` |
+| Tests and question pool | `--o-qti-match-selected-border` | `$o-qti-match-selected-border-color` | `var(--o-state-warning-bg)` |
+| Tests and question pool | `--o-qti-match-drag-border` | `$o-qti-match-drag-border-color` | `var(--o-state-warning-bg)` |
+| Tests and question pool | `--o-qti-match-target-bg` | `$o-qti-match-target-bg` | `var(--o-state-neutral-soft-bg)` |
+| Tests and question pool | `--o-qti-match-target-border` | `$o-qti-match-target-border-color` | `var(--o-state-neutral-bg)` |
+| Tests and question pool | `--o-qti-match-choosed-border` | `$o-qti-match-choosed-border-color` | `#777777` (base colour) |
+| Tests and question pool | `--o-qti-match-true-false-right-bg` | `$o-qti-match-true-false-right-bg` | `var(--o-state-success-soft-bg)` |
+| Tests and question pool | `--o-qti-hottext-bg` | `$o-qti-hottext-bg` | `var(--o-qti-menu-bg)` |
+| Tests and question pool | `--o-qti-hottext-border` | `$o-qti-hottext-border-color` | `var(--o-qti-menu-border)` |
+| Tests and question pool | `--o-qti-hottext-checked-bg` | `$o-qti-hottext-checked-bg` | `var(--o-state-neutral-soft-bg)` |
+| Tests and question pool | `--o-qti-hottext-checked-border` | `$o-qti-hottext-checked-border-color` | `var(--o-state-neutral-soft-border)` |
+| Tests and question pool | `--o-qti-highlight-border` | `$o-qti-highlight-color` | `var(--o-state-danger-bg)` |
+| Tests and question pool | `--o-qti-box-text` | `$o-qti-box-color` | `#666666` (base colour) |
+| Tests and question pool | `--o-qti-box-bg` | `$o-qti-box-bg` | `#EEEEEE` (base colour) |
+| Tests and question pool | `--o-qti-editor-box-border` | `$o-qti-editor-box-border-color` | `#E4E7EC` (base colour) |
+| Tests and question pool | `--o-qti-log-viewer-manual-correction-bg` | `$o-qti-log-viewer-manual-correction-bg-color` | `#FEFFEE` (base colour) |
+| Tests and question pool | `--o-qti-inline-choice-print-border` | `$o-qti-inline-choice-print-border-color` | `#999999` (base colour) |
 | Topic broker | `--o-topicbroker-enrolled` | - | `var(--o-state-success-text)` |
 | Topic broker | `--o-topicbroker-fillin` | - | `var(--o-text-muted)` |
 | Topic broker | `--o-topicbroker-waiting` | - | `var(--o-state-warning-text)` |
 | Topic broker | `--o-topicbroker-title-abbr-bg` | - | `var(--o-btn-primary-bg)` |
 | Topic broker | `--o-topicbroker-title-abbr-fg` | - | `var(--o-btn-primary-fg)` |
+| Topic broker | `--o-topicbroker-title-abbr-border` | `$btn-primary-color` | `var(--o-btn-primary-fg)` |
+| Topic broker | `--o-topicbroker-placeholder-title-abbr-border` | `#FFFFFF` | `var(--o-white)` |
+| Topic broker | `--o-topicbroker-details-separator-border` | `$panel-default-border` | `var(--o-panel-default-border)` |
+| Topic broker | `--o-topicbroker-weighting-grid-border` | `$panel-default-border` | `var(--o-panel-default-border)` |
 | User authentication | `--o-authentication-label-bg` | - | `var(--o-primary)` |
 | Video | `--o-video-slider-bg` | `$gray` | `#555555` (base colour) |
 | Video | `--o-video-bright` | `$o-video-color` | `#FCFCFC` (base colour) |
+| Video | `--o-video-border` | `$o-video-border-color` | `#FCFCFC` (base colour) |
+| Video | `--o-video-controls-bg` | `$o-video-controls-bg` | `rgba(50, 50, 50, 0.95)` (base colour) |
+| Video | `--o-video-marker-bg` | `$o-video-marker-bg-color` | `#EAECF0` (base colour) |
+| Video | `--o-video-time-marker-default-bg` | `$o-video-time-marker-default-bg-color` | `var(--o-state-neutral-bg)` |
+| Video | `--o-video-timeline-correct-bg` | `$o-video-timeline-correct-bg` | `var(--o-state-success-bg)` |
+| Video | `--o-video-timeline-incorrect-bg` | `$o-video-timeline-incorrect-bg` | `var(--o-state-danger-bg)` |
 | Video | `--o-recorder-decoration` | `#000000` | `#000000` (base colour) |
 | Video | `--o-recorder-recording` | `#FF9999` | `#FF9999` (base colour) |
 | Video | `--o-recorder-record` | `#FF0000` | `#FF0000` (base colour) |
@@ -1968,6 +2333,12 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Video | `--o-recorder-symbol-active` | `#404040` | `#404040` (base colour) |
 | Video | `--o-video-category-active-bg` | `#DDDDDD` | `var(--o-gray-200)` |
 | Video task | `--o-video-startbox-main-border` | - | `var(--o-primary)` |
+| Video task | `--o-video-startbox-main-bg` | `$o-video-startbox-main-bg-color` | `color-mix(in srgb, var(--o-primary) 10%, transparent)` (base value) |
+| Video task | `--o-video-practice` | `$o-video-color-practice` | `var(--o-white)` |
+| Video task | `--o-video-recording-info-bg` | `$o-color-note-text-bg` | `#FAFAFB` (base colour) |
+| Video task | `--o-video-recording-info-fg` | `$o-color-note` | `#666666` (base colour) |
+| Video task | `--o-video-correct-segments` | `$o-video-correct-segments-color` | `var(--o-state-success-text)` |
+| Video task | `--o-video-notcorrect-segments` | `$o-video-notcorrect-segments-color` | `var(--o-state-danger-text)` |
 | Video task | `--o-videotask-marker-assign-bg` | `$gray-dark` | `#333333` (base colour) |
 
 **Shade tokens:** a shade token holds the darker or lighter colour of an element token, a semantic token or a state token. `$o-token-shades` in `modules/_tokens.scss` holds 150 shade tokens in four forms: `"name": ("token", percent)` is darker (114 tokens), `"name": ("token", percent, "lighten")` is lighter (27), `"name": ("token", angle, "hue")` turns the hue with `adjust-hue()` (1, a stop of a gradient), `"name": ("token", percent, "state")` is a state fill: darker, lighter by the same amount when it cannot get darker (8, the hover and pressed fills of the light buttons and the table filters, `o-contrast-shade()`, decision D20). The compile computes the colour from the colour of the token and emits a literal value. The browser does no colour maths. The name is the name of the token and a suffix:
@@ -2230,7 +2601,7 @@ Four element colours stay Sass in the modules, because client themes set a value
 
 `$o-button-primary-light-color` and `$o-button-danger-light-color` (default from `o-a11y-color()`) feed the tokens `btn-primary-light-fg` and `btn-danger-light-fg` of the light buttons. Three modules still read a Sass variable with a default from `o-a11y-color()`: `_topicbroker.scss` (`$o-button-primary-light-color`), `_course.scss` (`$o-edu-type-standard-course-color`) and `_dialog_coursenode.scss` (`$o-dialog-cn-label-new-color`).
 
-**Contrast pairs:** `$o-token-contrast-pairs` in `modules/_tokens.scss` holds 169 pairs of semantic, element and shade tokens. A loop over `$o-states` adds 5 pairs per state (40 pairs): `fg` on `bg`, `soft-fg` on `soft-bg`, `text` on white and on `soft-bg` (4.5:1), `border` on white (3:1). The compile knows 209 pairs. The 169 pairs of the list (3:1 for the focus rings, the handles of the toggle switch and the icons on the navigation bar and in its "More" dropdown):
+**Contrast pairs:** `$o-token-contrast-pairs` in `modules/_tokens.scss` holds 278 pairs of semantic, element and shade tokens. A loop over `$o-states` adds 5 pairs per state (40 pairs): `fg` on `bg`, `soft-fg` on `soft-bg`, `text` on white and on `soft-bg` (4.5:1), `border` on white (3:1). The compile knows 318 pairs. The 278 pairs of the list (3:1 for the focus rings, the handles of the toggle switch and the icons on the navigation bar and in its "More" dropdown):
 
 | Foreground | Background | Ratio |
 |---|---|---|
@@ -2335,6 +2706,51 @@ Four element colours stay Sass in the modules, because client themes set a value
 | `qti-text-gap-border` | `bg` | 3:1 |
 | `selectus-status-preparation`, `-published`, `-published-screening`, `-closed-screening`, `-closed`, `-reporting` | `bg` | 3:1 |
 | `recorder-record`, `recorder-record-hover`, `recorder-symbol`, `recorder-symbol-hover`, `recorder-symbol-active` | `bg` | 3:1 |
+| `box-note-border` | `box-note-bg` | 3:1 |
+| `box-tip-border` | `box-tip-bg` | 3:1 |
+| `message-line-warning-fg` | `message-line-warning-bg` | 4.5:1 |
+| `message-line-error-fg` | `message-line-error-bg` | 4.5:1 |
+| `dialog-header` | `dialog-header-bg` | 4.5:1 |
+| `login-lead`, `login-lead-header` | `bg` | 4.5:1 |
+| `login-help-link` | `login-help-bg` | 4.5:1 |
+| `widget-figure-desc` | `bg` | 4.5:1 |
+| `navbar-logout` | `bg-raised` | 4.5:1 |
+| `offcanvas-link` | `$o-offcanvas-bg`, `offcanvas-dropdown-bg` | 4.5:1 |
+| `offcanvas-link-active` | `offcanvas-link-active-bg` | 4.5:1 |
+| `tree-insertion-source-fg` | `tree-insertion-source-bg` | 4.5:1 |
+| `panel-placeholder-fg` | `panel-placeholder-bg` | 4.5:1 |
+| `icon-changes`, `icon-mandatory`, `certification-certified`, `certification-certifying`, `portfolio-assignment`, `im-status-available`, `im-status-dnd`, `im-status-unavailable`, `qti-status-ended`, `qti-status-invalid`, `lecture-rollcall-pending` | `bg` | 3:1 |
+| `box-note-text` | `box-note-bg` | 4.5:1 |
+| `qti-box-text` | `qti-order-sources-bg`, `qti-order-target-bg` | 4.5:1 |
+| `coursesite-meta-author`, `video-correct-segments`, `video-notcorrect-segments` | `bg` | 4.5:1 |
+| `practice-progress-l2-bg` | `bg` | 3:1 |
+| `datecomp-month-fg` | `datecomp-month-bg` | 4.5:1 |
+| `day-nav-day-selected-fg` | `day-nav-day-selected-bg` | 4.5:1 |
+| `empty-indicator`, `colored-icon-blue`, `-green`, `-orange`, `coursesite-progress-icon`, `user-status-inactive-border`, `user-status-deleted-border` | `bg` | 3:1 |
+| `radial-progress-number`, `radial-progress-percentage-{success,neutral,info,danger,warning}` | `radial-progress-inset-bg` | 4.5:1 |
+| `figure-card-icon-{blue,green,yellow,orange,red,grey}` | `figure-card-icon-{hue}-bg` | 3:1 |
+| `im-summary-fg` | `im-summary-bg` | 4.5:1 |
+| `im-groupchat-vip`, `im-groupchat-anonymous` | `im-chat-message-bg` | 4.5:1 |
+| `edu-type-*-course` (8), `entry-benefit`, `proj-timeline-overdue`, `proj-timeline-today`, `authentication-level{1,2,3}` | `bg` | 4.5:1 |
+| `lp-pagination-done-fg` | `lp-pagination-done-bg` | 4.5:1 |
+| `curriculum-avatar-fg` | `curriculum-avatar-bg` | 4.5:1 |
+| `curriculum-widget-template-label` | `curriculum-widget-template-label-bg` | 4.5:1 |
+| `highscore-rank-first`, `highscore-rank-second` | `highscore-podium-first-bg`, `-second-bg` | 3:1 (large number) |
+| `user-initials-fg` | `user-initials-base-bg` | 4.5:1 |
+| `content-fieldset-legend`, `lecture-excluded`, `creditpoint-withdraw`, `creditpoint-deposit`, `course-quota-intern-quota`, `course-quota-intern`, `course-quota-extern`, `todo-overdue`, `quality-unrated`, `forum-quote`, `citation-quote`, `qti-bad-response` | `bg` | 4.5:1 |
+| `dropdown-link-active` | `dropdown-link-active-bg` | 4.5:1 |
+| `autocomplete-fg` | `autocomplete-bg` | 4.5:1 |
+| `color-picker-selected-fg` | `primary` | 4.5:1 |
+| `tag-fg` | `tag-bg`, `tag-bg-hover`, `tag-bg-active` | 4.5:1 |
+| `competence-fg` | `competence-bg`, `competence-bg-hover` | 4.5:1 |
+| `media-version-label-fg` | `media-version-label-bg` | 4.5:1 |
+| `qti-text-entry-fg` | `qti-text-entry-bg` | 4.5:1 |
+| `qti-text-entry-filled-fg` | `qti-text-entry-filled-bg` | 4.5:1 |
+| `highscore-position-title` | `bg` | 3:1 (large text) |
+| `qti-status-not-presented`, `qti-status-not-answered` | `bg` | 3:1 |
+| `qpool-arrow-draft-border` | `qpool-arrow-bg` | 3:1 |
+| `speedometer-default-text`, `speedometer-success-text`, `speedometer-warning-text`, `speedometer-danger-text` | `bg` | 3:1 (value, 48px) |
+| `video-recording-info-fg` | `video-recording-info-bg` | 4.5:1 |
 
 The compile checks a pair only when one of its colours differs from the default, with the rules of the client override below.
 
@@ -2381,14 +2797,16 @@ The compile stops for an unknown token, an unknown palette step, a value that is
 
 The contrast check covers the palette, the theme colours and `$o-tokens`. `$o-contrast-check` in `_functions.scss` sets its mode: `"error"` (default) stops the compile at a pair below its ratio, `"warn"` reports each such pair as a Sass warning and accepts it. A client theme whose client insists on colours with too little contrast sets `$o-contrast-check: "warn";` in its config; the theme then does not meet WCAG 2.1 AA. The `light` and `openolat` themes always use `"error"`.
 
-**Modules:** a module reads a token where a token has exactly the same colour: `color: $text-muted` is now `color: var(--o-text-muted)`, `o-state-color("success", "text")` is `var(--o-state-success-text)`, `o-palette("blue", 500)` is `var(--o-blue-500)`. A colour of an element with an element token reads that token, not the shared token of the same colour: `var(--o-selectus-review-glow)`, not `var(--o-primary)`. The buttons read their tokens through the mixin `button-variant`. An override of a token changes every module rule that reads the token. `theme_color_baseline.properties` counts the old colour references that remain: 944 in 80 modules (1102 before decision D29). These colours stay Sass, because no exact token exists or a token changes the colour:
+**Modules:** a module reads a token where a token has exactly the same colour: `color: $text-muted` is now `color: var(--o-text-muted)`, `o-state-color("success", "text")` is `var(--o-state-success-text)`, `o-palette("blue", 500)` is `var(--o-blue-500)`. A colour of an element with an element token reads that token, not the shared token of the same colour: `var(--o-selectus-review-glow)`, not `var(--o-primary)`. The buttons read their tokens through the mixin `button-variant`. An override of a token changes every module rule that reads the token. `theme_color_baseline.properties` counts the old colour references that remain: 140 in 30 modules (152 before the follow-up of slice 19 that counts names with `_`, 302 before slice 19 with the pattern of decision D32 E1, 285 with the pattern before, 501 before slice 18, 851 before slice 17, 944 before slice 16, 1102 before decision D29). These colours stay Sass, because no exact token exists or a token changes the colour:
 
 - the literals that decision D29 keeps: the 5 hotspot styles of the QTI editor (they copy the colours of `hotspotInteraction.html`, a comment names the template), the image styles, figures and text markers stored in content, the brand colours of third-party logins and of XING, the developer tools (`_devel.scss`) and the print sheets (member list, offline test);
 - the rules without a reader and the invalid declarations of the B4 review (block B4-18, 45 literals in 11 files): they go after a check of the stored HTML content;
 - the copy of the edu-sharing stylesheet (`_edusharing.scss`);
-- the four element colours of the links section above and the three Sass variables with a default from `o-a11y-color()`;
+- the four element colours of the links section above (`$o-content-link-hover-color`, `$o-footer-default-link-hover-color`, `$o-navbar-login-color`, ...) and the three Sass variables with a default from `o-a11y-color()`;
+- the rules of the mixins that `email.css` reads (`o-make-message-box` in `_mixins.scss`; `o-alert-variant` reads `var(--o-text)` since slice 19, `email.css` does not include it) and the `darken()` of `_button_variant.scss` for a colour argument;
 - values inside Sass functions and the arguments of mixins that do not take tokens;
-- `o-state-color()` with the styles `tint`, `light` and `dark` (no token).
+- `o-state-color()` with the styles `tint`, `light` and `dark` in a function or a mixin (no state token; a rule reads an element token with the Sass expression as default: `lecture-rollcall-pending`, `user-status-inactive-border`, `user-status-deleted-border`);
+- the variables with the default `none` (`$o-tree-bg`, `$o-tree-link-bg`, `$o-tree-link-active-bg`) or `inherit` (`$o-main-right-bg`, `$o-main-center-bg`) and `$o-navbar-border-color` (client themes set `none`), and the gradient stop list `$o-login-form-bg-gradient-steps` (not counted, decision D31). Since OO-10043 slice 17 a named variable with a translucent `color-mix()` default feeds an element token with that default (`login-bg`, `login-infomessage-bg`, `imagebg-text-bg`, `fact-icon-bg`, `drawing-select-bg`, `practice-play-main-bg`, `video-startbox-main-bg`; D31 Q2), and the shorthand border variables are width, style and a colour token: `border: $o-card-border-width $o-card-border-style var(--o-card-border)` (`card-border`, `widget-border`, `fact-sheet-border`, `fact-sheet-separator-border`, `dashboard-widget-border`, `table-details-container-border`, `activity-{add,modify,remove}-border`, `repo-info-border`, `repo-info-separator-border`, `editor-layout-inner-{h,v}-border`; D31 Q1). The shorthands are removed: a theme that sets one gets one compile warning per stylesheet, the value has no effect. `$o-login-border` stays valid (default `null`): when a theme sets it, the login box uses the value as it is (`o-login-border()` in `_config.scss`) and the compile prints a warning. Since slice 18 the same holds for the course, curriculum, user, chat, high score, projects, radial progress, Selectus and various modules: 14 more shorthands are removed (colour tokens `empty-border`, `icon-panel-border`, `lp-border`, `curriculum-widget-border`, `curriculum-widget-card-border`, `assessment-inspection-border`, `highscore-podium-border` of `$o-hs-podium-border`, `user-info-portrait-border` of `$o-user-info-portrait-border` and `$o-users-portrait-img-border`, `user-info-border`, `user-info-profile-border`, `user-info-divider-border`, `panel-authentication-border`, `indicator-separator-border`), and 8 more translucent defaults feed a token (`brand-box-bg`, `empty-panel-icon-bg`, `figure-card-icon-bg`, `course-style-cover-text-bg`, `lp-bg`, `lp-pagination-in-progress-bg`, `coursesite-row-hover-bg`, `catalog-header-box-bg`). The gradients `$o-not-available-bg` and `$o-cat2-header-noimage-bg` stay the customisation point (decision D11), their stops read tokens. Since slice 19 the other modules read element tokens of their Sass variables too, and 8 more shorthands are removed (colour tokens `step-border` of `$o-step-border` with `$o-step-border-line-width`, `-style`; `ac-billing-address-border` of `$o-ac-ba-border`; `folder-row-thumbnail-image-border`; `swiper-button-border`; `topicbroker-details-separator-border`, `topicbroker-title-abbr-border`, `topicbroker-placeholder-title-abbr-border`, `topicbroker-weighting-grid-border` of the `$o-tb-*` shorthands). `$o-hs-position-title-color` stays valid (default `null`, decision D32 E2): the switch is `$o-hs-position-title-gradient` (default `true`), the colour without the gradient is the token `highscore-position-title`; a theme that sets the old variable keeps its gradient or colour (`o-hs-position-title-gradient()`, `o-hs-position-title-color()` in `_config.scss`) and the compile prints a warning.
 
 **Colour maths:** a hover, active, edge, tint or gradient colour of a token reads a shade token (see **Shade tokens** above). A translucent colour mixes its token with `transparent` (see **Translucent colours** above). A named `$o-*` colour variable with an opaque computed default (`$o-qti-match-selected-bg`, `$o-scope-toggle-on-bg-hover-color`, ...) feeds its own element token, and the default keeps its maths in `_config.scss`. `rgba(x, 0)` is the keyword `transparent`. A muted text reads `--o-text-muted`, a disabled text `--o-text-disabled`, never `lighten($text-color, ...)` (decision M9): the help texts of the file upload and of the TinyMCE dialogs, the unfiltered curriculum rows, the context help icon next to a label and the help tooltip (`chelp-tooltip`), the deleted course elements in the editor overview (`course-node-deleted`) and the disabled toolbar links (`toolbar-link-disabled`, `toolbar-nav-link-disabled`). The state label hovers of `_states.scss` keep `color-mix()` with black (decision M2).
 
@@ -2410,7 +2828,7 @@ OO-10043 removed 226 colour variables from `_config.scss` that nothing read (che
 
 `oo-docs.scss` (icons for the user manual) imports `palette_theme`, `palette_neutral`, `modules/palette_vars` and `modules/tokens`, because `_icons.scss` reads tokens.
 
-**Tests:** `ColorTokensTest` checks the compiled `light/theme.css`: the semantic, state and element tokens, the contrast pairs (`elementContrast` for the element tokens), the shade tokens of the buttons, each with the colour of `darken()`, for the light buttons and the table filters with the amount of `o-contrast-shade-amount()` (`buttonShadeTokens`), that the button rules read the tokens and the shade tokens (`buttonRulesReadTokens`), the shade tokens of the module colour maths, each with the colour of `darken()` or `lighten()` (`moduleShadeTokens`), that a rule reads each of them, that the translucent colours mix the token and that the muted texts read the text tokens (`colorMathRulesReadTokens`), that the gradient stops, the labels, the named variables and the translucent defaults of the remaining colour maths read tokens (`remainingColorMathRulesReadTokens`), that no module calls `o-a11y-color()` and that a rule reads each token with an adjusted text colour (`rulesReadAdjustedTextTokens`), that the link rules read the link tokens (`linkRulesReadTokens`), the light values of the new semantic tokens (`newSemanticTokenDefaults`) and the rules that read them (`surfaceRulesReadTokens`), the light values of the tokens of the Bootstrap colour variables and greys and a rule that reads each of them (`bootstrapComponentTokens`), the shadows, the dark modal layer and the light veils (`shadowAndVeilRulesReadTokens`), the 18 default steps of the neutral scale in all token files (`neutralScale`), that no module reads a Bootstrap state colour and that the rules read the state tokens (`stateRulesReadTokens`), that the Bootstrap state rules read the state tokens (`bootstrapStateRulesReadTokens`), the shade tokens of the state tokens and a rule that reads each of them (`stateShadeTokens`), the defaults of the danger, dirty and book button tokens and of the selected tags and the soft fills of the selected row and the right cells (`stateButtonTokens`), the tokens of the message boxes, the evaluation form, the portlet edit mode and the bad response warning (`messageBoxAndEvaluationTokens`), the rating stars, the shadow colour and the four contrast fixes of decision D4 (`decisionRulesReadTokens`), the selected competence, the hover, pressed and off states, the close icons of a tab, the dark tints, the immunity proof shadows, the navigation bar highlight, the peekview background, the not available visual and the removed dead block of `_config.scss` (decisions D8 to D11, `decisionD8ToD11RulesReadTokens`), the video comment layer, the text tokens of the hover and pressed states and their rules, the unchanged fills of light, the minimum amount of 3% and the selectus rating bars (decisions D12, D13, D15, `decisionD12D13D15RulesReadTokens`), the selectus abstention bar, the label of bar B, the rating marks and explanation texts and their contrast, the course style border, the shade function `"state"` of the 8 state fills with its model for a black fill and the navbar text (decisions D16 to D20, D23, `decisionD16ToD23RulesReadTokens`), the selectus bar A without a rule and its class in the Java code, the mark B and the letters B and C on a white, a striped and a hovered table row with their adjustment against the darkest row, the 8 state fills as the only shade tokens with the function `"state"` and the marks of no rating and of the abstention (decisions D25 to D28, `decisionD25ToD28Selectus`), the literal colours of the B4 review: per block the rules read the tokens of the recommended option, including the long selector lists of the file upload hover, the element tokens of the AI marks and the glows reference the state fills, the own tokens keep the colours of today, the new pairs pass, the kept literals and the rows of B4-18 are still in the SCSS (decision D29, `decisionD29LiteralsReadTokens`), the focus ring: the token default, the ring rule on `:focus-visible`, no ring of the browser, no halo or glow on a focused field, the inset rings, the navigation bar and footer tokens, the unchanged radio cards and no literal of the old focus colour in the theme SCSS (decision D24, `decisionD24FocusRing`), the other button rules (`otherButtonRulesReadTokens`), the compile warning for the old state variables and its switch (`legacyColorWarning`), that every token of `_tokens.scss` resolves to a colour (`tokensResolveToColors`), and that every `var(--o-*)` in `theme.css`, `content.css` and `oo-docs.css` of `light` and `openolat` has a definition (`referencesHaveDefinitions`). `ThemeColorRatchetTest` compares the old colour references per module with `theme_color_baseline.properties`: the baseline is 944 references in 80 modules. It counts `color-mix(` as colour maths (pattern `mix(`). It counts hex values, named colours, `$brand-*` (not a local variable such as `$brand-primary-bg`), the Bootstrap colour variables of all components (`$panel-*`, `$dropdown-*`, `$popover-*`, `$modal-*`, `$hr-border`, ...), the `$o-*` colour variables, colour maths, `rgb()` and `hsl()` literals and the compile-time colour functions (`o-a11y-color()`, `o-state-color()`, `o-palette()`, `o-swatch-color()`). It does not count variables with radius, width, height, padding, size, margin or offset in the name (`$btn-border-radius-base`, `$o-proj-header-background-height-max`), nor variables whose name ends with "style" (`$o-qti-match-source-border-style`: `dashed`). Since OO-10043 slice 10 the variables of the course element styles count (`$o-cn-style-bg`, `$o-cn-style-cover-text-bg`): "style" in the middle of a name is their namespace, not the property (test `countStyleVariables`). Slice 11 splits the shorthand `$o-cn-style-border` into `$o-cn-style-border-line-width`, `$o-cn-style-border-line-style` (not counted) and the token `course-style-border` (decision D19); a theme that still sets `$o-cn-style-border` gets one compile warning per stylesheet, the value has no effect. It does not count `_bootstrap.scss`: the file only hands the Sass variables to the Bootstrap import. The test `bootstrapHasNoOwnRules` fails when `_bootstrap.scss` gets a rule; put the rule into the module of its component.
+**Tests:** `ColorTokensTest` checks the compiled `light/theme.css`: the semantic, state and element tokens, the contrast pairs (`elementContrast` for the element tokens), the shade tokens of the buttons, each with the colour of `darken()`, for the light buttons and the table filters with the amount of `o-contrast-shade-amount()` (`buttonShadeTokens`), that the button rules read the tokens and the shade tokens (`buttonRulesReadTokens`), the shade tokens of the module colour maths, each with the colour of `darken()` or `lighten()` (`moduleShadeTokens`), that a rule reads each of them, that the translucent colours mix the token and that the muted texts read the text tokens (`colorMathRulesReadTokens`), that the gradient stops, the labels, the named variables and the translucent defaults of the remaining colour maths read tokens (`remainingColorMathRulesReadTokens`), that no module calls `o-a11y-color()` and that a rule reads each token with an adjusted text colour (`rulesReadAdjustedTextTokens`), that the link rules read the link tokens (`linkRulesReadTokens`), the light values of the new semantic tokens (`newSemanticTokenDefaults`) and the rules that read them (`surfaceRulesReadTokens`), the light values of the tokens of the Bootstrap colour variables and greys and a rule that reads each of them (`bootstrapComponentTokens`), the shadows, the dark modal layer and the light veils (`shadowAndVeilRulesReadTokens`), the 18 default steps of the neutral scale in all token files (`neutralScale`), that no module reads a Bootstrap state colour and that the rules read the state tokens (`stateRulesReadTokens`), that the Bootstrap state rules read the state tokens (`bootstrapStateRulesReadTokens`), the shade tokens of the state tokens and a rule that reads each of them (`stateShadeTokens`), the defaults of the danger, dirty and book button tokens and of the selected tags and the soft fills of the selected row and the right cells (`stateButtonTokens`), the tokens of the message boxes, the evaluation form, the portlet edit mode and the bad response warning (`messageBoxAndEvaluationTokens`), the rating stars, the shadow colour and the four contrast fixes of decision D4 (`decisionRulesReadTokens`), the selected competence, the hover, pressed and off states, the close icons of a tab, the dark tints, the immunity proof shadows, the navigation bar highlight, the peekview background, the not available visual and the removed dead block of `_config.scss` (decisions D8 to D11, `decisionD8ToD11RulesReadTokens`), the video comment layer, the text tokens of the hover and pressed states and their rules, the unchanged fills of light, the minimum amount of 3% and the selectus rating bars (decisions D12, D13, D15, `decisionD12D13D15RulesReadTokens`), the selectus abstention bar, the label of bar B, the rating marks and explanation texts and their contrast, the course style border, the shade function `"state"` of the 8 state fills with its model for a black fill and the navbar text (decisions D16 to D20, D23, `decisionD16ToD23RulesReadTokens`), the selectus bar A without a rule and its class in the Java code, the mark B and the letters B and C on a white, a striped and a hovered table row with their adjustment against the darkest row, the 8 state fills as the only shade tokens with the function `"state"` and the marks of no rating and of the abstention (decisions D25 to D28, `decisionD25ToD28Selectus`), the literal colours of the B4 review: per block the rules read the tokens of the recommended option, including the long selector lists of the file upload hover, the element tokens of the AI marks and the glows reference the state fills, the own tokens keep the colours of today, the new pairs pass, the kept literals and the rows of B4-18 are still in the SCSS (decision D29, `decisionD29LiteralsReadTokens`), the focus ring: the token default, the ring rule on `:focus-visible`, no ring of the browser, no halo or glow on a focused field, the inset rings, the navigation bar and footer tokens, the unchanged radio cards and no literal of the old focus colour in the theme SCSS (decision D24, `decisionD24FocusRing`), the framework modules: the rules read the element tokens of their Sass variables and the new pairs pass (OO-10043 slice 16, `frameworkModulesReadTokens`), the assessment and content modules, the translucent defaults and the split shorthand borders (OO-10043 slice 17, `assessmentAndContentModulesReadTokens`), the course, curriculum, user, chat, high score, projects, radial progress, Selectus and various modules (OO-10043 slice 18, `courseUserAndVariousModulesReadTokens`), the other modules, the toolbar, the high score switch and the variables with upper-case letters (OO-10043 slice 19, `otherModulesReadTokens`), the other button rules (`otherButtonRulesReadTokens`), the compile warning for the old state variables and its switch (`legacyColorWarning`), that every token of `_tokens.scss` resolves to a colour or to a `color-mix()` of a colour (`tokensResolveToColors`), and that every `var(--o-*)` in `theme.css`, `content.css` and `oo-docs.css` of `light` and `openolat` has a definition (`referencesHaveDefinitions`). `ThemeColorRatchetTest` compares the old colour references per module with `theme_color_baseline.properties`: the baseline is 140 references in 30 modules. It does not count `color-mix(`, the decided form of a translucent colour (decision M3); a Sass `mix(` or `color.mix(` counts (pattern `(?<![\w-])mix\(`, OO-10043 slice 17). It counts hex values, named colours, `$brand-*` (not a local variable such as `$brand-primary-bg`), the Bootstrap colour variables of all components (`$panel-*`, `$dropdown-*`, `$popover-*`, `$modal-*`, `$hr-border`, ...), the `$o-*` colour variables, colour maths, `rgb()` and `hsl()` literals and the compile-time colour functions (`o-a11y-color()`, `o-state-color()`, `o-palette()`, `o-swatch-color()`). It does not count variables with radius, width, height, padding, size, margin or offset in the name (`$btn-border-radius-base`, `$o-proj-header-background-height-max`), nor variables whose name ends with "style" (`$o-qti-match-source-border-style`: `dashed`), "gradient-to", "gradient-steps", "-img", "-position-left", "-position-top", "-ratio", "-break" or "-blend-mode" (the direction, the stop list, the image and the position of the login background; slice 17, decision D31; the ratio and the break point of the project header image and the blend mode of the catalog header, slice 18). The name classes of the patterns accept upper-case letters (slice 19, decision D32 E1: `$o-qti-textEntryInteraction-bg`, `$o-qti-badResponse-color`). Sass treats `_` and `-` in a name as equal, so the test replaces `_` by `-` in a variable name before the count (`$o-o_speedometer-danger-border-color`, `$o_color_note`; test `countUnderscoreVariables`). Since OO-10043 slice 10 the variables of the course element styles count (`$o-cn-style-bg`, `$o-cn-style-cover-text-bg`): "style" in the middle of a name is their namespace, not the property (test `countStyleVariables`). Slice 11 splits the shorthand `$o-cn-style-border` into `$o-cn-style-border-line-width`, `$o-cn-style-border-line-style` (not counted) and the token `course-style-border` (decision D19); a theme that still sets `$o-cn-style-border` gets one compile warning per stylesheet, the value has no effect. It does not count `_bootstrap.scss`: the file only hands the Sass variables to the Bootstrap import. The test `bootstrapHasNoOwnRules` fails when `_bootstrap.scss` gets a rule; put the rule into the module of its component.
 
 ## 27. SCSS Module Index
 
@@ -2835,3 +3253,7 @@ Colour epic OO-9989:
 | OO-10043 | Focus ring (D24): token `focus` reads `$o-focus-color` (`$brand-primary` adjusted to 3:1 on `$body-bg`; light `#2E6BBF`, 5.29:1); one ring `outline: 2px solid var(--o-focus); outline-offset: 2px` on `:focus-visible` for every control (`modules/_focus.scss`: `tab-focus` and `form-control-focus` replace the Bootstrap mixins; fallback `:where(:focus-visible)`); no halo and no glow on the form fields; inset ring for the controls that touch or that a container cuts, `currentColor` on a fill; new tokens `navbar-focus`, `footer-focus`; 436 element tokens, 140 contrast pairs; test `decisionD24FocusRing` | [A11y Rules of the Theme](#366-a11y-rules-of-the-theme) |
 | OO-10043 | Selectus marks (D25 to D28): the unused rule of bar A goes (bar A has `progress-bar-success`); mark B (`#A88700`) and letters B (`#856B00`) and C (new token `selectus-rating-c-text`, `#E00000`) keep 3:1 and 4.5:1 on a white, a striped and a hovered table row (`o-darkest-color()` in `_functions.scss`); the marks of no rating and of the abstention read `btn-default-bg` and `selectus-rating-abstain-bg` (`#555566` instead of black); 437 element tokens, 154 contrast pairs; test `decisionD25ToD28Selectus` | [Colour Tokens](#265-colour-tokens) |
 | OO-10043 | Literal colours of the B4 review (D29): greys read `text`, `heading`, `text-muted`, `input-placeholder`, `border`, `border-strong`, `bg-subtle`, `bg-hover`, `bg-raised`, `bg`; the hover of the file upload button reads the default button; scroll shades, rank shadows and layers on images and video read `shadow-color`, `scrim`, `backdrop` with the alpha of today; the AI marks and the glows of new and highlighted posts read new element tokens with a reference to a state fill; status icons and texts read the state tokens; decorative colours read palette steps; own tokens with the colours of today for the one-time code field, the off-canvas menu, the selectus status icons, the recorder, the sticky table columns and 5 more; the hotspot styles, the styles stored in content, brand colours, developer tools and print sheets keep their literals; B4-18 waits for a check of the stored content; 471 element tokens, 169 contrast pairs; test `decisionD29LiteralsReadTokens` | [Colour Tokens](#265-colour-tokens) |
+| OO-10043 | Framework modules (slice 16): the message boxes read `box-*-bg`; dialog header and footer, note, tip and important boxes, message lines, login page, widgets and dashboard widgets, personal menu and offcanvas menu, table, menu tree, status icons and drop places read 52 new element tokens fed by their Sass variables; no colour change; 525 element tokens, 195 contrast pairs; test `frameworkModulesReadTokens` | [Colour Tokens](#265-colour-tokens) |
+| OO-10043 | Assessment and content modules (slice 17) and decision D31: the QTI, page editor, practice, video and video task modules read 90 new element tokens fed by their Sass variables (framework 16, component 74); an element token accepts a translucent `color-mix()` default; the shorthand border variables are width, style and a colour token (`$o-login-border` stays valid); the ratchet does not count `color-mix(` and the non-colour login variables; no colour change; 615 element tokens, 202 contrast pairs, ratchet 501; test `assessmentAndContentModulesReadTokens` | [Colour Tokens](#265-colour-tokens) |
+| OO-10043 | Course, user and various modules (slice 18): the modules `_various_modules`, `_course`, `_selectus`, `_curriculum`, `_user`, `_highscore`, `_projects`, `_coursesite`, `_radial-progress`, `_im` read 123 new element tokens fed by their Sass variables (framework 48, component 75); 14 more shorthand borders are width, style and a colour token; the other modules read the tokens of `$o-toolbar-border-color`, `$o-slider-border`, `$o-portfolio-media-content-background-color`, `$o-coursesite-meta-author-color`, `$o-table-row-selected-color`; the ratchet does not count `-ratio`, `-break`, `-blend-mode`; no colour change; 738 element tokens, 246 contrast pairs, ratchet 285; test `courseUserAndVariousModulesReadTokens` | [Colour Tokens](#265-colour-tokens) |
+| OO-10043 | The other modules (slice 19, decision D32): the ratchet pattern counts names with upper-case letters (E1, 285 to 302); 47 modules read 95 new element tokens fed by their Sass variables (base 5, framework 32, component 58) or existing tokens of their variables; 8 more shorthand borders are width, style and a colour token; `$o-hs-position-title-gradient` and the token `highscore-position-title` (E2, `$o-hs-position-title-color` stays valid); the toolbar reads tokens (E3); no colour change; 833 element tokens, 273 contrast pairs, ratchet 140 in 30 modules; test `otherModulesReadTokens`. Follow-up: the count treats `_` in a name as `-` (+12, 152); the speedometer and the recording info of the video recorder read 11 new tokens; 844 element tokens, 278 contrast pairs, ratchet 140; test `countUnderscoreVariables` | [Colour Tokens](#265-colour-tokens) |

@@ -1,51 +1,51 @@
 /* Info and other dialog boxes, displayed inline in content */
 .o_info, %o_info { 
-	@include o-make-message-box($o-box-info-bg, var(--o-box-info-border));
+	@include o-make-message-box(var(--o-box-info-bg), var(--o-box-info-border));
 }
 .o_info_with_icon, %o_info_with_icon { 
-	@include o-make-message-box($o-box-info-bg, var(--o-box-info-border), 'circle-info', var(--o-box-info-text));
+	@include o-make-message-box(var(--o-box-info-bg), var(--o-box-info-border), 'circle-info', var(--o-box-info-text));
 }
 .o_note, %o_note { 
-	@include o-make-message-box($o-box-note-bg, $o-box-note-color);
+	@include o-make-message-box(var(--o-box-note-bg), var(--o-box-note-border));
 }
 .o_note_with_icon, %o_note_with_icon { 
-	@include o-make-message-box($o-box-note-bg, $o-box-note-color, 'lightbulb');
+	@include o-make-message-box(var(--o-box-note-bg), var(--o-box-note-border), 'lightbulb');
 }
 .o_tip, %o_tip { 
-	@include o-make-message-box($o-box-tip-bg, $o-box-tip-color);
+	@include o-make-message-box(var(--o-box-tip-bg), var(--o-box-tip-border));
 }
 .o_tip_with_icon, %o_tip_with_icon { 
-	@include o-make-message-box($o-box-tip-bg, $o-box-tip-color, 'hand-point-up');
+	@include o-make-message-box(var(--o-box-tip-bg), var(--o-box-tip-border), 'hand-point-up');
 }
 .o_important, %o_important { 
-	@include o-make-message-box($o-box-important-bg, $o-box-important-color); 
+	@include o-make-message-box(var(--o-box-important-bg), var(--o-box-important-border)); 
 }
 .o_important_with_icon, %o_important_with_icon { 
-	@include o-make-message-box($o-box-important-bg, $o-box-important-color, 'circle-exclamation');
+	@include o-make-message-box(var(--o-box-important-bg), var(--o-box-important-border), 'circle-exclamation');
 }
 .o_success, %o_success { 
-	@include o-make-message-box($o-box-success-bg, var(--o-box-success-border));
+	@include o-make-message-box(var(--o-box-success-bg), var(--o-box-success-border));
 }
 .o_success_with_icon, %o_success_with_icon { 
-	@include o-make-message-box($o-box-success-bg, var(--o-box-success-border), 'circle-check', var(--o-box-success-text));
+	@include o-make-message-box(var(--o-box-success-bg), var(--o-box-success-border), 'circle-check', var(--o-box-success-text));
 }
 .o_warning, %o_warning { 
-	@include o-make-message-box($o-box-warning-bg, var(--o-box-warning-border));
+	@include o-make-message-box(var(--o-box-warning-bg), var(--o-box-warning-border));
 }
 .o_warning_line, %o_warning_line { 
-	@include o-make-message-line($o-line-warning-bg, $o-line-warning-color);
+	@include o-make-message-line(var(--o-message-line-warning-bg), var(--o-message-line-warning-fg));
 }
 .o_warning_with_icon, %o_warning_with_icon { 
-	@include o-make-message-box($o-box-warning-bg, var(--o-box-warning-border), 'triangle-exclamation', var(--o-box-warning-text));
+	@include o-make-message-box(var(--o-box-warning-bg), var(--o-box-warning-border), 'triangle-exclamation', var(--o-box-warning-text));
 }
 .o_error, %o_error { 
-	@include o-make-message-box($o-box-error-bg, var(--o-box-error-border));
+	@include o-make-message-box(var(--o-box-error-bg), var(--o-box-error-border));
 }
 .o_error_with_icon, %o_error_with_icon { 
-	@include o-make-message-box($o-box-error-bg, var(--o-box-error-border), 'circle-xmark', var(--o-box-error-text));
+	@include o-make-message-box(var(--o-box-error-bg), var(--o-box-error-border), 'circle-xmark', var(--o-box-error-text));
 }
 .o_error_line, %o_error_line { 
-	@include o-make-message-line($o-line-error-bg, $o-line-error-color);
+	@include o-make-message-line(var(--o-message-line-error-bg), var(--o-message-line-error-fg));
 }
 
 .o_instruction {
@@ -107,7 +107,7 @@ div.o_callout_overlay {
  	
  	.alert {
 		color: var(--o-text);
-	  	background-color: $o-box-info-bg;
+	  	background-color: var(--o-box-info-bg);
 	  	border-color: var(--o-box-info-border);
 		position: relative;
 		width: auto;
@@ -207,7 +207,7 @@ dialog.popover {
 	.popover-title {
 		margin-top: 10px;
   		background-color: var(--o-popover-bg);
-		border: 1px solid $popover-fallback-border-color;
+		border: 1px solid var(--o-popover-fallback-border);
 		border: 1px solid var(--o-popover-border);
 		border-bottom: 1px solid var(--o-popover-title-bg-edge);
   		border-top-left-radius: $border-radius-large;
@@ -218,7 +218,7 @@ dialog.popover {
 	.popover-content {
 		margin-top: 10px;
   		background-color: var(--o-popover-bg);
-		border: 1px solid $popover-fallback-border-color;
+		border: 1px solid var(--o-popover-fallback-border);
 		border: 1px solid var(--o-popover-border);
 		border-radius: $border-radius-large;
 		@include box-shadow(0 5px 10px color-mix(in srgb, var(--o-shadow-color) 20%, transparent));
@@ -274,8 +274,8 @@ body#o_body:has(dialog.dialog.modal.show) {
 		flex-grow: 0;
   		width: 100%;
   		position: relative;
-		background: $o-dialog-header-background;
-		box-shadow: 0 4px 4px $o-dialog-header-background;
+		background: var(--o-dialog-header-bg);
+		box-shadow: 0 4px 4px var(--o-dialog-header-bg);
 	}
 	.modal-body {
 		flex-grow:1;
@@ -285,8 +285,8 @@ body#o_body:has(dialog.dialog.modal.show) {
 		flex-grow: 0;
 		width: 100%;
 		position: relative;
-		background: $o-dialog-footer-background;
-		box-shadow: 0 -4px 4px $o-dialog-header-background;
+		background: var(--o-dialog-footer-bg);
+		box-shadow: 0 -4px 4px var(--o-dialog-header-bg);
 	}
 	
 	.modal-header h4 {
@@ -383,11 +383,11 @@ body .modal-body.alert {
 	border-radius: $border-radius-large;
 }
 .o-modal-alert-success {
-	@include o-alert-variant($o-box-success-bg, var(--o-box-success-text), 'circle-check');
+	@include o-alert-variant(var(--o-box-success-bg), var(--o-box-success-text), 'circle-check');
 }
 .o-modal-alert-warning {
- 	@include o-alert-variant($o-box-warning-bg, var(--o-box-warning-text), 'triangle-exclamation');
+ 	@include o-alert-variant(var(--o-box-warning-bg), var(--o-box-warning-text), 'triangle-exclamation');
 }
 .o-modal-alert-danger {
-	@include o-alert-variant($o-box-error-bg, var(--o-box-error-text), 'circle-xmark');
+	@include o-alert-variant(var(--o-box-error-bg), var(--o-box-error-text), 'circle-xmark');
 }

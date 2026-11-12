@@ -38,8 +38,8 @@
 }
 
 .o_media_video_placeholder {
-	background-color: $o-portfolio-media-content-background-color;
-	border: 1px solid $o-portfolio-media-content-background-color;
+	background-color: var(--o-portfolio-media-content-bg);
+	border: 1px solid var(--o-portfolio-media-content-bg);
 	border-radius: $o-panel-placeholder-border-radius;
    	display: table;
     min-width: 400px;
@@ -53,7 +53,7 @@
 
 @media print {
 	.o_media_video_placeholder {
-		background-color: $o-portfolio-media-content-background-color !important;
+		background-color: var(--o-portfolio-media-content-bg) !important;
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 		&.visible-print-block {
@@ -209,7 +209,7 @@
 	&.o_block_imagebg {
 		.o_portfolio_status {
 			padding: 2px;
-			background-color: $o-imagebg-text-background;
+			background-color: var(--o-imagebg-text-bg);
 		}
 	}
 }
@@ -229,7 +229,7 @@
 			height: $o-media-browser-card-height-md;
 			
 			.o_fileElement {
-				border: $o-card-border;
+				border: $o-card-border-width $o-card-border-style var(--o-card-border);
 				border-radius: $o-card-border-radius;
 				width: $o-media-browser-card-width-md;
 				height: $o-media-browser-card-height-md;
@@ -268,7 +268,9 @@
 			.o_visual {
 				box-sizing: content-box;
 				border-radius: ($o-card-border-radius - 1px) ($o-card-border-radius - 1px) 0px 0px;
-				border-bottom: 1px solid $o-card-border;
+				// invalid today (two widths and two styles): the browser drops the
+				// declaration; fix or remove with B4-18 (OO-10043)
+				border-bottom: 1px solid $o-card-border-width $o-card-border-style var(--o-card-border);
 				display: flex;
 				align-items: center;
 				width: inherit;
@@ -316,9 +318,9 @@
 					display: inline-block;
 					margin: -28px auto 8px 10px;
 					text-transform: none;
-		    		border-color: $o-media-version-label-color;
-		    		color: $o-media-version-label-text	;
-		    		background-color: $o-media-version-label-bg;
+		    		border-color: var(--o-media-version-label-border);
+		    		color: var(--o-media-version-label-fg);
+		    		background-color: var(--o-media-version-label-bg);
 		    	}
 			}
 			
@@ -373,8 +375,8 @@
 			width: $o-media-browser-card-width-md;
 			height: $o-media-browser-card-height-md;
 			
-			border-top: $o-card-border;
-			border-left: $o-card-border;
+			border-top: $o-card-border-width $o-card-border-style var(--o-card-border);
+			border-left: $o-card-border-width $o-card-border-style var(--o-card-border);
 			border-radius: $o-card-border-radius;
 		}
 		

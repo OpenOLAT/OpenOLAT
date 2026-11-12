@@ -12,17 +12,17 @@
 		padding-left: $o-step-padding-left;
 		
 		.o_step_block {
-			border: $o-step-border;
+			border: $o-step-border-line-width $o-step-border-line-style var(--o-step-border);
 			border-radius: $o-cn-style-border-radius;
 		}
 		
 		.o_header {
 			padding: $o-step-border-header-padding;
-			background-color: $o-step-border-header-bg-color;
+			background-color: var(--o-step-border-header-bg);
 		}
 		
 		.o_content {
-			border-top: $o-step-border;
+			border-top: $o-step-border-line-width $o-step-border-line-style var(--o-step-border);
 			padding: $o-step-border-content-padding;
 			
 			.o_button_group {
@@ -58,7 +58,7 @@
 			left: floor(math.div($o-step-milestone-size, -2) + 3);
 			height: calc(100% - 17px);
 			width: 2px;
-			border: 2px solid $o-step-color;
+			border: 2px solid var(--o-step-marker);
 			font-size: $o-step-bubble-font-size;
 			margin-bottom: 16px;
 		}
@@ -77,7 +77,7 @@
 		}
 		
 		.o_bar:before {
-			border-color: $o-step-active-marker-color !important;
+			border-color: var(--o-step-active-marker) !important;
 			border-style: dashed;
 		}
 	}
@@ -85,13 +85,13 @@
 	.o_step.o_notavailable {
 		.o_bar {
 			@include o-add-icon('circle', false, false); 		
-			color: $o-step-notavailable-color !important;
+			color: var(--o-step-notavailable) !important;
 			border: unset;
 			background-color: unset;
 		}
 		
 		.o_bar:before {
-			border-color: $o-step-notavailable-marker-color !important;
+			border-color: var(--o-step-notavailable-marker) !important;
 			border-style: dashed;
 		}
 	}
@@ -108,7 +108,7 @@
 			left: floor(math.div($o-step-milestone-size, -2) + 3);
 			height: calc(100% - 16px);
 			border: none;
-			outline-color: $o-step-expired-marker-color !important;
+			outline-color: var(--o-step-expired-marker) !important;
 			outline-style: dashed;
 			outline-width: 2px;
 			outline-offset: 0px;
@@ -120,7 +120,7 @@
 			left: floor(math.div($o-step-milestone-size, -2) + 3);
 			height: calc(100% - 16px);
 			border: none;
-			outline-color: $o-step-expired-marker-color !important;
+			outline-color: var(--o-step-expired-marker) !important;
 			outline-style: dashed;
 			outline-width: 2px;
 			outline-offset: 0px;

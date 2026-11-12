@@ -10,12 +10,12 @@
 	border-width: 1px;
 	border-style: solid;
 	border-color: var(--o-tag-bg);
-	color: $o-tag-font-color;
+	color: var(--o-tag-fg);
 	background-color: var(--o-tag-bg);
 	
 	&:hover {
 		text-decoration: none;
-		color: $o-tag-font-color;
+		color: var(--o-tag-fg);
 	}
 	
 	&.o_tag_clickable {

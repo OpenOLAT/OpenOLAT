@@ -87,8 +87,8 @@
 	&.o_togglebox_wrapper div.o_togglebox_content {
 	    margin: 10px 0 20px 0;
 	    padding: 20px;
-	    border-left: 3px solid $o-portfolio-assignment-color;
-	    background-color: $o-portfolio-assignment-background-color;
+	    border-left: 3px solid var(--o-portfolio-assignment);
+	    background-color: var(--o-portfolio-assignment-bg);
 	}       
 	.o_page_assignement_info {
 		position: relative;
@@ -168,15 +168,15 @@
 
 /* binder with assignments (binders created from course element */
 .o_binder.o_portfolio_assignments {
-	border-left: 3px solid $o-portfolio-assignment-color;
+	border-left: 3px solid var(--o-portfolio-assignment);
 }
 /* an assignment in template edit mode*/ 
 .panel-default.o_portfolio_assignments {
-	border-left: 3px solid $o-portfolio-assignment-color;
+	border-left: 3px solid var(--o-portfolio-assignment);
 }
 /* an assignment entry */
 .o_portfolio_page .o_portfolio_assignments .o_portfolio_page_body {
-		border-left: 3px solid $o-portfolio-assignment-color;
+		border-left: 3px solid var(--o-portfolio-assignment);
 		.o_portfolio_page_meta_wrapper,
 		.o_portfolio_page_summary {
 			padding-left: 10px;
@@ -318,14 +318,14 @@
 
 	.o_cit, .o_text, .o_file {
 		@extend %o_block_large;
-		background-color: $o-portfolio-media-content-background-color;
+		background-color: var(--o-portfolio-media-content-bg);
 		padding: $o-portfolio-media-content-space;
 		border-radius: $o-panel-placeholder-border-radius;
 	}
 	
 	.o_forum {
 		@extend %o_block_large;
-		border: 1px $o-portfolio-media-content-background-color solid;
+		border: 1px var(--o-portfolio-media-content-bg) solid;
 		padding: $o-portfolio-media-content-space;
 		border-radius: $o-panel-placeholder-border-radius;
 	}
@@ -333,7 +333,7 @@
 	
 	.o_achievements_details, .o_feed, .o_forum, .o_wiki  {
 		@extend %o_block_large;
-		background-color: $o-portfolio-media-content-background-color;
+		background-color: var(--o-portfolio-media-content-bg);
 		padding: $o-portfolio-media-content-space;
 		border-radius: $o-panel-placeholder-border-radius;
 
@@ -713,7 +713,7 @@
 
 .o_ce_edit_wrapper .o_portfolio_reference_warning {
 	padding-top: 10px;
-	background-color: $o-editor-edit-background-color;
+	background-color: var(--o-editor-edit-bg);
 }
 
 .o_ce_edit_wrapper .o_portfolio_reference_warning .alert {

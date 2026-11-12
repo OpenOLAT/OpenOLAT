@@ -35,15 +35,15 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
   		height: 100%;
   		transform: rotate(-90deg); /* start on top */
   		border-radius: 50%;
-  		fill: $o-radial-progress-inset-color;
+  		fill: var(--o-radial-progress-inset-bg);
 	}
 	.radial-bg {
 	  fill: transparent;
-	  stroke: $o-radial-progress-circle-bg;
+	  stroke: var(--o-radial-progress-circle-bg);
 	}
 	.radial-bar {
 	  fill: transparent;
-	  stroke: $o-radial-progress-circle-color;
+	  stroke: var(--o-radial-progress-circle);
 	  stroke-dasharray: 0 100; /* for 0% */
 	}			
 	.radial-segment {
@@ -131,7 +131,7 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 				display: block;
 				margin-right: -0.4em; // visually center
 				font-weight: 800;
-				color: $o-radial-progress-number-color;
+				color: var(--o-radial-progress-number);
 			}
 			.addon {
 				display: block;
@@ -246,42 +246,42 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 /* color variants */
 .radial-progress-success {
 	.radial-bar {
-	  stroke: $o-radial-progress-circle-success-color;
+	  stroke: var(--o-radial-progress-circle-success);
 	}
 	&:not(.radial-progress-pie) .percentage .number {
-		color: $o-radial-progress-percentage-success-color;
+		color: var(--o-radial-progress-percentage-success);
 	}
 }
 .radial-progress-neutral {
 	.radial-bar {
-	  stroke: $o-radial-progress-circle-neutral-color;
+	  stroke: var(--o-radial-progress-circle-neutral);
 	}
 	&:not(.radial-progress-pie) .percentage .number {
-		color: $o-radial-progress-percentage-neutral-color;
+		color: var(--o-radial-progress-percentage-neutral);
 	}
 }
 .radial-progress-info {
 	.radial-bar {
-	  stroke: $o-radial-progress-circle-info-color;
+	  stroke: var(--o-radial-progress-circle-info);
 	}
 	&:not(.radial-progress-pie) .percentage .number {
-		color: $o-radial-progress-percentage-info-color;
+		color: var(--o-radial-progress-percentage-info);
 	}
 }
 .radial-progress-danger {
 	.radial-bar {
-	  stroke: $o-radial-progress-circle-danger-color;
+	  stroke: var(--o-radial-progress-circle-danger);
 	}
 	&:not(.radial-progress-pie) .percentage .number {
-		color: $o-radial-progress-percentage-danger-color;
+		color: var(--o-radial-progress-percentage-danger);
 	}
 }
 .radial-progress-warning {
 	.radial-bar {
-	  stroke: $o-radial-progress-circle-warning-color;
+	  stroke: var(--o-radial-progress-circle-warning);
 	}
 	&:not(.radial-progress-pie) .percentage .number {
-		color: $o-radial-progress-percentage-warning-color;
+		color: var(--o-radial-progress-percentage-warning);
 	}
 }
 

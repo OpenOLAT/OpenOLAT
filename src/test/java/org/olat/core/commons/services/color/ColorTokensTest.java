@@ -62,7 +62,10 @@ import org.junit.Test;
  * and letters keep their contrast on the table rows and read the tokens of
  * the rating buttons (decisions D25 to D28), and the literal colours of the
  * B4 review read semantic, state, palette or own element tokens, except the
- * kept literals and the rules without a reader (decision D29).
+ * kept literals and the rules without a reader (decision D29). The framework,
+ * assessment and content modules read element tokens fed by their Sass
+ * variables, a translucent default included; the shorthand borders are width,
+ * style and a colour token (slices 16 and 17, decision D31).
  *
  * Initial date: 8 Nov 2026<br>
  * @author gnaegi, https://www.frentix.com
@@ -85,6 +88,8 @@ public class ColorTokensTest {
 	private static final Pattern PALETTE_REFERENCE = Pattern.compile("var\\(--o-(white|[a-z]+\\d*-\\d+)\\)");
 	private static final Pattern HEX = Pattern.compile("#[0-9A-F]{6}");
 	private static final Pattern COLOR = Pattern.compile("#[0-9A-Fa-f]{3,8}|rgba?\\([^)]*\\)|transparent");
+	// A translucent token colour (decision M3): the token mixed with transparent
+	private static final Pattern COLOR_MIX = Pattern.compile("color-mix\\(in srgb, var\\(--o-([a-z0-9-]+)\\) [0-9.]+%, transparent\\)");
 
 	private static final List<String> SHADE_BUTTONS = List.of("btn-primary", "btn-default", "btn-danger", "btn-dirty",
 			"coursesite-start", "coursesite-book", "btn-primary-light", "btn-danger-light", "table-filter",
@@ -692,10 +697,14 @@ public class ColorTokensTest {
 				HEX.matcher(tokens.get("catalog-header-noimage-stop-4")).matches());
 		// translucent colours
 		assertRuleReads(css, ".milkdown table th", "background:color-mix(in srgb, var(--o-milkdown-table-header-bg) 10%, transparent)");
+		// since slice 18 the translucent defaults of $o-cn-style-cover-text-bg and
+		// $o-lp-pagination-in-progress-bgcolor feed element tokens (decision D31 Q2)
 		assertRuleReads(css, ".o_cn_styled.o_cover .o_top .o_text_block>div:nth-child(1)",
-				"background-color:color-mix(in srgb, var(--o-scrim) 95%, transparent)");
+				"background-color:var(--o-course-style-cover-text-bg)");
+		Assert.assertEquals("color-mix(in srgb, var(--o-scrim) 95%, transparent)", resolve("course-style-cover-text-bg"));
 		assertRuleReads(css, ".o_course_pagination_confirmation[aria-checked=false]",
-				"background-color:color-mix(in srgb, var(--o-lp-in-progress) 20%, transparent)");
+				"background-color:var(--o-lp-pagination-in-progress-bg)");
+		Assert.assertEquals("color-mix(in srgb, var(--o-lp-in-progress) 20%, transparent)", resolve("lp-pagination-in-progress-bg"));
 		assertRuleReads(css, ".o_page_fragment_edit>.o_page_part .o_page_edit_toolbar a.o_disabled",
 				"color:color-mix(in srgb, var(--o-editor-part-toolbar-link) 50%, transparent) !important");
 		// named variables with an own token
@@ -765,7 +774,7 @@ public class ColorTokensTest {
 		}
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
 		assertRuleReads(css, ".o_icon_error", "color:var(--o-state-danger-text)");
-		assertRuleReads(css, ".o_icon_warn", "color:var(--o-state-warning-text)");
+		assertRuleReads(css, ".o_icon_warn", "color:var(--o-state-warning-bg)");
 		assertRuleReads(css, ".o_icon_info", "color:var(--o-state-neutral-text)");
 		assertRuleReads(css, "#o_msg_sticky", "background-color:var(--o-state-danger-soft-bg)");
 		assertRuleReads(css, "#o_msg_sticky", "border:1px solid var(--o-state-danger-soft-border)");
@@ -919,9 +928,13 @@ public class ColorTokensTest {
 			Assert.assertEquals("var(--o-state-" + role + "-text)", tokens.get("badge-status-" + state));
 		}
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("").toLowerCase();
-		assertRuleReads(css, ".o_row_selected", "background:" + resolve("state-neutral-soft-bg").toLowerCase() + " !important");
+		// the selected row reads its token (OO-10043 slice 16), the soft fill of the neutral state
+		assertRuleReads(css, ".o_row_selected", "background:var(--o-table-row-selected-bg) !important");
+		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("table-row-selected-bg"));
+		// the right kprim cell reads its token (OO-10043 slice 17), the soft fill of the success state
 		assertRuleReads(css, "table.o_qti_item_kprim td.o_qti_item_kprim_input_correct",
-				"background-color:" + resolve("state-success-soft-bg").toLowerCase());
+				"background-color:var(--o-qti-match-kprim-correct-bg)");
+		Assert.assertEquals("var(--o-state-success-soft-bg)", tokens.get("qti-match-kprim-correct-bg"));
 	}
 
 	/**
@@ -993,7 +1006,9 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".twentytwenty-wrapper .twentytwenty-container .twentytwenty-handle",
 				"background-color:color-mix(in srgb, var(--o-backdrop) 33%, transparent)");
 		assertRuleReads(css, ".dropdown-menu", "border:1px solid color-mix(in srgb, var(--o-backdrop) 3%, transparent)");
-		assertRuleReads(css, ".o_lp_tree.o_tree li.children_visible", "background:color-mix(in srgb, var(--o-backdrop) 2.5%, transparent)");
+		// since slice 18 the translucent default of $o-lp-bg feeds the token lp-bg (D31 Q2)
+		assertRuleReads(css, ".o_lp_tree.o_tree li.children_visible", "background:var(--o-lp-bg)");
+		Assert.assertEquals("color-mix(in srgb, var(--o-backdrop) 2.5%, transparent)", resolve("lp-bg"));
 		assertRuleReads(css, ".o_tag_admin", "background:repeating-linear-gradient(135deg, transparent, transparent 3px, "
 				+ "color-mix(in srgb, var(--o-backdrop) 10%, transparent) 3px, color-mix(in srgb, var(--o-backdrop) 10%, transparent) 6px)");
 		// D11: shadows, highlight, peekview, not available visual
@@ -1360,6 +1375,90 @@ public class ColorTokensTest {
 	}
 
 	/**
+	 * OO-10043 slice 16, the framework modules (dialog, login page, cards,
+	 * navbar, table, tree, icons, helpers): the rules read element tokens fed
+	 * by the Sass variables of the theme config, no colour changes. The message
+	 * boxes read the existing fill tokens box-*-bg; note, tip and important
+	 * boxes, message lines, dialog header and footer, login page, widgets,
+	 * offcanvas menu, table, tree, status icons and drop places have own
+	 * tokens. The new texts and icons pass their contrast pairs in light.
+	 */
+	@Test
+	public void frameworkModulesReadTokens() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		// message boxes, message lines, popover, dialog
+		assertRuleReads(css, ".o_info", "background-color:var(--o-box-info-bg)");
+		assertRuleReads(css, ".o_note", "border:1px solid var(--o-box-note-border)");
+		assertRuleReads(css, ".o_tip", "background-color:var(--o-box-tip-bg)");
+		assertRuleReads(css, ".o_important", "border:1px solid var(--o-box-important-border)");
+		assertRuleReads(css, ".o_warning_line", "color:var(--o-message-line-warning-fg)");
+		assertRuleReads(css, ".o_error_line", "background-color:var(--o-message-line-error-bg)");
+		assertRuleReads(css, "dialog.popover .popover-title", "border:1px solid var(--o-popover-fallback-border)");
+		assertRuleReads(css, ".modal .modal-header", "background:var(--o-dialog-header-bg)");
+		assertRuleReads(css, ".modal .modal-footer", "background:var(--o-dialog-footer-bg)");
+		assertRuleReads(css, ".modal .modal-footer", "box-shadow:0 -4px 4px var(--o-dialog-header-bg)");
+		// login page
+		assertRuleReads(css, ".o_login .o_login_intro .lead", "color:var(--o-login-lead)");
+		assertRuleReads(css, ".o_login .o_login_box .o_login_help", "background-color:var(--o-login-help-bg)");
+		assertRuleReads(css, ".o_login .o_login_form p.o_login_username", "border:1px solid var(--o-login-border)");
+		// widgets and dashboard widgets
+		assertRuleReads(css, ".o_widget .o_widget_header .o_widget_title .o_widget_subtitle", "color:var(--o-widget-subtitle)");
+		assertRuleReads(css, ".o_dashboard_table_widget", "background-color:var(--o-dashboard-widget-header-footer-bg)");
+		assertRuleReads(css, ".o_dashboard_table_widget .o_dashboard_widget_table", "background-color:var(--o-dashboard-widget-table-bg)");
+		// navbar and offcanvas menu
+		assertRuleReads(css, ".o_navbar #o_navbar_tools_personal .o_logout", "color:var(--o-navbar-logout)");
+		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-right .dropdown-menu", "background-color:var(--o-offcanvas-dropdown-bg)");
+		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-nav .active a", "color:var(--o-offcanvas-link-active)");
+		// table and tree
+		assertRuleReads(css, ".o_table_wrapper.o_table_edit table tbody", "border-top:solid var(--o-table-edit-border) 4px");
+		assertRuleReads(css, ".o_table_tabs", "border-bottom:1px solid var(--o-table-filter-collapse-border)");
+		assertRuleReads(css, ".o_tree", "border:1px solid var(--o-tree-border)");
+		// icons and drop places
+		assertRuleReads(css, ".o_icon_changes", "color:var(--o-icon-changes)");
+		assertRuleReads(css, ".o_icon_mandatory", "color:var(--o-icon-mandatory)");
+		assertRuleReads(css, ".o_icon_status_dnd", "color:var(--o-im-status-dnd)");
+		assertRuleReads(css, ".o_icon_qti_ended", "color:var(--o-qti-status-ended)");
+		assertRuleReads(css, ".o_lectures_rollcall_", "color:var(--o-lecture-rollcall-pending)");
+		assertRuleReads(css, ".o_icon_certification_certifying", "color:var(--o-certification-certifying)");
+		assertRuleReads(css, ".panel-placeholder .panel-heading", "color:var(--o-panel-placeholder-fg)");
+		// the tokens follow the Sass chain of their variable
+		Assert.assertEquals("var(--o-dialog-header-bg)", tokens.get("dialog-footer-bg"));
+		Assert.assertEquals("var(--o-text)", tokens.get("login-lead"));
+		Assert.assertEquals("var(--o-content-header)", tokens.get("login-lead-header"));
+		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("table-row-selected-bg"));
+		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("navbar-logout"));
+		// the colours of today
+		String[] values = { "box-note-border", "#666666", "box-tip-border", "#345566", "box-important-border", "#41BBDB",
+				"message-line-warning-bg", "#FFBD96", "message-line-error-fg", "#4A0606", "popover-fallback-border", "#CCCCCC",
+				"dialog-header-bg", "#F9FAFB", "login-help-bg", "#E4E7EC", "widget-subtitle", "#777777",
+				"offcanvas-link", "#ACACAC", "table-edit-bg", "#FEFBF6", "tree-border", "#DDDDDD",
+				"tree-insertion-source-bg", "#FFCF91", "icon-mandatory", "#D17A00", "lecture-rollcall-pending", "#637286" };
+		for (int i = 0; i < values.length; i += 2) {
+			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
+		}
+		// the new contrast pairs pass with the light defaults
+		assertContrast("box-note-border", "box-note-bg", 3.0);
+		assertContrast("box-tip-border", "box-tip-bg", 3.0);
+		assertContrast("message-line-warning-fg", "message-line-warning-bg", 4.5);
+		assertContrast("message-line-error-fg", "message-line-error-bg", 4.5);
+		assertContrast("dialog-header", "dialog-header-bg", 4.5);
+		assertContrast("login-lead", "bg", 4.5);
+		assertContrast("login-lead-header", "bg", 4.5);
+		assertContrast("login-help-link", "login-help-bg", 4.5);
+		assertContrast("widget-figure-desc", "bg", 4.5);
+		assertContrast("navbar-logout", "bg-raised", 4.5);
+		assertContrast("offcanvas-link", "offcanvas-dropdown-bg", 4.5);
+		assertContrast("offcanvas-link-active", "offcanvas-link-active-bg", 4.5);
+		assertContrast("tree-insertion-source-fg", "tree-insertion-source-bg", 4.5);
+		assertContrast("panel-placeholder-fg", "panel-placeholder-bg", 4.5);
+		for (String icon : List.of("icon-changes", "icon-mandatory", "certification-certified", "certification-certifying",
+				"portfolio-assignment", "im-status-available", "im-status-dnd", "im-status-unavailable", "qti-status-ended",
+				"qti-status-invalid", "lecture-rollcall-pending")) {
+			assertContrast(icon, "bg", 3.0);
+		}
+	}
+
+	/**
 	 * Decision D24 of OO-10043, the focus ring: the token focus is the primary
 	 * colour adjusted to 3:1 on the page background ($o-focus-color, read
 	 * before the Bootstrap defaults define $input-border-focus); every control
@@ -1481,7 +1580,9 @@ public class ColorTokensTest {
 	/**
 	 * Every token of the :root block of _tokens.scss (the block with
 	 * --o-white) resolves to a colour. A keyword like "none" in a token
-	 * behaves differently from the same keyword in the rule.
+	 * behaves differently from the same keyword in the rule. A translucent
+	 * default of a named Sass variable is a color-mix() of a token that
+	 * resolves to a colour (decision D31 Q2, OO-10043 slice 17).
 	 */
 	@Test
 	public void tokensResolveToColors() {
@@ -1493,8 +1594,263 @@ public class ColorTokensTest {
 		Assert.assertTrue("Too few tokens: " + colorTokens.size(), colorTokens.size() > 100);
 		for (String name : colorTokens.keySet()) {
 			String value = resolve(name);
+			Matcher mix = COLOR_MIX.matcher(value);
+			if (mix.matches()) {
+				value = resolve(mix.group(1));
+			}
 			Assert.assertTrue("--o-" + name + ": " + value, COLOR.matcher(value).matches());
 		}
+	}
+
+	/**
+	 * OO-10043 slice 17, the assessment and content modules (QTI, page
+	 * editor, practice, video, video task) and the follow-ups of slice 16
+	 * (decision D31): the rules read element tokens fed by the Sass variables
+	 * of the theme config, no colour changes. A named variable with a
+	 * translucent default feeds a token with the color-mix() default (Q2). The
+	 * shorthand border variables are split into width, style and a colour
+	 * token (Q1); $o-login-border stays valid for a theme that sets it. The
+	 * new texts and icons pass their contrast pairs in light.
+	 */
+	@Test
+	public void assessmentAndContentModulesReadTokens() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		// Q2: translucent defaults
+		assertRuleReads(css, ".o_login .o_login_box", "background-color:var(--o-login-bg)");
+		assertRuleReads(css, ".o_block_imagebg span", "background-color:var(--o-imagebg-text-bg)");
+		Assert.assertEquals("color-mix(in srgb, var(--o-scrim) 95%, transparent)", resolve("login-bg"));
+		Assert.assertEquals("color-mix(in srgb, var(--o-primary) 50%, transparent)", resolve("drawing-select-bg"));
+		// Q1: shorthand borders, width and style of the theme config and a colour token
+		assertRuleReads(css, ".o_card", "border:1px solid var(--o-card-border)");
+		assertRuleReads(css, ".o_fact_sheet", "border:solid 1px var(--o-fact-sheet-border)");
+		assertRuleReads(css, ".o_activity_add", "border:1px solid var(--o-activity-add-border)");
+		assertRuleReads(css, ".o_table_wrapper.o_table_flexi .o_table_row_details .o_table_row_details_container",
+				"border:1px solid var(--o-table-details-container-border)");
+		assertRuleReads(css, ".o_login .o_login_form p.o_login_username", "border:1px solid var(--o-login-border)");
+		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
+		String config = ThemeColorRatchetTest.withoutComments(read(light.resolve("_config.scss")));
+		for (String shorthand : List.of("$o-card-border", "$o-widget-border", "$o-fact-sheet-border",
+				"$o-fact-sheet-separator-border", "$o-dashboard-widget-border", "$o-table-details-container-border",
+				"$o-activity-add-border", "$o-activity-modify-border", "$o-activity-remove-border",
+				"$o-repo-info-border", "$o-repo-info-separator-border", "$o-editor-layout-inner-h-border",
+				"$o-editor-layout-inner-v-border")) {
+			Assert.assertFalse("_config.scss defines the removed shorthand " + shorthand,
+					Pattern.compile(Pattern.quote(shorthand) + "\\s*:").matcher(config).find());
+		}
+		assertSourceHas(light.resolve("_config.scss"), "$o-login-border", "@function o-login-border()");
+		assertSourceHas(light.resolve("modules/_tokens.scss"), "$o-token-removed-shorthands", "@function o-token-is-mix(");
+		// part B: QTI, page editor, practice, video, video task
+		assertRuleReads(css, "#o_qti_run_infos #o_qti_scoreinfo .progress-bar",
+				"background-color:var(--o-qti-run-infos-score-progress-bg)");
+		assertRuleReads(css, ".hottextInteraction .hottext.o_disabled.o_checked", "background:var(--o-qti-hottext-checked-bg)");
+		assertRuleReads(css, ".o_page_container .o_hover_text_wrapper .o_hover_text", "color:var(--o-editor-hover-text)");
+		assertRuleReads(css, ".o_ce_add .o_ce_tools .o_ce_tool a:hover", "border:1px solid var(--o-toolbar-border)");
+		assertRuleReads(css, ".progress-bar.o_practice_progress_l2", "background-color:var(--o-practice-progress-l2-bg)");
+		assertRuleReads(css, ".o_video_run .o_author", "color:var(--o-coursesite-meta-author)");
+		assertRuleReads(css, ".o_videotask_messages>.o_note", "color:var(--o-box-note-text)");
+		assertRuleReads(css, ".o_videotask_correct_segments", "color:var(--o-video-correct-segments)");
+		// the tokens follow the Sass chain of their variable
+		Assert.assertEquals("var(--o-toolbar-border)", tokens.get("qti-menu-border"));
+		Assert.assertEquals("var(--o-qti-menu-border)", tokens.get("qti-item-title-border"));
+		Assert.assertEquals("var(--o-qti-run-infos-bg)", tokens.get("qti-match-sources-bg"));
+		Assert.assertEquals("var(--o-progress-bar-neutral-bg)", tokens.get("qti-run-infos-score-progress-bg"));
+		Assert.assertEquals("var(--o-state-neutral-soft-border)", tokens.get("qti-hottext-checked-border"));
+		Assert.assertEquals("var(--o-editor-border)", tokens.get("editor-layout-inner-h-border"));
+		Assert.assertEquals("var(--o-repo-info-border)", tokens.get("fact-sheet-border"));
+		Assert.assertEquals("var(--o-state-success-bg)", tokens.get("activity-add-border"));
+		Assert.assertEquals("var(--o-text)", tokens.get("coursesite-meta-author"));
+		Assert.assertEquals("var(--o-box-note-border)", tokens.get("box-note-text"));
+		// the colours of today
+		String[] values = { "card-border", "#E4E7EC", "repo-info-border", "#D4D4D4", "qti-item-max-score-border", "#000000",
+				"qti-choice-tablelayout-bg", "#E7E7E7", "editor-hover-border", "#EF00EF", "editor-alert-box-active-border", "#464646",
+				"practice-progress-l1-bg", "#1FC6FE", "video-border", "#FCFCFC", "video-controls-bg", "rgba(50, 50, 50, 0.95)" };
+		for (int i = 0; i < values.length; i += 2) {
+			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
+		}
+		// the new contrast pairs pass with the light defaults
+		assertContrast("box-note-text", "box-note-bg", 4.5);
+		assertContrast("qti-box-text", "qti-order-sources-bg", 4.5);
+		assertContrast("qti-box-text", "qti-order-target-bg", 4.5);
+		assertContrast("coursesite-meta-author", "bg", 4.5);
+		assertContrast("video-correct-segments", "bg", 4.5);
+		assertContrast("video-notcorrect-segments", "bg", 4.5);
+		assertContrast("practice-progress-l2-bg", "bg", 3.0);
+	}
+
+	/**
+	 * OO-10043 slice 18, the course, curriculum, user, chat, high score,
+	 * projects, radial progress, Selectus and various modules: the rules read
+	 * element tokens fed by the Sass variables of the theme config, no colour
+	 * changes. The shorthand border variables of these modules are split into
+	 * width, style and a colour token (decision D31 Q1), the translucent
+	 * defaults feed a token with the color-mix() default (Q2), the icon colours
+	 * of the figure cards are tokens of the tint swatch. The other modules read
+	 * the tokens of $o-toolbar-border-color, $o-slider-border,
+	 * $o-portfolio-media-content-background-color,
+	 * $o-coursesite-meta-author-color and $o-table-row-selected-color. The new
+	 * texts and icons pass their contrast pairs in light.
+	 */
+	@Test
+	public void courseUserAndVariousModulesReadTokens() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		// Q1: shorthand borders, width and style of the theme config and a colour token
+		assertRuleReads(css, ".o_empty_state", "border:1px solid var(--o-empty-border)");
+		assertRuleReads(css, ".o_icon_panel", "border:1px solid var(--o-icon-panel-border)");
+		assertRuleReads(css, ".o_highscore .o_first", "border:1px solid var(--o-highscore-podium-border)");
+		assertRuleReads(css, ".o_user_info .o_user_info_divider", "border-right:solid 1px var(--o-user-info-divider-border)");
+		assertRuleReads(css, ".o_user_info_profile_container .o_user_info_profile", "border:solid 1px var(--o-user-info-profile-border)");
+		assertRuleReads(css, ".o_curriculum_element_outline .o_curriculum_element_outline_lead",
+				"border-top:1px solid var(--o-curriculum-widget-border)");
+		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
+		String config = ThemeColorRatchetTest.withoutComments(read(light.resolve("_config.scss")));
+		for (String shorthand : List.of("$o-empty-border-color", "$o-icon-panel-border", "$o-lp-border",
+				"$o-curriculum-widget-border", "$o-curriculum-widget-card-border", "$o-assessment-inspection-border-color",
+				"$o-hs-podium-border", "$o-users-portrait-img-border", "$o-user-info-portrait-border", "$o-user-info-border",
+				"$o-user-info-profile-border", "$o-user-info-divider-border", "$o-panel-authentication-border",
+				"$o-indicator-separator-border")) {
+			Assert.assertFalse("_config.scss defines the removed shorthand " + shorthand,
+					Pattern.compile(Pattern.quote(shorthand) + "\\s*:").matcher(config).find());
+		}
+		assertSourceHas(light.resolve("modules/_tokens.scss"), "$o-token-removed-shorthands-renamed");
+		// Q2: translucent defaults
+		Assert.assertEquals("color-mix(in srgb, var(--o-scrim) 95%, transparent)", resolve("course-style-cover-text-bg"));
+		Assert.assertEquals("color-mix(in srgb, var(--o-primary) 10%, transparent)", resolve("brand-box-bg"));
+		// the icon colours of the figure cards: the tint swatch of the hue
+		assertRuleReads(css, ".o_figure_cards .o_figure_card_icon_red", "color:var(--o-figure-card-icon-red)");
+		assertRuleReads(css, ".o_figure_cards.o_figure_cards_n1 .o_figure_card_icon_blue",
+				"background-color:var(--o-figure-card-icon-blue-bg)");
+		Assert.assertEquals("var(--o-blue-900)", tokens.get("figure-card-icon-blue"));
+		Assert.assertEquals("var(--o-gray-300)", tokens.get("figure-card-icon-grey-bg"));
+		// existing tokens of their element or of their variable
+		assertRuleReads(css, ".o_progress .o_progress-bar-neutral.progress-bar", "background-color:var(--o-progress-bar-neutral-bg)");
+		assertRuleReads(css, ".o_toolbar", "border:1px solid var(--o-toolbar-border)");
+		assertRuleReads(css, ".ui-slider.ui-widget-content", "border-color:var(--o-slider-border)");
+		assertRuleReads(css, ".o_video_segment_category_selection .o_categories .o_category_list .o_category_list_item.o_selected",
+				"background-color:var(--o-table-row-selected-bg)");
+		// new element tokens
+		assertRuleReads(css, ".o_exam_course .o_educational_type", "color:var(--o-edu-type-exam-course)");
+		assertRuleReads(css, ".radial-progress-success .radial-bar", "stroke:var(--o-radial-progress-circle-success)");
+		assertRuleReads(css, ".o_im_message_group.o_im_message_me", "background-color:var(--o-im-chat-message-me-bg)");
+		assertRuleReads(css, ".o_base_blue", "color:var(--o-colored-icon-blue)");
+		assertRuleReads(css, ".o_authentication_level1", "color:var(--o-authentication-level1)");
+		// the tokens follow the Sass chain of their variable
+		Assert.assertEquals("var(--o-progress-bar-bg)", tokens.get("radial-progress-circle"));
+		Assert.assertEquals("var(--o-progress-bar-neutral-bg)", tokens.get("coursesite-progress-icon"));
+		Assert.assertEquals("var(--o-border)", tokens.get("indicator-separator-border"));
+		Assert.assertEquals("var(--o-user-info-border)", tokens.get("user-info-divider-border"));
+		Assert.assertEquals("var(--o-state-success-text)", tokens.get("lp-pagination-done-bg"));
+		Assert.assertEquals("var(--o-panel-bg)", tokens.get("curriculum-widget-bg"));
+		Assert.assertEquals("var(--o-state-warning-bg)", tokens.get("selectus-review-comment-glow"));
+		// the colours of today
+		String[] values = { "empty-border", "#E4E7EC", "highscore-podium-border", "#D9D9D9", "user-info-profile-border", "#CCCCCC",
+				"lp-pagination-done-border", "#2E5C2E", "curriculum-element-inactive", "#777777", "selectus-onhold", "#9E9E9E",
+				"authentication-level1", "#793E02", "user-status-inactive-border", "#637286" };
+		for (int i = 0; i < values.length; i += 2) {
+			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
+		}
+		// the new contrast pairs pass with the light defaults
+		assertContrast("datecomp-month-fg", "datecomp-month-bg", 4.5);
+		assertContrast("radial-progress-number", "radial-progress-inset-bg", 4.5);
+		assertContrast("radial-progress-percentage-warning", "radial-progress-inset-bg", 4.5);
+		assertContrast("figure-card-icon-yellow", "figure-card-icon-yellow-bg", 3.0);
+		assertContrast("colored-icon-orange", "bg", 3.0);
+		assertContrast("im-summary-fg", "im-summary-bg", 4.5);
+		assertContrast("edu-type-seminar-course", "bg", 4.5);
+		assertContrast("lp-pagination-done-fg", "lp-pagination-done-bg", 4.5);
+		assertContrast("curriculum-avatar-fg", "curriculum-avatar-bg", 4.5);
+		assertContrast("highscore-rank-second", "highscore-podium-second-bg", 3.0);
+		assertContrast("proj-timeline-today", "bg", 4.5);
+		assertContrast("user-initials-fg", "user-initials-base-bg", 4.5);
+		assertContrast("authentication-level1", "bg", 4.5);
+	}
+
+	/**
+	 * OO-10043 slice 19: the other modules read element tokens fed by their
+	 * Sass variables, the toolbar reads tokens (decision D32 E3), the
+	 * variables with upper-case letters have tokens (E1) and the position
+	 * title of the high score has a switch and a token (E2).
+	 */
+	@Test
+	public void otherModulesReadTokens() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		// E3: the toolbar
+		assertRuleReads(css, ".o_toolbar .o_tools_container", "background-color:var(--o-toolbar-bg)");
+		assertRuleReads(css, ".o_toolbar .o_tool_next", "background-color:var(--o-toolbar-nav-bg)");
+		assertRuleReads(css, ".o_edit_mode .o_toolbar .o_tools_container",
+				"background:repeating-linear-gradient(300deg, var(--o-toolbar-edit-stripe), var(--o-toolbar-edit-stripe) 10px, var(--o-toolbar-edit-bg) 10px, var(--o-toolbar-edit-bg) 20px)");
+		// E1: names with upper-case letters
+		assertRuleReads(css, ".o_assessmentitem div.badResponse", "color:var(--o-qti-bad-response)");
+		assertRuleReads(css, ".o_icon_qti_notPresented", "color:var(--o-qti-status-not-presented)");
+		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("qti-bad-response"));
+		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("qti-text-entry-filled-bg"));
+		Assert.assertEquals("var(--o-qti-gap-border)", tokens.get("qti-text-entry-border"));
+		Assert.assertEquals(1, ThemeColorRatchetTest.countOldColorReferences(".a { color: $o-qti-textEntryInteraction-color; }"));
+		Assert.assertEquals(0, ThemeColorRatchetTest.countOldColorReferences(".a { width: $o-qti-textEntryInteraction-width; }"));
+		// E2: the gradient by default, the token without it; the old variable stays valid
+		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
+		assertSourceHas(light.resolve("_config.scss"), "$o-hs-position-title-gradient", "@function o-hs-position-title-gradient()",
+				"@function o-hs-position-title-color()");
+		assertSourceHas(light.resolve("modules/_highscore.scss"), "@if o-hs-position-title-gradient()", "var(--o-highscore-position-title)");
+		Assert.assertEquals("var(--o-text)", tokens.get("highscore-position-title"));
+		// Q1: shorthand borders, width and style of the theme config and a colour token
+		assertRuleReads(css, ".o_process .o_step .o_step_block", "border:1px solid var(--o-step-border)");
+		assertRuleReads(css, ".o_ac_billing_address", "border:1px solid var(--o-ac-billing-address-border)");
+		assertRuleReads(css, "body .o_swiper_buttons .swiper-button-next", "border:1px solid var(--o-swiper-button-border)");
+		assertRuleReads(css, ".o_tb_weighting .o_tb_weighting_slider_grid_top", "border-top:1px solid var(--o-topicbroker-weighting-grid-border)");
+		String config = ThemeColorRatchetTest.withoutComments(read(light.resolve("_config.scss")));
+		for (String shorthand : List.of("$o-step-border", "$o-ac-ba-border", "$o-folder-row-thumbnail-image-border",
+				"$o-swiper-button-border", "$o-tb-details-separator-border-bottom", "$o-tb-topic-card-title-abbr-border",
+				"$o-tb-topic-placeholder-title-abbr-border", "$o-tb-weighting-grid-border")) {
+			Assert.assertFalse("_config.scss defines the removed shorthand " + shorthand,
+					Pattern.compile(Pattern.quote(shorthand) + "\\s*:").matcher(config).find());
+		}
+		// new element tokens and existing tokens of their variables
+		assertRuleReads(css, ".tt-menu", "color:var(--o-autocomplete-fg)");
+		assertRuleReads(css, ".o_tag", "color:var(--o-tag-fg)");
+		assertRuleReads(css, ".o_tag.o_competence", "color:var(--o-competence-fg)");
+		assertRuleReads(css, "#o_main_wrapper", "background:var(--o-main-outer-bg)");
+		assertRuleReads(css, ".o_wizard .o_steps ul li .chevron:before", "border-left:14px solid var(--o-wizard-step-bg)");
+		assertRuleReads(css, ".o_gloss_tooltip.tooltip.top .tooltip-arrow", "border-top-color:var(--o-gloss-tooltip-border)");
+		assertRuleReads(css, ".dropdown-menu>.active>label", "background-color:var(--o-dropdown-link-active-bg)");
+		assertRuleReads(css, "table.b_grid td", "border:1px solid var(--o-content-table-border)");
+		assertRuleReads(css, ".progress-bar-neutral", "background-color:var(--o-progress-bar-neutral-bg)");
+		// names with "_" ($o-o_speedometer-*-border-color, $o_color_note): a border and a text token per state
+		assertRuleReads(css, ".o_speedometer.o_speedometer_danger>.o_speedometer_value", "color:var(--o-speedometer-danger-text)");
+		assertRuleReads(css, ".o_speedometer.o_speedometer_danger>span:after", "border-color:var(--o-speedometer-danger-border)");
+		Assert.assertEquals("var(--o-speedometer-danger-border)", tokens.get("speedometer-danger-text"));
+		Assert.assertEquals("var(--o-state-danger-border)", tokens.get("speedometer-danger-border"));
+		assertContrast("speedometer-success-text", "bg", 3.0);
+		assertContrast("video-recording-info-fg", "video-recording-info-bg", 4.5);
+		// the mixin o-alert-variant is not part of email.css: its text reads the token
+		assertRuleReads(css, ".o-modal-alert-success .alert", "color:var(--o-text)");
+		// the tokens follow the Sass chain of their variable
+		Assert.assertEquals("var(--o-input-bg)", tokens.get("autocomplete-bg"));
+		Assert.assertEquals("var(--o-panel-bg)", tokens.get("portlet-bg"));
+		Assert.assertEquals("var(--o-competence-border)", tokens.get("competence-fg"));
+		Assert.assertEquals("var(--o-text)", tokens.get("content-fieldset-legend"));
+		Assert.assertEquals("var(--o-primary)", tokens.get("dropdown-link-active-bg"));
+		Assert.assertEquals("var(--o-step-marker)", tokens.get("step-active-marker"));
+		Assert.assertEquals("var(--o-panel-default-border)", tokens.get("topicbroker-details-separator-border"));
+		Assert.assertEquals("var(--o-quality-heatmap-base-bg)", tokens.get("quality-unrated"));
+		// the colours of today
+		String[] values = { "step-border", "#E4E7EC", "ac-billing-address-border", "#D0D5DD", "toolbar-edit-stripe", "#FFF0D9",
+				"gloss-tooltip-border", "#AAAAAA", "step-notavailable", "#999999", "folder-card-thumbnail-icon", "#CCCCCC",
+				"qti-status-not-answered", "#B55604" };
+		for (int i = 0; i < values.length; i += 2) {
+			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
+		}
+		// the new contrast pairs pass with the light defaults
+		assertContrast("tag-fg", "tag-bg", 4.5);
+		assertContrast("tag-fg", "tag-bg-active", 4.5);
+		assertContrast("competence-fg", "competence-bg-hover", 4.5);
+		assertContrast("dropdown-link-active", "dropdown-link-active-bg", 4.5);
+		assertContrast("autocomplete-fg", "autocomplete-bg", 4.5);
+		assertContrast("color-picker-selected-fg", "primary", 4.5);
+		assertContrast("qti-text-entry-filled-fg", "qti-text-entry-filled-bg", 4.5);
+		assertContrast("media-version-label-fg", "media-version-label-bg", 4.5);
+		assertContrast("course-quota-intern", "bg", 4.5);
+		assertContrast("qti-status-not-presented", "bg", 3.0);
+		assertContrast("qpool-arrow-draft-border", "qpool-arrow-bg", 3.0);
 	}
 
 	/**

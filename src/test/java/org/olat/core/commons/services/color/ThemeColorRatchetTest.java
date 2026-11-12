@@ -73,23 +73,34 @@ public class ThemeColorRatchetTest {
 	 * only at the end ($o-qti-match-source-border-style: dashed,
 	 * $o-hs-podium-bg-gradientstyle: true). "style" is also the namespace of
 	 * the course element styles: $o-cn-style-border and $o-cn-style-bg count.
+	 * No colour either at the end of a name (OO-10043 slice 17): a gradient
+	 * direction ($o-login-bg-gradient-to), a gradient stop list
+	 * ($o-login-form-bg-gradient-steps), an image path ($o-login-form-bg-img)
+	 * and a background position ($o-login-form-bg-position-left, -top).
+	 * OO-10043 slice 18 (same kind, decision D31 Q4): a ratio or a break point
+	 * of a size ($o-proj-header-background-ratio, -break) and a blend mode
+	 * ($o-cat2-header-noimage-bg-blend-mode).
+	 * OO-10043 slice 19 (decision D32 E1): the name classes accept upper-case
+	 * letters ($o-qti-textEntryInteraction-bg, $o-qti-badResponse-color).
 	 */
 	private static final List<Pattern> OLD_COLOR_REFERENCES = List.of(
 			Pattern.compile("#[0-9a-fA-F]{3,8}\\b"),
 			Pattern.compile(":\\s*(?:red|green|blue|yellow|orange|white|black|gray|grey|lightgrey|lightgray|silver|purple)\\b"),
 			// $brand-primary, not a local variable $brand-primary-bg
-			Pattern.compile("\\$brand-[a-z]+(?![\\w-])"),
-			Pattern.compile("\\$(?![a-z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-z0-9-]*style(?![\\w-]))(?:gray(?:-[a-z]+)?|text-color|text-muted|link-color|link-hover-color|body-bg|state-[a-z]+-[a-z]+|panel-[a-z-]+|table-[a-z-]+|input-[a-z-]+|btn-[a-z-]+|navbar-[a-z-]+|label-[a-z-]+|alert-[a-z-]+)\\b"),
+			Pattern.compile("\\$brand-[a-zA-Z]+(?![\\w-])"),
+			Pattern.compile("\\$(?![a-zA-Z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-zA-Z0-9-]*(?:style|gradient-to|gradient-steps|-img|-position-left|-position-top|-ratio|-break|-blend-mode)(?![\\w-]))(?:gray(?:-[a-zA-Z]+)?|text-color|text-muted|link-color|link-hover-color|body-bg|state-[a-zA-Z]+-[a-zA-Z]+|panel-[a-zA-Z-]+|table-[a-zA-Z-]+|input-[a-zA-Z-]+|btn-[a-zA-Z-]+|navbar-[a-zA-Z-]+|label-[a-zA-Z-]+|alert-[a-zA-Z-]+)\\b"),
 			// The colour variables of the other Bootstrap components: the name ends with color, bg or border
 			// ($dropdown-link-hover-bg, $hr-border, $modal-content-border-color), not $modal-lg or $popover-arrow-width
-			Pattern.compile("\\$(?![a-z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-z0-9-]*style(?![\\w-]))(?:dropdown|popover|modal|pre|hr|legend|blockquote|thumbnail|progress|tooltip|code|kbd|badge|pagination|pager|breadcrumb|list-group|well|jumbotron(?=-bg)|close|nav|carousel|component-active|headings-small|abbr|page-header)-[a-z-]*?(?:color|bg|border)(?![\\w-])"),
-			Pattern.compile("\\$(?![a-z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-z0-9-]*style(?![\\w-]))o-[a-z0-9-]*(?:color|bg|border|background)[a-z0-9-]*"),
-			Pattern.compile("\\b(?:darken|lighten|rgba|fade-in|fade-out|mix|adjust-color|scale-color|transparentize|opacify)\\("),
+			Pattern.compile("\\$(?![a-zA-Z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-zA-Z0-9-]*(?:style|gradient-to|gradient-steps|-img|-position-left|-position-top|-ratio|-break|-blend-mode)(?![\\w-]))(?:dropdown|popover|modal|pre|hr|legend|blockquote|thumbnail|progress|tooltip|code|kbd|badge|pagination|pager|breadcrumb|list-group|well|jumbotron(?=-bg)|close|nav|carousel|component-active|headings-small|abbr|page-header)-[a-zA-Z-]*?(?:color|bg|border)(?![\\w-])"),
+			Pattern.compile("\\$(?![a-zA-Z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-zA-Z0-9-]*(?:style|gradient-to|gradient-steps|-img|-position-left|-position-top|-ratio|-break|-blend-mode)(?![\\w-]))o-[a-zA-Z0-9-]*(?:color|bg|border|background)[a-zA-Z0-9-]*"),
+			// color-mix( is the decided form of a translucent token colour (M3): only a Sass mix( or color.mix( counts
+			Pattern.compile("\\b(?:darken|lighten|rgba|fade-in|fade-out|adjust-color|scale-color|transparentize|opacify)\\(|(?<![\\w-])mix\\("),
 			Pattern.compile("\\b(?:rgb|hsla?)\\("),
 			Pattern.compile("\\bo-(?:a11y-color|state-color|palette|swatch-color)\\("));
 
 	private static final Pattern BLOCK_COMMENT = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
 	private static final Pattern LINE_COMMENT = Pattern.compile("//[^\\n]*");
+	private static final Pattern SASS_NAME = Pattern.compile("\\$[\\w-]+");
 
 	@Test
 	public void colorReferencesMatchBaseline() throws IOException {
@@ -139,6 +150,16 @@ public class ThemeColorRatchetTest {
 	}
 
 	@Test
+	public void countUnderscoreVariables() {
+		String scss = """
+				.l { border-color: $o-o_speedometer-danger-border-color; color: $o_color_note; }
+				.m { margin-left: $label_right_margin; height: $o_proj-header-background-height-max; }
+				""";
+		// the two colour variables, not the margin and the height
+		Assert.assertEquals(2, countOldColorReferences(scss));
+	}
+
+	@Test
 	public void countStyleVariables() {
 		String scss = """
 				.g { border: $o-cn-style-border; background-color: $o-cn-style-bg; color: $o-cn-style-cover-text-bg; }
@@ -163,13 +184,28 @@ public class ThemeColorRatchetTest {
 		Assert.assertFalse("_bootstrap.scss has an own rule. Put it into the module of its component.", code.contains("{"));
 	}
 
+	/**
+	 * Sass treats "_" and "-" in a name as equal: $o-o_speedometer-danger-border-color
+	 * is $o-o-speedometer-danger-border-color (OO-10043 slice 19, follow-up).
+	 * The variable names get "-" before the count.
+	 */
+	static String sassNames(String code) {
+		Matcher m = SASS_NAME.matcher(code);
+		StringBuilder sb = new StringBuilder();
+		while (m.find()) {
+			m.appendReplacement(sb, Matcher.quoteReplacement(m.group().replace('_', '-')));
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
 	// The SCSS source without block and line comments
 	static String withoutComments(String scss) {
 		return LINE_COMMENT.matcher(BLOCK_COMMENT.matcher(scss).replaceAll("")).replaceAll("");
 	}
 
 	static int countOldColorReferences(String scss) {
-		String code = withoutComments(scss);
+		String code = sassNames(withoutComments(scss));
 		int count = 0;
 		for (Pattern pattern : OLD_COLOR_REFERENCES) {
 			Matcher matcher = pattern.matcher(code);

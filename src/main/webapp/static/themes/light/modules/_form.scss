@@ -396,7 +396,7 @@ form .o_form, form.o_form {
 			 	padding: 10px 10px 10px 30px;
 			 	border-radius: $o-radio-card-border-radius;
 			 	border: 1px solid var(--o-radio-card-border);			  			 	
-				background-color: $o-radio-card-bg;			 	
+				background-color: var(--o-radio-card-bg);			 	
 			  	&:hover {
 					background-color: var(--o-radio-card-hover-bg);
 				 	border: 1px solid var(--o-radio-card-hover-border);			  
@@ -744,10 +744,10 @@ form .o_form, form.o_form {
 		}
 		.o_dnd_icon {
 			font-size: 1.5em;
-			color: $o-panel-placeholder-color;
+			color: var(--o-panel-placeholder-fg);
 		}
 		.o_dnd_info {
-			color: $o-panel-placeholder-color;
+			color: var(--o-panel-placeholder-fg);
 			font-size: 0.9em;
 		}
 		.o_dnd_select {
@@ -755,7 +755,7 @@ form .o_form, form.o_form {
 		}			
 		&.o_dnd_over {
 			border-color: var(--o-panel-placeholder-border-active);
-			background: $o-panel-placeholder-bg-active;
+			background: var(--o-panel-placeholder-bg-active);
 			.o_dnd_icon {
 				color: var(--o-panel-placeholder-border-active);
 			}
@@ -806,7 +806,7 @@ form .o_form, form.o_form {
 form.o_dnd_over {
 	border: 2px dashed var(--o-panel-placeholder-border-active);
 	border-radius: $o-panel-placeholder-border-radius;
-	background: $o-panel-placeholder-bg-active;
+	background: var(--o-panel-placeholder-bg-active);
 	margin: -2px;
 }
 
@@ -1318,7 +1318,7 @@ ul.o_color_picker_dropdown, ul.o_icon_selector_dropdown {
 		&.o_selected {
 			a, a:hover {
 				background-color: var(--o-primary);
-				color: $o-bright-text-and-border;
+				color: var(--o-color-picker-selected-fg);
 			}
 		}
 

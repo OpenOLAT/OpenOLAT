@@ -35,8 +35,8 @@
 					cursor: pointer;
 					height: 172px;
 					position: relative;
-					background-color: $o-card-bg-color;
-					border-bottom: $o-card-border;
+					background-color: var(--o-card-bg);
+					border-bottom: $o-card-border-width $o-card-border-style var(--o-card-border);
 					
 					.o_certificate_img {
 						left: -0.5%;
@@ -117,11 +117,11 @@
 		height: 172px;
 		width: 172px;
 		background-image:url('#{$o-images-path}no_preview.png');
-		background-color: $o-card-bg-color;
+		background-color: var(--o-card-bg);
 		background-repeat:no-repeat;
 		background-position:50% 50%;	
 		background-size: contain;
-		border: $o-card-border;
+		border: $o-card-border-width $o-card-border-style var(--o-card-border);
 		border-radius: $o-card-border-radius;
 	}
 	

@@ -227,7 +227,7 @@
 	}
 	
 	.o_ap_confirmed {
-		border-color: $o-ap-confirmed-color;
+		border-color: var(--o-appointment-confirmed);
 		border-width: 2px;
 		box-shadow: 0px 0px 20px 5px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
 		

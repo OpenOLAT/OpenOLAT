@@ -96,11 +96,11 @@ body.o_dmz {
 			color: var(--o-login-header);
 		}
 		.lead {
-			color: $o-login-lead-color;
+			color: var(--o-login-lead);
 			// add more space since lead text is larger than normal
 			h1, h2, h3, h4, h5 {
 				margin-bottom: 20px;
-				color: $o-login-lead-header-color;
+				color: var(--o-login-lead-header);
 			}
 		}
 	}		
@@ -116,8 +116,8 @@ body.o_dmz {
 	.o_login_messages {
 		.o_infomessage_wrapper {
 			width: 100%;
-			background: $o-login-infomessage-bg;
-			border: 1px solid $o-login-infomessage-border;
+			background: var(--o-login-infomessage-bg);
+			border: 1px solid var(--o-login-infomessage-border);
 			border-radius: $o-login-infomessage-radius;
 			padding: $padding-base-vertical $padding-base-horizontal;
 			
@@ -133,8 +133,8 @@ body.o_dmz {
 	}
 	
 	.o_login_box {
-		background-color: $o-login-bg-color;
-		border: $o-login-border;
+		background-color: var(--o-login-bg);
+		border: o-login-border();
 		border-radius: $o-login-border-radius;
 		box-shadow: $o-login-box-shadow;
 		
@@ -154,8 +154,8 @@ body.o_dmz {
 		
 		.o_login_help {
 			padding: 20px $o-login-padding 20px $o-login-padding;
-			background-color: $o-login-help-bg-color;
-			border-bottom: $o-login-border;
+			background-color: var(--o-login-help-bg);
+			border-bottom: o-login-border();
 			border-radius: 0 0 $o-login-border-radius $o-login-border-radius;
 			margin-top: ($padding-large-vertical * 2);
 			/* make help container overlap border (same color) to compensate for border radius calculation */
@@ -228,7 +228,7 @@ body.o_dmz {
 		}
 
 		p.o_login_username {
-			border: 1px solid $o-login-border-color;
+			border: 1px solid var(--o-login-border);
 			cursor: not-allowed;
 			/* The icon and the disabled input share one line. Laid out with flex, so
 			   the icon width does not have to be guessed. The former fixed allowance
@@ -274,7 +274,7 @@ body.o_dmz {
 		flex: 1;
 		content: '';
 		padding: 0.5px;
-		background-color: $o-login-border-color;
+		background-color: var(--o-login-border);
 	}
 	.divider::before {
 		margin: 5px 20px 5px 0;

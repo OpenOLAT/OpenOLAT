@@ -2,7 +2,7 @@
 .o_lti_contentitem_card {
 	padding: 0 0 5px 0;
 	margin-bottom: 10px;
-	border-bottom: $o-card-border;
+	border-bottom: $o-card-border-width $o-card-border-style var(--o-card-border);
 	
 	&.o_lti_contentitem_link, &.o_lti_contentitem_image, &.o_lti_contentitem_file, &.o_lti_contentitem_ltiResourceLink,  {
 		display: flex;

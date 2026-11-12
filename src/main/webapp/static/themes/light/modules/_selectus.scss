@@ -5,7 +5,7 @@ table.table tr.fx_r_withdrawn td span, table.table tr.fx_r_withdrawn td {
 
 table.o_table tr.fx_r_onhold td span, table.o_table tr.fx_r_onhold td a, table.o_table tr.fx_r_onhold td,
 table.table tr.fx_r_onhold td span, table.table tr.fx_r_onhold td a, table.table tr.fx_r_onhold td {
-	color: $o-selectus-onhold-color;
+	color: var(--o-selectus-onhold);
 }
 
 .o_table_wrapper table.o_table,
@@ -218,7 +218,7 @@ span.o_rating_expl[title='C'] {
 }
 
 div.o_app_notes_content.o_app_notes_content_full {
-	@include o-make-message-box($o-box-note-bg, $o-box-note-color);
+	@include o-make-message-box(var(--o-box-note-bg), var(--o-box-note-border));
 }
 
 div.form-group.o_document_config {
@@ -347,10 +347,10 @@ td.col-right {
 }
 
 @keyframes glowingcomment {
-	0% { box-shadow: 0px 0px 0px $o-selectus-review-comment-glowing-color; }
-	40% { box-shadow: 10px 10px 15px $o-selectus-review-comment-glowing-color; }
-	60% { box-shadow: 10px 10px 15px $o-selectus-review-comment-glowing-color; }
-	100% { box-shadow: 0px 0px 0px $o-selectus-review-comment-glowing-color; }
+	0% { box-shadow: 0px 0px 0px var(--o-selectus-review-comment-glow); }
+	40% { box-shadow: 10px 10px 15px var(--o-selectus-review-comment-glow); }
+	60% { box-shadow: 10px 10px 15px var(--o-selectus-review-comment-glow); }
+	100% { box-shadow: 0px 0px 0px var(--o-selectus-review-comment-glow); }
 }
 
 .comment_glowing {
@@ -384,7 +384,7 @@ td.col-right {
 }
 
 .o_review_comment_date {
-	color: $o-selectus-review-comment-date-color;
+	color: var(--o-selectus-review-comment-date);
 }
 
 ul.o_review_legend {
@@ -505,7 +505,7 @@ body.fx_r_public_feedback {
 }
 
 table.table tr.fx_r_mail_disabled {
-	color: $o-selectus-mail-disabled-color;
+	color: var(--o-selectus-mail-disabled);
 }
 
 .o_doc_image_preview {

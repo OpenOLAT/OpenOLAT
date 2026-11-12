@@ -49,7 +49,7 @@
 }
 
 .b_border_box, p.b_border_box, div.b_border_box {
-	border: 1px solid $o-content-border-box-border;
+	border: 1px solid var(--o-content-border-box-border);
 	padding: $o-content-border-box-padding;
 	@include border-top-radius($o-content-border-box-radius);
 	@include border-bottom-radius($o-content-border-box-radius);
@@ -127,7 +127,7 @@ table {
 		border-collapse: separate;
 		td, th {
 			padding: $table-cell-padding;
-			border: 1px solid $o-content-table-border;
+			border: 1px solid var(--o-content-table-border);
 		}
 		thead td, th {
 			background: var(--o-content-table-header-bg);
@@ -140,7 +140,7 @@ table {
 		border-collapse: collapse;
 		td, th {
 			padding: $table-cell-padding;
-			border: 1px solid $o-content-table-border;
+			border: 1px solid var(--o-content-table-border);
 		}
 		thead td, th {
 			background: color-mix(in srgb, var(--o-content-table-bordered-header-bg) 10%, transparent);
@@ -355,7 +355,7 @@ img.b_circle {
 	border-radius: 50%;
 }
 img.b_with_border {
-	border: 1px solid $o-content-border-img-border;
+	border: 1px solid var(--o-content-border-img-border);
 	padding: $o-content-border-img-padding;
 	@include border-top-radius($o-content-border-img-radius);
 	@include border-bottom-radius($o-content-border-img-radius);

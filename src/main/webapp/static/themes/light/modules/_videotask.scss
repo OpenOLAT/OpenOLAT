@@ -2,7 +2,7 @@
 	padding: 1em 2em;
 	border: 1px solid var(--o-video-startbox-main-border);
 	border-radius: $o-video-startbox-border-radius;
-	background-color: $o-video-startbox-main-bg-color;
+	background-color: var(--o-video-startbox-main-bg);
 	
 	.o_videotask_marker {
 		position: relative;
@@ -11,8 +11,8 @@
 }
 
 .o_video_me_colored_area.o_video_marker_gray {
-	border-left-color: $o-video-color-practice;
-	background: $o-video-color-practice;
+	border-left-color: var(--o-video-practice);
+	background: var(--o-video-practice);
 }
 
 .o_videotask_box .o_videotask_marker,
@@ -21,7 +21,7 @@
 .o_videotask_marker,
 .o_videotask_segment {
 	color: var(--o-neutral-0);
-	border-color: $o-video-border-color;
+	border-color: var(--o-video-border);
 
 	// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
 	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
@@ -81,11 +81,11 @@
 }
 
 .o_videotask_correct_segments {
-	color: $o-video-correct-segments-color;
+	color: var(--o-video-correct-segments);
 }
 
 .o_videotask_notcorrect_segments {
-	color: $o-video-notcorrect-segments-color;
+	color: var(--o-video-notcorrect-segments);
 }
 
 .o_videotask_practice_end {
@@ -168,19 +168,19 @@
 	}
 
 	>.o_note {
-		background-color: $o-box-note-bg;
-		color: $o-box-note-color;
-		border: 1px solid $o-box-note-color;
+		background-color: var(--o-box-note-bg);
+		color: var(--o-box-note-text);
+		border: 1px solid var(--o-box-note-border);
 	}
 	
 	>.o_warning {
-		background-color: $o-box-warning-bg;
+		background-color: var(--o-box-warning-bg);
 		color: var(--o-box-warning-text);
 		border: 1px solid var(--o-box-warning-border);
 	}
 	
 	>.o_correct {
-		background-color: $o-box-success-bg;
+		background-color: var(--o-box-success-bg);
 		color: var(--o-box-success-text);
 		border: 1px solid var(--o-box-success-border);
 	}
@@ -196,7 +196,7 @@
 	text-align: center;
 	
 	>span {
-		border: 1px solid $o-video-border-color;
+		border: 1px solid var(--o-video-border);
 		border-radius: 4px;
 		padding: 3px 6px 1px 5px;
 	}

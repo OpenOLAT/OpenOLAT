@@ -1,12 +1,12 @@
 .o_curriculum_el_listing {
 	tr.o_curriculum_element_inactive, tr.o_curriculum_element_inactive td, tr.o_curriculum_element_inactive td span, tr.o_curriculum_element_inactive td a {
-		color: $o-curriculum-element-inactive-color;
+		color: var(--o-curriculum-element-inactive);
 	}
 	tr.o_curriculum_element_unfiltered, tr.o_curriculum_element_unfiltered td, tr.o_curriculum_element_unfiltered td span, tr.o_curriculum_element_unfiltered td a {
 		color: var(--o-text-muted);
 	}
 	tr.o_curriculum_element_deleted, tr.o_curriculum_element_deleted td, tr.o_curriculum_element_deleted td span, tr.o_curriculum_element_deleted td a {
-		color: $o-curriculum-element-inactive-color;
+		color: var(--o-curriculum-element-inactive);
 		text-decoration: line-through;
 	}
 }
@@ -19,10 +19,10 @@
 		}
 	}
 	tr.o_curriculum_element_inactive, tr.o_curriculum_element_inactive td, tr.o_curriculum_element_inactive td span {
-		color: $o-curriculum-element-inactive-color;
+		color: var(--o-curriculum-element-inactive);
 	}
 	tr.o_curriculum_element_deleted, tr.o_curriculum_element_deleted td, tr.o_curriculum_element_deleted td span {
-		color: $o-curriculum-element-inactive-color;
+		color: var(--o-curriculum-element-inactive);
 		text-decoration: line-through;
 	}
 	tr.o_curriculum {
@@ -151,7 +151,7 @@ a.o_validation_open_results {
 		}
 	}
 	
-	color: $o-curriculum-avatar-color;
+	color: var(--o-curriculum-avatar-fg);
 	background-color: var(--o-curriculum-avatar-bg);
 	border-radius: $o-curriculum-avatar-border-radius;
 		
@@ -191,7 +191,7 @@ a.o_validation_open_results {
 .o_curriculum_avatar_link,
 .o_curriculum_avatar_link:hover,
 .o_curriculum_avatar_link:focus {
-	color: $o-curriculum-avatar-color;
+	color: var(--o-curriculum-avatar-fg);
 }
 
 .o_curriculum_avatar_link:focus-visible {
@@ -230,7 +230,7 @@ a.o_validation_open_results {
 		margin: $o-dashboard-widget-base-margin;
 	}
 	.o_curriculum_widget_course_staff {
-		border: $o-curriculum-widget-card-border;
+		border: $o-curriculum-widget-card-border-width $o-curriculum-widget-card-border-style var(--o-curriculum-widget-card-border);
 		border-radius: $o-curriculum-widget-card-border-radius;
 		background-color: var(--o-bg);
 		padding: 5px 0;
@@ -250,7 +250,7 @@ a.o_validation_open_results {
 		grid-template-columns: 120px 1fr auto;
 		gap: 10px;
 		padding: 5px;
-		border: $o-curriculum-widget-card-border;
+		border: $o-curriculum-widget-card-border-width $o-curriculum-widget-card-border-style var(--o-curriculum-widget-card-border);
 		border-radius: $o-curriculum-widget-card-border-radius;
 		background-color: var(--o-bg);
 		
@@ -282,7 +282,7 @@ a.o_validation_open_results {
 		&.o_template_course {
 			border: var(--o-box-warning-border);
 			border-style: dashed;
-			background-color: $o-box-warning-bg;
+			background-color: var(--o-box-warning-bg);
 		}
 	}
 	
@@ -306,7 +306,7 @@ a.o_validation_open_results {
 		@extend %o_labeled;
 		
 		&.o_curriculum_label_template {
-			background-color: $o-curriculum-widget-template-label-bg ;
+			background-color: var(--o-curriculum-widget-template-label-bg) ;
 			border-color: $o-curriculum-widget-template-label-border;
 			color: var(--o-curriculum-widget-template-label);
 		}
@@ -370,7 +370,7 @@ a.o_validation_open_results {
 	
 	.o_curriculum_offer_card {
 		padding: 10px;
-		border: $o-curriculum-widget-card-border;
+		border: $o-curriculum-widget-card-border-width $o-curriculum-widget-card-border-style var(--o-curriculum-widget-card-border);
 		border-radius: $o-curriculum-widget-card-border-radius;
 		background-color: var(--o-bg);
 	}
@@ -588,10 +588,10 @@ a.o_validation_open_results {
 		}
 	}
 	.o_curriculum_metadata_header_content {
-		border: $o-curriculum-widget-border;
+		border: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
 		border-radius: $o-curriculum-widget-border-radius;
 		padding: 0px 10px 10px 10px;
-		background-color: $o-curriculum-widget-bg-color;
+		background-color: var(--o-curriculum-widget-bg);
 		height: 85px;
 
 		display: flex;
@@ -696,20 +696,20 @@ a.o_validation_open_results {
 	.o_curriculum_element_outline_lead {
 		border-top-left-radius: $o-curriculum-widget-border-radius;
 		border-bottom-left-radius: $o-curriculum-widget-border-radius;
-		border-top: $o-curriculum-widget-border;
-		border-bottom: $o-curriculum-widget-border;
-		border-left: $o-curriculum-widget-border;
+		border-top: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
+		border-bottom: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
+		border-left: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
 	}
 	.o_curriculum_element_outline_events {
-		border-top: $o-curriculum-widget-border;
-		border-bottom: $o-curriculum-widget-border;
+		border-top: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
+		border-bottom: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
 	}
 	.o_curriculum_element_outline_period {
 		border-top-right-radius: $o-curriculum-widget-border-radius;
 		border-bottom-right-radius: $o-curriculum-widget-border-radius;
-		border-top: $o-curriculum-widget-border;
-		border-bottom: $o-curriculum-widget-border;
-		border-right: $o-curriculum-widget-border;
+		border-top: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
+		border-bottom: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
+		border-right: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
 	}
 	// middle
 	@media (max-width: $screen-sm-max) {
@@ -724,7 +724,7 @@ a.o_validation_open_results {
 		.o_curriculum_element_outline_lead {
 			border-top-right-radius: $o-curriculum-widget-border-radius;
 			border-bottom-right-radius: $o-curriculum-widget-border-radius;
-			border-right: $o-curriculum-widget-border;
+			border-right: $o-curriculum-widget-border-width $o-curriculum-widget-border-style var(--o-curriculum-widget-border);
 		}
 		.o_curriculum_element_outline_period {
 			display: none;
@@ -786,16 +786,16 @@ a.o_validation_open_results {
 	}
 
 	tr.o_import_error, tr.o_import_error>td.o_col_sticky_right  {
-		background-color: $o-curriculum-import-bg-error;
+		background-color: var(--o-curriculum-import-error-bg);
 	}
 	tr.o_import_new, tr.o_import_new>td.o_col_sticky_right  {
-		background-color: $o-curriculum-import-bg-new;
+		background-color: var(--o-curriculum-import-new-bg);
 	}
 	tr.o_import_changed, tr.o_import_changed>td.o_col_sticky_right  {
-		background-color: $o-curriculum-import-bg-changed;
+		background-color: var(--o-curriculum-import-changed-bg);
 	}
 	tr.o_import_ignored, tr.o_import_ignored>td.o_col_sticky_right {
-		background-color: $o-curriculum-import-bg-ignored	;
+		background-color: var(--o-curriculum-import-ignored-bg)	;
 	}
 }
 

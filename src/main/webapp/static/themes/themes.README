@@ -259,6 +259,67 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
       $o-tokens: ("otp-cell-bg": "neutral-100", "selectus-status-screening": "yellow-600");
     The QTI hotspot editor styles, the styles stored in content (image styles, text markers),
     brand colours, the developer tools and the print sheets keep their literal colours.
+    The framework modules (dialogs and message boxes, login page, cards and widgets, navigation
+    bar and offcanvas menu, table, menu tree, icons) read element tokens fed by their Sass
+    variables, e.g. $o-box-tip-color gives --o-box-tip-border, $o-login-lead-color gives
+    --o-login-lead, $o-tree-border-color gives --o-tree-border, $o-im-status-available-color
+    gives --o-im-status-available. Keep setting the Sass variables, or set the token with
+    $o-tokens. Still Sass: $o-tree-bg, $o-tree-link-bg, $o-tree-link-active-bg and
+    $o-navbar-border-color (they accept "none").
+    The tests, the page editor, the practice and the video modules read element tokens fed by
+    their Sass variables too, e.g. $o-qti-menu-border-color gives --o-qti-menu-border,
+    $o-editor-border-color gives --o-editor-border, $o-practice-progress-l1-bg-color gives
+    --o-practice-progress-l1-bg, $o-video-controls-bg gives --o-video-controls-bg.
+    A Sass variable with a translucent default feeds its token with that value:
+    $o-login-bg-color (--o-login-bg), $o-login-infomessage-bg, $o-imagebg-text-background,
+    $o-fact-icon-bg-color, $o-drawing-select-bg, $o-practice-play-main-bg-color,
+    $o-video-startbox-main-bg-color. Set the variable to a colour or set the token, e.g.
+      $o-tokens: ("login-bg": "white");
+    The shorthand border variables are removed. A border is a width, a style and a colour
+    token: $o-card-border-width, $o-card-border-style and the token card-border. The same
+    for widget, fact-sheet, fact-sheet-separator, dashboard-widget, table-details-container,
+    activity-add, activity-modify, activity-remove, repo-info, repo-info-separator and
+    editor-layout-inner-h, -v (the token name has no "o-"), e.g.
+      $o-card-border-width: 2px;
+      $o-tokens: ("card-border": "neutral-300");
+    When your config sets a removed shorthand ($o-card-border, ...), the compile prints one
+    warning per stylesheet and the value has no effect. $o-login-border stays valid: when
+    your config sets it, the login box uses the value as it is and the compile prints a
+    warning. Prefer $o-login-border-width, $o-login-border-style and $o-login-border-color.
+    The course, curriculum, user, chat, high score, projects, radial progress, Selectus and
+    various modules read element tokens fed by their Sass variables too, e.g.
+    $o-edu-type-exam-course-color gives --o-edu-type-exam-course, $o-im-chat-message-bg-me
+    gives --o-im-chat-message-me-bg, $o-radial-progress-circle-color gives
+    --o-radial-progress-circle, $o-curriculum-import-bg-error gives
+    --o-curriculum-import-error-bg. More translucent defaults feed their token:
+    $o-brand-box-bg, $o-cn-style-cover-text-bg (--o-course-style-cover-text-bg), $o-lp-bg,
+    $o-cat2-header-box-bg-color (--o-catalog-header-box-bg), ... More shorthand borders are
+    removed: icon-panel, lp, curriculum-widget, curriculum-widget-card, indicator-separator,
+    user-info, user-info-profile, user-info-divider, user-info-portrait,
+    panel-authentication ($o-icon-panel-border-width, ..., token icon-panel-border).
+    Four removed shorthands have other names: $o-empty-border-color ($o-empty-border-width,
+    -style, token empty-border), $o-assessment-inspection-border-color
+    ($o-assessment-inspection-border-width, -style, token assessment-inspection-border),
+    $o-hs-podium-border ($o-hs-podium-border-width, -style, token highscore-podium-border)
+    and $o-users-portrait-img-border ($o-user-info-portrait-border-width, -style, token
+    user-info-portrait-border). The compile prints one warning per stylesheet when your
+    config sets one of them.
+    The other modules read element tokens fed by their Sass variables too (OO-10043 slice
+    19), e.g. $o-tag-font-color gives --o-tag-fg, $o-competences-font-color gives
+    --o-competence-fg, $o-toolbar-nav-bg-color gives --o-toolbar-nav-bg,
+    $o-qti-textEntryInteraction-bg gives --o-qti-text-entry-bg. Eight more shorthand
+    borders are removed: $o-folder-row-thumbnail-image-border and $o-swiper-button-border
+    ($o-swiper-button-border-width, -style, token swiper-button-border), $o-step-border
+    ($o-step-border-line-width, -style, token step-border), $o-ac-ba-border
+    ($o-ac-ba-border-width, -style, token ac-billing-address-border) and the topic broker
+    borders $o-tb-details-separator-border-bottom, $o-tb-topic-card-title-abbr-border,
+    $o-tb-topic-placeholder-title-abbr-border, $o-tb-weighting-grid-border (-width,
+    -style, tokens topicbroker-details-separator-border, topicbroker-title-abbr-border,
+    topicbroker-placeholder-title-abbr-border, topicbroker-weighting-grid-border).
+    High score: $o-hs-position-title-gradient: false; shows the position title in the
+    colour of the token highscore-position-title (default: the text colour). The old
+    $o-hs-position-title-color still works ("gradient" or a colour) and the compile
+    prints a warning.
     The compile stops for an unknown token or step, for a loop of references and for an override
     below the contrast of its pair (4.5:1 text, 3:1 borders and focus). An override changes every
     rule that reads the token; a rule that still reads the Sass variable keeps the Sass value. Do

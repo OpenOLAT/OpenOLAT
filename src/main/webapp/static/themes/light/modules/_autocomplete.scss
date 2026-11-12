@@ -6,8 +6,8 @@
   	width: $o-autocomplete-width;
   	margin-top: $padding-base-vertical;
   	padding: 0 0 0;
-  	color: $o-autocomplete-color;
-  	background-color: $o-autocomplete-bg-color;
+  	color: var(--o-autocomplete-fg);
+  	background-color: var(--o-autocomplete-bg);
   	/* border of the focused field, no glow (OO-10043, D24) */
   	border: 1px solid var(--o-focus);
   	@include border-top-radius($o-autocomplete-border-radius);

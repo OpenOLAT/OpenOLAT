@@ -62,9 +62,9 @@ body.o_dmz #o_container_page_width_toggler {
 	width: $o-offcanvas-width;
 
 	padding	: $o-offcanvas-padding-horizontal $o-offcanvas-padding-vertical;
-	background-color: $o-offcanvas-bg;
-	color: $o-offcanvas-link-color;
-  	border: 1px solid $o-offcanvas-border;
+	background-color: var(--o-offcanvas-bg);
+	color: var(--o-offcanvas-link);
+  	border: 1px solid var(--o-offcanvas-border);
 	@include box-shadow(0px 0px 4px 3px color-mix(in srgb, var(--o-shadow-color) 25%, transparent));
   	
 	// Prevent floats from breaking the navbar
@@ -82,7 +82,7 @@ body.o_dmz #o_container_page_width_toggler {
 	}
 	
 	.dropdown-header  {
-		color: $o-offcanvas-link-color;
+		color: var(--o-offcanvas-link);
 	}
 }
 

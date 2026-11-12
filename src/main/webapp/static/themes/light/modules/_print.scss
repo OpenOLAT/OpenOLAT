@@ -204,7 +204,7 @@
 	.ui-slider.ui-slider-horizontal.ui-widget-content {
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
-		background: $o-slider-background !important;
+		background: var(--o-slider-bg) !important;
 		.ui-slider-handle {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;

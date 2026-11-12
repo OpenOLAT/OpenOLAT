@@ -1,10 +1,10 @@
 
 #o_main_wrapper {
-	background: $o-main-outer-bg;
+	background: var(--o-main-outer-bg);
 	position: relative;
 
 	#o_main_container {
-		background: $o-main-inner-bg;
+		background: var(--o-main-inner-bg);
 		
 		/* keep space for #o_toplink */
 		padding-bottom: $line-height-computed * 2;
@@ -44,7 +44,7 @@
 		
 		#o_main_left {
 			position: relative;
-			background: $o-main-left-bg;
+			background: var(--o-main-left-bg);
 
 			#o_main_left_toggle {
 				position: absolute; 
@@ -58,7 +58,7 @@
 				width: 30px;
 				height: 35px;
 				z-index: 3;
-				border: 1px solid $o-tree-border-color;
+				border: 1px solid var(--o-tree-border);
 				border-left: none;
 				@include border-right-radius($o-tree-border-radius);
 				background-color: var(--o-bg-subtle);

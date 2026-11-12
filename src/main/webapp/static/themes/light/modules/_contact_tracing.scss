@@ -6,7 +6,7 @@
   padding-bottom: 1.5em;
   border-radius: 4px;
   border: solid transparent;
-  background-color: $o-ct-confirmation-bg-color;
+  background-color: var(--o-contact-tracing-confirmation-bg);
   text-align: center;
   color: var(--o-white);
 

@@ -12,7 +12,7 @@ svg.o_bp {
 
 	/* Axis defining the full range, consisting of the vertical start element, the horizontal line and the vertical end element */
 	.o_bp_a_s, .o_bp_a_e, .o_bp_a_l {
-		stroke: $o-box-plot-axis-color;
+		stroke: var(--o-box-plot-axis);
 	}
 	
 	/* The values put on the axis: 

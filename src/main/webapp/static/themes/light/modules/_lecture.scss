@@ -22,8 +22,8 @@
 		}
 	}
 	.o_lectures_current_wrapper {
-		border: 1px solid $o-lm-current-border-color;
-		background: $o-lm-current-bg;
+		border: 1px solid var(--o-lecture-current-border);
+		background: var(--o-lecture-current-bg);
 		border-radius: $o-lm-current-border-radius;
 		margin: 10px -10px 20px -10px;
 		padding: 10px;	
@@ -369,7 +369,7 @@ tr.o_rm_room_preselected {
 }
 
 .o_lecture_excluded {
-	color: $o-lm-excluded-color;
+	color: var(--o-lecture-excluded);
 }
 
 .o_lectures_list>h2, .o_lectures_list>h3 {
@@ -400,7 +400,7 @@ tr.o_rm_room_preselected {
 		display: flex;
 		flex-direction: column;
 		.o_lectures_timeline_row {
-			background-color: $o-lm-timeline-row-bg;
+			background-color: var(--o-lecture-timeline-row-bg);
 			border-radius: $o-lm-timeline-row-border-radius;
 
 			display: flex;

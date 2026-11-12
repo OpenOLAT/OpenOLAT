@@ -36,7 +36,7 @@
 				
 				.chevron {
 					border: 24px solid transparent;
-					border-left: 14px solid $o-wizard-steps-border-color;
+					border-left: 14px solid var(--o-wizard-steps-border);
 					border-right: 0;
 					display: block;
 					position: absolute;
@@ -46,7 +46,7 @@
 				}
 				.chevron:before {
 					border: 24px solid transparent;
-					border-left: 14px solid $o-wizard-step-bg-color;
+					border-left: 14px solid var(--o-wizard-step-bg);
 					border-right: 0;
 					content: "";
 					display: block;
@@ -57,14 +57,14 @@
 			}
 		}
 		.o_steps_main {
-			border: 1px solid $o-wizard-steps-border-color;
+			border: 1px solid var(--o-wizard-steps-border);
 			border-radius: 2px;
-			background-color: $o-wizard-steps-bg-color;
+			background-color: var(--o-wizard-steps-bg);
 			position: relative;
 
 			ul {
 				li {
-					background: $o-wizard-step-bg-color;
+					background: var(--o-wizard-step-bg);
 					font-size: 16px;
 					padding: 0 15px 0 30px;
 					
@@ -96,7 +96,7 @@
 				li {
 					font-size: 14px;
 					padding: 0 15px 0 15px;
-					border-bottom: 1px solid $o-wizard-steps-border-color;
+					border-bottom: 1px solid var(--o-wizard-steps-border);
 				
 					&.active {
 						border-bottom: 2px solid var(--o-wizard-step-sub-active-border);

@@ -81,7 +81,7 @@
 
 .o_cal_wv_event_tooltip_content {
 	.o_cal_description {
-		background-color: $o-cal-desc-background-color;
+		background-color: var(--o-cal-desc-bg);
 		padding: 10px 7px;
 		margin: 10px -7px;
 		text-overflow: ellipsis;

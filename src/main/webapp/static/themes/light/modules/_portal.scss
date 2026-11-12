@@ -20,7 +20,7 @@
 .o_portlet {
 	position: relative;
 	@extend %o_block_large;
-	background-color: $o-portlet-bg;
+	background-color: var(--o-portlet-bg);
 	border: 1px solid var(--o-portlet-border);
 	border-radius: $o-portlet-border-radius;
 	@include box-shadow(0 1px 1px color-mix(in srgb, var(--o-shadow-color) 10%, transparent));	

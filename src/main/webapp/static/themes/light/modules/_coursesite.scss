@@ -70,7 +70,7 @@
 				position: relative;
 				height: $o-coursesite-rowelem-height-md + (2 * $o-coursesite-rowelem-space-md);	
 				padding: $o-coursesite-rowelem-space-md 0;
-				background: $o-coursesite-rowelem-bg;			
+				background: var(--o-coursesite-row-bg);			
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 					height: $o-coursesite-rowelem-height-sm + (2 * $o-coursesite-rowelem-space-sm);	
@@ -103,7 +103,7 @@
 			@media (prefers-reduced-motion: no-preference) {
 				&:hover {
 					.o_repo_entry_list_item {
-						background-color: $o-coursesite-rowelem-hover-bg;
+						background-color: var(--o-coursesite-row-hover-bg);
 						box-shadow: $o-coursesite-rowelem-hover-box-shadow;
 					}				
 					.o_visual {
@@ -170,7 +170,7 @@
 					margin-top: -5px;	
 				}
 				.o_author{
-					color: $o-coursesite-meta-author-color;
+					color: var(--o-coursesite-meta-author);
 				}
 				.o_closed {
 					display: inline-block;
@@ -282,7 +282,7 @@
 				}
 				
 				.o_icon_circle_color {
-					color: $progress-bar-neutral-bg;
+					color: var(--o-coursesite-progress-icon);
 				}
 				
 				@media (max-width: $screen-sm-max) { 
@@ -474,7 +474,7 @@
 
 .o_entry_cards {
 	.o_repo_entry_card {
-		background: $o-coursesite-rowelem-bg;
+		background: var(--o-coursesite-row-bg);
 		cursor: pointer;
 		display: flex;
 		flex-direction: column;
@@ -506,7 +506,7 @@
 			margin: $o-cat2-card-meta-padding;
 			place-self: end end;
 			
-			background: $o-coursesite-rowelem-bg;
+			background: var(--o-coursesite-row-bg);
 		}
 		
 		.o_benefits {
@@ -606,8 +606,8 @@
 	background: transparent;
 	text-transform: none;
 	display: inline-block;
-	border-color: $o-entry-benefit-border-color;
-	color: $o-entry-benefit-color;
+	border-color: var(--o-entry-benefit-border);
+	color: var(--o-entry-benefit);
 	margin-right: 5px;
 }
 
@@ -906,7 +906,7 @@
 			}
 		}
 		.o_search_box:is(.o_header_bg_image *) {
-			background-color: $o-cat2-header-box-bg-color;
+			background-color: var(--o-catalog-header-box-bg);
 		}
 		.o_search_button {
 			span {
@@ -930,7 +930,7 @@
 			}
 			.o_taxonomy:is(.o_header_bg_image *) {
 				border-radius: $o-coursesite-rowelem-border-radius;
-				background-color: $o-cat2-header-box-bg-color;
+				background-color: var(--o-catalog-header-box-bg);
 				padding: 20px;
 			}
 		}
@@ -943,7 +943,7 @@
 			background-color: var(--o-input-bg);
 		}
 		.o_empty_state:is(.o_header_bg_image *) {
-			background-color: $o-cat2-header-box-bg-color;
+			background-color: var(--o-catalog-header-box-bg);
 			.o_empty_visual i:nth-child(2) {
 				color: var(--o-text-muted);
 			}
@@ -1000,7 +1000,7 @@
 			grid-template-columns: repeat(2, auto);
 		}
 		.o_taxonomy_launcher {
-			background: $o-coursesite-rowelem-bg;
+			background: var(--o-coursesite-row-bg);
 			cursor: pointer;
 			&.o_tax_teaser_preview {
 				cursor: auto;

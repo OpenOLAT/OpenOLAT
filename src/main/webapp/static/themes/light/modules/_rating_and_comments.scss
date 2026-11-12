@@ -202,7 +202,7 @@
 				.o_visual_not_available {
 					width: 135px;
 					height: $o-portrait-size;
-					background-color: $o-brand-box-bg;
+					background-color: var(--o-brand-box-bg);
 					border: solid 1px var(--o-brand-box-border);
 					border-radius: $border-radius-large;
 				}

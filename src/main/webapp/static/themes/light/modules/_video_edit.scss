@@ -463,7 +463,7 @@ $label_right_margin_dialog: 5px;
 			}
 
 			.o_category_list_item.o_selected {
-				background-color: $o-table-row-selected-color;
+				background-color: var(--o-table-row-selected-bg);
 			}
 
 			.o_color_cube {

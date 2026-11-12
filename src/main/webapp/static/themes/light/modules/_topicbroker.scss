@@ -30,7 +30,7 @@
 	}
 }
 .o_tb_details_separator {
-	border-bottom: $o-tb-details-separator-border-bottom;
+	border-bottom: $o-tb-details-separator-border-bottom-width $o-tb-details-separator-border-bottom-style var(--o-topicbroker-details-separator-border);
 	margin: 30px 0;
 }
 .o_tb_topic_descriptions {
@@ -147,14 +147,14 @@
 	justify-content: center;
 	color: var(--o-topicbroker-title-abbr-fg);
 	background-color: var(--o-topicbroker-title-abbr-bg);
-	border: $o-tb-topic-card-title-abbr-border;
+	border: $o-tb-topic-card-title-abbr-border-width $o-tb-topic-card-title-abbr-border-style var(--o-topicbroker-title-abbr-border);
 	border-radius: $o-tb-topic-card-title-abbr-border-radius;
 }
 
 .o_tb_topic_placeholder {
 	background: $o-not-available-bg;
 	.o_tb_topic_title_abbr {
-		border: $o-tb-topic-placeholder-title-abbr-border;
+		border: $o-tb-topic-placeholder-title-abbr-border-width $o-tb-topic-placeholder-title-abbr-border-style var(--o-topicbroker-placeholder-title-abbr-border);
 	}
 }
 
@@ -211,9 +211,9 @@
 
 .o_tb_topic_card, .o_tb_selection_detail_header {
 	.o_tb_priority_label > .o_tb_priority_selected {
-		color: $o-button-primary-light-color;
-		border-color: $o-button-primary-light-border;
-		background-color: $o-button-primary-light-bg;
+		color: var(--o-btn-primary-light-fg);
+		border-color: var(--o-btn-primary-light-border);
+		background-color: var(--o-btn-primary-light-bg);
 	}
 }
 
@@ -266,15 +266,15 @@
 		grid-row: 1;
 		align-self: stretch;
 		justify-self: stretch;
-		border-top: $o-tb-weighting-grid-border;
-		border-bottom: $o-tb-weighting-grid-border;
+		border-top: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
+		border-bottom: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
 	}
 	.o_tb_weighting_slider_grid_bottom {
 		grid-column: 2 / -1;
 		grid-row: 2;
 		align-self: stretch;
 		justify-self: stretch;
-		border-bottom: $o-tb-weighting-grid-border;
+		border-bottom: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
 	}
 	.o_tb_weighting_enrollments_slider {
 		grid-column: 2;

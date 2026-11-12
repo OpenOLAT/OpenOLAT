@@ -76,7 +76,7 @@
 			
 		.o_infomessage_wrapper {	
 			background: $o-login-bg-color;
-			border: $o-login-border;
+			border: o-login-border();
 			border-radius: $o-login-border-radius;
 			padding: $o-login-border-radius;
 		}

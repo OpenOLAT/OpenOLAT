@@ -59,16 +59,16 @@
 			.o_table_row_details_container {
 				margin: $o-table-details-container-margin;
 				padding: $o-table-details-container-padding;
-				border: $o-table-details-container-border;
+				border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
 				border-radius: $o-table-details-container-border-radius;
-				background: $o-table-details-container-bg;
+				background: var(--o-table-details-container-bg);
 			}
 		}
 	}
 	
 	&.o_table_edit table tbody {
-		border-top:solid $o-table-edit-border 4px;
-		background-color: $o-table-edit-bg;
+		border-top:solid var(--o-table-edit-border) 4px;
+		background-color: var(--o-table-edit-bg);
 	}
 
 	.o_table_footer {
@@ -95,7 +95,7 @@
 	
 	.o_row_selected ~ .o_table_row_details > td ,
 	.o_row_selected td { 
-		background-color: $o-table-row-selected-color !important; 
+		background-color: var(--o-table-row-selected-bg) !important; 
 	}
 
 	.o_table {
@@ -284,7 +284,7 @@
 			>li.o_vertical_timeline_year {
 				> h3 {
 					width: 100%;
-					border: $o-table-details-container-border;
+					border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
 					border-radius: $o-table-details-container-border-radius;
 					margin: 0 0 10px 0;
 					padding: 10px;
@@ -299,8 +299,8 @@
 
 				 	> li {
 						&.o_vertical_timeline_row {
-							background-color: $o-table-details-container-bg;
-							border: $o-table-details-container-border;
+							background-color: var(--o-table-details-container-bg);
+							border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
 							border-radius: $o-table-details-container-border-radius;
 							box-shadow: none;
 							transition: none;
@@ -362,7 +362,7 @@
 							
 							.o_vertical_timeline_item_content {
 								flex-grow: 2;
-								border: $o-table-details-container-border;
+								border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
 								border-radius: $o-table-details-container-border-radius;
 								margin: 0 10px 20px 0;
 								padding: 0 10px 10px 10px;
@@ -380,7 +380,7 @@
 							}
 							
 							.o_vertical_timeline_item_details {
-								border-top: $o-table-details-container-border;
+								border-top: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
 								margin: 0 -10px 0px -10px;
 								padding: 10px 10px 5px 10px;
 							}
@@ -427,7 +427,7 @@ table.table.o_table_nowrap>tbody>tr>td {
 	justify-content: space-between;
 	width: 100%;
 	
-	border-bottom: 1px solid $o-table-filter-collapse-color;
+	border-bottom: 1px solid var(--o-table-filter-collapse-border);
 
 	ul.o_segments.o_segments_tab {
 		padding: 0;
@@ -539,7 +539,7 @@ table.table.o_table_nowrap>tbody>tr>td {
 	}
 	
 	>.o_button_group {
-		border-top: 1px solid $o-table-filter-collapse-color;
+		border-top: 1px solid var(--o-table-filter-collapse-border);
 		margin: 0;
 	}
 	
@@ -731,7 +731,7 @@ a.o_orderby, a.o_orderby:hover {
 }
 
 .o_row_selected {
-	background: $o-table-row-selected-color !important;	
+	background: var(--o-table-row-selected-bg) !important;	
 }
 .o_table_row_count {
 	padding-top:6px;

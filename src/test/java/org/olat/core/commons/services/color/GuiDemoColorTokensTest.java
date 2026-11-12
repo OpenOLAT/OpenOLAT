@@ -58,7 +58,8 @@ public class GuiDemoColorTokensTest {
 	private static final Pattern DECLARATION = Pattern.compile("--o-([a-z0-9-]+)\\s*:");
 	private static final Pattern VAR_REFERENCE = Pattern.compile("var\\(--o-([a-z0-9-]+)\\)");
 	private static final Pattern MAP_KEY = Pattern.compile("^\\s*\"([a-z0-9-]+)\"\\s*:\\s*(.+?),?\\s*$", Pattern.MULTILINE);
-	private static final Pattern SASS_VARIABLE = Pattern.compile("\\$[a-z0-9-]+");
+	// upper-case letters in a name: $o-qti-textEntryInteraction-filled-bg (OO-10043 slice 19)
+	private static final Pattern SASS_VARIABLE = Pattern.compile("\\$[a-zA-Z0-9-]+");
 	private static final Pattern FOLLOWS = Pattern.compile("follows ([a-z0-9-]+)");
 	// "N% darker at most, ...": the amount of o-contrast-shade-amount() (OO-10043, decision D9)
 	private static final Pattern SHADE = Pattern.compile("^shade: ([a-z0-9-]+), (\\d+)% darker( at most, .*)?$");
@@ -152,6 +153,7 @@ public class GuiDemoColorTokensTest {
 		String scss = read(TOKENS_SCSS);
 		String baseLayer = mapBlock(scss, "$o-token-layer-base");
 		String frameworkLayer = mapBlock(scss, "$o-token-layer-framework");
+		String componentLayer = mapBlock(scss, "$o-token-layer-component");
 		String shades = mapBlock(scss, "$o-token-shades");
 
 		List<TokenGroup> groups = new ArrayList<>(GuiDemoColorTokens.elementGroups());
@@ -162,7 +164,8 @@ public class GuiDemoColorTokensTest {
 				.toList()));
 
 		for (TokenGroup group : groups) {
-			String layer = "base layer".equals(group.layer()) ? baseLayer : frameworkLayer;
+			// a group of the framework layer may show a component token too (OO-10043 slice 19)
+			String layer = "base layer".equals(group.layer()) ? baseLayer : frameworkLayer + componentLayer;
 			for (Token token : group.tokens()) {
 				String name = "--o-" + token.name();
 				String value = token.defaultValue();

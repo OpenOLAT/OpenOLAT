@@ -128,7 +128,7 @@ a.o_disabled.navbar-text {
 			}
 		}
 		.o_logout {
-			color: $o-navbar-logout-color;
+			color: var(--o-navbar-logout);
 		}
 	}
 	
@@ -150,18 +150,18 @@ a.o_disabled.navbar-text {
 		.o_navbar-right {
 			h2.o_navbar_category {
 				font-size: 100%;
-				color: $o-offcanvas-link-color;
+				color: var(--o-offcanvas-link);
 				margin: 0 0 0.5em 0;
 				border-bottom: 1px solid var(--o-offcanvas-category-border);
 				line-height: 2em;
 			}
 			a {
 				padding: 3px 0px;
-				color: $o-offcanvas-link-color;
+				color: var(--o-offcanvas-link);
 				&:hover,
 				&:focus {
 					color: var(--o-offcanvas-link-hover);
-					background-color: $o-offcanvas-link-hover-bg;
+					background-color: var(--o-offcanvas-link-hover-bg);
 				}
 				&.o_logout {
 					color: var(--o-offcanvas-logout);
@@ -192,8 +192,8 @@ a.o_disabled.navbar-text {
 				left: 0;
 				display: block;
 				float: none;
-				background-color: $o-offcanvas-dropdown-bg;
-				color: $o-offcanvas-link-color;
+				background-color: var(--o-offcanvas-dropdown-bg);
+				color: var(--o-offcanvas-link);
 				font-size: $o-offcanvas-dropdown-font-size;
         border: none;
 
@@ -204,11 +204,11 @@ a.o_disabled.navbar-text {
 		}
 		.o_navbar-nav {
    			a {
-   				color: $o-offcanvas-link-color;
+   				color: var(--o-offcanvas-link);
    				text-shadow: none;
       			&:hover,
       			&:focus {
-        			background-color: $o-offcanvas-link-hover-bg;
+        			background-color: var(--o-offcanvas-link-hover-bg);
         			color: var(--o-offcanvas-link-hover);
       			}
     		}
@@ -216,12 +216,12 @@ a.o_disabled.navbar-text {
       			&,
       			&:hover,
       			&:focus {
-        			background-color: $o-offcanvas-link-active-bg;
-        			color: $o-offcanvas-link-active-color;
+        			background-color: var(--o-offcanvas-link-active-bg);
+        			color: var(--o-offcanvas-link-active);
       			}
     		}
   			.o_navbar-link {
-    			color: $o-offcanvas-link-color;
+    			color: var(--o-offcanvas-link);
     			&:hover {
       				color: var(--o-offcanvas-link-hover);
     			}

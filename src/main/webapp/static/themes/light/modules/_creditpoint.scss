@@ -1,9 +1,9 @@
 .o_creditpoint_amount_debit {
-	color: $o-cp-withdraw-color;
+	color: var(--o-creditpoint-withdraw);
 }
 
 .o_creditpoint_amount_credit {
-	color: $o-cp-deposit-color;
+	color: var(--o-creditpoint-deposit);
 }
 
 .o_labeled_light {

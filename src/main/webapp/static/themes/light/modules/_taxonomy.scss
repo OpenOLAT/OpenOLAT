@@ -94,7 +94,7 @@
 .o_tag.o_taxonomy {
 	@extend %o_nowrap;
 	background-color: var(--o-competence-bg);
-	color: $o-competences-font-color;
+	color: var(--o-competence-fg);
 	border-color: var(--o-competence-border); 
 	border-radius: 0.5em;
 	vertical-align: bottom;
@@ -103,7 +103,7 @@
 	
 	&:hover {
 		text-decoration: none;
-		color: $o-competences-font-color;
+		color: var(--o-competence-fg);
 	}
 	
 	&.o_tag_clickable {

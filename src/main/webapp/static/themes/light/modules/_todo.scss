@@ -70,7 +70,7 @@
 }
 
 .o_todo_overdue {
-	color: $o-todo-overdue-color
+	color: var(--o-todo-overdue)
 }
 
 %o_todo_task_details_part {

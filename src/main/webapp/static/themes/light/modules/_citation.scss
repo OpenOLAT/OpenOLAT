@@ -3,7 +3,7 @@
 	margin: $o-forum-quote-padding 0;
 		
 	blockquote.o_quote { 
-		color: $o-cit-quote-color; 
+		color: var(--o-citation-quote); 
 		font-size: $o-cit-quote-font-size; 
 		margin-top: $padding-base-vertical; 
 		margin-bottom: 0;

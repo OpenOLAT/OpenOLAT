@@ -111,7 +111,7 @@
 }
 
 .o_qual_hm_basecolor {
-	background-color: $o-qual-hm-base-background-color;
+	background-color: var(--o-quality-heatmap-base-bg);
 }
 .o_qual_hm {
 	.o_circle_container {
@@ -171,7 +171,7 @@
 		color: var(--o-evaluation-sufficient-text);
 	}
 	.o_qual_ana_unrated {
-		color: $o-qual-hm-base-background-color;
+		color: var(--o-quality-unrated);
 	}
 }
 	
@@ -223,7 +223,7 @@
 			background-color: var(--o-evaluation-sufficient) !important;
 		}
 		&.o_qual_hm_basecolor {
-			background-color: $o-qual-hm-base-background-color !important;
+			background-color: var(--o-quality-heatmap-base-bg) !important;
 		}
 	}
 	.o_qual_trend {
@@ -239,7 +239,7 @@
 			color: var(--o-evaluation-sufficient-text) !important;
 		}
 		.o_qual_ana_unrated::before {
-			color: $o-qual-hm-base-background-color !important;
+			color: var(--o-quality-unrated) !important;
 		}
 	}
 }

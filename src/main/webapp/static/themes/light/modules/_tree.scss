@@ -2,7 +2,7 @@
 	position: relative;
 	display: block;
 	background-color: $o-tree-bg;
-	border: 1px solid $o-tree-border-color;
+	border: 1px solid var(--o-tree-border);
     @include border-top-radius($o-tree-border-radius);
     @include border-bottom-radius($o-tree-border-radius);
     overflow: hidden;
@@ -36,7 +36,7 @@
 	
 	.o_insertion_point>a>span {
 		padding: 5px;
-		border: 1px solid $o-tree-border-color;
+		border: 1px solid var(--o-tree-border);
 		@include border-top-radius($o-tree-border-radius);
 		@include border-bottom-radius($o-tree-border-radius);
 	}
@@ -54,7 +54,7 @@
 		
 		li div {
 				position: relative;
-				border-bottom: 1px solid $o-tree-border-color;
+				border-bottom: 1px solid var(--o-tree-border);
 		}
 		
 		li div.popover {
@@ -167,7 +167,7 @@
 			@include opacity(.4);
 			background-color: $o-tree-dnd-hover;
 			padding: 5px 10px 5px 10px;
-			border: 1px solid $o-tree-border-color;
+			border: 1px solid var(--o-tree-border);
 			@include border-top-radius($o-tree-border-radius);
 	    	@include border-bottom-radius($o-tree-border-radius);
 		}
@@ -233,7 +233,7 @@
 				padding-right: 7px;
 			}
 			.o_disabled {
-				color: $o-tree-insertion-disabled-color !important;
+				color: var(--o-tree-insertion-disabled) !important;
 			}
 		}
 		
@@ -242,19 +242,19 @@
 		}
 		
 		div:has(>.o_insertion_source), div:has(>.o_insertion_source):hover {
-			border: 1px solid $o-tree-insertion-source-border;
-			background-color: $o-tree-insertion-source-bg;
-			color: $o-tree-insertion-source-color;
+			border: 1px solid var(--o-tree-insertion-source-border);
+			background-color: var(--o-tree-insertion-source-bg);
+			color: var(--o-tree-insertion-source-fg);
 		}
 		
 		a:has(+.o_insertion_source.o_tree_link) {
-			color: $o-tree-insertion-source-color !important;
+			color: var(--o-tree-insertion-source-fg) !important;
 		}
 		.o_insertion_source.o_tree_link {
-			background-color: $o-tree-insertion-source-bg;
+			background-color: var(--o-tree-insertion-source-bg);
 			
 			>a {
-				color: $o-tree-insertion-source-color !important;
+				color: var(--o-tree-insertion-source-fg) !important;
 			}
 		}
 		

@@ -262,7 +262,10 @@ $o-table-details-bg							: #f6fbfd !default;
 $o-table-details-padding						: 5px 30px 20px 30px !default;
 $o-table-details-container-margin			: 0px !default;
 $o-table-details-container-padding			: 10px !default;
-$o-table-details-container-border			: 1px solid #e4e7ec !default;
+// table-details-container-border: width and style; the colour is the token table-details-container-border (decision D31 Q1 of
+// OO-10043, replaces the shorthand $o-table-details-container-border)
+$o-table-details-container-border-width : 1px !default;
+$o-table-details-container-border-style : solid !default;
 $o-table-details-container-border-radius	: 5px !default;
 $o-table-details-container-bg				: #fff !default;
 
@@ -283,7 +286,10 @@ $o-table-filter-active-bg		: $btn-primary-border !default;
 /* Empty state in various modules */
 $o-empty-indicator-color		: #495057 !default;
 $o-empty-icon-color				: #C6C9CD !default;
-$o-empty-border-color			: 1px solid #e4e7ec !default;
+// empty-border: width and style; the colour is the token empty-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-empty-border-color)
+$o-empty-border-width                   : 1px !default;
+$o-empty-border-style                   : solid !default;
 $o-empty-border-radius			: $panel-border-radius !default;
 $o-empty-msg-color				: $text-color !default;
 
@@ -494,7 +500,10 @@ $o-tree-insertion-source-border				: #FFDBAC !default;
 $o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;
 
 /* Icon panel component */
-$o-icon-panel-border				: 1px solid #e4e7ec !default;
+// icon-panel-border: width and style; the colour is the token icon-panel-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-icon-panel-border)
+$o-icon-panel-border-width              : 1px !default;
+$o-icon-panel-border-style              : solid !default;
 $o-icon-panel-border-radius			: $panel-border-radius !default;
 $o-icon-panel-icon-bg-color			: #f9fafb !default;
 $o-icon-panel-content-bg-color		: $panel-bg !default;
@@ -565,7 +574,21 @@ $o-login-header-color			: $brand-primary !default;
 // The translucent defaults mix a token with transparent (OO-10043): your value replaces them
 $o-login-bg-color				: color-mix(in srgb, var(--o-scrim) 95%, transparent) !default;
 $o-login-border-color			: #e4e7ec !default;
-$o-login-border					: 1px solid $o-login-border-color !default;
+// login-border: width and style; the colour is the token login-border ($o-login-border-color) (decision D31 Q1 of
+// OO-10043, replaces the shorthand $o-login-border)
+$o-login-border-width                   : 1px !default;
+$o-login-border-style                   : solid !default;
+// The shorthand of before. A theme that sets it keeps it: the rules of the
+// login box use the value as it is, the compile prints a warning.
+$o-login-border                         : null !default;
+// The border of the login box: the shorthand of the theme, else width,
+// style and the token login-border
+@function o-login-border() {
+	@if $o-login-border != null {
+		@return $o-login-border;
+	}
+	@return $o-login-border-width $o-login-border-style var(--o-login-border);
+}
 $o-login-border-radius			: $panel-border-radius !default;
 $o-login-box-shadow				: 0 8px 32px color-mix(in srgb, var(--o-shadow-color) 12%, transparent), 0 2px 8px color-mix(in srgb, var(--o-shadow-color) 6%, transparent) !default;
 
@@ -638,11 +661,17 @@ $o-cat2-tax-launcher-square-font-size	: 14px !default;
 
 /* Repository */
 $o-repo-access-denied-cross-fill		: $brand-primary  !default;
-$o-repo-info-border						: solid 1px #d4d4d4 !default;
+// repo-info-border: width and style; the colour is the token repo-info-border (decision D31 Q1 of
+// OO-10043, replaces the shorthand $o-repo-info-border)
+$o-repo-info-border-width               : 1px !default;
+$o-repo-info-border-style               : solid !default;
 $o-repo-info-border-radius				: 4px !default;
 $o-repo-info-padding					: 20px 20px 5px 20px !default;
 $o-repo-info-header-size-small			: 16px !default;
-$o-repo-info-separator-border			: 1px solid #d4d4d4 !default;
+// repo-info-separator-border: width and style; the colour is the token repo-info-separator-border (decision D31 Q1 of
+// OO-10043, replaces the shorthand $o-repo-info-separator-border)
+$o-repo-info-separator-border-width     : 1px !default;
+$o-repo-info-separator-border-style     : solid !default;
 $o-repo-info-print-logo-height			: $o-navbar-brand-height !default;
 
 /* Access control */
@@ -650,7 +679,10 @@ $o-ac-offers-container-max-width		: math.div($o-page-width-max, 3) !default;
 $o-ac-ba-radio-card-width			: 270px !default;
 $o-ac-ba-min-width					: 250px !default;
 $o-ac-ba-bg-color					: #f9fafb !default;
-$o-ac-ba-border						: 1px solid #d0d5dd !default;
+// o-ac-ba-border: width and style; the colour is the token ac-billing-address-border (decision D31 Q1
+// of OO-10043, slice 19; replaces the shorthand $o-ac-ba-border)
+$o-ac-ba-border-width		: 1px !default;
+$o-ac-ba-border-style		: solid !default;
 $o-ac-ba-border-radius				: 4px !default;
 $o-ac-ba-padding					: 10px 15px 10px 0px !default;
 $o-ac-ba-icon-width					: 65px !default;
@@ -711,7 +743,10 @@ $o-lp-done						: o-state-color("success", "text") !default;
 $o-lp-default					: #888 !default;
 $o-lp-icon-bg-color				: #fff !default;
 $o-lp-icon-radius				: 6px !default;
-$o-lp-border					: 1px solid $navbar-default-border !default;
+// lp-border: width and style; the colour is the token lp-border ($navbar-default-border) (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-lp-border)
+$o-lp-border-width                      : 1px !default;
+$o-lp-border-style                      : solid !default;
 $o-lp-bg						: color-mix(in srgb, var(--o-backdrop) 2.5%, transparent) !default;
 $o-lp-step-top					: 13px !default;
 $o-lp-step-size					: 13px !default;
@@ -828,10 +863,16 @@ $o-curriculum-avatar-border-radius				: 6px !default;
 
 
 /* Curriculum overview */
-$o-curriculum-widget-border						: 1px solid #e4e7ec !default;
+// curriculum-widget-border: width and style; the colour is the token curriculum-widget-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-curriculum-widget-border)
+$o-curriculum-widget-border-width       : 1px !default;
+$o-curriculum-widget-border-style       : solid !default;
 $o-curriculum-widget-border-radius				: 4px !default;
 $o-curriculum-widget-bg-color					: $panel-bg !default;
-$o-curriculum-widget-card-border				: 1px solid #d0d5dd !default;
+// curriculum-widget-card-border: width and style; the colour is the token curriculum-widget-card-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-curriculum-widget-card-border)
+$o-curriculum-widget-card-border-width  : 1px !default;
+$o-curriculum-widget-card-border-style  : solid !default;
 $o-curriculum-widget-card-border-radius			: 4px !default;
 
 $o-curriculum-widget-template-label-border		: 1px solid #d0d5dd !default;
@@ -852,9 +893,15 @@ $o-curriculum-import-bg-changed					: $o-color-info-text-bg	 !default;
 $o-curriculum-import-bg-ignored					: $o-color-note-text-bg !default;
 
 /* Activity */
-$o-activity-add-border							: 1px solid o-state-color("success", "bg") !default;
-$o-activity-modify-border						: 1px solid o-state-color("warning", "bg") !default;
-$o-activity-remove-border						: 1px solid o-swatch-color("gray", "border") !default;
+// the borders of the activity entries: width and style; the colours are the
+// tokens activity-add-border, activity-modify-border, activity-remove-border
+// (decision D31 Q1 of OO-10043, replaces the shorthands $o-activity-*-border)
+$o-activity-add-border-width            : 1px !default;
+$o-activity-add-border-style            : solid !default;
+$o-activity-modify-border-width         : 1px !default;
+$o-activity-modify-border-style         : solid !default;
+$o-activity-remove-border-width         : 1px !default;
+$o-activity-remove-border-style         : solid !default;
 $o-activity-border-radius						: 4px !default;
 
 /* Asssessment */
@@ -863,7 +910,10 @@ $o-assessment-mode-today-border-color			: o-state-color("success", "text") !defa
 $o-assessment-mode-end-soon-bg					: o-state-color("danger", "soft-bg") !default;
 $o-assessment-mode-end-soon-border-color		: o-state-color("danger", "text") !default;
 
-$o-assessment-inspection-border-color			: 1px solid #d0d5dd !default;
+// assessment-inspection-border: width and style; the colour is the token assessment-inspection-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-assessment-inspection-border-color)
+$o-assessment-inspection-border-width   : 1px !default;
+$o-assessment-inspection-border-style   : solid !default;
 
 
 
@@ -901,8 +951,13 @@ $o-editor-inspector-border-width					: 1px;
 $o-editor-inspector-border-color					: $o-editor-border-color;
 $o-editor-inspector-box-shadow						: 0px 8px 16px color-mix(in srgb, var(--o-shadow-color) 15%, transparent);
 $o-editor-tools-box-shadow							: $o-editor-inspector-box-shadow;
-$o-editor-layout-inner-v-border						: 1px solid $o-editor-border-color;
-$o-editor-layout-inner-h-border						: 1px dashed $o-editor-border-color;
+// the inner lines of a layout: width and style; the colours are the tokens
+// editor-layout-inner-v-border and editor-layout-inner-h-border, default
+// $o-editor-border-color (decision D31 Q1 of OO-10043, replaces the shorthands)
+$o-editor-layout-inner-v-border-width   : 1px;
+$o-editor-layout-inner-v-border-style   : solid;
+$o-editor-layout-inner-h-border-width   : 1px;
+$o-editor-layout-inner-h-border-style   : dashed;
 $o-editor-layout-pseudo-icon-border-color			: grey;
 $o-editor-layout-pseudo-icon-bg-color				: #eaecf0;
 
@@ -1170,7 +1225,26 @@ $o-datecomp-month-color			: #fff !default;
 /* Date picker component */
 
 /* Highscore component */
-$o-hs-position-title-color			: gradient !default;
+// position title: a gradient text (true) or the colour of the token
+// highscore-position-title (false). Decision D32 E2 of OO-10043, slice 19:
+// $o-hs-position-title-color ("gradient" or a colour) stays valid for a theme
+// that sets it; the compile prints a warning (_tokens.scss).
+$o-hs-position-title-gradient		: true !default;
+$o-hs-position-title-color			: null !default;
+@function o-hs-position-title-gradient() {
+	@if $o-hs-position-title-color != null {
+		@return $o-hs-position-title-color == gradient;
+	}
+	@return $o-hs-position-title-gradient;
+}
+// the default of the token highscore-position-title: the colour of the old
+// variable, else the text colour
+@function o-hs-position-title-color() {
+	@if $o-hs-position-title-color != null and $o-hs-position-title-color != gradient {
+		@return $o-hs-position-title-color;
+	}
+	@return $text-color;
+}
 $o-hs-position-title-size			: 3em !default;
 $o-hs-position-title-weight			: 700 !default;
 $o-hs-position-size					: 1.2em !default;
@@ -1178,7 +1252,10 @@ $o-hs-position-weight				: bold !default;
 $o-hs-position-relative-size		: 1em !default;	
 $o-hs-position-relative-weight		: normal !default;	
 
-$o-hs-podium-border					: 1px solid #d9d9d9 !default;
+// hs-podium-border: width and style; the colour is the token highscore-podium-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-hs-podium-border)
+$o-hs-podium-border-width               : 1px !default;
+$o-hs-podium-border-style               : solid !default;
 $o-hs-podium-border-radius			: $panel-border-radius !default;
 $o-hs-podium-bg-gradientstyle		: true !default;
 $o-hs-podium-first-bg				: #FFD700 !default;
@@ -1260,7 +1337,10 @@ $o-qpool-arrow-border-bottom-width	: 3px !default;
 
 
 /* Process step component */
-$o-step-border						: 1px solid #e4e7ec !default;
+// o-step-border-line: width and style; the colour is the token step-border ($o-step-border-width is the width of the step marker) (decision D31 Q1
+// of OO-10043, slice 19; replaces the shorthand $o-step-border)
+$o-step-border-line-width		: 1px !default;
+$o-step-border-line-style		: solid !default;
 $o-step-border-radius				: $panel-border-radius !default;
 $o-step-border-header-padding		: 10px !default;
 $o-step-border-header-bg-color		: #f9fafb;
@@ -1328,22 +1408,33 @@ $o-user-portrait-im-margin-size-medium		: -2px !default;
 $o-user-portrait-initials-font-size-large	: 44px !default;
 $o-user-portrait-im-scale-large				: 1 !default;
 $o-user-portrait-im-margin-size-large		: 6px !default;
-$o-users-portrait-img-border				: 2px solid white !default;
 $o-users-portrait-img-box-shadow			: 0px 1px 3px 0px color-mix(in srgb, var(--o-shadow-color) 20%, transparent) !default;
 $o-users-portrait-overlap				: 0.3; // 30%
-$o-user-info-border						: solid 1px #d4d4d4 !default;
+// user-info-border: width and style; the colour is the token user-info-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-user-info-border; the rules write the style first)
+$o-user-info-border-width               : 1px !default;
+$o-user-info-border-style               : solid !default;
 $o-user-info-border-radius				: 4px !default;
 $o-user-info-profile-breakpoint			: 280px !default;
 $o-user-info-profile-border-radius		: 4px !default;
-$o-user-info-profile-border				: solid 1px #ccc !default;
+// user-info-profile-border: width and style; the colour is the token user-info-profile-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-user-info-profile-border; the rules write the style first)
+$o-user-info-profile-border-width       : 1px !default;
+$o-user-info-profile-border-style       : solid !default;
 $o-user-info-profile-padding				: 20px !default;
 $o-user-info-profile-column-gap			: 20px !default;
 $o-user-info-profile-row-gap				: 10px !default;
-$o-user-info-portrait-border				: $o-users-portrait-img-border !default;
+// user-info-portrait-border: width and style; the colour is the token user-info-portrait-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-user-info-portrait-border and its default $o-users-portrait-img-border)
+$o-user-info-portrait-border-width      : 2px !default;
+$o-user-info-portrait-border-style      : solid !default;
 $o-user-info-portrait-box-shadow			: $o-users-portrait-img-box-shadow !default;
 $o-user-info-displayname-size			: 18px !default;
 $o-user-info-displayname-size-small		: 16px !default;
-$o-user-info-divider-border				: $o-user-info-border !default;
+// user-info-divider-border: width and style; the colour is the token user-info-divider-border (follows user-info-border) (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-user-info-divider-border; the rules write the style first)
+$o-user-info-divider-border-width       : $o-user-info-border-width !default;
+$o-user-info-divider-border-style       : $o-user-info-border-style !default;
 $o-user-info-divider-margin-base			: 20px !default;
 $o-user-info-items-padding				: 20px 20px 5px 20px !default;
 $o-user-info-status-top					: $o-user-info-profile-padding !default;
@@ -1354,7 +1445,10 @@ $o-bookmark-color				: #bc2d0c !default;
 $o-imagebg-text-background		: color-mix(in srgb, var(--o-scrim) 80%, transparent) !default;
 
 /* User autentication */
-$o-panel-authentication-border	: 1px solid #e4e7ec !default;
+// panel-authentication-border: width and style; the colour is the token panel-authentication-border (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-panel-authentication-border)
+$o-panel-authentication-border-width    : 1px !default;
+$o-panel-authentication-border-style    : solid !default;
 $o-authentication-color-level1	: #793E02;
 $o-authentication-color-level2	: #0E375F;
 $o-authentication-color-level3	: #274E15;
@@ -1370,7 +1464,10 @@ $o-files-size-warning							: #FFB100;
 $o-files-size-large								: #E82A0C;
 $o-folder-row-thumbnail-size					: 30px !default;
 $o-folder-row-thumbnail-icon-size				: 22px !default;
-$o-folder-row-thumbnail-image-border			: 1px solid #e4e7ec !default;
+// o-folder-row-thumbnail-image-border: width and style; the colour is the token folder-row-thumbnail-image-border (decision D31 Q1
+// of OO-10043, slice 19; replaces the shorthand $o-folder-row-thumbnail-image-border)
+$o-folder-row-thumbnail-image-border-width		: 1px !default;
+$o-folder-row-thumbnail-image-border-style		: solid !default;
 $o-folder-card-thumbnail-height					: 172px !default;
 $o-folder-card-thumbnail-icon-color				: #ccc !default;
 
@@ -1468,7 +1565,10 @@ $o-swiper-color								: $btn-primary-bg !default;
 $o-swiper-button-width						: 30px !default;
 $o-swiper-button-height						: 30px !default;
 $o-swiper-button-font-size					: 20px !default;
-$o-swiper-button-border						: 1px solid $btn-default-border !default;
+// o-swiper-button-border: width and style; the colour is the token swiper-button-border ($btn-default-border) (decision D31 Q1
+// of OO-10043, slice 19; replaces the shorthand $o-swiper-button-border)
+$o-swiper-button-border-width		: 1px !default;
+$o-swiper-button-border-style		: solid !default;
 $o-swiper-button-border-radius				: $border-radius-base !default;
 $o-swiper-button-hover-box-shadow			: 0px 2px 6px rgba($btn-default-border, 0.5) !default;
 $o-swiper-button-disabled-opacity			: .35 !default;
@@ -1511,7 +1611,10 @@ $o-dialog-cn-label-new-border-color			: $o-edu-type-standard-course-color;
 $o-dialog-cn-label-new-color				: o-a11y-color(#998100) !default;
 
 /* Card */
-$o-card-border								: 1px solid #e4e7ec !default;
+// card-border: width and style; the colour is the token card-border (decision D31 Q1 of
+// OO-10043, replaces the shorthand $o-card-border)
+$o-card-border-width                    : 1px !default;
+$o-card-border-style                    : solid !default;
 $o-card-border-radius						: $border-radius-base !default;
 $o-card-bg-color							: #f9fafb !default;
 $o-card-box-shadow 							: 0 1px 3px color-mix(in srgb, var(--o-shadow-color) 6%, transparent), 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
@@ -1521,7 +1624,10 @@ $o-card-box-hover-shadow					: 0 4px 12px color-mix(in srgb, var(--o-shadow-colo
 $o-widget-min-width							: 260px !default;
 $o-widget-height							: 135px !default;
 $o-widget-padding							: 20px !default;
-$o-widget-border							: 1px solid #e4e7ec !default;
+// widget-border: width and style; the colour is the token widget-border (decision D31 Q1 of
+// OO-10043, replaces the shorthand $o-widget-border)
+$o-widget-border-width                  : 1px !default;
+$o-widget-border-style                  : solid !default;
 $o-widget-border-radius						: 4px !default;
 $o-widget-title-font-size					: 18px !default;
 $o-widget-title-font-weight					: bold !default;
@@ -1543,9 +1649,15 @@ $o-widget-figure-desc-color					: #2d2926 !default;
 $o-widgets-gap								: 10px !default;
 
 /* Fact sheet */
-$o-fact-sheet-border						: $o-repo-info-border !default;
+// the borders of the fact sheet: width and style of the information page of
+// a learning resource; the colours are the tokens fact-sheet-border and
+// fact-sheet-separator-border (decision D31 Q1 of OO-10043, replaces the
+// shorthands $o-fact-sheet-border and $o-fact-sheet-separator-border)
+$o-fact-sheet-border-width              : $o-repo-info-border-width !default;
+$o-fact-sheet-border-style              : $o-repo-info-border-style !default;
 $o-fact-sheet-border-radius					: $o-repo-info-border-radius !default;
-$o-fact-sheet-separator-border				: $o-repo-info-separator-border !default;
+$o-fact-sheet-separator-border-width    : $o-repo-info-separator-border-width !default;
+$o-fact-sheet-separator-border-style    : $o-repo-info-separator-border-style !default;
 $o-fact-sheet-padding						: 20px !default;
 $o-fact-sheet-title-font-size				: 18px !default;
 $o-fact-sheet-title-font-weight				: bold !default;
@@ -1559,7 +1671,10 @@ $o-fact-value-font-size						: 16px !default;
 /* Dashboard Widget */
 $o-dashboard-widget-padding						: 0 !default;
 $o-dashboard-widget-base-margin					: 15px !default;
-$o-dashboard-widget-border						: 1px solid #e4e7ec !default;
+// dashboard-widget-border: width and style; the colour is the token dashboard-widget-border (decision D31 Q1 of
+// OO-10043, replaces the shorthand $o-dashboard-widget-border)
+$o-dashboard-widget-border-width        : 1px !default;
+$o-dashboard-widget-border-style        : solid !default;
 $o-dashboard-widget-border-radius				: 4px !default;
 $o-dashboard-widget-bg-color						: $panel-bg !default;
 $o-dashboard-widget-header-margin				: $o-dashboard-widget-base-margin !default;
@@ -1599,13 +1714,25 @@ $o-scope-title-font-weight					: bold !default;
 $o-tb_topic-card-thumbnail-height			: 172px !default;
 $o-tb_topic-card-image-margin				: 10px !default;
 $o-tb-topic-card-title-abbr-size				: 50px !default;
-$o-tb-topic-card-title-abbr-border			: 1px solid $btn-primary-color !default;
+// o-tb-topic-card-title-abbr-border: width and style; the colour is the token topicbroker-title-abbr-border ($btn-primary-color) (decision D31 Q1
+// of OO-10043, slice 19; replaces the shorthand $o-tb-topic-card-title-abbr-border)
+$o-tb-topic-card-title-abbr-border-width		: 1px !default;
+$o-tb-topic-card-title-abbr-border-style		: solid !default;
 $o-tb-topic-card-title-abbr-border-radius	: 4px !default;
-$o-tb-topic-placeholder-title-abbr-border	: 2px solid #fff !default;
-$o-tb-details-separator-border-bottom		: 1px solid $panel-default-border !default;
+// o-tb-topic-placeholder-title-abbr-border: width and style; the colour is the token topicbroker-placeholder-title-abbr-border (decision D31 Q1
+// of OO-10043, slice 19; replaces the shorthand $o-tb-topic-placeholder-title-abbr-border)
+$o-tb-topic-placeholder-title-abbr-border-width		: 2px !default;
+$o-tb-topic-placeholder-title-abbr-border-style		: solid !default;
+// o-tb-details-separator-border-bottom: width and style; the colour is the token topicbroker-details-separator-border ($panel-default-border) (decision D31 Q1
+// of OO-10043, slice 19; replaces the shorthand $o-tb-details-separator-border-bottom)
+$o-tb-details-separator-border-bottom-width		: 1px !default;
+$o-tb-details-separator-border-bottom-style		: solid !default;
 $o-tb-weighting-heigth						: 200px !default;
 $o-tb-weighting-legend-width					: 100px !default;
-$o-tb-weighting-grid-border					: 1px solid $panel-default-border !default;
+// o-tb-weighting-grid-border: width and style; the colour is the token topicbroker-weighting-grid-border ($panel-default-border) (decision D31 Q1
+// of OO-10043, slice 19; replaces the shorthand $o-tb-weighting-grid-border)
+$o-tb-weighting-grid-border-width		: 1px !default;
+$o-tb-weighting-grid-border-style		: solid !default;
 $o-tb-weighting-label-padding				: 1em !default;
 
 /* Credit point */
@@ -1636,7 +1763,10 @@ $o-o_speedometer-danger-border-color	: o-state-color("danger", "border") !defaul
 
 /* Indicators */
 $o-indicator-indicators-gap					: 20px !default;
-$o-indicator-separator-border				: 1px solid $o-dialog-cn-box-border-color !default;
+// indicator-separator-border: width and style; the colour is the token indicator-separator-border ($o-dialog-cn-box-border-color) (decision D31 Q1
+// of OO-10043, slice 18; replaces the shorthand $o-indicator-separator-border)
+$o-indicator-separator-border-width     : 1px !default;
+$o-indicator-separator-border-style     : solid !default;
 $o-indicator-separator-margin				: 20px !default;
 $o-indicator-key-min-width					: 100px !default;
 $o-indicator-key-padding						: 0 5px !default;
@@ -1660,7 +1790,7 @@ $o-figure-card-label-font-size				: 14px !default;
 $o-figure-card-icon-size						: 22px !default;
 $o-figure-card-icon-color					: $brand-primary !default;
 $o-figure-card-icon-bg-color					: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
-$o-dashboard-widget-indicators-min-height		: math.ceil(max($o-figure-card-figure-font-size * $line-height-base, $o-figure-card-icon-size) + $o-figure-card-label-font-size * $line-height-base + 2 * nth($o-figure-card-padding, 1) + 2 * nth($o-card-border, 1)) !default;
+$o-dashboard-widget-indicators-min-height		: math.ceil(max($o-figure-card-figure-font-size * $line-height-base, $o-figure-card-icon-size) + $o-figure-card-label-font-size * $line-height-base + 2 * nth($o-figure-card-padding, 1) + 2 * $o-card-border-width) !default;
 
 /* day navigation */
 $o-day-nav-period-font-size					: 16px !default;

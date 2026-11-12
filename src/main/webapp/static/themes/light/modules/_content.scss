@@ -71,7 +71,7 @@ h5 {
 	color: var(--o-content-h5);
 }
 hr {
-	border-top: $o-content-hr-size solid $o-content-hr-color;
+	border-top: $o-content-hr-size solid var(--o-content-hr);
 }
 
 /* 2) OpenOLAT specific styles /* 

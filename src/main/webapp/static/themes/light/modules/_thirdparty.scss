@@ -30,7 +30,7 @@
 
 .ui-dialog {
 	@include box-shadow(0px 1px 8px -1px color-mix(in srgb, var(--o-shadow-color) 35%, transparent));
-	background-color: $o-dialog-window-bg;
+	background-color: var(--o-dialog-window-bg);
 	
 	.ui-widget-header {
 		.ui-dialog-title {
@@ -68,7 +68,7 @@
 	
 	.ui-dialog-titlebar {
 		padding: 4px 7px 4px 7px;
-		background-color: $o-dialog-window-bar-bg !important;
+		background-color: var(--o-dialog-window-bar-bg) !important;
 	}
 }
 
@@ -104,8 +104,8 @@
  * slider
  */
 .ui-slider.ui-widget-content {
-	border-color: $o-slider-border;
-	background: $o-slider-background;
+	border-color: var(--o-slider-border);
+	background: var(--o-slider-bg);
 	
 	&.ui-state-disabled {
 		opacity: 0.65;
@@ -178,7 +178,7 @@
  * Swiper
  */
  body {
-	--swiper-theme-color: #{$o-swiper-color};
+	--swiper-theme-color: var(--o-swiper-theme);
 	
 	.o_swiper_buttons {
 		.swiper-button-next,
@@ -190,7 +190,7 @@
 			height: $o-swiper-button-height;
 			color: var(--o-swiper-button-fg);
 			background-color: var(--o-swiper-button-bg);
-			border: $o-swiper-button-border;
+			border: $o-swiper-button-border-width $o-swiper-button-border-style var(--o-swiper-button-border);
 			border-radius: $o-swiper-button-border-radius;
 			&::after {
 				font-size: $o-swiper-button-font-size;

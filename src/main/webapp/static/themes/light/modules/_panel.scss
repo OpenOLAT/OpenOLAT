@@ -17,7 +17,7 @@
 
 /* extend panel to contain multiple separated bodies */
 .panel-body:nth-child(n+2) {
-	border-top: 1px solid $panel-default-border;
+	border-top: 1px solid var(--o-panel-default-border);
 }
 
 /* collapsible panels must have pointer cursor to indicate clickable space*/	

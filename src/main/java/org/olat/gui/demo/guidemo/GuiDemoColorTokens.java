@@ -280,7 +280,9 @@ public class GuiDemoColorTokens {
 				new Token("toolbar-link-disabled", "$o-toolbar-link-disabled-color, follows text-disabled", "Disabled tool in the toolbar",
 						text("toolbar-link-disabled", "bg", "Disabled tool", NO_RATIO)),
 				new Token("toolbar-nav-link-disabled", "$o-toolbar-nav-link-disabled-color, follows toolbar-link-disabled", "Disabled link of the toolbar navigation",
-						text("toolbar-nav-link-disabled", "bg", "Disabled link", NO_RATIO)))));
+						text("toolbar-nav-link-disabled", "bg", "Disabled link", NO_RATIO)),
+				new Token("toolbar-border", "$o-toolbar-border-color", "Border of the toolbar; the QTI menu and the page editor read it",
+						border("toolbar-border", "bg", "text", "Toolbar", NO_RATIO)))));
 		groups.add(new TokenGroup("Menu tree", "framework layer", List.of(
 				new Token("tree-link", "$o-tree-link-color, follows nav-link", "Item of the menu tree",
 						text("tree-link", "bg", "Tree item", AA_TEXT)),
@@ -291,7 +293,11 @@ public class GuiDemoColorTokens {
 				new Token("tree-link-active", "$o-tree-link-active-color, follows link", "Selected tree item",
 						text("tree-link-active", "bg", "Tree item, selected", AA_TEXT)),
 				new Token("tree-link-active-hover-bg", "$o-tree-link-active-hover-bg", "Background of the selected tree item under the pointer",
-						fill("tree-link-active-hover-bg", "tree-link-active-hover", "Selected, hover", AA_TEXT)))));
+						fill("tree-link-active-hover-bg", "tree-link-active-hover", "Selected, hover", AA_TEXT)),
+				new Token("tree-border", "$o-tree-border-color", "Border of the tree, of its items and of the drag proxy",
+						border("tree-border", "bg", "tree-link", "Tree", NO_RATIO)),
+				new Token("tree-insertion-source-bg", "$o-tree-insertion-source-bg", "Fill of the item to move in the move dialog of a tree",
+						fill("tree-insertion-source-bg", "tree-insertion-source-fg", "Item to move", AA_TEXT)))));
 		groups.add(new TokenGroup("Table", "framework layer", List.of(
 				new Token("table-header", "\"text\"", "Text of the table header",
 						text("table-header", "bg", "Column header", AA_TEXT)),
@@ -304,7 +310,11 @@ public class GuiDemoColorTokens {
 				new Token("table-details-bg-hover", "shade: table-details-bg, 10% darker", "Expanded row and details row under the pointer",
 						fill("table-details-bg-hover", "text", "Details row, hover", AA_TEXT)),
 				new Token("table-sticky-col-edge", "shade: table-border, 10% darker", "Shadow line of a sticky column",
-						border("table-sticky-col-edge", "bg", "text", "Sticky column", NO_RATIO)))));
+						border("table-sticky-col-edge", "bg", "text", "Sticky column", NO_RATIO)),
+				new Token("table-row-selected-bg", "$o-table-row-selected-color, follows state-neutral-soft-bg", "Fill of a selected row",
+						fill("table-row-selected-bg", "text", "Selected row", AA_TEXT)),
+				new Token("table-edit-bg", "$o-table-edit-bg", "Fill of a table in the edit mode",
+						fill("table-edit-bg", "text", "Edit mode", AA_TEXT)))));
 		groups.add(new TokenGroup("Form elements", "framework layer", List.of(
 				new Token("radio-card-hover-bg", "$o-radio-card-bg-hover", "Fill of a radio card under the pointer",
 						fill("radio-card-hover-bg", "text", "Radio card, hover", AA_TEXT)),
@@ -320,6 +330,10 @@ public class GuiDemoColorTokens {
 						border("panel-placeholder-border", "bg", "text", "Drop place", NO_RATIO)),
 				new Token("panel-placeholder-border-hover", "shade: panel-placeholder-border, 10% darker", "Border of a drop place under the pointer",
 						border("panel-placeholder-border-hover", "bg", "text", "Drop place, hover", NO_RATIO)),
+				new Token("panel-placeholder-fg", "$o-panel-placeholder-color", "Heading text of a drop place",
+						text("panel-placeholder-fg", "panel-placeholder-bg", "Drop place", AA_TEXT)),
+				new Token("icon-mandatory", "$o-base-orange-color", "Mandatory marker next to a label",
+						text("icon-mandatory", "bg", "*", AA_NON_TEXT)),
 				new Token("chelp-tooltip", "$o-chelp-tooltip-color, follows text-muted", "Help icon next to a label and help tooltip",
 						text("chelp-tooltip", "bg", "Help", AA_TEXT)))));
 		groups.add(new TokenGroup("Popover, offcanvas and brand box", "framework layer", List.of(
@@ -333,6 +347,8 @@ public class GuiDemoColorTokens {
 						text("offcanvas-logout-hover", "text", "Logout, hover", NO_RATIO)),
 				new Token("offcanvas-link-hover", "$o-offcanvas-link-hover-color", "Link of the offcanvas menu under the pointer (5.18:1 on the menu in light)",
 						text("offcanvas-link-hover", "text", "Link, hover", NO_RATIO)),
+				new Token("offcanvas-link", "$o-offcanvas-link-color", "Link of the offcanvas menu (7.01:1 on the menu in light)",
+						text("offcanvas-link", "offcanvas-dropdown-bg", "Link", AA_TEXT)),
 				new Token("brand-box-border", "$o-brand-box-border", "Border of the brand box (file suffix, missing visual)",
 						border("brand-box-border", "bg", "primary-text", "Brand box", NO_RATIO)))));
 		groups.add(new TokenGroup("Charts", "framework layer", List.of(
@@ -373,7 +389,19 @@ public class GuiDemoColorTokens {
 				new Token("box-error-bg", "$o-box-error-bg", "Fill of the error box and of the red table (b_red)",
 						fill("box-error-bg", "text", "Error box", AA_TEXT)),
 				new Token("box-error-table-header-bg", "shade: box-error-bg, 10% darker", "Header cells of a table in a box (one per box)",
-						fill("box-error-table-header-bg", "text", "Header cell", AA_TEXT)))));
+						fill("box-error-table-header-bg", "text", "Header cell", AA_TEXT)),
+				new Token("box-note-border", "$o-box-note-color", "Border and icon of the note box (.o_note)",
+						border("box-note-border", "box-note-bg", "text", "Note box", AA_NON_TEXT)),
+				new Token("box-note-text", "$o-box-note-color, follows box-note-border", "Text of a note message of the video task",
+						text("box-note-text", "box-note-bg", "Note", AA_TEXT)),
+				new Token("box-tip-border", "$o-box-tip-color", "Border and icon of the tip box (.o_tip)",
+						border("box-tip-border", "box-tip-bg", "text", "Tip box", AA_NON_TEXT)),
+				new Token("box-important-border", "$o-box-important-color", "Border and icon of the important box (.o_important, 2.13:1 on its fill in light)",
+						border("box-important-border", "box-important-bg", "text", "Important box", NO_RATIO)),
+				new Token("message-line-warning-bg", "$o-line-warning-bg", "Fill of the warning line (.o_warning_line)",
+						fill("message-line-warning-bg", "message-line-warning-fg", "Warning line", AA_TEXT)),
+				new Token("message-line-error-bg", "$o-line-error-bg", "Fill of the error line (.o_error_line)",
+						fill("message-line-error-bg", "message-line-error-fg", "Error line", AA_TEXT)))));
 		groups.add(new TokenGroup("Portal and portlets", "framework layer", List.of(
 				new Token("portlet-border", "\"border\"", "Border of a portlet",
 						border("portlet-border", "bg", "text", "Portlet", NO_RATIO)),
@@ -430,6 +458,36 @@ public class GuiDemoColorTokens {
 								"Footer link, focus", MEASURE_OUTLINE, AA_NON_TEXT)))));
 		groups.add(new TokenGroup("Tags", "framework layer", List.of(
 				new Token("tag-selected-fg", "\"btn-dirty-fg\"", "Text of a selected tag on the fill of the dirty button", text("tag-selected-fg", "tag-selected-bg", "Selected tag", AA_TEXT)))));
+		groups.add(new TokenGroup("Empty state, icon panel, date, figure cards, day navigation and radial progress", "framework layer", List.of(
+				new Token("icon-panel-content-bg", "$o-icon-panel-content-bg-color, follows panel-bg", "Fill of the content column of an icon panel",
+						fill("icon-panel-content-bg", "text", "Content column", AA_TEXT)),
+				new Token("datecomp-month-fg", "$o-datecomp-month-color", "Text of the month of the date component",
+						text("datecomp-month-fg", "datecomp-month-bg", "Nov", AA_TEXT)),
+				new Token("icon-panel-icon-bg", "$o-icon-panel-icon-bg-color", "Fill of the icon column of an icon panel",
+						fill("icon-panel-icon-bg", "text", "Icon column", AA_TEXT)),
+				new Token("figure-card-bg", "$o-figure-card-bg-color", "Fill of a figure card",
+						fill("figure-card-bg", "text", "Figure card", AA_TEXT)),
+				new Token("day-nav-day-selected-bg", "$o-day-nav-day-selected-bg-color", "Fill and border of the selected day of the day navigation",
+						fill("day-nav-day-selected-bg", "day-nav-day-selected-fg", "Selected day", AA_TEXT)),
+				new Token("radial-progress-number", "$o-radial-progress-number-color, follows progress-bar-bg", "Number inside a radial progress",
+						text("radial-progress-number", "radial-progress-inset-bg", "75%", AA_TEXT)),
+				new Token("colored-icon-orange", "$o-base-orange-color", "Icon with the class o_base_orange",
+						text("colored-icon-orange", "bg", "Icon", AA_NON_TEXT)))));
+		groups.add(new TokenGroup("Toolbar, tags, competences, dropdown and test texts", "framework and component layer", List.of(
+				new Token("tag-fg", "$o-tag-font-color", "Text of a tag",
+						text("tag-fg", "tag-bg", "Tag", AA_TEXT)),
+				new Token("competence-fg", "$o-competences-font-color, follows competence-border", "Text of a competence",
+						text("competence-fg", "competence-bg", "Competence", AA_TEXT)),
+				new Token("dropdown-link-active", "$dropdown-link-active-color", "Text of the active item of a dropdown menu with a label",
+						text("dropdown-link-active", "dropdown-link-active-bg", "Active item", AA_TEXT)),
+				new Token("toolbar-nav-bg", "$o-toolbar-nav-bg-color", "Fill of the next and previous buttons of the toolbar",
+						fill("toolbar-nav-bg", "toolbar-nav-link", "Next", AA_TEXT)),
+				new Token("qti-text-entry-filled-bg", "$o-qti-textEntryInteraction-filled-bg, follows state-neutral-soft-bg", "Fill of a text entry field with a value in the HTML editor",
+						fill("qti-text-entry-filled-bg", "qti-text-entry-filled-fg", "Answer", AA_TEXT)),
+				new Token("qti-bad-response", "$o-qti-badResponse-color, follows state-danger-text", "Text of a bad response of a test question",
+						text("qti-bad-response", "bg", "Bad response", AA_TEXT)),
+				new Token("lecture-excluded", "$o-lm-excluded-color, follows state-danger-text", "Text of a participant excluded from the lectures",
+						text("lecture-excluded", "bg", "Excluded", AA_TEXT)))));
 		return groups;
 	}
 

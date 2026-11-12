@@ -22,5 +22,10 @@ body .progress-bar {
 
 /* Progress bar neutral */
 .progress-bar-neutral {
-	@include progress-bar-variant($progress-bar-neutral-bg);
+	// the rules of the Bootstrap mixin progress-bar-variant with the token
+	// (the token branch of _state_variant.scss would add a text colour)
+	background-color: var(--o-progress-bar-neutral-bg);
+	.progress-striped & {
+		@include gradient-striped;
+	}
 }

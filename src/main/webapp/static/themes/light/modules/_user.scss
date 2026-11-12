@@ -61,7 +61,7 @@
 	}
 	.o_user_portrait_border {
 		border-radius: 50%;
-		border: $o-user-info-portrait-border	;
+		border: $o-user-info-portrait-border-width $o-user-info-portrait-border-style var(--o-user-info-portrait-border)	;
 		box-shadow: $o-user-info-portrait-box-shadow	;
 	
 		// https://stackoverflow.com/questions/48975398/how-to-create-a-circle-with-a-gradient-border-and-transparent-inner-area-using-c/48977042#48977042
@@ -109,7 +109,7 @@
 
 /* !important to display in print / pdf */
 .o_user_initials {
-	color: $o-user-initials-color;
+	color: var(--o-user-initials-fg);
 	// o_user_initials_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
 	@at-root #{o-swatch-alias-selector("o_user_initials_", &)} {
 		background: var(--o-sw-bg) !important;
@@ -117,7 +117,7 @@
 	}
 	// For special user types like guests, deleted or unknown users
 	&.o_user_initials_grey {
-		background: $o-user-initials-base-bg-color !important;
+		background: var(--o-user-initials-base-bg) !important;
 	}
 }
 
@@ -247,7 +247,7 @@
 	
 	.o_user_info_profile {
 		border-radius: $o-user-info-profile-border-radius;
-		border: $o-user-info-profile-border;
+		border: $o-user-info-profile-border-style $o-user-info-profile-border-width var(--o-user-info-profile-border);
 		padding: $o-user-info-profile-padding;
 		
 		&:is(.o_user_info_wrapper *) {
@@ -289,7 +289,7 @@
 					outline: solid 2px var(--o-state-success-border);
 				}
 				&:is(:has(.o_user_status_inactive) *) {
-					outline: solid 2px o-state-color("inactive", "border", "tint");
+					outline: solid 2px var(--o-user-status-inactive-border);
 				}
 				&:is(:has(.o_user_status_login_denied) *) {
 					outline: solid 2px var(--o-state-danger-border);
@@ -298,7 +298,7 @@
 					outline: solid 2px var(--o-state-warning-border);
 				}
 				&:is(:has(.o_user_status_deleted) *) {
-					outline: solid 2px o-state-color("inactive", "border", "dark");
+					outline: solid 2px var(--o-user-status-deleted-border);
 				}
 			}
 			.o_user_info_profile_name {
@@ -332,7 +332,7 @@
 	}
 }
 .o_user_info {
-	border: $o-user-info-border;
+	border: $o-user-info-border-style $o-user-info-border-width var(--o-user-info-border);
 	border-radius: $o-user-info-border-radius;
 	
 	display: grid;
@@ -354,8 +354,8 @@
 	}
 	
 	.o_user_info_divider {
-		border-right: $o-user-info-divider-border;
-		border-bottom: $o-user-info-divider-border;
+		border-right: $o-user-info-divider-border-style $o-user-info-divider-border-width var(--o-user-info-divider-border);
+		border-bottom: $o-user-info-divider-border-style $o-user-info-divider-border-width var(--o-user-info-divider-border);
 		// Did not work in gothenberg
 		//margin: 0px $o-user-info-divider-margin-base;
 		width: calc(100% - 2*$o-user-info-divider-margin-base);
@@ -502,7 +502,7 @@ div.o_skype_button {
 	grid-template-columns: 50px 1fr;
 	align-items: center;
 	padding: 0 2em;
-	border: $o-panel-authentication-border;
+	border: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
 	
 	&.o_authentication_upgrade {
 		grid-template-columns: 50px 1fr 1fr;
@@ -522,7 +522,7 @@ div.o_skype_button {
 	}
 	
 	.o_authentication_upgrade {
-		border-left: $o-panel-authentication-border;
+		border-left: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
 	}
 }
 
@@ -545,25 +545,25 @@ div.o_skype_button {
 
 		.o_authentication_upgrade {
 			border-left: none;
-			border-top: $o-panel-authentication-border;
+			border-top: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
 			grid-column: span 2;
 		}
 	}
 }
 
 .o_authentication_level1 {
-	color: $o-authentication-color-level1;
+	color: var(--o-authentication-level1);
 }
 .o_authentication_level2 {
-	color: $o-authentication-color-level2;
+	color: var(--o-authentication-level2);
 }
 .o_authentication_level3 {
-	color: $o-authentication-color-level3;
+	color: var(--o-authentication-level3);
 }
 
 .o_authentication_recovery_keys div.panel {
 	padding: 1em 2em;
-	border: $o-panel-authentication-border;
+	border: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
 	
 	>ul {
 		columns: 2;

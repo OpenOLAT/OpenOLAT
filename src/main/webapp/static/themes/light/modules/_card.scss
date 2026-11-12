@@ -2,7 +2,7 @@
 
 %o_card,
 .o_card {
-	border: $o-card-border;
+	border: $o-card-border-width $o-card-border-style var(--o-card-border);
 	border-radius: $o-card-border-radius;	
 	box-shadow: $o-card-box-shadow;
 	
@@ -78,7 +78,7 @@
 	min-height: $o-widget-height;
 	max-height: $o-widget-height;
 	
-	border: $o-widget-border;
+	border: $o-widget-border-width $o-widget-border-style var(--o-widget-border);
 	border-radius: $o-widget-border-radius;
 	padding: $o-widget-padding;
 	
@@ -97,7 +97,7 @@
 			.o_widget_subtitle {
 				font-size: $o-widget-subtitle-font-size;
 				font-weight: $o-widget-subtitle-font-weight;
-				color: $o-widget-subtitle-color;
+				color: var(--o-widget-subtitle);
 			}
 		}
 		.o_widget_icon {
@@ -139,7 +139,7 @@
 					align-items: end;
 					.o_widget_additional_text {
 						font-size: $o-widget-text-additional-font-size;
-						color: $o-widget-text-additional-color;
+						color: var(--o-widget-text-additional);
 					}
 				}
 				.o_widget_left_col {
@@ -202,7 +202,7 @@
 					.o_widget_figure_desc {
 						font-size: $o-widget-figure-desc-font-size;
 						font-weight: $o-widget-figure-desc-font-weight;
-						color: $o-widget-figure-desc-color;
+						color: var(--o-widget-figure-desc);
 					}
 				}
 				.o_widget_additional {
@@ -271,14 +271,14 @@
 
 /* Fact sheet */
 .o_fact_sheet {
-	border: $o-fact-sheet-border;
+	border: $o-fact-sheet-border-style $o-fact-sheet-border-width var(--o-fact-sheet-border);
 	border-radius: $o-fact-sheet-border-radius;
 	padding: $o-fact-sheet-padding;
 
 	.o_fact_sheet_title {
 		font-size: $o-fact-sheet-title-font-size;
 		font-weight: $o-fact-sheet-title-font-weight;
-		border-bottom: $o-fact-sheet-separator-border;
+		border-bottom: $o-fact-sheet-separator-border-width $o-fact-sheet-separator-border-style var(--o-fact-sheet-separator-border);
 		margin-top: 0;
 		padding-bottom: 10px;
 		margin-bottom: 20px;
@@ -300,7 +300,7 @@
 		width: $o-fact-icon-size;
 		height: $o-fact-icon-size;
 		border-radius: 50%;
-		background-color: $o-fact-icon-bg-color;
+		background-color: var(--o-fact-icon-bg);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -354,9 +354,9 @@
 
 /* Dashboard widgets */
 .o_dashboard_widget {
-	border: $o-dashboard-widget-border;
+	border: $o-dashboard-widget-border-width $o-dashboard-widget-border-style var(--o-dashboard-widget-border);
 	border-radius: $o-dashboard-widget-border-radius;
-	background-color: $o-dashboard-widget-bg-color;
+	background-color: var(--o-dashboard-widget-bg);
 	padding: $o-dashboard-widget-padding	;
 	
 	display: flex;
@@ -458,14 +458,14 @@
 	
 }
 .o_dashboard_table_widget {
-	background-color: $o-dashboard-widget-header-footer-bg-color;
+	background-color: var(--o-dashboard-widget-header-footer-bg);
 	
 	.o_dashboard_widget_table,
 	.o_dashboard_widget_empty {
 		flex-grow: 1;
-		background-color: $o-dashboard-widget-table-bg-color;
-		border-top: $o-dashboard-widget-border;
-		border-bottom: $o-dashboard-widget-border;
+		background-color: var(--o-dashboard-widget-table-bg);
+		border-top: $o-dashboard-widget-border-width $o-dashboard-widget-border-style var(--o-dashboard-widget-border);
+		border-bottom: $o-dashboard-widget-border-width $o-dashboard-widget-border-style var(--o-dashboard-widget-border);
 	}
 	
 	.table {
@@ -478,7 +478,7 @@
 			}
 		}
 		td {
-			background-color: $o-dashboard-widget-table-bg-color;
+			background-color: var(--o-dashboard-widget-table-bg);
 			vertical-align: middle;
 			&:first-child {
 				padding-left: $o-dashboard-widget-base-margin;
@@ -531,7 +531,7 @@
 			thead th {
 				position: sticky;
 				top: 0;
-				background-color: $o-dashboard-widget-table-bg-color;
+				background-color: var(--o-dashboard-widget-table-bg);
 			}
 		}
 	}
@@ -544,7 +544,7 @@
 			}
 		}
 		.o_table_row {
-			background-color: $o-dashboard-widget-table-bg-color;
+			background-color: var(--o-dashboard-widget-table-bg);
 			
 			&:not(.o_dashboard_table_widget_noborder) {
 				border-top: 1px solid var(--o-table-border);
@@ -559,7 +559,7 @@
 	}
 	
 	.o_empty_state {
-		background-color: $o-dashboard-widget-table-bg-color;
+		background-color: var(--o-dashboard-widget-table-bg);
 		margin: 0;
 		border: 0;
 		border-radius: 0;

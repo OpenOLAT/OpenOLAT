@@ -113,7 +113,7 @@
 		margin-bottom: 1em;
 		line-height: normal;
 		font-size: 90%;
-		color: $o-coursesite-meta-author-color;
+		color: var(--o-coursesite-meta-author);
 	}		
 	
 	.o_ratings_and_comments {
@@ -146,9 +146,9 @@
 
 .o_video_marker {
 	position: absolute;
-	background-color: $o-video-marker-bg-color;
+	background-color: var(--o-video-marker-bg);
 	opacity: 0.85;
-	border-left: 3px solid $o-video-time-marker-default-bg-color;
+	border-left: 3px solid var(--o-video-time-marker-default-bg);
 	padding: 5px;
 	
 	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
@@ -242,7 +242,7 @@
 	width: 170px;
 	padding-left: 10px;
 	right: initial;
-	background: $o-video-controls-bg;
+	background: var(--o-video-controls-bg);
 	
 	ul li {
 		label {
@@ -270,14 +270,14 @@
 }
 
 .mejs__controls .mejs__volume-button > .mejs__volume-slider {
-	background: $o-video-controls-bg;
+	background: var(--o-video-controls-bg);
 }
 
 
 /* beautify track plugin, remove radio button */
 .mejs__controls .mejs__captions-button .mejs__captions-selector {
 	right: -26px;
-	background: $o-video-controls-bg;
+	background: var(--o-video-controls-bg);
 	
 	ul li {
 		label {
@@ -320,7 +320,7 @@
 	height: 150px;
 	top: auto;
 	bottom: 40px;
-	background: $o-video-controls-bg;
+	background: var(--o-video-controls-bg);
 	
 	ul li {
 		label {
@@ -342,7 +342,7 @@
 }
 
 .mejs__time-marker {
-	background-color: $o-video-time-marker-default-bg-color;
+	background-color: var(--o-video-time-marker-default-bg);
 }
 
 /* replay button */
@@ -472,7 +472,7 @@
     width: 240px;
     max-height: 360px;
     overflow-y: auto;
-    background: $o-video-controls-bg;
+    background: var(--o-video-controls-bg);
 
 	.mejs__chapters-selector-list-item {
 		margin-bottom: 0;
@@ -553,20 +553,20 @@
 			width: 1px;
 		}
 		&.o_selection_correct {
-			background-color: $o-video-timeline-correct-bg;
+			background-color: var(--o-video-timeline-correct-bg);
 		}
 		&.o_selection_correct:before {
 			top: 30px;
-			color: $o-video-timeline-correct-bg;
-			background-color: $o-video-timeline-correct-bg;
+			color: var(--o-video-timeline-correct-bg);
+			background-color: var(--o-video-timeline-correct-bg);
 		}
 		&.o_selection_incorrect {
-			background-color: $o-video-timeline-incorrect-bg;
+			background-color: var(--o-video-timeline-incorrect-bg);
 		}
 		&.o_selection_incorrect:before {
 			top: -30px;
-			color: $o-video-timeline-incorrect-bg;
-			background-color: $o-video-timeline-incorrect-bg;
+			color: var(--o-video-timeline-incorrect-bg);
+			background-color: var(--o-video-timeline-incorrect-bg);
 		}
 	}
 }
@@ -586,7 +586,7 @@
 	background-color: var(--o-table-hover-bg);
 
 	&.o_video_active {
-		background-color: $o-table-row-selected-color;
+		background-color: var(--o-table-row-selected-bg);
 	}
 }
 
@@ -599,7 +599,7 @@
 	cursor: pointer;
 
 	svg {
-		stroke: $o-video-border-color;
+		stroke: var(--o-video-border);
 		stroke-width: 32;
 		width: 30px;
 		height: 30px;
@@ -637,7 +637,7 @@
 	border-style: solid;
 	border-radius: 4px;
 	border-width: 1px;
-	border-color: $o-video-border-color;
+	border-color: var(--o-video-border);
 	color: var(--o-video-bright);
 
 	&.o_video_selected {
@@ -696,7 +696,7 @@
 }
 
 .o_video_colored_area {
-	border-color: $o-video-border-color;
+	border-color: var(--o-video-border);
 
 	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
 		background-color: var(--o-sw-bg);
@@ -1164,8 +1164,8 @@
 		top: 50%;
 		left: 50%;
 		border-radius: 6px;
-		background-color: $o_color_note-text-bg;
-		color: $o_color_note;
+		background-color: var(--o-video-recording-info-bg);
+		color: var(--o-video-recording-info-fg);
 		opacity: 0.8;
 		line-height: 24px;
 		padding: 10px 15px;

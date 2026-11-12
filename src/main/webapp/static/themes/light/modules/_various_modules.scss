@@ -161,7 +161,7 @@ ul.o_dropdown {
 	text-align: center;
 	padding: 1.5em 2em 1em 2em;
 	margin: 1em 0;
-	border: $o-empty-border-color;
+	border: $o-empty-border-width $o-empty-border-style var(--o-empty-border);
 	border-radius: $o-empty-border-radius;
 	
 	.o_empty_small {
@@ -174,7 +174,7 @@ ul.o_dropdown {
 			width: 80px;
 			height: 80px;
 			border-radius: 50%;
-			background-color: $o-brand-box-bg;
+			background-color: var(--o-brand-box-bg);
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -210,7 +210,7 @@ ul.o_dropdown {
 			width: 100px;
 			height: 100px;
 			border-radius: 50%;
-			background-color: $o-brand-box-bg;
+			background-color: var(--o-brand-box-bg);
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -233,7 +233,7 @@ ul.o_dropdown {
 			bottom: 10%; 
 			font-weight: bold;
 			font-size: 2em;
-			color: $o-empty-indicator-color;
+			color: var(--o-empty-indicator);
 			text-shadow: 5px 10px 10px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
 		}
 		
@@ -241,7 +241,7 @@ ul.o_dropdown {
 		i:nth-child(2) {
 			font-weight: bold;
 			font-size: 4em;
-			color: $o-empty-icon-color;
+			color: var(--o-empty-icon);
 			min-width: 48px;
 		}
 	}
@@ -487,7 +487,7 @@ ul.o_dropdown {
 	min-width: $line-height-computed * 2; 
 	max-width: $line-height-computed * 2; 
 	height: $line-height-computed + floor($line-height-computed * 1.5) + 2px; 
-	border: 1px solid $o-datecomp-border; 
+	border: 1px solid var(--o-datecomp-border); 
 	margin-right: $padding-base-horizontal; 
 	text-align: center; 
 	vertical-align: middle; 
@@ -506,13 +506,13 @@ ul.o_dropdown {
 		line-height: $line-height-computed; 
 		font-size: $font-size-small; 
 		background-color: var(--o-datecomp-month-bg);
-		color: $o-datecomp-month-color;
+		color: var(--o-datecomp-month-fg);
 	}
 	div.o_day {
 		height: floor($line-height-computed * 1.5);
 		line-height: floor($line-height-computed * 1.5);
 		font-size: $font-size-large;
-		border-top: 1px solid $o-datecomp-border;
+		border-top: 1px solid var(--o-datecomp-border);
 		background-color: var(--o-datecomp-day-bg);
 		color: var(--o-datecomp-day-fg);
 	}
@@ -667,7 +667,7 @@ ul.o_certificates li {
 	
 	.o_achievement_meta > span {
 		font-size: 90%;
-		color: $o-export-area-meta-color;
+		color: var(--o-export-area-meta);
 	}
 	
 	.o_achievement_meta > span.o_issuer {
@@ -837,14 +837,14 @@ div.o_assessment_mode_row {
 	
 	&.o_assessment_today {
 		padding: 0 20px 0 12px;
-		border-left: 3px solid $o-assessment-mode-today-border-color;
-		background-color: $o-assessment-mode-today-bg;
+		border-left: 3px solid var(--o-assessment-mode-today-border);
+		background-color: var(--o-assessment-mode-today-bg);
 	}
 	
 	&.o_assessment_end_soon.o_assessment_today {
 		padding: 0 20px 0 12px;
-		border-left: 3px solid $o-assessment-mode-end-soon-border-color;
-		background-color: $o-assessment-mode-end-soon-bg;
+		border-left: 3px solid var(--o-assessment-mode-end-soon-border);
+		background-color: var(--o-assessment-mode-end-soon-bg);
 	}
 }
 
@@ -866,7 +866,7 @@ div.o_assessment_inspection_with_code {
 	grid-template-columns: 50% 49%;
 
 	>.o_assessment_inspection_code {
-		border-left: $o-assessment-inspection-border-color;
+		border-left: $o-assessment-inspection-border-width $o-assessment-inspection-border-style var(--o-assessment-inspection-border);
 		padding: 20px 0 0 20px;
 	}
 }
@@ -1208,7 +1208,7 @@ div.o_reminder_custom_email {
 
 /* Icon panel component */
 .o_empty_panel {
-	border: $o-icon-panel-border;
+	border: $o-icon-panel-border-width $o-icon-panel-border-style var(--o-icon-panel-border);
 	border-radius: $o-icon-panel-border-radius;
 
 
@@ -1216,7 +1216,7 @@ div.o_reminder_custom_email {
 
 /* Icon panel component */
 .o_empty_panel {
-	border: $o-icon-panel-border;
+	border: $o-icon-panel-border-width $o-icon-panel-border-style var(--o-icon-panel-border);
 	border-radius: $o-icon-panel-border-radius;
 	padding: 10px 15px;
 	display: grid;
@@ -1230,7 +1230,7 @@ div.o_reminder_custom_email {
 		height: 36px;
 		border-radius: 18px;
 		border: 2px solid var(--o-bg);
-		background-color: $o-empty-panel-icon-bg-color;
+		background-color: var(--o-empty-panel-icon-bg);
 		box-shadow: 0px 1px 3px 0px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
 		display: flex;
 		align-items: center;
@@ -1255,7 +1255,7 @@ div.o_reminder_custom_email {
 
 /* Icon panel component */
 .o_icon_panel {
-	border: $o-icon-panel-border;
+	border: $o-icon-panel-border-width $o-icon-panel-border-style var(--o-icon-panel-border);
 	border-radius: $o-icon-panel-border-radius;
 	h3, h4 {
 		margin-top: 0;
@@ -1278,14 +1278,14 @@ div.o_reminder_custom_email {
 	display: flex;
 	>.o_icon_panel_icon_col {
 		padding: 15px 10px;
-		border-right: $o-icon-panel-border;
-		background-color: $o-icon-panel-icon-bg-color;
+		border-right: $o-icon-panel-border-width $o-icon-panel-border-style var(--o-icon-panel-border);
+		background-color: var(--o-icon-panel-icon-bg);
 	}
 	>.o_icon_panel_content_col {
 		width: 100%;
 		overflow: hidden;
 		padding: 15px;
-		background-color: $o-icon-panel-content-bg-color;
+		background-color: var(--o-icon-panel-content-bg);
 		
 		display: grid;
 		grid-template-columns: 1fr;
@@ -1304,7 +1304,7 @@ div.o_reminder_custom_email {
 		}
 		
 		.o_icon_panel_content ~ .o_icon_panel_content {
-			border-left: $o-icon-panel-border;
+			border-left: $o-icon-panel-border-width $o-icon-panel-border-style var(--o-icon-panel-border);
 		}
 	}
 	
@@ -1329,7 +1329,7 @@ div.o_reminder_custom_email {
 		
 		.o_icon_panel_content ~ .o_icon_panel_content {
 			border-left: none;
-			border-top: $o-icon-panel-border;
+			border-top: $o-icon-panel-border-width $o-icon-panel-border-style var(--o-icon-panel-border);
 			padding-top: 12px;
 			order: 5;
 		}
@@ -1395,7 +1395,7 @@ div.o_reminder_custom_email {
 
 .o_expand.o_button_group {
 	margin: 10px 0 0 0;
-	border-top: 1px solid $o-table-filter-collapse-color;
+	border-top: 1px solid var(--o-table-filter-collapse-border);
 	
 	.o_button_details {
 		margin: -2px auto 0 auto;
@@ -1715,7 +1715,7 @@ ul.o_assessment_docs>li:last-child {
 	}
 	.o_progress-bar-neutral {
 		&.progress-bar {
-			background-color: $progress-bar-neutral-bg;
+			background-color: var(--o-progress-bar-neutral-bg);
 		}
 	}
 }
@@ -1746,9 +1746,9 @@ ul.o_assessment_docs>li:last-child {
 	color: $color;
 }
 
-.o_base_blue, %o_base_blue { @include colored-base-variant($o-base-blue-color); }
-.o_base_green, %o_base_green { @include colored-base-variant($o-base-green-color); }
-.o_base_orange, %o_base_orange { @include colored-base-variant($o-base-orange-color); }
+.o_base_blue, %o_base_blue { @include colored-base-variant(var(--o-colored-icon-blue)); }
+.o_base_green, %o_base_green { @include colored-base-variant(var(--o-colored-icon-green)); }
+.o_base_orange, %o_base_orange { @include colored-base-variant(var(--o-colored-icon-orange)); }
 
 
 /* label */
@@ -2020,7 +2020,7 @@ a.o_labeled_light {
 		left: 0;
 		width: 100%;
 		height: 200%;
-		border: 10px solid $o-o_speedometer-not-border-color;
+		border: 10px solid var(--o-speedometer-not-border);
 		border-radius: 50%;
 	}
 	
@@ -2055,36 +2055,36 @@ a.o_labeled_light {
 			left: 0;
 			width: 100%;
 			height: 200%;
-			border: 10px solid $o-o_speedometer-default-border-color;
+			border: 10px solid var(--o-speedometer-default-border);
 			border-top-left-radius: 50%;
 			border-top-right-radius: 50%;
 		}
 	}
 	
 	&.o_speedometer_infos>.o_speedometer_value {
-		color: $o-o_speedometer-default-border-color;
+		color: var(--o-speedometer-default-text);
 	}
 	&.o_speedometer_success>.o_speedometer_value {
-		color: $o-o_speedometer-success-border-color;
+		color: var(--o-speedometer-success-text);
 	}
 	&.o_speedometer_warning>.o_speedometer_value {
-		color: $o-o_speedometer-warning-border-color;
+		color: var(--o-speedometer-warning-text);
 	}
 	&.o_speedometer_danger>.o_speedometer_value {
-		color: $o-o_speedometer-danger-border-color;
+		color: var(--o-speedometer-danger-text);
 	}
 	
 	&.o_speedometer_infos>span:after {
-		border-color: $o-o_speedometer-default-border-color;
+		border-color: var(--o-speedometer-default-border);
 	}
 	&.o_speedometer_success>span:after {
-		border-color: $o-o_speedometer-success-border-color;
+		border-color: var(--o-speedometer-success-border);
 	}
 	&.o_speedometer_warning>span:after {
-		border-color: $o-o_speedometer-warning-border-color;
+		border-color: var(--o-speedometer-warning-border);
 	}
 	&.o_speedometer_danger>span:after {
-		border-color: $o-o_speedometer-danger-border-color;
+		border-color: var(--o-speedometer-danger-border);
 	}
 }
 
@@ -2114,7 +2114,7 @@ ul.o_list_narrow {
 	
 	grid-template-columns: 1fr;
 	.o_indicators_separator {
-		border-top: $o-indicator-separator-border;
+		border-top: $o-indicator-separator-border-width $o-indicator-separator-border-style var(--o-indicator-separator-border);
 		margin: 0 $o-indicator-separator-margin;
 	}
 	
@@ -2123,7 +2123,7 @@ ul.o_list_narrow {
 		grid-template-columns: minmax(min-content, $o-indicator-indicator-max-width) 2px 1fr;
 		.o_indicators_separator {
 			border-top: none;
-			border-left: $o-indicator-separator-border;
+			border-left: $o-indicator-separator-border-width $o-indicator-separator-border-style var(--o-indicator-separator-border);
 			margin: $o-indicator-separator-margin 0;
 		}
 	}
@@ -2190,14 +2190,10 @@ ul.o_list_narrow {
 }
 
 /* Figure cards component */
-// tint swatch of the palette hue (name of the class, hue)
-$o-figure-card-icon-colors:
-		("blue", o-swatch-color("blue", "tint-fg"), o-swatch-color("blue", "tint-bg")),
-		("green", o-swatch-color("green", "tint-fg"), o-swatch-color("green", "tint-bg")),
-		("yellow", o-swatch-color("yellow", "tint-fg"), o-swatch-color("yellow", "tint-bg")),
-		("orange", o-swatch-color("orange", "tint-fg"), o-swatch-color("orange", "tint-bg")),
-		("red", o-swatch-color("red", "tint-fg"), o-swatch-color("red", "tint-bg")),
-		("grey", o-swatch-color("gray", "tint-fg"), o-swatch-color("gray", "tint-bg"));
+// the icon colours (name of the class): the tokens figure-card-icon-{name}
+// and figure-card-icon-{name}-bg, the text and the fill of the tint swatch
+// of a palette hue (_tokens.scss, OO-10043 slice 18)
+$o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
 
 @mixin o-figure-cards-two-line($n) {
 	grid-template-columns: repeat($n, minmax(0, 1fr));
@@ -2216,11 +2212,11 @@ $o-figure-card-icon-colors:
 		height: $o-figure-card-icon-size;
 		border-radius: 50%;
 		font-size: 11px;
-		background-color: $o-figure-card-icon-bg-color;
+		background-color: var(--o-figure-card-icon-bg);
 	}
-	@each $name, $color, $bg-color in $o-figure-card-icon-colors {
+	@each $name in $o-figure-card-icon-names {
 		.o_figure_card_icon_#{$name} {
-			background-color: $bg-color;
+			background-color: var(--o-figure-card-icon-#{$name}-bg);
 		}
 	}
 	.o_figure_card_figure {
@@ -2252,7 +2248,7 @@ $o-figure-card-icon-colors:
 		align-content: center;
 		height: 100%;
 		padding: $o-figure-card-one-line-padding;
-		background-color: $o-figure-card-bg-color;
+		background-color: var(--o-figure-card-bg);
 		color: var(--o-text);
 		text-decoration: none;
 		
@@ -2270,9 +2266,9 @@ $o-figure-card-icon-colors:
 		grid-area: icon;
 		color: var(--o-figure-card-icon);
 	}
-	@each $name, $color, $bg-color in $o-figure-card-icon-colors {
+	@each $name in $o-figure-card-icon-names {
 		.o_figure_card_icon_#{$name} {
-			color: $color;
+			color: var(--o-figure-card-icon-#{$name});
 		}
 	}
 	
@@ -2351,12 +2347,12 @@ $o-figure-card-icon-colors:
 		flex-direction: column;
 		align-items: center;
 		padding: $o-day-nav-day-padding;
-		background-color: $o-day-nav-day-bg-color;
+		background-color: var(--o-day-nav-day-bg);
 		color: var(--o-text);
 		line-height: 1.2;
 		
 		&:hover {
-			border-color: $o-day-nav-day-hover-border-color;
+			border-color: var(--o-day-nav-day-hover-border);
 		}
 		.o_day_abbr {
 			font-size: $o-day-nav-abbr-font-size;
@@ -2379,14 +2375,14 @@ $o-figure-card-icon-colors:
 			border-color: var(--o-datepicker-today-border);
 		}
 		&.o_day_selected {
-			background-color: $o-day-nav-day-selected-bg-color;
-			border-color: $o-day-nav-day-selected-bg-color;
-			color: $o-day-nav-day-selected-color;
+			background-color: var(--o-day-nav-day-selected-bg);
+			border-color: var(--o-day-nav-day-selected-bg);
+			color: var(--o-day-nav-day-selected-fg);
 			font-weight: 600;
 		}
 	}
 	.o_day_weekend .o_day_button:not(.o_day_selected) {
-		background-color: $o-day-nav-day-weekend-bg-color;
+		background-color: var(--o-day-nav-day-weekend-bg);
 		
 		&:not(.o_day_today) {
 			color: var(--o-text-muted);

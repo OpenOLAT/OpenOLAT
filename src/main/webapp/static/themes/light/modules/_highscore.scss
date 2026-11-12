@@ -4,7 +4,7 @@
 	.o_position {
 		text-align: center;
 		h2 {
-			@if $o-hs-position-title-color == gradient {
+			@if o-hs-position-title-gradient() {
 				/* apply only for webkit capable browsers (Safari, Edge, Chrome) */
 				@media screen and (-webkit-min-device-pixel-ratio:0) {
 					background: linear-gradient(330deg, var(--o-red-500) 0%, var(--o-lime-300) 25%, var(--o-teal-300) 50%, var(--o-violet-500) 75%, var(--o-red-500) 100%);
@@ -18,7 +18,7 @@
 				}
 
 			} @else {
-				color: $o-hs-position-title-color;
+				color: var(--o-highscore-position-title);
 			}
 			font-size: $o-hs-position-title-size;
 			font-weight: $o-hs-position-title-weight;
@@ -101,20 +101,20 @@
 	.o_first {
 		height: $o-hs-podium-first-height;
 		left: 30%;
-		border: $o-hs-podium-border;		
+		border: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
 		border-top-left-radius: $o-hs-podium-border-radius;
 		border-top-right-radius: $o-hs-podium-border-radius;
 		@if $o-hs-podium-bg-gradientstyle == true {
 			@include o-make-glossy-bg("highscore-podium-first-bg");
 		} @else {
-			background: $o-hs-podium-first-bg;
+			background: var(--o-highscore-podium-first-bg);
 		}
 		
 		&:before {
 			content: "1";
 			font-size: 700%;
 			line-height: $o-hs-podium-first-height;
-			color: $o-hs-rank-first-color	;
+			color: var(--o-highscore-rank-first)	;
 		}
 	}
 
@@ -124,17 +124,17 @@
 		@if $o-hs-podium-bg-gradientstyle == true {
 			@include o-make-glossy-bg("highscore-podium-second-bg");
 		} @else {
-			background: $o-hs-podium-second-bg;
+			background: var(--o-highscore-podium-second-bg);
 		}		
-		border-left: $o-hs-podium-border;		
-		border-top: $o-hs-podium-border;		
-		border-bottom: $o-hs-podium-border;		
+		border-left: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+		border-top: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+		border-bottom: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
 		border-top-left-radius: $o-hs-podium-border-radius;
 		&:before {
 			content: "2";
 			font-size: 500%;
 			line-height: $o-hs-podium-second-height;
-			color: $o-hs-rank-second-color;
+			color: var(--o-highscore-rank-second);
 		}
 	}
 
@@ -144,17 +144,17 @@
 		@if $o-hs-podium-bg-gradientstyle == true {
 			@include o-make-glossy-bg("highscore-podium-third-bg");
 		} @else {
-			background: $o-hs-podium-third-bg;
+			background: var(--o-highscore-podium-third-bg);
 		}		
-		border-right: $o-hs-podium-border;		
-		border-top: $o-hs-podium-border;		
-		border-bottom: $o-hs-podium-border;		
+		border-right: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+		border-top: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+		border-bottom: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
 		border-top-right-radius: $o-hs-podium-border-radius;
 		&:before {
 			content: "3";
 			font-size: 300%;
 			line-height: $o-hs-podium-third-height;
-			color: $o-hs-rank-third-color;
+			color: var(--o-highscore-rank-third);
 		}
 	}
 
@@ -168,11 +168,11 @@
 			padding-top: 50px;
 			height: $o-hs-histogram-height;
 			text {
-				fill: $o-hs-histogram-text-color;
+				fill: var(--o-highscore-histogram-text);
 			}
 			.axis {
 				path, line {
-					stroke: $o-hs-histogram-axis-color;
+					stroke: var(--o-highscore-histogram-axis);
 				}
 			}
 			.o_myself {
@@ -182,13 +182,13 @@
 				}
 			}
 			.o_other {
-				fill: $o-hs-histogram-bar-other-color;
+				fill: var(--o-highscore-bar-other);
 				&:hover {
 					fill: var(--o-highscore-bar-other-hover);
 				}
 			}
 			.o_empty {
-				fill: $o-hs-histogram-bar-empty-color;	
+				fill: var(--o-highscore-bar-empty);	
 			}
 		}	
 	}

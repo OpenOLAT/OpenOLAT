@@ -99,13 +99,13 @@
 	background-size: cover;
 	span {
 		padding: 2px;
-		background-color: $o-imagebg-text-background;
+		background-color: var(--o-imagebg-text-bg);
 	}	
 	
 	h1, h2, h3, h4, h5,
 	p {
 		padding: 2px;
-		background-color: $o-imagebg-text-background;
+		background-color: var(--o-imagebg-text-bg);
 		display: inline-block;
 		&:after {
 			content: ' ';
@@ -402,12 +402,12 @@
 	background-size: cover;
 
 	&.panel-default>.panel-heading {
-		background-color: $o-imagebg-text-background;
+		background-color: var(--o-imagebg-text-bg);
 		border-bottom: transparent;
 	}
 	.panel-body span {
 		padding: 2px;
-		background-color: $o-imagebg-text-background;
+		background-color: var(--o-imagebg-text-bg);
 	}	
 }
 
@@ -417,7 +417,7 @@
 	border-style: dashed;
 	border-color: var(--o-panel-placeholder-border);
 	border-radius: $o-panel-placeholder-border-radius;
-	background-color: $o-panel-placeholder-bg;
+	background-color: var(--o-panel-placeholder-bg);
 	
 	.panel-body {
 		padding: $o-panel-placeholder-padding; 
@@ -443,7 +443,7 @@
 		border-top: none;
 		border-left: none;
 		border-right: none;
-		color: $o-panel-placeholder-color;
+		color: var(--o-panel-placeholder-fg);
 		font-weight: $o-panel-placeholder-font-weight;
 	}
 	.panel-footer {
@@ -702,15 +702,15 @@
 
 /* activity */
 .o_activity_add {
-	border: $o-activity-add-border;
+	border: $o-activity-add-border-width $o-activity-add-border-style var(--o-activity-add-border);
 }
 
 .o_activity_modify {
-	border: $o-activity-modify-border;
+	border: $o-activity-modify-border-width $o-activity-modify-border-style var(--o-activity-modify-border);
 }
 
 .o_activity_remove {
-	border: $o-activity-remove-border;
+	border: $o-activity-remove-border-width $o-activity-remove-border-style var(--o-activity-remove-border);
 }
 
 .o_activity_modify, .o_activity_add, .o_activity_remove {
