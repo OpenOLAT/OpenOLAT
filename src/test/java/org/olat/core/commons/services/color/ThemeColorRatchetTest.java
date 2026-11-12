@@ -57,17 +57,33 @@ public class ThemeColorRatchetTest {
 
 	/**
 	 * Not counted: the state wiring and the token sources may use colour
-	 * values, and _bootstrap.scss hands the Sass variables to the Bootstrap
-	 * import. The own rules of _bootstrap.scss are not counted either.
+	 * values, and _bootstrap.scss only hands the Sass variables to the
+	 * Bootstrap import. _bootstrap.scss has no own rules: they are in the
+	 * modules and count there (test bootstrapHasNoOwnRules).
 	 */
 	private static final Set<String> SKIPPED = Set.of("_bootstrap.scss", "_states.scss", "_palette_vars.scss", "_tokens.scss");
 
+	private static final Path BOOTSTRAP = LIGHT_MODULES.resolve("_bootstrap.scss");
+
+	/*
+	 * The lookahead (?!...) of the $ variable patterns skips a variable whose
+	 * name holds a colour word (border, bg, color, background) but whose value
+	 * is no colour: a dimension word anywhere in the name ($btn-border-radius-base,
+	 * $o-cn-style-border-width, $o-proj-header-background-height-max), "style"
+	 * only at the end ($o-qti-match-source-border-style: dashed,
+	 * $o-hs-podium-bg-gradientstyle: true). "style" is also the namespace of
+	 * the course element styles: $o-cn-style-border and $o-cn-style-bg count.
+	 */
 	private static final List<Pattern> OLD_COLOR_REFERENCES = List.of(
 			Pattern.compile("#[0-9a-fA-F]{3,8}\\b"),
 			Pattern.compile(":\\s*(?:red|green|blue|yellow|orange|white|black|gray|grey|lightgrey|lightgray|silver|purple)\\b"),
-			Pattern.compile("\\$brand-[a-z]+"),
-			Pattern.compile("\\$(?![a-z0-9-]*(?:radius|width|height|padding|size|margin|offset|style))(?:gray(?:-[a-z]+)?|text-color|text-muted|link-color|link-hover-color|body-bg|state-[a-z]+-[a-z]+|panel-[a-z-]+|table-[a-z-]+|input-[a-z-]+|btn-[a-z-]+|navbar-[a-z-]+|label-[a-z-]+|alert-[a-z-]+)\\b"),
-			Pattern.compile("\\$(?![a-z0-9-]*(?:radius|width|height|padding|size|margin|offset|style))o-[a-z0-9-]*(?:color|bg|border|background)[a-z0-9-]*"),
+			// $brand-primary, not a local variable $brand-primary-bg
+			Pattern.compile("\\$brand-[a-z]+(?![\\w-])"),
+			Pattern.compile("\\$(?![a-z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-z0-9-]*style(?![\\w-]))(?:gray(?:-[a-z]+)?|text-color|text-muted|link-color|link-hover-color|body-bg|state-[a-z]+-[a-z]+|panel-[a-z-]+|table-[a-z-]+|input-[a-z-]+|btn-[a-z-]+|navbar-[a-z-]+|label-[a-z-]+|alert-[a-z-]+)\\b"),
+			// The colour variables of the other Bootstrap components: the name ends with color, bg or border
+			// ($dropdown-link-hover-bg, $hr-border, $modal-content-border-color), not $modal-lg or $popover-arrow-width
+			Pattern.compile("\\$(?![a-z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-z0-9-]*style(?![\\w-]))(?:dropdown|popover|modal|pre|hr|legend|blockquote|thumbnail|progress|tooltip|code|kbd|badge|pagination|pager|breadcrumb|list-group|well|jumbotron(?=-bg)|close|nav|carousel|component-active|headings-small|abbr|page-header)-[a-z-]*?(?:color|bg|border)(?![\\w-])"),
+			Pattern.compile("\\$(?![a-z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-z0-9-]*style(?![\\w-]))o-[a-z0-9-]*(?:color|bg|border|background)[a-z0-9-]*"),
 			Pattern.compile("\\b(?:darken|lighten|rgba|fade-in|fade-out|mix|adjust-color|scale-color|transparentize|opacify)\\("),
 			Pattern.compile("\\b(?:rgb|hsla?)\\("),
 			Pattern.compile("\\bo-(?:a11y-color|state-color|palette|swatch-color)\\("));
@@ -109,6 +125,42 @@ public class ThemeColorRatchetTest {
 				""";
 		// #333, $brand-primary, darken(, $o-navbar-bg, : white
 		Assert.assertEquals(5, countOldColorReferences(scss));
+	}
+
+	@Test
+	public void countBootstrapComponentReferences() {
+		String scss = """
+				.d { color: $dropdown-link-hover-color; border-top: 1px solid $hr-border; width: $modal-lg; }
+				.e { background: $brand-primary-bg; margin: $popover-arrow-width; color: $brand-info; }
+				.f { border-color: $modal-content-border-color; opacity: $modal-backdrop-opacity; color: $jumbotron-color; }
+				""";
+		// $dropdown-link-hover-color, $hr-border, $brand-info, $modal-content-border-color
+		Assert.assertEquals(4, countOldColorReferences(scss));
+	}
+
+	@Test
+	public void countStyleVariables() {
+		String scss = """
+				.g { border: $o-cn-style-border; background-color: $o-cn-style-bg; color: $o-cn-style-cover-text-bg; }
+				.h { border-radius: $o-cn-style-border-radius; border-width: $o-cn-style-border-width; }
+				.i { border-style: $o-qti-match-source-border-style; @if $o-hs-podium-bg-gradientstyle { color: inherit; } }
+				.j { border-radius: $btn-border-radius-base; height: $o-proj-header-background-height-max; }
+				.k { border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border); }
+				""";
+		// $o-cn-style-border, $o-cn-style-bg, $o-cn-style-cover-text-bg; not the width and the
+		// style of the course style border (decision D19 of OO-10043)
+		Assert.assertEquals(3, countOldColorReferences(scss));
+	}
+
+	/**
+	 * _bootstrap.scss only hands the Sass variables to the Bootstrap import and
+	 * imports Bootstrap. A rule there would escape the ratchet: put it into the
+	 * module of its component.
+	 */
+	@Test
+	public void bootstrapHasNoOwnRules() throws IOException {
+		String code = withoutComments(Files.readString(BOOTSTRAP, StandardCharsets.UTF_8));
+		Assert.assertFalse("_bootstrap.scss has an own rule. Put it into the module of its component.", code.contains("{"));
 	}
 
 	// The SCSS source without block and line comments
