@@ -205,6 +205,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	private final boolean isAdmin;
 	private final int maxTabs = 20;
+	private boolean enforceTopFrame;
 	
 	@Autowired
 	private CSPModule cspModule;
@@ -239,6 +240,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		} else {
 			isAdmin = false;
 		}
+		
+		enforceTopFrame = cspModule.isForceTopFrame() && !usess.isContentDelivery();
 
 		// define the new windowcontrol
 		WindowControl myWControl = new BaseFullWebappWindowControl(this, wbo);
@@ -348,7 +351,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	private void initializeBase(UserRequest ureq, ComponentCollection mainPanel) {
-		mainVc.contextPut("enforceTopFrame", cspModule.isForceTopFrame() && !usess.isContentDelivery());
+		mainVc.contextPut("enforceTopFrame", enforceTopFrame);
 
 		// add optional css classes
 		mainVc.contextPut("bodyCssClasses", bodyCssClasses);
@@ -629,6 +632,15 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			businessPath = updateBusinessPath(ureq, s);
 		}
 		return businessPath;
+	}
+	
+	/**
+	 * Use with cautious. This is means for SCORM which are a part of OpenOlat
+	 * but not to load OpenOlat in an external frame (which presents security risks).
+	 */
+	public void setInIframe() {
+		enforceTopFrame = false;
+		mainVc.contextPut("enforceTopFrame", Boolean.valueOf(enforceTopFrame));
 	}
 	
 	protected GUIMessage getGUIMessage() {

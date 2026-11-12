@@ -21,6 +21,7 @@ package org.olat.core.dispatcher.mapper.sandbox;
 
 import java.util.List;
 
+import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
 import org.olat.core.commons.fullWebApp.LockableController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayout;
@@ -30,6 +31,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.helpers.Settings;
 
 /**
  * 
@@ -49,7 +51,9 @@ public class ControllerDeliveryCreator implements BaseFullWebappPopupLayout {
 
 	@Override
 	public Controller createController(UserRequest lureq, WindowControl lwControl) {
-		lureq.getUserSession().getSessionInfo().setContentDelivery(true);
+		if(Settings.isContentDomainNameEnabled()) {
+			lureq.getUserSession().getSessionInfo().setContentDelivery(true);
+		}
 		Controller controller = controllerCreator.createController(lureq, lwControl);
 		if(listener != null) {
 			controller.addControllerListener(listener);
@@ -68,6 +72,9 @@ public class ControllerDeliveryCreator implements BaseFullWebappPopupLayout {
 
 			@Override
 			public Controller getContentController(UserRequest ureq, WindowControl wControl) {
+				if(!Settings.isContentDomainNameEnabled() && wControl.getWindowBackOffice().getChiefController() instanceof BaseFullWebappController bc) {
+					bc.setInIframe();
+				}
 				return createController(ureq, wControl);
 			}
 
