@@ -51,6 +51,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -147,16 +150,8 @@ public class CourseQuotaUsageController extends FormBasicController
 		initForm(ureq);
 	}
 
-	private static ProgressBar getProgressBarPF(CourseQuotaUsageRow participantBoxRow, Quota quota) {
-		ProgressBar currentlyUsedBar = new ProgressBar(CUR_USED_PROGRESS_BAR);
-		currentlyUsedBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
-		currentlyUsedBar.setMax(100);
-		currentlyUsedBar.setActual((float) participantBoxRow.getTotalUsedSize() / (float) quota.getQuotaKB() * 100);
-		ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
-				? ProgressBar.BarColor.neutral
-				: ProgressBar.BarColor.danger;
-		currentlyUsedBar.setBarColor(barColor);
-		return currentlyUsedBar;
+	private ProgressBar getProgressBarPF(CourseQuotaUsageRow participantBoxRow, Quota quota) {
+		return createUsedBar((float) participantBoxRow.getTotalUsedSize() / (float) quota.getQuotaKB() * 100);
 	}
 
 	@Override
@@ -356,15 +351,16 @@ public class CourseQuotaUsageController extends FormBasicController
 	}
 
 	private ProgressBar setProgressBar(Quota folderQuota) {
-		ProgressBar currentlyUsedBar = new ProgressBar(CUR_USED_PROGRESS_BAR);
-		currentlyUsedBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
+		return createUsedBar((float) (folderQuota.getQuotaKB() - folderQuota.getRemainingSpace()) / (float) (folderQuota.getQuotaKB()) * 100);
+	}
+	
+	private ProgressBar createUsedBar(float actual) {
+		ProgressBar currentlyUsedBar = ProgressBarFactory.createProgressBar(CUR_USED_PROGRESS_BAR, getLocale());
 		currentlyUsedBar.setMax(100);
-		currentlyUsedBar.setActual((float) (folderQuota.getQuotaKB() - folderQuota.getRemainingSpace()) / (float) (folderQuota.getQuotaKB()) * 100);
-		ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
-				? ProgressBar.BarColor.neutral
-				: ProgressBar.BarColor.danger;
-		currentlyUsedBar.setBarColor(barColor);
-
+		currentlyUsedBar.setLabelFormat(LabelFormat.percent);
+		currentlyUsedBar.setAriaLabel(translate("table.header.course.quota.used"));
+		BarColor barColor = actual < 80 ? BarColor.neutral : BarColor.danger;
+		ProgressBarFactory.setValue(currentlyUsedBar, actual, barColor);
 		return currentlyUsedBar;
 	}
 

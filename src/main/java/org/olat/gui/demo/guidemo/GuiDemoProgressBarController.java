@@ -20,115 +20,219 @@
 
 package org.olat.gui.demo.guidemo;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.Marker;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
  * Description:<br>
- * Shows usage of progress bar controller
+ * Shows usage of the progress bar component
  * <P>
  * Initial Date:  31 jan 2020<br>
  * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
  */
-
-public class GuiDemoProgressBarController extends BasicController {
-	
-	VelocityContainer mainVC;
-
+public class GuiDemoProgressBarController extends FormBasicController {
 
 	public GuiDemoProgressBarController(UserRequest ureq, WindowControl wControl) {
-		super(ureq,wControl);		             
-		mainVC = createVelocityContainer("guidemo-progressBar");
-		putInitialPanel(mainVC);		
-		
-		
-		createProgressBar("base", 200, 100, 25, null, null, null, null, null, null, null, null);
-		createProgressBar("base2", 200, 125, 40, "Disk usage", "MB", LabelAlignment.right, true, null, null, null, null);
-		createProgressBar("base3", 200, 125, 40, "Disk usage", "MB", LabelAlignment.left, true, null, null, null, null);
-		createProgressBar("base4", 200, 125, 40, "Disk usage", "MB", LabelAlignment.none, true, null, null, null, null);
-		createProgressBar("base5", 200, 125, 40, "Disk usage", "MB", LabelAlignment.none, false, null, null, null, null);
-		
-		
-		createProgressBar("base-long", 300, 125, 40, "Disk usage", "MB", LabelAlignment.left, true, null, null, null, null);
-		ProgressBar progressBar = createProgressBar("base-percent", 50, 125, 40, "Disk usage", "MB", LabelAlignment.right, true, null, null, null, null);
-		progressBar.setWidthInPercent(true);
-				
-		createProgressBar("hor", 200, 100, 65, null, null, null, null, RenderStyle.horizontal, null, null, null);
-		createProgressBar("rad", 200, 100, 65, null, null, null, null, RenderStyle.radial, null, null, null);
-		createProgressBar("pie", 200, 100, 65, null, null, null, null, RenderStyle.pie, null, null, null);
-
-		createProgressBar("hor-s", 200, 100, 65, null, null, null, null, RenderStyle.horizontal, RenderSize.small, null, null);
-		createProgressBar("rad-s", 200, 100, 65, null, null, null, null, RenderStyle.radial, RenderSize.small, null, null);
-		createProgressBar("pie-s", 200, 100, 65, null, null, null, null, RenderStyle.pie, RenderSize.small, null, null);
-
-		createProgressBar("hor-l", 200, 100, 65, null, null, null, null, RenderStyle.horizontal,  RenderSize.large, null, null);
-		createProgressBar("rad-l", 200, 100, 65, null, null, null, null, RenderStyle.radial,  RenderSize.large, null, null);
-		createProgressBar("pie-l", 200, 100, 65, null, null, null, null, RenderStyle.pie, RenderSize.large, null, null);
-
-		createProgressBar("hor-i", 200, 100, 65, null, null, LabelAlignment.none, false, RenderStyle.horizontal, RenderSize.inline, null, null);
-		createProgressBar("rad-i", 200, 100, 65, null, null, LabelAlignment.none, false, RenderStyle.radial, RenderSize.inline, null, null);
-		createProgressBar("pie-i", 200, 100, 65, null, null, LabelAlignment.none, false, RenderStyle.pie, RenderSize.inline, null, null);
-
-		createProgressBar("hor-i2", 200, 100, 65, "Disk usage", "MB", LabelAlignment.right, false, RenderStyle.horizontal, RenderSize.inline, null, null);
-		createProgressBar("rad-i2", 200, 100, 65, "Disk usage", "MB", LabelAlignment.right, false, RenderStyle.radial, RenderSize.inline, null, null);
-		createProgressBar("pie-i2", 200, 100, 65, "Disk usage", "MB", LabelAlignment.right, false, RenderStyle.pie, RenderSize.inline, null, null);
-
-		
-		createProgressBar("hor-ci", 200, 100, 65, null, null, null, null, RenderStyle.horizontal, null, BarColor.info, null);
-		createProgressBar("hor-cs", 200, 100, 65, null, null, null, null, RenderStyle.horizontal, null, BarColor.success, null);
-		createProgressBar("hor-cw", 200, 100, 65, null, null, null, null, RenderStyle.horizontal, null, BarColor.warning, null);
-		createProgressBar("hor-cd", 200, 100, 65, null, null, null, null, RenderStyle.horizontal, null, BarColor.danger, null);
-		createProgressBar("rad-ci", 200, 100, 65, null, null, null, null, RenderStyle.radial, RenderSize.small, BarColor.info, null);
-		createProgressBar("rad-cs", 200, 100, 65, null, null, null, null, RenderStyle.radial, RenderSize.small, BarColor.success, null);
-		createProgressBar("rad-cw", 200, 100, 65, null, null, null, null, RenderStyle.radial, RenderSize.small, BarColor.warning, null);
-		createProgressBar("rad-cd", 200, 100, 65, null, null, null, null, RenderStyle.radial, RenderSize.small, BarColor.danger, null);
-		createProgressBar("pie-ci", 200, 100, 65, null, null, null, null, RenderStyle.pie, RenderSize.small, BarColor.info, null);
-		createProgressBar("pie-cs", 200, 100, 65, null, null, null, null, RenderStyle.pie, RenderSize.small, BarColor.success, null);
-		createProgressBar("pie-cw", 200, 100, 65, null, null, null, null, RenderStyle.pie, RenderSize.small, BarColor.warning, null);
-		createProgressBar("pie-cd", 200, 100, 65, null, null, null, null, RenderStyle.pie, RenderSize.small, BarColor.danger, null);
-
-		createProgressBar("hor-anim", 200, 100, 65, null, null, null, null, RenderStyle.horizontal, null, null, true);
-		createProgressBar("rad-anim", 200, 100, 65, null, null, null, null, RenderStyle.radial, RenderSize.small, null, true);
-		createProgressBar("pie-anim", 200, 100, 65, null, null, null, null, RenderStyle.pie, RenderSize.small, null, true);
-		
-	}
-
-	private ProgressBar createProgressBar(String name, int width, float max, float actual, 
-			String info, String unitLabel, LabelAlignment labelAlignment, Boolean percentagesEnabled, 
-			RenderStyle renderStyle, RenderSize renderSize, BarColor barColor, Boolean animationEnabled) {
-		
-		ProgressBar progressBar = new ProgressBar(name);
-		progressBar.setWidth(width);
-		progressBar.setMax(max);		
-		progressBar.setActual(actual);
-
-		if (info != null) progressBar.setInfo(info);
-		if (unitLabel != null) progressBar.setUnitLabel(unitLabel);
-		if (labelAlignment != null) progressBar.setLabelAlignment(labelAlignment);
-		if (percentagesEnabled != null) progressBar.setPercentagesEnabled(percentagesEnabled);
-
-		if (renderStyle != null) progressBar.setRenderStyle(renderStyle);
-		if (renderSize != null) progressBar.setRenderSize(renderSize);
-
-		if (barColor != null) progressBar.setBarColor(barColor);
-		if (animationEnabled != null) progressBar.setProgressAnimationEnabled(animationEnabled);
-
-		mainVC.put(progressBar.getComponentName(), progressBar);	
-		return progressBar;
+		super(ureq, wControl, "guidemo-progressBar");
+		initForm(ureq);
 	}
 	
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		createProgressBar("base", 25, null);
+		
+		createProgressBar("format-none", 40, null).setLabelFormat(LabelFormat.none);
+		createProgressBar("format-percent", 40, null).setLabelFormat(LabelFormat.percent);
+		createProgressBar("format-value", 40, null).setLabelFormat(LabelFormat.value);
+		createProgressBar("format-both", 40, null).setLabelFormat(LabelFormat.percentAndValue);
+		ProgressBar unitBar = createProgressBar("format-unit", 40, null);
+		unitBar.setMax(125);
+		unitBar.setUnitLabel("MB");
+		unitBar.setInfo("Disk usage");
+		unitBar.setLabelFormat(LabelFormat.percentAndValue);
+		ProgressBar noMaxBar = createProgressBar("format-nomax", 40, null);
+		noMaxBar.setNoMax(true);
+		noMaxBar.setUnitLabel("MB");
+		noMaxBar.setLabelFormat(LabelFormat.value);
+		
+		for (RenderSize size : RenderSize.values()) {
+			for (RenderStyle style : RenderStyle.values()) {
+				ProgressBar progressBar = createProgressBar(style.name() + "-" + size.name(), 65, null);
+				progressBar.setRenderStyle(style);
+				progressBar.setRenderSize(size);
+				progressBar.setLabelFormat(LabelFormat.percent);
+			}
+		}
+		
+		for (BarColor color : BarColor.values()) {
+			createProgressBar("hor-" + color.name(), 65, color);
+			ProgressBar radialBar = createProgressBar("rad-" + color.name(), 65, color);
+			radialBar.setRenderStyle(RenderStyle.radial);
+			radialBar.setRenderSize(RenderSize.small);
+		}
+		flc.contextPut("colors", BarColor.values());
+		
+		ProgressBar stackedBar = createProgressBar("stacked", 0, null);
+		stackedBar.setMax(10);
+		stackedBar.setAriaLabel("Members");
+		stackedBar.setLabelFormat(LabelFormat.value);
+		stackedBar.setSegments(List.of(
+				new Segment(6, BarColor.success, "active"),
+				new Segment(2, BarColor.warning, "pending")));
+		
+		ProgressBar markersBar = createProgressBar("markers", 0, null);
+		markersBar.setMax(20);
+		markersBar.setAriaLabel("Members");
+		markersBar.setLabelFormat(LabelFormat.value);
+		markersBar.setSegments(List.of(
+				new Segment(6, BarColor.success, "active"),
+				new Segment(2, BarColor.warning, "pending")));
+		markersBar.setMarkers(List.of(new Marker(10, "minimum"), new Marker(16, "maximum")));
+		
+		ProgressBar fullBar = createProgressBar("markers-full", 0, null);
+		fullBar.setMax(10);
+		fullBar.setAriaLabel("Members");
+		fullBar.setRenderSize(RenderSize.small);
+		fullBar.setSegments(List.of(
+				new Segment(7, BarColor.success, "active"),
+				new Segment(3, BarColor.warning, "pending")));
+		fullBar.setMarkers(List.of(new Marker(5, "minimum")));
+		
+		createRadialMarkersBar("markers-radial", RenderStyle.radial, RenderSize.medium);
+		createRadialMarkersBar("markers-pie", RenderStyle.pie, RenderSize.medium);
+		createRadialMarkersBar("markers-radial-small", RenderStyle.radial, RenderSize.small);
+		createRadialMarkersBar("markers-radial-inline", RenderStyle.radial, RenderSize.inline);
+		createRadialSegmentsBar("segments-radial", RenderStyle.radial, RenderSize.medium);
+		createRadialSegmentsBar("segments-pie", RenderStyle.pie, RenderSize.medium);
+		createRadialSegmentsBar("segments-radial-small", RenderStyle.radial, RenderSize.small);
+		createRadialSegmentsBar("segments-radial-inline", RenderStyle.radial, RenderSize.inline);
+		
+		createProgressBar("aria-label", 40, null).setAriaLabel("Course progress");
+		ProgressBar ariaHiddenBar = createProgressBar("aria-hidden", 40, null);
+		ariaHiddenBar.setAriaHidden(true);
+		
+		createProgressBar("hor-anim", 65, null).setProgressAnimationEnabled(true);
+		ProgressBar radialAnimBar = createProgressBar("rad-anim", 65, null);
+		radialAnimBar.setRenderStyle(RenderStyle.radial);
+		radialAnimBar.setRenderSize(RenderSize.small);
+		radialAnimBar.setProgressAnimationEnabled(true);
+		
+		initTable(formLayout);
+	}
+	
+	private void initTable(FormItemContainer formLayout) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("progress.table.col.name", 0));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("progress.table.col.completion", 1,
+				new ProgressBarCellRenderer(RenderStyle.horizontal, RenderSize.small, LabelFormat.percent, BarColor.neutral)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("progress.table.col.radial", 1,
+				new ProgressBarCellRenderer(RenderStyle.radial, RenderSize.inline, LabelFormat.none, BarColor.success)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("progress.table.col.lectures", 2,
+				new LecturesCellRenderer()));
+		
+		DemoTableModel tableModel = new DemoTableModel(columnsModel);
+		tableModel.setObjects(List.of(
+				new DemoRow("Ada", 0.25, 8, 1, 1),
+				new DemoRow("Grace", 0.8, 5, 0, 5),
+				new DemoRow("Linus", 1.0, 10, 0, 0)));
+		uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+	}
+	
+	private ProgressBar createProgressBar(String name, float value, BarColor color) {
+		ProgressBar progressBar = ProgressBarFactory.createProgressBar(name, getLocale());
+		flc.put(name, progressBar);
+		progressBar.setMax(100);
+		ProgressBarFactory.setValue(progressBar, value, color == null ? BarColor.neutral : color);
+		return progressBar;
+	}
+	
+	private void createRadialMarkersBar(String name, RenderStyle style, RenderSize size) {
+		ProgressBar progressBar = createProgressBar(name, 65, BarColor.success);
+		progressBar.setRenderStyle(style);
+		progressBar.setRenderSize(size);
+		progressBar.setLabelFormat(LabelFormat.percent);
+		progressBar.setMarkers(List.of(new Marker(50, "minimum"), new Marker(80, "maximum")));
+	}
+	
+	private void createRadialSegmentsBar(String name, RenderStyle style, RenderSize size) {
+		ProgressBar progressBar = createProgressBar(name, 0, null);
+		progressBar.setMax(20);
+		progressBar.setAriaLabel("Members");
+		progressBar.setRenderStyle(style);
+		progressBar.setRenderSize(size);
+		progressBar.setLabelFormat(LabelFormat.value);
+		progressBar.setSegments(List.of(
+				new Segment(9, BarColor.success, "active"),
+				new Segment(4, BarColor.warning, "pending"),
+				new Segment(2, BarColor.danger, "cancelled")));
+		progressBar.setMarkers(List.of(new Marker(10, "minimum"), new Marker(16, "maximum")));
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
 		// Nothing to do
+	}
+	
+	private static class LecturesCellRenderer extends ProgressBarCellRenderer {
+	
+		public LecturesCellRenderer() {
+			super(RenderStyle.horizontal, RenderSize.small, LabelFormat.none, BarColor.neutral);
+		}
+		
+		@Override
+		protected ProgressBar createProgressBar(Object cellValue, Locale locale) {
+			if (cellValue instanceof DemoRow row) {
+				ProgressBar progressBar = createProgressBar(locale);
+				progressBar.setMax(row.attended() + row.absent() + row.excused());
+				progressBar.setAriaLabel("Lectures");
+				progressBar.setSegments(List.of(
+						new Segment(row.attended(), BarColor.success, "attended"),
+						new Segment(row.excused(), BarColor.info, "excused"),
+						new Segment(row.absent(), BarColor.danger, "absent")));
+				return progressBar;
+			}
+			return null;
+		}
+	}
+	
+	private static class DemoTableModel extends DefaultFlexiTableDataModel<DemoRow> {
+	
+		public DemoTableModel(FlexiTableColumnModel columnModel) {
+			super(columnModel);
+		}
+		
+		@Override
+		public Object getValueAt(int row, int col) {
+			DemoRow demoRow = getObject(row);
+			return switch (col) {
+				case 0 -> demoRow.name();
+				case 1 -> Double.valueOf(demoRow.completion());
+				default -> demoRow;
+			};
+		}
+	}
+	
+	private record DemoRow(String name, double completion, int attended, int absent, int excused) {
+		//
 	}
 }

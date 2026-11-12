@@ -20,20 +20,16 @@
 package org.olat.modules.assessment.ui.component;
 
 import java.util.Comparator;
+import java.util.Locale;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.CodeHelper;
+import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 
 /**
  * 
@@ -41,27 +37,24 @@ import org.olat.core.util.CodeHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningProgressCompletionCellRenderer implements FlexiCellRenderer {
+public class LearningProgressCompletionCellRenderer extends ProgressBarCellRenderer {
 
+	public LearningProgressCompletionCellRenderer() {
+		super(RenderStyle.radial, RenderSize.inline, LabelFormat.none, BarColor.success);
+	}
+	
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof CompletionPassed) {
-			CompletionPassed completionPassed = (CompletionPassed) cellValue;
-			if (completionPassed.getCompletion() != null) {
-				ProgressBar progressBar = new ProgressBar("progress-" + CodeHelper.getRAMUniqueID(), 100,
-						completionPassed.getCompletion().floatValue(), Float.valueOf(1), null);
-				progressBar.setWidthInPercent(true);
-				progressBar.setLabelAlignment(LabelAlignment.none);
-				progressBar.setRenderStyle(RenderStyle.radial);
-				progressBar.setRenderSize(RenderSize.inline);
-				BarColor barColor = completionPassed.getPassed() == null || completionPassed.getPassed().booleanValue()
-						? BarColor.success
-						: BarColor.danger;
-				progressBar.setBarColor(barColor);
-				progressBar.getHTMLRendererSingleton().render(renderer, target, progressBar, ubu, translator, null, null);
-			}
+	protected ProgressBar createProgressBar(Object cellValue, Locale locale) {
+		if (cellValue instanceof CompletionPassed completionPassed && completionPassed.getCompletion() != null) {
+			BarColor barColor = completionPassed.getPassed() == null || completionPassed.getPassed().booleanValue()
+					? BarColor.success
+					: BarColor.danger;
+			ProgressBar progressBar = createProgressBar(locale);
+			progressBar.setMax(1);
+			ProgressBarFactory.setValue(progressBar, completionPassed.getCompletion().floatValue(), barColor);
+			return progressBar;
 		}
+		return null;
 	}
 	
 	public interface CompletionPassed {

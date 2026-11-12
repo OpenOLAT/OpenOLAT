@@ -1582,16 +1582,6 @@ ul.o_assessment_docs>li:last-child {
 	}
 }	
 
-/* indicator on progress bar */
-// FIXME FG: check if still used? no references found to o_progress_marker
-.progress .o_progress_marker {
-	position: absolute; 
-	height: 100%;
-	top: 0;
-	width: 3px; 	
-	background: $o-progress-marker-color;
-}
-
 .o_progress_buttons {
 	text-align: center;
 	margin: 10px 0 0 0;
@@ -1602,8 +1592,13 @@ ul.o_assessment_docs>li:last-child {
 		display: inline-block;
 		white-space: nowrap;
 		.progress {
+			width: 6em;
 			vertical-align: bottom;		
 		}
+	}
+	&.o_progress_quota .progress {
+		width: 250px;
+		max-width: 100%;
 	}
 	.o_progress_label, 
 	.o_progress_info {
@@ -1616,6 +1611,7 @@ ul.o_assessment_docs>li:last-child {
 	.progress {
 		position: relative;
 		display: inline-block;
+		width: 100%;
 		text-shadow: 1px 1px 2px var(--o-shadow-color);
 		font-size: $font-size-small;
 		line-height: $line-height-computed;
@@ -1631,9 +1627,39 @@ ul.o_assessment_docs>li:last-child {
 			white-space: nowrap; 
 		}				
 		
-		&:not(.o_progress-sm)+.o_progress_label_wrapper { /* when renderend outside of progressbar */
-			margin-left: 0.5em;
-		}		
+		&.o_progress_with_markers {
+			overflow: visible;
+			.o_progress_bar_first {
+				border-top-left-radius: inherit;
+				border-bottom-left-radius: inherit;
+			}
+			.o_progress_bar_full {
+				border-top-right-radius: inherit;
+				border-bottom-right-radius: inherit;
+			}
+		}
+		.o_progress_marker {
+			position: absolute;
+			top: -3px;
+			bottom: -3px;
+			width: 2px;
+			margin-left: -1px;
+			background-color: $progress-bar-danger-bg;
+		}
+	}
+	&.o_progress_label_after {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		white-space: nowrap;
+		.progress {
+			flex: 0 1 auto;
+			min-width: 0;
+		}
+		&.o_progress_inline {
+			display: inline-flex;
+			vertical-align: middle;
+		}
 	}
 
 	.o_progress-lg {
@@ -1644,14 +1670,8 @@ ul.o_assessment_docs>li:last-child {
 		}
 	}
 	.o_progress-sm {
-		vertical-align: bottom;
+		vertical-align: middle;
 		height: 5px;
-		&+span {
-			position: absolute;
-			top: 0;
-			left: 15px;
-			font-size: 80%;
-		}
 	}
 	.o_progress-bar-passed {
 		&.progress-bar {

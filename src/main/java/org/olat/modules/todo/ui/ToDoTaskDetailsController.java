@@ -37,8 +37,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -145,18 +145,16 @@ public class ToDoTaskDetailsController extends FormBasicController {
 		flc.contextPut("showDateRange", Boolean.valueOf(showDateRange));
 
 		if (showDateRange) {
-			ProgressBar progressBar = new ProgressBar("date.progress");
+			ProgressBar progressBar = ProgressBarFactory.createProgressBar("date.progress", getLocale());
 			flc.put("date.progress", progressBar);
-			progressBar.setLabelAlignment(LabelAlignment.none);
 			progressBar.setRenderSize(RenderSize.small);
-			progressBar.setWidthInPercent(true);
+			progressBar.setAriaHidden(true);
 			if (ChronoUnit.DAYS.between(LocalDate.now(), DateUtils.toLocalDate(toDoTask.getDueDate())) < 0) {
-				progressBar.setBarColor(BarColor.danger);
 				progressBar.setMax(100);
-				progressBar.setActual(100);
+				ProgressBarFactory.setValue(progressBar, 100, BarColor.danger);
 			} else {
 				progressBar.setMax(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), DateUtils.toLocalDate(toDoTask.getDueDate())));
-				progressBar.setActual(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), LocalDate.now()));
+				ProgressBarFactory.setValue(progressBar, ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), LocalDate.now()), BarColor.neutral);
 			}
 		}
 		

@@ -19,7 +19,12 @@
  */
 package org.olat.core.gui.components.widget;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 
 /**
@@ -85,6 +90,15 @@ public class WidgetFactory {
 		widget.setAdditionalComp(additionalComp);
 		
 		return widget;
+	}
+	
+	public static ProgressBar createProgressBar(String name, AdditionalWidget widget, Locale locale) {
+		ProgressBar progressBar = ProgressBarFactory.createProgressBar(name, locale);
+		progressBar.setRenderSize(RenderSize.small);
+		progressBar.setAriaHidden(true);
+		widget.setAdditionalComp(progressBar);
+		widget.setAdditionalCssClass("o_widget_progress");
+		return progressBar;
 	}
 	
 	public static ComponentWidget createComponentWidget(String name, VelocityContainer vc, String title, String iconCss) {

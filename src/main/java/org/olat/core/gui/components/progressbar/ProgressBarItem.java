@@ -19,14 +19,16 @@
  */
 package org.olat.core.gui.components.progressbar;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderLabels;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.Marker;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
 
 /**
  * 
@@ -40,14 +42,9 @@ public class ProgressBarItem extends FormItemImpl {
 	
 	public ProgressBarItem(String name) {
 		super(name);
-		component = new ProgressBar(name);
+		component = new ProgressBar(name, this);
 	}
 	
-	public ProgressBarItem(String name, int width, float actual, float max, String unitLabel) {
-		super(name);
-		component = new ProgressBar(name, width, actual, max, unitLabel);
-	}
-
 	@Override
 	protected Component getFormItemComponent() {
 		return component;
@@ -61,76 +58,129 @@ public class ProgressBarItem extends FormItemImpl {
 		component.setMax(max);
 	}
 	
-	public float getActual() {
-		return component.getActual();
+	public boolean isNoMax() {
+		return component.isNoMax();
 	}
 	
-	public void setActual(float actual) {
-		component.setActual(actual);
-	}
-
-	public void setWidthInPercent(boolean widthInPercent) {
-		component.setWidthInPercent(widthInPercent);
-	}
-
-	public void setLabelAlignment(LabelAlignment labelAlignment) {
-		component.setLabelAlignment(labelAlignment);
-	}
-
-	public void setRenderStyle(RenderStyle renderStyle) {
-		component.setRenderStyle(renderStyle);
-	}
-
-	public void setRenderSize(RenderSize renderSize) {
-		component.setRenderSize(renderSize);
+	public void setNoMax(boolean noMax) {
+		component.setNoMax(noMax);
 	}
 	
-	/**
-	 * @param renderLabels always, force rendering of labels, never, disable them, last use the default behaviour
-	 */
-	public void setRenderLabels(RenderLabels renderLabels) {
-		component.setRenderLabels(renderLabels);
+	public List<Segment> getSegments() {
+		return component.getSegments();
 	}
 	
-	
-	public void setBarColor(BarColor barColor) {
-		component.setBarColor(barColor);
-	}
-
-	public void setProgressAnimationEnabled(boolean progressAnimationEnabled) {
-		component.setProgressAnimationEnabled(progressAnimationEnabled);
-	}
-
-	public void setCssClass(String cssClass) {
-		component.setCssClass(cssClass);
+	public void setSegments(List<Segment> segments) {
+		component.setSegments(segments);
 	}
 	
-	public void setPercentagesEnabled(boolean enabled) {
-		component.setPercentagesEnabled(enabled);
+	public List<Marker> getMarkers() {
+		return component.getMarkers();
 	}
 	
-	public void setLabelMaxEnabled(boolean enabled) {
-		component.setLabelMaxEnabled(enabled);
+	public void setMarkers(List<Marker> markers) {
+		component.setMarkers(markers);
+	}
+	
+	public float getTotal() {
+		return component.getTotal();
+	}
+	
+	public LabelFormat getLabelFormat() {
+		return component.getLabelFormat();
+	}
+	
+	public void setLabelFormat(LabelFormat labelFormat) {
+		component.setLabelFormat(labelFormat);
+	}
+	
+	public String getUnitLabel() {
+		return component.getUnitLabel();
+	}
+	
+	public void setUnitLabel(String unitLabel) {
+		component.setUnitLabel(unitLabel);
+	}
+	
+	public String getInfo() {
+		return component.getInfo();
 	}
 	
 	public void setInfo(String info) {
 		component.setInfo(info);
 	}
-
+	
+	public String getCssClass() {
+		return component.getCssClass();
+	}
+	
+	public void setCssClass(String cssClass) {
+		component.setCssClass(cssClass);
+	}
+	
+	public RenderStyle getRenderStyle() {
+		return component.getRenderStyle();
+	}
+	
+	public void setRenderStyle(RenderStyle renderStyle) {
+		component.setRenderStyle(renderStyle);
+	}
+	
+	public RenderSize getRenderSize() {
+		return component.getRenderSize();
+	}
+	
+	public void setRenderSize(RenderSize renderSize) {
+		component.setRenderSize(renderSize);
+	}
+	
+	public boolean isProgressAnimationEnabled() {
+		return component.isProgressAnimationEnabled();
+	}
+	
+	public void setProgressAnimationEnabled(boolean progressAnimationEnabled) {
+		component.setProgressAnimationEnabled(progressAnimationEnabled);
+	}
+	
+	public boolean isAriaHidden() {
+		return component.isAriaHidden();
+	}
+	
+	public void setAriaHidden(boolean ariaHidden) {
+		component.setAriaHidden(ariaHidden);
+	}
+	
+	public String getAriaLabel() {
+		return component.getAriaLabel();
+	}
+	
+	public void setAriaLabel(String ariaLabel) {
+		component.setAriaLabel(ariaLabel);
+	}
+	
+	public ProgressBarCallback getProgressCallback() {
+		return component.getProgressCallback();
+	}
+	
 	public void setProgressCallback(ProgressBarCallback progressCallback) {
 		component.setProgressCallback(progressCallback);
 	}
-
+	
+	@Override
+	public String getForId() {
+		return null;
+	}
+	
 	@Override
 	protected void rootFormAvailable() {
 		//
 	}
-
+	
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		//
 	}
-
+	
 	@Override
 	public void reset() {
 		//

@@ -46,6 +46,40 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 	  stroke: $o-radial-progress-circle-color;
 	  stroke-dasharray: 0 100; /* for 0% */
 	}			
+	.radial-segment {
+		fill: transparent;
+		stroke-width: 8;
+		stroke: $progress-bar-bg;
+		&.radial-segment-success {
+			stroke: $progress-bar-success-bg;
+		}
+		&.radial-segment-info {
+			stroke: $progress-bar-info-bg;
+		}
+		&.radial-segment-warning {
+			stroke: $progress-bar-warning-bg;
+		}
+		&.radial-segment-danger {
+			stroke: $progress-bar-danger-bg;
+		}
+		&.radial-segment-passed {
+			stroke: var(--o-course-state-passed);
+		}
+		&.radial-segment-failed {
+			stroke: var(--o-course-state-failed);
+		}
+		&.radial-segment-neutral {
+			stroke: $progress-bar-neutral-bg;
+		}
+	}
+	&.radial-progress-pie .radial-segment {
+		stroke-width: 32;
+	}
+	.o_progress_marker {
+		stroke: $progress-bar-danger-bg;
+		stroke-width: 2px;
+		vector-effect: non-scaling-stroke;
+	}
 	
 	/* progress bar size and no size for pie style */
 	.radial-bg,

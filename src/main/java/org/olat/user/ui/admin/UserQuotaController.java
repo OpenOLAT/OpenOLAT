@@ -38,6 +38,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -171,8 +174,9 @@ public class UserQuotaController extends FormBasicController {
 	}
 	
 	private ProgressBar forgeProgressBar(long quotaInKB, long usageInKB) {
-		ProgressBar currentlyUsedBar = new ProgressBar("used_" + (++count));
-		currentlyUsedBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
+		ProgressBar currentlyUsedBar = ProgressBarFactory.createProgressBar("used_" + (++count), getLocale());
+		currentlyUsedBar.setLabelFormat(LabelFormat.percent);
+		currentlyUsedBar.setAriaLabel(translate("table.header.used"));
 		currentlyUsedBar.setMax(100);
 		
 		float actual;
@@ -181,11 +185,8 @@ public class UserQuotaController extends FormBasicController {
 		} else {
 			actual = (usageInKB / (float)quotaInKB) * 100.0f;
 		}
-		currentlyUsedBar.setActual(actual);
-		ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
-				? ProgressBar.BarColor.neutral
-				: ProgressBar.BarColor.danger;
-		currentlyUsedBar.setBarColor(barColor);
+		BarColor barColor = actual < 80 ? BarColor.neutral : BarColor.danger;
+		ProgressBarFactory.setValue(currentlyUsedBar, actual, barColor);
 		return currentlyUsedBar;
 	}
 	

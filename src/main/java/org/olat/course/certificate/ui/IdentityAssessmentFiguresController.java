@@ -39,9 +39,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.components.widget.FigureWidget;
 import org.olat.core.gui.components.widget.TextWidget;
@@ -164,20 +165,12 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		mainVC = createVelocityContainer("assessment_figures");
 		putInitialPanel(mainVC);
 
-		completionItem = new ProgressBar("completion", 100, 0, Float.valueOf(100), "%");
-		completionItem.setWidthInPercent(true);
-		completionItem.setLabelAlignment(LabelAlignment.none);
-		completionItem.setLabelMaxEnabled(false);
+		completionItem = ProgressBarFactory.createProgressBar("completion", mainVC, getLocale());
+		completionItem.setMax(100);
+		completionItem.setUnitLabel("%");
 		completionItem.setRenderStyle(RenderStyle.radial);
 		completionItem.setRenderSize(RenderSize.small);
 		
-		scoreProgress = new ProgressBar("scoreProgress", 100, 0, 0, null);
-		scoreProgress.setWidthInPercent(true);
-		scoreProgress.setLabelAlignment(LabelAlignment.none);
-		scoreProgress.setRenderSize(RenderSize.small);
-		scoreProgress.setLabelMaxEnabled(false);
-		
-		mainVC.put("completion", completionItem);
 		mainVC.contextPut("scoreScalingEnabled", Boolean.valueOf(scoreScalingEnabled));
 		
 		initLinks();
@@ -207,7 +200,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		gradeWidget.setVisible(false);
 		widgetGroup.add(gradeWidget);
 		scoreWidget = WidgetFactory.createFigureWidget("score", null, translate("score"), "o_icon_score");
-		scoreWidget.setAdditionalCssClass("o_widget_progress");
+		scoreProgress = WidgetFactory.createProgressBar("scoreProgress", scoreWidget, getLocale());
 		scoreWidget.setVisible(false);
 		widgetGroup.add(scoreWidget);
 		scoreResultsNotVisibleWidget = WidgetFactory.createTextWidget("score.rnv", null, translate("score"), "o_icon_score");
@@ -270,11 +263,19 @@ public class IdentityAssessmentFiguresController extends BasicController {
 	}
 
 	public float getCompletion() {
-		return completionItem.getActual();
+		return completionItem.getTotal();
 	}
 	
 	public BarColor getBarColor() {
-		return completionItem.getBarColor();
+		return getColor(completionItem);
+	}
+	
+	private static BarColor getColor(ProgressBar progressBar) {
+		return progressBar.getSegments().isEmpty() ? BarColor.neutral : progressBar.getSegments().get(0).color();
+	}
+	
+	private static void setColor(ProgressBar progressBar, BarColor barColor) {
+		ProgressBarFactory.setValue(progressBar, progressBar.getTotal(), barColor);
 	}
 	
 	protected void updateFromStatement(EfficiencyStatement efficiencyStatement) {
@@ -363,15 +364,15 @@ public class IdentityAssessmentFiguresController extends BasicController {
 			if (passed == null) {
 				passedWidget.setValue(translate("passed.nopassed"));
 				passedWidget.setValueCssClass("o_noinfo");
-				scoreProgress.setBarColor(BarColor.neutral);
+				setColor(scoreProgress, BarColor.neutral);
 			} else if (passed) {
 				passedWidget.setValue(translate("passed.yes"));
 				passedWidget.setValueCssClass("o_state o_passed");
-				scoreProgress.setBarColor(BarColor.passed);
+				setColor(scoreProgress, BarColor.passed);
 			} else {
 				passedWidget.setValue(translate("passed.no"));
 				passedWidget.setValueCssClass("o_state o_failed");
-				scoreProgress.setBarColor(BarColor.failed);
+				setColor(scoreProgress, BarColor.failed);
 				progressWidget.setValueCssClass("o_widget_text_large o_widget_text_danger");
 			}
 		} else {
@@ -379,19 +380,19 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		}
 		
 		if (completion != null) {
-			completionItem.setActual(completion.floatValue() * 100f);
-			completionItem.setPercentagesEnabled(hasPassed);
+			completionItem.setLabelFormat(hasPassed ? LabelFormat.percent : LabelFormat.none);
 			
-			completionItem.setBarColor(BarColor.success);
+			BarColor barColor = BarColor.success;
 			completionItem.setCssClass(null);
 			if (passed != null) {
 				if (passed.booleanValue()) {
 					completionItem.setCssClass("o_progress_passed");
 				} else {
-					completionItem.setBarColor(BarColor.danger);
+					barColor = BarColor.danger;
 					completionItem.setCssClass("o_progress_failed");
 				}
 			}
+			ProgressBarFactory.setValue(completionItem, completion.floatValue() * 100f, barColor);
 			
 			passedWidget.setLeftComp(completionItem);
 			progressWidget.setLeftComp(completionItem);
@@ -446,7 +447,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 		
 		if (score != null) {
 			scoreWidget.setValue(AssessmentHelper.getRoundedScore(score));
-			scoreProgress.setActual(score);
+			ProgressBarFactory.setValue(scoreProgress, score, getColor(scoreProgress));
 		} else {
 			scoreWidget.setValue(translate("assessment.value.not.visible"));
 		}

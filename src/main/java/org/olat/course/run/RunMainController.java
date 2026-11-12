@@ -43,9 +43,10 @@ import org.olat.core.gui.components.panel.ListPanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeModel;
@@ -471,22 +472,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// Progress bar only for learning path courses
 		if (topPaginationCtrl != null) {
 			toolbarPanel.setNavigationComponent(topPaginationCtrl.getInitialComponent(), this);			
-			courseProgress = new ProgressBar("courseProgress");	
-			courseProgress.setWidth(100);
+			courseProgress = ProgressBarFactory.createProgressBar("courseProgress", getLocale());
 			courseProgress.setMax(100);
-			courseProgress.setWidthInPercent(true);
-			courseProgress.setLabelAlignment(LabelAlignment.none);
 			if (toolbarPanel != null && toolbarPanel.isToolbarEnabled()) {
 				// Normally progress is showed in the toolbar. 
 				courseProgress.setRenderStyle(RenderStyle.radial);
-				courseProgress.setPercentagesEnabled(true);		
+				courseProgress.setLabelFormat(LabelFormat.percent);
 				toolbarPanel.addTool(courseProgress, Align.right);
 			} else {
 				// If toolbar is not visible, show the progress below the breadcrumb. If
 				// breadcrumb is also disabled, showprogress at top of page.
 				courseProgress.setRenderStyle(RenderStyle.horizontal);
 				courseProgress.setRenderSize(RenderSize.small);
-				courseProgress.setPercentagesEnabled(false);		
 				coursemain.put("courseProgress", courseProgress);			
 			}
 			updateAssessmentConfirmUI(currentCourseNode);
@@ -780,9 +777,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// 1) Progress
 				Double completion = assessmentEvaluation.getCompletion();
 				float actual = completion != null? completion.floatValue(): 0;
-				if (actual * 100 != courseProgress.getActual()) {
-					courseProgress.setActual(actual * 100);
-				}
 				// 2) SCORE
 				Float score = assessmentEvaluation.getScore();
 				if(assessmentEvaluation.getWeightedScore() != null && ScoreScalingHelper.isEnabled(userCourseEnv)) {
@@ -793,17 +787,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					courseProgress.setInfo(Math.round(score) + "pt");
 				}
 				// 3) Status
-				courseProgress.setBarColor(BarColor.success);
+				BarColor barColor = BarColor.success;
 				courseProgress.setCssClass(null);
 				Boolean passed = assessmentEvaluation.getPassed();
 				if (passed != null) {
 					if (passed.booleanValue()) {
 						courseProgress.setCssClass("o_progress_passed");
 					} else {
-						courseProgress.setBarColor(BarColor.danger);											
+						barColor = BarColor.danger;
 						courseProgress.setCssClass("o_progress_failed");
 					}
 				}
+				ProgressBarFactory.setValue(courseProgress, actual * 100, barColor);
 			}
 		}		
 	}

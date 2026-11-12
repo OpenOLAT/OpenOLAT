@@ -19,6 +19,10 @@
  */
 package org.olat.core.gui.components.progressbar;
 
+import java.util.List;
+
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+
 /**
  * 
  * Initial date: 15 févr. 2022<br>
@@ -29,7 +33,7 @@ public interface ProgressBarCallback {
 	
 	public float getMax();
 	
-	public float getActual();
+	public List<Segment> getSegments();
 	
 
 }

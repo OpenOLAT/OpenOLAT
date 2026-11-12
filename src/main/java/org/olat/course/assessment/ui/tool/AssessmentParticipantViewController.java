@@ -36,8 +36,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.components.widget.ComponentWidget;
 import org.olat.core.gui.components.widget.FigureWidget;
@@ -220,13 +219,9 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				String scoreDescI18nKey = avgScoreConfig ? "score.of.avg": "score.of";
 				scoreWidget.setDesc(translate(scoreDescI18nKey, AssessmentHelper.getRoundedScore(maxScore)));
 				
-				scoreProgress = new ProgressBar("scoreProgress", 100, progress, maxScore, null);
-				scoreProgress.setWidthInPercent(true);
-				scoreProgress.setLabelAlignment(LabelAlignment.none);
-				scoreProgress.setRenderSize(RenderSize.small);
-				scoreProgress.setLabelMaxEnabled(false);
-				scoreWidget.setAdditionalComp(scoreProgress);
-				scoreWidget.setAdditionalCssClass("o_widget_progress");
+				scoreProgress = WidgetFactory.createProgressBar("scoreProgress", scoreWidget, getLocale());
+				scoreProgress.setMax(maxScore);
+				ProgressBarFactory.setValue(scoreProgress, Math.min(progress, maxScore), BarColor.neutral);
 			}
 			
 			if (assessmentConfig.isScoreScalingEnabled()) {
@@ -290,14 +285,9 @@ public class AssessmentParticipantViewController extends BasicController impleme
 					rubricWidget.setValue(translate("assessment.value.not.visible"));
 				}
 				
-				ProgressBar rubricProgress = new ProgressBar("scoreProgress_" + i, 100, progress, maxScoreRubric.floatValue(), null);
-				rubricProgress.setWidthInPercent(true);
-				rubricProgress.setLabelAlignment(LabelAlignment.none);
-				rubricProgress.setRenderSize(RenderSize.small);
-				rubricProgress.setLabelMaxEnabled(false);
-				rubricProgress.setBarColor(BarColor.passed);
-				rubricWidget.setAdditionalComp(rubricProgress);
-				rubricWidget.setAdditionalCssClass("o_widget_progress");
+				ProgressBar rubricProgress = WidgetFactory.createProgressBar("scoreProgress_" + i, rubricWidget, getLocale());
+				rubricProgress.setMax(maxScoreRubric.floatValue());
+				ProgressBarFactory.setValue(rubricProgress, Math.min(progress, maxScoreRubric.floatValue()), BarColor.passed);
 				rubricsWidgets.add(rubricWidget);
 			}
 		}
@@ -346,11 +336,8 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				passedWidget.setAdditionalText(translate("passed.cut.from", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue())));
 			}
 			if (scoreProgress != null && assessmentEval.getPassed() != null) {
-				if (assessmentEval.getPassed().booleanValue()) {
-					scoreProgress.setBarColor(BarColor.passed);
-				} else {
-					scoreProgress.setBarColor(BarColor.failed);
-				}
+				BarColor barColor = assessmentEval.getPassed().booleanValue() ? BarColor.passed : BarColor.failed;
+				ProgressBarFactory.setValue(scoreProgress, scoreProgress.getTotal(), barColor);
 			}
 		}
 		

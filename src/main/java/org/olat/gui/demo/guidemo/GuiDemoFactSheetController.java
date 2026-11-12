@@ -30,6 +30,9 @@ import org.olat.core.gui.components.factsheet.FactSheetFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.util.ComponentList;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -118,7 +121,12 @@ public class GuiDemoFactSheetController extends BasicController {
 	}
 
 	private Component createProgressBar() {
-		return new ProgressBar("progress", 100, 65, 100, "%");
+		ProgressBar progressBar = ProgressBarFactory.createProgressBar("progress", getLocale());
+		progressBar.setMax(100);
+		progressBar.setUnitLabel("%");
+		progressBar.setLabelFormat(LabelFormat.percentAndValue);
+		ProgressBarFactory.setValue(progressBar, 65, BarColor.neutral);
+		return progressBar;
 	}
 
 	@Override

@@ -23,9 +23,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -62,7 +62,7 @@ public class LearningProgressRenderer extends DefaultComponentRenderer {
 			// render nothing
 		} else {
 			if (lpc.isChartVisible()) {
-				renderProgressBar(renderer, sb, ubu, translator, lpc.getCompletion());
+				renderProgressBar(renderer, sb, ubu, translator, lpc.getCompletion(), lpc.isLabelVisible());
 			}
 			if (lpc.isChartVisible() && lpc.isLabelVisible()) {
 				sb.append(" ");
@@ -74,16 +74,13 @@ public class LearningProgressRenderer extends DefaultComponentRenderer {
 	}
 
 	private void renderProgressBar(Renderer renderer, StringOutput sb, URLBuilder ubu, Translator translator,
-			float actual) {
-		ProgressBar progressBar = new ProgressBar("progress-" + CodeHelper.getRAMUniqueID());
+			float actual, boolean ariaHidden) {
+		ProgressBar progressBar = ProgressBarFactory.createProgressBar("progress-" + CodeHelper.getRAMUniqueID(), translator.getLocale());
 		progressBar.setMax(1.0f);
-		progressBar.setWidthInPercent(true);
-		progressBar.setPercentagesEnabled(true);
-		progressBar.setLabelAlignment(LabelAlignment.none);
 		progressBar.setRenderStyle(RenderStyle.radial);
-		progressBar.setRenderSize(RenderSize.inline);	
-		progressBar.setBarColor(BarColor.success);	
-		progressBar.setActual(actual);
+		progressBar.setRenderSize(RenderSize.inline);
+		ProgressBarFactory.setValue(progressBar, actual, BarColor.success);
+		progressBar.setAriaHidden(ariaHidden);
 		progressBar.getHTMLRendererSingleton().render(renderer, sb, progressBar, ubu, translator, null, null);
 	}
 

@@ -38,8 +38,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBar;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.scope.FormScopeSelection;
 import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.scope.ScopeFactory;
@@ -118,24 +118,12 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		
 		enrollmentsWidget = WidgetFactory.createFigureWidget("enrollmentsWidget", flc.getFormItemComponent(),
 				translate("widget.enrollments.title"), "o_icon_tb_enrollments");
-		enrollmentsProgress = new ProgressBar("scoreProgress", 100, 0, 0, null);
-		enrollmentsProgress.setWidthInPercent(true);
-		enrollmentsProgress.setLabelAlignment(LabelAlignment.none);
-		enrollmentsProgress.setRenderSize(RenderSize.small);
-		enrollmentsProgress.setLabelMaxEnabled(false);
-		enrollmentsWidget.setAdditionalComp(enrollmentsProgress);
-		enrollmentsWidget.setAdditionalCssClass("o_widget_progress");
+		enrollmentsProgress = WidgetFactory.createProgressBar("enrollmentsProgress", enrollmentsWidget, getLocale());
 		widgetGroup.add(enrollmentsWidget);
 		
 		topicsWidget = WidgetFactory.createFigureWidget("topicsWidget", flc.getFormItemComponent(),
 				translate("widget.topics.title"), "o_icon_tb_topics");
-		topicsProgress = new ProgressBar("scoreProgress", 100, 0, 0, null);
-		topicsProgress.setWidthInPercent(true);
-		topicsProgress.setLabelAlignment(LabelAlignment.none);
-		topicsProgress.setRenderSize(RenderSize.small);
-		topicsProgress.setLabelMaxEnabled(false);
-		topicsWidget.setAdditionalComp(topicsProgress);
-		topicsWidget.setAdditionalCssClass("o_widget_progress");
+		topicsProgress = WidgetFactory.createProgressBar("topicsProgress", topicsWidget, getLocale());
 		widgetGroup.add(topicsWidget);
 		
 		participantsWidget = WidgetFactory.createFigureWidget("participantsWidget", flc.getFormItemComponent(),
@@ -265,12 +253,12 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		// Widgets
 		enrollmentsWidget.setValue(String.valueOf(enrollmentStats.getNumEnrollments()));
 		enrollmentsWidget.setDesc(translate("widget.enrollments.description", String.valueOf(enrollmentStats.getNumRequiredEnrollments())));
-		enrollmentsProgress.setActual(enrollmentStats.getNumEnrollments());
+		ProgressBarFactory.setValue(enrollmentsProgress, enrollmentStats.getNumEnrollments(), BarColor.neutral);
 		enrollmentsProgress.setMax(enrollmentStats.getNumRequiredEnrollments());
 		
 		topicsWidget.setValue(String.valueOf(enrollmentStats.getNumTopicsMinReached()));
 		topicsWidget.setDesc(translate("widget.topics.description", String.valueOf(enrollmentStats.getNumTopicsTotal())));
-		topicsProgress.setActual(enrollmentStats.getNumTopicsMinReached());
+		ProgressBarFactory.setValue(topicsProgress, enrollmentStats.getNumTopicsMinReached(), BarColor.neutral);
 		topicsProgress.setMax(enrollmentStats.getNumTopicsTotal());
 		
 		participantsWidget.setValue(String.valueOf(enrollmentStats.getNumIdentities()));

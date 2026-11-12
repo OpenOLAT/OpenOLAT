@@ -39,6 +39,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.breadcrumb.CrumbFormBasicController;
@@ -264,12 +267,8 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		annotationArea = uifactory.addTextAreaElement("annotationArea", null, -1, 1, -1, true, false, null, flc);
 		// Add progress bar
 		// init with values
-		progressBarBundle = new ProgressBar("progressBarBundle", 300, 1, bundlesList.size(), translate("generic.bundles"));
-		progressBarBundle.setPercentagesEnabled(false);
-		flc.put("progressBarBundle", progressBarBundle);
-		progressBarKey = new ProgressBar("progressBarKey", 300, 1, keysList.size(), translate("generic.keys"));
-		progressBarKey.setPercentagesEnabled(false);
-		flc.put("progressBarKey", progressBarKey);
+		progressBarBundle = createProgressBar("progressBarBundle", bundlesList.size(), translate("generic.bundles"));
+		progressBarKey = createProgressBar("progressBarKey", keysList.size(), translate("generic.keys"));
 		// Add navigation buttons
 		previousLink = uifactory.addFormLink("previousLink", "edit.button.previous", null, formLayout, Link.BUTTON);
 		previousLink.setIconLeftCSS("o_icon o_icon_previous_page");
@@ -291,6 +290,17 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		flc.contextPut("customizingPrefix", (customizingMode ? "customize." : ""));
 
 	}
+	
+	private ProgressBar createProgressBar(String name, int max, String unitLabel) {
+		ProgressBar progressBar = ProgressBarFactory.createProgressBar(name, getLocale());
+		flc.put(name, progressBar);
+		progressBar.setMax(max);
+		progressBar.setUnitLabel(unitLabel);
+		progressBar.setAriaLabel(unitLabel);
+		progressBar.setLabelFormat(LabelFormat.value);
+		ProgressBarFactory.setValue(progressBar, 1, BarColor.neutral);
+		return progressBar;
+	}
 
 	private void initOrUpdateCurrentItem(UserRequest ureq) {
 		// Set keys (must call before setting new currentItemPosition bundle name!
@@ -298,7 +308,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 			// still in same bundle, just select the currentItemPosition key
 			keysSelection.select(currentItem.getKey(), true);
 			// Update key progress bar
-			progressBarKey.setActual(keysSelection.getSelected() + 1.0f);
+			ProgressBarFactory.setValue(progressBarKey, keysSelection.getSelected() + 1.0f, BarColor.neutral);
 		} else {
 			// in new bundle, load new keys
 			updateKeysSelectionAndProgress();
@@ -415,11 +425,11 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		keysSelection.select(currentItem.getKey(), true);
 		// Update key progress bar
 		progressBarKey.setMax(keysListArray.length);
-		progressBarKey.setActual(keysSelection.getSelected() + 1.0f);
+		ProgressBarFactory.setValue(progressBarKey, keysSelection.getSelected() + 1.0f, BarColor.neutral);
 		// Set currentItemPosition bundle
 		bundlesSelection.select(currentItem.getBundleName(), true);
 		// Update bundle progress bar
-		progressBarBundle.setActual(bundlesSelection.getSelected() + 1.0f);
+		ProgressBarFactory.setValue(progressBarBundle, bundlesSelection.getSelected() + 1.0f, BarColor.neutral);
 	}
 
 	private void doPrevious(UserRequest ureq) {

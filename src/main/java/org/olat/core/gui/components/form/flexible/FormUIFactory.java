@@ -1600,13 +1600,6 @@ public class FormUIFactory {
 		return fte;
 	}
 	
-	public ProgressBarItem addProgressBar(String name, String i18nLabel, int width, float actual, float max, String unitLabel, FormItemContainer formLayout) {
-		ProgressBarItem fte = new ProgressBarItem(name, width, actual, max, unitLabel);
-		setLabelIfNotNull(i18nLabel, fte);
-		formLayout.add(fte);
-		return fte;
-	}
-	
 	public SliderElement addSliderElement(String name, String i18nLabel, FormItemContainer formLayout) {
 		SliderElementImpl slider = new SliderElementImpl(name);
 		setLabelIfNotNull(i18nLabel, slider);

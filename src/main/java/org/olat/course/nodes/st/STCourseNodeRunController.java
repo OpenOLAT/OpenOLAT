@@ -39,9 +39,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.components.widget.TextWidget;
 import org.olat.core.gui.components.widget.WidgetFactory;
@@ -189,21 +190,15 @@ public class STCourseNodeRunController extends BasicController {
 			return;
 		}
 		
-		ProgressBar courseProgress = new ProgressBar("courseProgress");
-		courseProgress.setWidth(100);
+		ProgressBar courseProgress = ProgressBarFactory.createProgressBar("courseProgress", getLocale());
 		courseProgress.setMax(100);
-		courseProgress.setWidthInPercent(true);
-		courseProgress.setLabelAlignment(LabelAlignment.none);
 		courseProgress.setRenderStyle(RenderStyle.radial);
 		courseProgress.setRenderSize(RenderSize.small);
-		courseProgress.setPercentagesEnabled(true);
+		courseProgress.setLabelFormat(LabelFormat.percent);
 			
 		// 1) Progress
 		Double completion = assessmentEvaluation.getCompletion();
 		float actual = completion != null? completion.floatValue(): 0;
-		if (actual * 100 != courseProgress.getActual()) {
-			courseProgress.setActual(actual * 100);
-		}
 		// 2) SCORE
 		Float score = assessmentEvaluation.getScore();
 		if(assessmentEvaluation.getWeightedScore() != null && ScoreScalingHelper.isEnabled(userCourseEnv)) {
@@ -214,17 +209,18 @@ public class STCourseNodeRunController extends BasicController {
 			courseProgress.setInfo(Math.round(score) + "pt");
 		}
 		// 3) Status
-		courseProgress.setBarColor(BarColor.success);
+		BarColor barColor = BarColor.success;
 		courseProgress.setCssClass(null);
 		Boolean passed = assessmentEvaluation.getPassed();
 		if (passed != null) {
 			if (passed.booleanValue()) {
 				courseProgress.setCssClass("o_progress_passed");
 			} else {
-				courseProgress.setBarColor(BarColor.danger);
+				barColor = BarColor.danger;
 				courseProgress.setCssClass("o_progress_failed");
 			}
 		}
+		ProgressBarFactory.setValue(courseProgress, actual * 100, barColor);
 		
 		assessmentParticipantViewCtrl.setPassedProgress(courseProgress);
 	}

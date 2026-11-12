@@ -26,256 +26,240 @@
 
 package org.olat.core.gui.components.progressbar;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormBaseComponent;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 
 /**
- * Initial Date: Feb 2, 2004 A <b>Choice </b> is
+ * A horizontal, radial or pie progress bar. The segments are the only data:
+ * a single value is one segment, the total is the sum of all segments.
+ * Markers are vertical lines at a value, e.g. a minimum.
+ * 
+ * Initial Date: Feb 2, 2004
  * 
  * @author Andreas
  */
-public class ProgressBar extends AbstractComponent {
+public class ProgressBar extends AbstractComponent implements FormBaseComponent {
 	private static final ComponentRenderer RENDERER = new ProgressBarRenderer();
 	
-	public enum LabelAlignment {none, left, right}
 	public enum RenderStyle {horizontal, radial, pie}
 	public enum RenderSize {inline, small, medium, large}
 	public enum BarColor {primary, success, info, warning, danger, passed, failed, neutral }
-	public enum RenderLabels { always, never, defaultRendering }
-
-	private static final int DEFAULT_WIDTH = 200;
-
-	private int width = DEFAULT_WIDTH;
-	private boolean widthInPercent = false;
-	private float actual;
+	public enum LabelFormat {none, percent, value, percentAndValue}
+	
+	public record Segment(float value, BarColor color, String cssClass, String label) {
+	
+		public Segment(float value, BarColor color, String label) {
+			this(value, color, null, label);
+		}
+	}
+	
+	public record Marker(float value, String label) {
+		//
+	}
+	
+	private final ProgressBarItem formItem;
+	private final Locale locale;
+	private Translator barTranslator;
 	private float max;
-	private boolean isNoMax = false;
-	private LabelAlignment labelAlignment = LabelAlignment.left;
+	private boolean noMax = false;
+	private List<Segment> segments = List.of();
+	private List<Marker> markers = List.of();
+	private LabelFormat labelFormat = LabelFormat.none;
 	private RenderStyle renderStyle = RenderStyle.horizontal;
 	private RenderSize renderSize = RenderSize.medium;
-	private BarColor barColor = BarColor.neutral;
-
 	private boolean progressAnimationEnabled = false;
+	private boolean ariaHidden = false;
+	private String ariaLabel;
 	private String unitLabel;
-	private boolean percentagesEnabled = true; // default
-	private boolean labelMaxEnabled = true;
 	private String info;
 	private String cssClass;
 	
-	private RenderLabels renderLabels;
-	
 	private ProgressBarCallback progressCallback;
 	
-	public ProgressBar(String name) {
+	ProgressBar(String name, Locale locale) {
 		super(name);
+		this.formItem = null;
+		this.locale = locale;
 		setDomReplacementWrapperRequired(false);
 	}
-
-	public ProgressBar(String name, int width, float actual, float max, String unitLabel) {
+	
+	ProgressBar(String name, ProgressBarItem formItem) {
 		super(name);
-		this.width = width;
-		this.actual = actual > max ? max : actual;
-		this.max = max;
-		this.unitLabel = unitLabel == null ? "" : unitLabel;
+		this.formItem = formItem;
+		this.locale = null;
 		setDomReplacementWrapperRequired(false);
 	}
-
+	
+	Translator getBarTranslator() {
+		if (barTranslator == null) {
+			Locale barLocale = locale != null ? locale : formItem.getTranslator().getLocale();
+			barTranslator = Util.createPackageTranslator(ProgressBar.class, barLocale);
+		}
+		return barTranslator;
+	}
+	
+	@Override
+	public String getFormDispatchId() {
+		return DISPPREFIX.concat(super.getDispatchID());
+	}
+	
+	@Override
+	public ProgressBarItem getFormItem() {
+		return formItem;
+	}
+	
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		//
 	}
-
-	public void setActual(float i) {
+	
+	public float getMax() {
+		return max;
+	}
+	
+	public void setMax(float max) {
+		this.max = max;
 		setDirty(true);
-		actual = i;
+	}
+	
+	public boolean isNoMax() {
+		return noMax;
+	}
+	
+	/**
+	 * @param noMax If true, the bar has no max limit. The value label shows no "/max".
+	 */
+	public void setNoMax(boolean noMax) {
+		this.noMax = noMax;
+		setDirty(true);
+	}
+	
+	public List<Segment> getSegments() {
+		return segments;
+	}
+	
+	public void setSegments(List<Segment> segments) {
+		this.segments = segments == null ? List.of() : List.copyOf(segments);
+		setDirty(true);
+	}
+	
+	public List<Marker> getMarkers() {
+		return markers;
+	}
+	
+	public void setMarkers(List<Marker> markers) {
+		this.markers = markers == null ? List.of() : List.copyOf(markers);
+		setDirty(true);
+	}
+	
+	public float getTotal() {
+		float total = 0;
+		for (Segment segment : segments) {
+			total += segment.value();
+		}
+		return total;
+	}
+	
+	public LabelFormat getLabelFormat() {
+		return labelFormat;
+	}
+	
+	public void setLabelFormat(LabelFormat labelFormat) {
+		this.labelFormat = labelFormat == null ? LabelFormat.none : labelFormat;
+		setDirty(true);
+	}
+	
+	public String getUnitLabel() {
+		return unitLabel;
+	}
+	
+	public void setUnitLabel(String unitLabel) {
+		this.unitLabel = unitLabel;
+		setDirty(true);
+	}
+	
+	public String getInfo() {
+		return info;
 	}
 	
 	public void setInfo(String info) {
 		this.info = info;
 		setDirty(true);
 	}
-
-	public void setMax(float i) {
+	
+	public String getCssClass() {
+		return cssClass;
+	}
+	
+	public void setCssClass(String cssClass) {
+		this.cssClass = cssClass;
 		setDirty(true);
-		max = i;
 	}
-
-	/**
-	 * If set to true, no max limit for this progress bar.
-	 * 
-	 * @param noMax
-	 */
-	public void setIsNoMax(boolean isNoMax) {
-		setDirty(true);
-		this.isNoMax = isNoMax;
-	}
-
-	public void setUnitLabel(String string) {
-		setDirty(true);
-		unitLabel = string;
-	}
-
-	public int getWidth() {
-		return width;
-	}
-
-	public void setWidth(int width) {
-		this.width = width;
-	}
-
-	public boolean isWidthInPercent() {
-		return widthInPercent;
-	}
-
-	public void setWidthInPercent(boolean widthInPercent) {
-		if(widthInPercent && width > 100) {
-			width = 100;
-		}
-		this.widthInPercent = widthInPercent;
-	}
-
-	public LabelAlignment getLabelAlignment() {
-		return labelAlignment;
-	}
-
-	/**
-	 * Defines where the label is rendered (but the percent still within if
-	 * configured).
-	 * 
-	 * @param renderStyle
-	 */
-	public void setRenderStyle(RenderStyle renderStyle) {
-		this.renderStyle = renderStyle;
-	}
-
 	
 	public RenderStyle getRenderStyle() {
 		return renderStyle;
 	}
 	
-	/**
-	 * Defines the size of the progress bar. small, medium and large. Inline size
-	 * will render as an inline element that fits into a standard line height.
-	 * 
-	 * @param renderSize
-	 */
-	public void setRenderSize(RenderSize renderSize) {
-		this.renderSize = renderSize;
+	public void setRenderStyle(RenderStyle renderStyle) {
+		this.renderStyle = renderStyle;
+		setDirty(true);
 	}
-
+	
 	public RenderSize getRenderSize() {
 		return renderSize;
 	}
-
-	public RenderLabels getRenderLabels() {
-		return renderLabels == null ? RenderLabels.defaultRendering : renderLabels;
-	}
-
-	/**
-	 * @param renderLabels True, force rendering of labels, false, disable them, null use the default behaviour
-	 */
-	public void setRenderLabels(RenderLabels renderLabels) {
-		this.renderLabels = renderLabels;
-	}
-
-	/**
-	 * Defines the color of the bar. By default the primary color is used. For other
-	 * colors use the custom CSS setter ot override the bar color.
-	 * 
-	 * @param barColor
-	 */
-	public void setBarColor(BarColor barColor) {
-		this.barColor = barColor;
-	}
-
-	public BarColor getBarColor() {
-		return barColor;
+	
+	public void setRenderSize(RenderSize renderSize) {
+		this.renderSize = renderSize;
+		setDirty(true);
 	}
 	
-	/**
-	 * If set to true, the bar will display animated stripes.
-	 * 
-	 * @param progressAnimationEnabled
-	 */
-	public void setProgressAnimationEnabled(boolean progressAnimationEnabled) {
-		this.progressAnimationEnabled = progressAnimationEnabled;
-	}
-
 	public boolean isProgressAnimationEnabled() {
 		return progressAnimationEnabled;
 	}
 	
+	public void setProgressAnimationEnabled(boolean progressAnimationEnabled) {
+		this.progressAnimationEnabled = progressAnimationEnabled;
+		setDirty(true);
+	}
 	
-
+	public boolean isAriaHidden() {
+		return ariaHidden;
+	}
+	
 	/**
-	 * Defines how the progress bar rendered: horizontal or radial
-	 * 
-	 * @param labelAlignment
+	 * @param ariaHidden Hide a decorative bar from screen readers if the same
+	 *                   information is shown as text.
 	 */
-	public void setLabelAlignment(LabelAlignment labelAlignment) {
-		this.labelAlignment = labelAlignment;
+	public void setAriaHidden(boolean ariaHidden) {
+		this.ariaHidden = ariaHidden;
+		setDirty(true);
 	}
 	
-	public boolean isLabelMaxEnabled() {
-		return labelMaxEnabled;
+	public String getAriaLabel() {
+		return ariaLabel;
 	}
 	
-	public void setLabelMaxEnabled(boolean labelMaxEnabled) {
-		this.labelMaxEnabled = labelMaxEnabled;
-	}
-
-	public float getActual() {
-		return actual;
+	public void setAriaLabel(String ariaLabel) {
+		this.ariaLabel = ariaLabel;
+		setDirty(true);
 	}
 	
-	public String getInfo() {
-		return info;
-	}
-
-	public float getMax() {
-		return max;
-	}
-
-	public boolean getIsNoMax() {
-		return isNoMax;
-	}
-
-	public String getUnitLabel() {
-		return unitLabel;
-	}
-
-	/**
-	 * @return percentagesEnabled true: show percentages; false: show only unit labels, no percentags
-	 */
-	public boolean isPercentagesEnabled() {
-		return percentagesEnabled;
-	}
-
-	/**
-	 * @param percentagesEnabled true: show percentages; false: show only unit labels, no percentags
-	 */
-	public void setPercentagesEnabled(boolean percentagesEnabled) {
-		this.percentagesEnabled = percentagesEnabled;
-	}
-	
-	public String getCssClass() {
-		return cssClass;
-	}
-
-	public void setCssClass(String cssClass) {
-		this.cssClass = cssClass;
-		this.setDirty(true);
-	}
-
 	public ProgressBarCallback getProgressCallback() {
 		return progressCallback;
 	}
-
+	
 	public void setProgressCallback(ProgressBarCallback progressCallback) {
 		this.progressCallback = progressCallback;
 	}
-
+	
 	@Override
 	public boolean isDirty() {
 		if(progressCallback != null) {
@@ -283,7 +267,7 @@ public class ProgressBar extends AbstractComponent {
 		}
 		return super.isDirty();
 	}
-
+	
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;

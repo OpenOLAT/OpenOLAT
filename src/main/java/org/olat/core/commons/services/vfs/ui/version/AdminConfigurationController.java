@@ -44,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressController;
-import org.olat.core.gui.components.progressbar.ProgressDelegate;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -68,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class AdminConfigurationController extends FormBasicController implements ProgressDelegate {
+public class AdminConfigurationController extends FormBasicController {
 
 	private FormToggle enabledEl;
 	private FormLayoutContainer numVersionCont;
@@ -246,9 +245,6 @@ public class AdminConfigurationController extends FormBasicController implements
 		final List<VFSMetadataRef> metadata = vfsRepositoryService.getMetadataWithMoreRevisionsThan(numOfVersions);
 		progressCtrl = new ProgressController(ureq, getWindowControl());
 		progressCtrl.setMessage(translate("version.prune.history"));
-		progressCtrl.setPercentagesEnabled(false);
-		progressCtrl.setUnitLabel("%");
-		progressCtrl.setMax(100.0f);
 		progressCtrl.setActual(0.0f);
 		listenTo(progressCtrl);
 
@@ -295,28 +291,12 @@ public class AdminConfigurationController extends FormBasicController implements
 		}
 	}
 
-	@Override
-	public void setMax(float max) {
-		if (progressCtrl != null && !progressCtrl.isDisposed()) {
-			progressCtrl.setMax(max);
-		}
-	}
-
-	@Override
 	public void setActual(float value) {
 		if (progressCtrl != null && !progressCtrl.isDisposed()) {
 			progressCtrl.setActual(value);
 		}
 	}
 
-	@Override
-	public void setInfo(String message) {
-		if (progressCtrl != null && !progressCtrl.isDisposed()) {
-			progressCtrl.setInfo(message);
-		}
-	}
-
-	@Override
 	public synchronized void finished() {
 		if (cmc != null && !cmc.isDisposed()) {
 			cmc.deactivate();

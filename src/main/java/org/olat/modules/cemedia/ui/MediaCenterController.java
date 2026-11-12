@@ -20,7 +20,6 @@
  */
 package org.olat.modules.cemedia.ui;
 
-import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import static org.olat.core.util.StringHelper.EMPTY;
 
 import java.io.File;
@@ -54,6 +53,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -88,9 +88,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.progressbar.ProgressBar;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -451,8 +451,10 @@ public class MediaCenterController extends FormBasicController
 		addDropdown.addElement(addCitationLink);
 		
 		// Add progress bar
-		quotaBar = uifactory.addProgressBar("quota.bar", null, 250, 0.0f, 100.0f, null, formLayout);
-		quotaBar.setLabelAlignment(LabelAlignment.none);
+		quotaBar = uifactory.addProgressBar("quota.bar", null, formLayout);
+		quotaBar.setCssClass("o_progress_quota");
+		quotaBar.setMax(100.0f);
+		quotaBar.setAriaHidden(true);
 		quotaBar.setRenderSize(RenderSize.small);
 		quotaBar.setVisible(config.withQuota());
 	}
@@ -666,11 +668,8 @@ public class MediaCenterController extends FormBasicController
 			} else {
 				actual = (usageKB / (float)quotaKB) * 100.0f;
 			}
-			quotaBar.setActual(actual);
-			ProgressBar.BarColor barColor = actual < 80.0f
-					? ProgressBar.BarColor.neutral
-					: ProgressBar.BarColor.danger;
-			quotaBar.setBarColor(barColor);
+			BarColor barColor = actual < 80.0f ? BarColor.neutral : BarColor.danger;
+			ProgressBarFactory.setValue(quotaBar, actual, barColor);
 			
 			String quotaExplain = translate("quota.explain",
 					Formatter.formatKBytes(usageKB.longValue()), Formatter.formatKBytes(quotaKB.longValue()));

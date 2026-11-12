@@ -19,9 +19,15 @@
  */
 package org.olat.modules.coach.ui.component;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressRadialCellRenderer;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -33,13 +39,20 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CompletionCellRenderer extends ProgressRadialCellRenderer {
+public class CompletionCellRenderer extends ProgressBarCellRenderer {
 	
 	private final Translator translator;
 	
 	public CompletionCellRenderer(Translator translator) {
-		super(BarColor.neutral);
+		super(RenderStyle.radial, RenderSize.inline, LabelFormat.none, BarColor.neutral);
 		this.translator = translator;
+	}
+	
+	@Override
+	protected ProgressBar createProgressBar(Locale locale) {
+		ProgressBar progressBar = super.createProgressBar(locale);
+		progressBar.setAriaHidden(true);
+		return progressBar;
 	}
 
 	@Override

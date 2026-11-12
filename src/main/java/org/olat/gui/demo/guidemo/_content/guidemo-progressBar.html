@@ -1,172 +1,128 @@
 <h2>$r.translate("GuiDemoProgressBarController.menu.title.alt")</h2>
 
 <h3>Basic usage</h3>
-<pre><code class="small">ProgressBar progressBar = new ProgressBar("progressBar");
-progressBar.setMax(200);		
-progressBar.setActual(25);
+<p>Segments are the only data. A single value is one segment, the total is the sum of all segments.</p>
+<pre><code class="small">ProgressBar progressBar = ProgressBarFactory.createProgressBar("progressBar", mainVC);
+progressBar.setMax(100);
+ProgressBarFactory.setValue(progressBar, 25, BarColor.neutral);
 </code></pre>
 $r.render("base")
-<br />
 
-<h4>Labeling options</h4>
-<pre><code class="small">progressBar.setInfo("Disk usage");
+<h4>Label formats</h4>
+<pre><code class="small">progressBar.setLabelFormat(LabelFormat.none); // default</code></pre>
+$r.render("format-none")
+<pre><code class="small">progressBar.setLabelFormat(LabelFormat.percent);</code></pre>
+$r.render("format-percent")
+<pre><code class="small">progressBar.setLabelFormat(LabelFormat.value);</code></pre>
+$r.render("format-value")
+<pre><code class="small">progressBar.setLabelFormat(LabelFormat.percentAndValue);</code></pre>
+$r.render("format-both")
+<pre><code class="small">progressBar.setMax(125);
 progressBar.setUnitLabel("MB");
-progressBar.setLabelAlignment(LabelAlignment.right);
-progressBar.setPercentagesEnabled(true);
-progressBar.setMax(125);		
-progressBar.setActual(40);
-</code></pre>
-$r.render("base2")
-<br />
-
-<pre><code class="small">progressBar.setLabelAlignment(LabelAlignment.left);
-</code></pre>
-$r.render("base3")
-<br />
-
-<pre><code class="small">progressBar.setLabelAlignment(LabelAlignment.none);
-</code></pre>
-$r.render("base4")
-<br />
-
-<pre><code class="small">progressBar.setPercentagesEnabled(false);
-</code></pre>
-$r.render("base5")
-<br />
-
-<h4>Special length options for horizontal progress bars</h4>
-<pre><code class="small">progressBar.setWidth(300);</code></pre>
-$r.render("base-long")
-<br />
-<pre><code class="small">progressBar.setWidth(50);
-progressBar.setWidthInPercent(true);</code></pre>
-$r.render("base-percent")
-<br />
-
-
-<h3>Render Styles</h3>
-<div class="row">
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		<pre><code class="small">progressBar.setRenderStyle(RenderStyle.horizontal); </code></pre>
-		$r.render("hor")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		<pre><code class="small">progressBar.setRenderStyle(RenderStyle.radial);</code></pre>
-		$r.render("rad")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		<pre><code class="small">progressBar.setRenderStyle(RenderStyle.pie);</code></pre>
-		$r.render("pie")
-	</div>
-</div>
-
-<h3>Render Sizes</h3>
-<pre><code class="small">progressBar.setRenderSize(RenderSize.large); </code></pre>
-<div class="row">
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("hor-l")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("rad-l")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("pie-l")
-	</div>
-</div>
-
-<pre><code class="small">progressBar.setRenderSize(RenderSize.small); </code></pre>
-<div class="row">
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("hor-s")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("rad-s")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("pie-s")
-	</div>
-</div>
-
-<pre><code class="small">progressBar.setRenderStyle(RenderSize.inline); 
-progressBar.setLabelAlignment(LabelAlignment.none);
-progressBar.setPercentagesEnabled(false);</code></pre>
-<div class="row">
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		This is within $r.render("hor-i") some text
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		This is within $r.render("rad-i") some text
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		This is within $r.render("pie-i") some text
-	</div>
-</div>
-
-<pre><code class="small">progressBar.setInfo("Disk usage");
+progressBar.setInfo("Disk usage");
+progressBar.setLabelFormat(LabelFormat.percentAndValue);</code></pre>
+$r.render("format-unit")
+<pre><code class="small">progressBar.setNoMax(true); // the value label has no "/max"
 progressBar.setUnitLabel("MB");
-progressBar.setLabelAlignment(LabelAlignment.right);</code></pre>
+progressBar.setLabelFormat(LabelFormat.value);</code></pre>
+$r.render("format-nomax")
+
+<h4>Width</h4>
+<p>A horizontal bar fills its container. Inline bars have a fixed width. Limit the width with the CSS of the context or a CSS class:</p>
+<pre><code class="small">progressBar.setCssClass("o_progress_quota");</code></pre>
+
+<h3>Render styles and sizes</h3>
+<p>The label is rendered inside medium and large bars and after small and inline bars. Radial and pie render segments as arcs and markers as lines.</p>
+<pre><code class="small">progressBar.setRenderStyle(RenderStyle.horizontal | radial | pie);
+progressBar.setRenderSize(RenderSize.inline | small | medium | large);
+progressBar.setLabelFormat(LabelFormat.percent);</code></pre>
+#foreach($size in ["large", "medium", "small"])
+<h4>$size</h4>
 <div class="row">
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("hor-i2")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("rad-i2")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("pie-i2")
-	</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">$r.render("horizontal-$size")</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">$r.render("radial-$size")</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">$r.render("pie-$size")</div>
 </div>
-
-
-
+#end
+<h4>inline</h4>
+<div class="row">
+	<div class="col-xs-12 col-md-4 o_block_bottom">This is within $r.render("horizontal-inline") some text</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">This is within $r.render("radial-inline") some text</div>
+	<div class="col-xs-12 col-md-4 o_block_bottom">This is within $r.render("pie-inline") some text</div>
+</div>
 
 <h3>Colors</h3>
+<p>The color belongs to the segment. Radial and pie use the color of the first segment.</p>
+<pre><code class="small">ProgressBarFactory.setValue(progressBar, 65, BarColor.success);
+progressBar.setSegments(List.of(new Segment(65, BarColor.success, "o_my_css_class", "label")));</code></pre>
 <div class="row">
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		<pre><code class="small">progressBar.setRenderStyle(arColor.info); 
-progressBar.setRenderStyle(arColor.success);
-progressBar.setRenderStyle(arColor.warning);
-progressBar.setRenderStyle(arColor.danger);
-		</code></pre>
-		$r.render("hor-ci")
-		$r.render("hor-cs")
-		$r.render("hor-cw")
-		$r.render("hor-cd")
+	<div class="col-xs-12 col-md-6 o_block_bottom">
+	#foreach($color in $colors)
+		<div class="o_block_small">$color.name() $r.render("hor-$color.name()")</div>
+	#end
 	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		<pre><code class="small">progressBar.setRenderStyle(arColor.info); 
-progressBar.setRenderStyle(arColor.success);
-progressBar.setRenderStyle(arColor.warning);
-progressBar.setRenderStyle(arColor.danger);
-		</code></pre>
-		<div style="display: inline-block">$r.render("rad-ci")</div>
-		<div style="display: inline-block">$r.render("rad-cs")</div>
-		<div style="display: inline-block">$r.render("rad-cw")</div>
-		<div style="display: inline-block">$r.render("rad-cd")</div>
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		<pre><code class="small">progressBar.setRenderStyle(arColor.info); 
-progressBar.setRenderStyle(arColor.success);
-progressBar.setRenderStyle(arColor.warning);
-progressBar.setRenderStyle(arColor.danger);
-		</code></pre>
-		<div style="display: inline-block">$r.render("pie-ci")</div>
-		<div style="display: inline-block">$r.render("pie-cs")</div>
-		<div style="display: inline-block">$r.render("pie-cw")</div>
-		<div style="display: inline-block">$r.render("pie-cd")</div>
+	<div class="col-xs-12 col-md-6 o_block_bottom">
+	#foreach($color in $colors)
+		<div style="display: inline-block">$r.render("rad-$color.name()")</div>
+	#end
 	</div>
 </div>
 
-<h3>Animated</h3>
-<pre><code class="small">progressBar.setProgressAnimationEnabled(true); </code></pre>
+<h3>Stacked bars and markers</h3>
+<p>Each segment has a text label, shown as tooltip and used for the accessible name of the bar (role="img").</p>
+<pre><code class="small">progressBar.setMax(10);
+progressBar.setAriaLabel("Members"); // name: "Members: 6 active, 2 pending of 10"
+progressBar.setSegments(List.of(
+		new Segment(6, BarColor.success, "active"),
+		new Segment(2, BarColor.warning, "pending")));</code></pre>
+$r.render("stacked")
+<pre><code class="small">progressBar.setMax(20);
+progressBar.setMarkers(List.of(new Marker(10, "minimum"), new Marker(16, "maximum")));</code></pre>
+$r.render("markers")
+<pre><code class="small">// Segments that fill the bar keep the rounded corners with markers
+progressBar.setRenderSize(RenderSize.small);
+progressBar.setMarkers(List.of(new Marker(5, "minimum")));</code></pre>
+$r.render("markers-full")
+<pre><code class="small">// Radial and pie draw markers as lines from the center
+progressBar.setRenderStyle(RenderStyle.radial | pie);
+progressBar.setMarkers(List.of(new Marker(50, "minimum"), new Marker(80, "maximum")));</code></pre>
 <div class="row">
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("hor-anim")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("rad-anim")
-	</div>
-	<div class="col-xs-12 col-md-4 o_block_bottom">
-		$r.render("pie-anim")
-	</div>
+	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("markers-radial")</div>
+	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("markers-pie")</div>
+	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("markers-radial-small")</div>
+	<div class="col-xs-12 col-md-3 o_block_bottom">This is within $r.render("markers-radial-inline") some text</div>
 </div>
+<pre><code class="small">// Radial and pie draw each segment as an arc
+progressBar.setMax(20);
+progressBar.setRenderStyle(RenderStyle.radial | pie);
+progressBar.setSegments(List.of(
+		new Segment(9, BarColor.success, "active"),
+		new Segment(4, BarColor.warning, "pending"),
+		new Segment(2, BarColor.danger, "cancelled")));
+progressBar.setMarkers(List.of(new Marker(10, "minimum"), new Marker(16, "maximum")));</code></pre>
+<div class="row">
+	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("segments-radial")</div>
+	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("segments-pie")</div>
+	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("segments-radial-small")</div>
+	<div class="col-xs-12 col-md-3 o_block_bottom">This is within $r.render("segments-radial-inline") some text</div>
+</div>
+
+<h3>Accessibility</h3>
+<p>A bar with one segment has role="progressbar" with aria-valuenow, aria-valuemin and aria-valuemax. Its name is the aria label, else the segment label, else "Progress". Set a name if "Progress" does not describe the bar:</p>
+<pre><code class="small">progressBar.setAriaLabel("Course progress");</code></pre>
+$r.render("aria-label")
+<p>Hide a decorative bar if the same information is shown as text:</p>
+<pre><code class="small">progressBar.setAriaHidden(true);</code></pre>
+$r.render("aria-hidden")
+
+<h3>Animated</h3>
+<pre><code class="small">progressBar.setProgressAnimationEnabled(true);</code></pre>
+<div class="row">
+	<div class="col-xs-12 col-md-6 o_block_bottom">$r.render("hor-anim")</div>
+	<div class="col-xs-12 col-md-6 o_block_bottom">$r.render("rad-anim")</div>
+</div>
+
+<h3>Table cells</h3>
+<p>The ProgressBarCellRenderer uses the same markup. A Number cell value is one segment with max 1. Override createProgressBar(Object) for stacked bars.</p>
+<pre><code class="small">new ProgressBarCellRenderer(RenderStyle.horizontal, RenderSize.small, LabelFormat.percent, BarColor.neutral)</code></pre>
+$r.render("table")

@@ -38,7 +38,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -77,7 +80,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	// main reference and language selection elements
 	private SingleSelection referenceLangSelection;
 	private SingleSelection targetLangSelection;
-	private ProgressBar progressBar;
+	private ProgressBarItem progressBar;
 	// missing items form elements
 	private FormLink missingListButton;
 	private FormLink missingTranslateButton;
@@ -251,10 +254,11 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			this.flc.contextPut("targetLangKey", targetLocale.toString());
 		}
 		targetLangSelection.addActionListener(FormEvent.ONCHANGE);
-		// Add progress bar as normal component (not a form element)
 		int bundlesCount = i18nManager.countBundles(null, true);
-		progressBar = new ProgressBar("progressBar", 300, 0, 0, translate("start.progressBar.unitLabel", bundlesCount + ""));
-		this.flc.put("progressBar", progressBar);
+		progressBar = formFactory.addProgressBar("progressBar", "start.progressBar", formLayout);
+		progressBar.setUnitLabel(translate("start.progressBar.unitLabel", bundlesCount + ""));
+		progressBar.setLabelFormat(LabelFormat.percentAndValue);
+		progressBar.setAriaLabel(translate("start.progressBar"));
 	}
 
 	private void initMissingItemsElements(FormUIFactory formFactory, FormItemContainer formLayout,
@@ -400,7 +404,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		int toTranslateCount = i18nManager.countI18nItems(referenceLocale, null, true);
 		int translatedCount = i18nManager.countI18nItems(targetLocale, null, true);
 		progressBar.setMax(toTranslateCount);
-		progressBar.setActual(translatedCount);
+		ProgressBarFactory.setValue(progressBar, translatedCount, BarColor.neutral);
 		// calculate package dependent values for missing keys display
 		String missingBundle = missingBundlesSelection.getSelectedKey();
 		if (missingBundle.equals(ALL_BUNDLES_IDENTIFYER)) {

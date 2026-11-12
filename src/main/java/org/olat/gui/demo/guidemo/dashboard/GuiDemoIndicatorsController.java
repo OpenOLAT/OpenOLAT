@@ -27,7 +27,9 @@ import org.olat.core.gui.components.indicators.IndicatorsComponent;
 import org.olat.core.gui.components.indicators.IndicatorsFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -114,12 +116,10 @@ public class GuiDemoIndicatorsController extends BasicController {
 		Link asLinkComp = IndicatorsFactory.createIndicatorLink("3", CMD_INDICATOR, translate("indicators.component.as.link"), userPortrait3, this);
 		asLinkComp.setUserObject(new LabelFigure(translate("indicators.component.as.link"), StringHelper.escapeHtml(portraitUser.getDisplayName())));
 		
-		ProgressBar progressComp = new ProgressBar("progress");
-		progressComp.setLabelAlignment(LabelAlignment.none);
-		progressComp.setWidthInPercent(true);
-		progressComp.setWidth(100);
+		ProgressBar progressComp = ProgressBarFactory.createProgressBar("progress", getLocale());
 		progressComp.setMax(100f);
-		progressComp.setActual(80f);
+		progressComp.setLabelFormat(LabelFormat.percent);
+		ProgressBarFactory.setValue(progressComp, 80f, BarColor.neutral);
 		
 		componentsComp.setFocusIndicators(List.of(
 				withLabelComp,

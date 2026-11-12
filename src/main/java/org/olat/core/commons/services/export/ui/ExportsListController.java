@@ -54,8 +54,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
 import org.olat.core.gui.components.progressbar.ProgressBarCallback;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -285,14 +287,12 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		String c = Integer.toString(++count);
 		
 		ProgressBarItem progressItem = uifactory.addProgressBar("progress-".concat(c), null, flc);	
-		progressItem.setPercentagesEnabled(true);
-		progressItem.setWidthInPercent(true);
-		progressItem.setLabelAlignment(LabelAlignment.none);
+		progressItem.setAriaLabel(translate("export.progress"));
 		progressItem.setMax(1.0f);
 		Task runningTask = row.getRunningTask();
 		if(runningTask != null) {
 			if(runningTask.getProgress() != null) {
-				progressItem.setActual(runningTask.getProgress().floatValue());
+				ProgressBarFactory.setValue(progressItem, runningTask.getProgress().floatValue(), BarColor.neutral);
 			}
 			progressItem.setProgressCallback(new TaskProgressBarCallback(runningTask));
 		}
@@ -527,10 +527,10 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		}
 
 		@Override
-		public float getActual() {
+		public List<Segment> getSegments() {
 			Double progress = taskExecutorManager.getProgress(task);
 			dbInstance.commitAndCloseSession();
-			return progress == null ? 0.0f : progress.floatValue();
+			return List.of(new Segment(progress == null ? 0.0f : progress.floatValue(), BarColor.neutral, null));
 		}
 	}
 }

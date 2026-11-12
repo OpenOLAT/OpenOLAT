@@ -27,9 +27,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -95,13 +96,12 @@ public class IdentityPassedController extends BasicController {
 		resetLink = LinkFactory.createLink("passed.manually.reset", "assed.manually.reset", getTranslator(), mainVC, this, Link.BUTTON);
 		resetLink.setIconLeftCSS("o_icon o_icon_reset_data");
 		
-		completionItem = new ProgressBar("completion", 100, 0, Float.valueOf(100), "%");
-		completionItem.setWidthInPercent(true);
-		completionItem.setLabelAlignment(LabelAlignment.none);
-		completionItem.setLabelMaxEnabled(false);
+		completionItem = ProgressBarFactory.createProgressBar("completion", mainVC, getLocale());
+		completionItem.setMax(100);
+		completionItem.setUnitLabel("%");
+		completionItem.setLabelFormat(LabelFormat.percent);
 		completionItem.setRenderStyle(RenderStyle.radial);
 		completionItem.setRenderSize(RenderSize.small);
-		mainVC.put("completion", completionItem);
 		
 		refresh();
 		putInitialPanel(mainVC);
@@ -127,8 +127,7 @@ public class IdentityPassedController extends BasicController {
 		Double completion = assessmentEvaluation.getCompletion();
 		if(completion != null) {
 			BarColor barColor = failed ? BarColor.danger : BarColor.success;
-			completionItem.setBarColor(barColor);
-			completionItem.setActual(completion.floatValue() * 100f);
+			ProgressBarFactory.setValue(completionItem, completion.floatValue() * 100f, barColor);
 		}
 		
 		if(passed) {

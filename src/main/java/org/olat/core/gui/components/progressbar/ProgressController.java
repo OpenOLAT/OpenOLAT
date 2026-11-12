@@ -21,6 +21,8 @@ package org.olat.core.gui.components.progressbar;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -33,7 +35,7 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ProgressController extends BasicController implements ProgressDelegate {
+public class ProgressController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private final ProgressBar progressBar;
@@ -42,41 +44,24 @@ public class ProgressController extends BasicController implements ProgressDeleg
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("progress");
-		progressBar = new ProgressBar("dedup", 600, 0.0f, 100.0f, "%");
-		progressBar.setActual(100.0f);
-		mainVC.put("progress", progressBar);
+		progressBar = ProgressBarFactory.createProgressBar("progress", mainVC, getLocale());
+		progressBar.setMax(100.0f);
+		progressBar.setLabelFormat(LabelFormat.percent);
+		setActual(100.0f);
 		putInitialPanel(mainVC);
 	}
 	
 	public void setMessage(String translatedMsg) {
 		mainVC.contextPut("msg", translatedMsg);
+		progressBar.setAriaLabel(translatedMsg);
 	}
 
 	public void setMax(float i) {
 		progressBar.setMax(i);
 	}
 
-	public void setPercentagesEnabled(boolean percentagesEnabled) {
-		progressBar.setPercentagesEnabled(percentagesEnabled);
-	}
-
-	@Override
 	public void setActual(float i) {
-		progressBar.setActual(i);
-	}
-
-	@Override
-	public void setInfo(String message) {
-		progressBar.setInfo(message);
-	}
-	
-	public void setUnitLabel(String label) {
-		progressBar.setUnitLabel(label);
-	}
-
-	@Override
-	public void finished() {
-		progressBar.setActual(0.0f);
+		ProgressBarFactory.setValue(progressBar, i, BarColor.neutral);
 	}
 
 	@Override

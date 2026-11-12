@@ -36,7 +36,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementImpl;
 import org.olat.core.gui.components.progressbar.ProgressBar;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -48,10 +50,10 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -114,11 +116,10 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		
 		mainVC = createVelocityContainer("upload");
 		// Add progress bar
-		ubar = new ProgressBar("ubar");
-		ubar.setWidth(200);
+		ubar = ProgressBarFactory.createProgressBar("ubar", mainVC, getLocale());
 		ubar.setUnitLabel("MB");
-		ubar.setLabelAlignment(LabelAlignment.right);
-		mainVC.put(ubar.getComponentName(), ubar);
+		ubar.setLabelFormat(LabelFormat.percentAndValue);
+		ubar.setAriaLabel(Util.createPackageTranslator(FolderEvent.class, getLocale()).translate("quota.used"));
 
 		// Calculate quota and limits
 		long actualUsage = 0;
@@ -129,7 +130,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		if (inheritingContainer != null) {
 			secCallback = inheritingContainer.getLocalSecurityCallback();
 			actualUsage = VFSManager.getUsageKB(inheritingContainer);
-			ubar.setActual(actualUsage / 1024f);
+			ProgressBarFactory.setValue(ubar, actualUsage / 1024f, BarColor.neutral);
 			if (inheritingContainer.getLocalSecurityCallback().getQuota() != null) {
 				quotaKB = secCallback.getQuota().getQuotaKB().longValue();
 				uploadLimitKB = (int) secCallback.getQuota().getUlLimitKB().longValue();
@@ -137,7 +138,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		}		
 		// set wether we have a quota on this folder
 		if (quotaKB == Quota.UNLIMITED) {
-			ubar.setIsNoMax(true);
+			ubar.setNoMax(true);
 		} else if(quotaKB == 0) {
 			ubar.setMax(quotaKB);
 		} else {
@@ -184,7 +185,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 			actualUsage = VFSManager.getUsageKB(inheritingContainer);
 			quotaKB = secCallback.getQuota().getQuotaKB().longValue();
 			uploadLimitKB = (int)secCallback.getQuota().getUlLimitKB().longValue();
-			ubar.setActual(actualUsage / 1024);
+			ProgressBarFactory.setValue(ubar, actualUsage / 1024, BarColor.neutral);
 			fileUploadCtr.setMaxUploadSizeKB(uploadLimitKB);
 		}
 	}

@@ -27,8 +27,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBar;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -54,10 +55,10 @@ public class QuotaBar extends AbstractComponent {
 		setDomReplacementWrapperRequired(false);
 		quotaTranslator = Util.createPackageTranslator(FolderUIFactory.class, locale);
 		
-		progressBar = new ProgressBar(name + "_bar");
-		progressBar.setLabelAlignment(LabelAlignment.none);
+		progressBar = ProgressBarFactory.createProgressBar(name + "_bar", locale);
+		progressBar.setAriaHidden(true);
 		progressBar.setRenderSize(RenderSize.small);
-		progressBar.setWidth(200);
+		progressBar.setCssClass("o_progress_quota");
 		
 		setQuota(quota);
 	}
@@ -74,15 +75,15 @@ public class QuotaBar extends AbstractComponent {
 		}
 		
 		if (isUnlimited()) {
-			progressBar.setIsNoMax(true);
+			progressBar.setNoMax(true);
 		} else if(quota.getQuotaKB() == 0) {
-			progressBar.setIsNoMax(false);
+			progressBar.setNoMax(false);
 			progressBar.setMax(quota.getQuotaKB());
 		} else {
-			progressBar.setIsNoMax(false);
+			progressBar.setNoMax(false);
 			progressBar.setMax(quota.getQuotaKB() / BYTE_UNIT);
 		}
-		progressBar.setActual(quota.getActualUsage() / BYTE_UNIT);
+		ProgressBarFactory.setValue(progressBar, quota.getActualUsage() / BYTE_UNIT, BarColor.neutral);
 	}
 	
 	boolean isUnlimited() {

@@ -46,8 +46,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.widget.FigureWidget;
 import org.olat.core.gui.components.widget.WidgetFactory;
 import org.olat.core.gui.components.widget.WidgetGroup;
@@ -255,13 +255,9 @@ public class RepositoryLifecycleAdminController extends FormBasicController impl
 	}
 
 	private ProgressBar initProgress(FigureWidget widget, int progress, int max) {
-		ProgressBar progressBar = new ProgressBar("scoreProgress", 100, progress, max, null);
-		progressBar.setWidthInPercent(true);
-		progressBar.setLabelAlignment(LabelAlignment.none);
-		progressBar.setRenderSize(RenderSize.small);
-		progressBar.setLabelMaxEnabled(false);
-		widget.setAdditionalComp(progressBar);
-		widget.setAdditionalCssClass("o_widget_progress");
+		ProgressBar progressBar = WidgetFactory.createProgressBar("scoreProgress", widget, getLocale());
+		progressBar.setMax(max);
+		ProgressBarFactory.setValue(progressBar, Math.min(progress, max), BarColor.neutral);
 		return progressBar;
 	}
 
@@ -436,12 +432,12 @@ public class RepositoryLifecycleAdminController extends FormBasicController impl
 		if(StringHelper.containsNonWhitespace(config)) {
 			widget.setValue(Integer.toString(current));
 			widget.setDesc(translate("process.of", Integer.toString(max)));
-			progressBar.setActual(current);
+			ProgressBarFactory.setValue(progressBar, current, BarColor.neutral);
 			progressBar.setMax(max);
 		} else {
 			widget.setValue("-");
 			widget.setDesc("");
-			progressBar.setActual(0.0f);
+			progressBar.setSegments(List.of());
 			progressBar.setMax(0.0f);
 		}
 	}

@@ -42,6 +42,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -188,9 +191,10 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 		mainVC.put("close", closeLink);
 		
-		progressBar = new ProgressBar("progress-serie", 100, 0.0f, Float.valueOf(items.size()), null);
-		progressBar.setWidthInPercent(true);
-		mainVC.put("progressBar", progressBar);
+		progressBar = ProgressBarFactory.createProgressBar("progressBar", mainVC, getLocale());
+		progressBar.setMax(items.size());
+		progressBar.setLabelFormat(LabelFormat.percentAndValue);
+		progressBar.setAriaHidden(true);
 		
 		putInitialPanel(mainVC);
 
@@ -421,7 +425,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			currentItem = runningPracticeItems.get(currentIndex);
 
 			long correctAnswers = numOfCorrectAnswers();
-			progressBar.setActual(correctAnswers);
+			ProgressBarFactory.setValue(progressBar, correctAnswers, BarColor.neutral);
 			String progressNumbers = translate("progres.numbers",
 					Long.toString(correctAnswers), Integer.toString(runningPracticeItems.size()));
 			mainVC.contextPut("progressNumbers", progressNumbers);

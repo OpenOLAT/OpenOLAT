@@ -19,10 +19,12 @@
  */
 package org.olat.core.gui.components.progressbar;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.render.Renderer;
@@ -33,36 +35,49 @@ import org.olat.core.util.CodeHelper;
 
 /**
  * 
- * Initial date: 26 Jan 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 10 Nov 2026<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ProgressRadialCellRenderer implements FlexiCellRenderer {
+public class ProgressBarCellRenderer implements FlexiCellRenderer {
 	
+	private final RenderStyle renderStyle;
+	private final RenderSize renderSize;
+	private final LabelFormat labelFormat;
 	private final BarColor barColor;
 	
-	public ProgressRadialCellRenderer() {
-		this(BarColor.neutral);
-	}
-
-	public ProgressRadialCellRenderer(BarColor barColor) {
+	public ProgressBarCellRenderer(RenderStyle renderStyle, RenderSize renderSize, LabelFormat labelFormat, BarColor barColor) {
+		this.renderStyle = renderStyle;
+		this.renderSize = renderSize;
+		this.labelFormat = labelFormat;
 		this.barColor = barColor;
 	}
-
+	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof Double) {
-			Double completion = (Double) cellValue;
-			ProgressBar progressBar = new ProgressBar("progress-" + CodeHelper.getRAMUniqueID(), 100,
-					completion.floatValue(), Float.valueOf(1), null);
-			progressBar.setWidthInPercent(true);
-			progressBar.setLabelAlignment(LabelAlignment.none);
-			progressBar.setRenderStyle(RenderStyle.radial);
-			progressBar.setRenderSize(RenderSize.inline);
-			progressBar.setBarColor(barColor);
-			progressBar.getHTMLRendererSingleton().render(renderer, target, progressBar, ubu, translator, null, null);
+		ProgressBar progressBar = createProgressBar(cellValue, translator.getLocale());
+		if (progressBar != null) {
+			ProgressBarRenderer.renderProgressBar(target, progressBar, null);
 		}
 	}
-
+	
+	protected ProgressBar createProgressBar(Object cellValue, Locale locale) {
+		if (cellValue instanceof Number number) {
+			ProgressBar progressBar = createProgressBar(locale);
+			progressBar.setMax(1);
+			ProgressBarFactory.setValue(progressBar, number.floatValue(), barColor);
+			return progressBar;
+		}
+		return null;
+	}
+	
+	protected ProgressBar createProgressBar(Locale locale) {
+		ProgressBar progressBar = ProgressBarFactory.createProgressBar("progress-" + CodeHelper.getRAMUniqueID(), locale);
+		progressBar.setRenderStyle(renderStyle);
+		progressBar.setRenderSize(renderSize);
+		progressBar.setLabelFormat(labelFormat);
+		return progressBar;
+	}
+	
 }

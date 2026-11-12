@@ -59,10 +59,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
-import org.olat.core.gui.components.progressbar.ProgressBar.RenderLabels;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -539,15 +539,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 
 	private void forgeCompletion(CurriculumElementWithViewsRow row, Double completion) {
 		if (completion != null) {
-			ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
-					completion.floatValue(), Float.valueOf(1), null);
-			completionItem.setWidthInPercent(true);
-			completionItem.setLabelAlignment(LabelAlignment.none);
+			ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey());
+			completionItem.setMax(1);
+			ProgressBarFactory.setValue(completionItem, completion.floatValue(), BarColor.neutral);
 			completionItem.setRenderStyle(RenderStyle.radial);
-			completionItem.setRenderSize(RenderSize.small);		
-			completionItem.setBarColor(BarColor.neutral);	
-			completionItem.setPercentagesEnabled(true);
-			completionItem.setRenderLabels(RenderLabels.always);
+			completionItem.setRenderSize(RenderSize.small);
+			completionItem.setLabelFormat(LabelFormat.percent);
 			
 			// Inline rendering of status
 			if (row.isPassed()) {

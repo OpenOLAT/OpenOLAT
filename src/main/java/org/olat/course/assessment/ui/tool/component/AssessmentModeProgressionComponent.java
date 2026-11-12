@@ -24,9 +24,10 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.progressbar.ProgressBar;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -61,11 +62,10 @@ public class AssessmentModeProgressionComponent extends FormBaseComponentImpl {
 		this.element = element;
 		status = assessmentMode.getStatus();
 		assessmentModeCoordinationService = CoreSpringFactory.getImpl(AssessmentModeCoordinationService.class);
-		progressBar = new ProgressBar(name.concat("_progress"));
+		progressBar = ProgressBarFactory.createProgressBar(name.concat("_progress"), translator.getLocale());
 		progressBar.setRenderSize(RenderSize.inline);
 		progressBar.setRenderStyle(RenderStyle.pie);
-		progressBar.setLabelAlignment(LabelAlignment.none);
-		progressBar.setPercentagesEnabled(false);
+		progressBar.setAriaHidden(true);
 		progressBar.setDomReplacementWrapperRequired(false);
 		setDomReplacementWrapperRequired(false);
 	}
@@ -91,7 +91,7 @@ public class AssessmentModeProgressionComponent extends FormBaseComponentImpl {
 	
 	public void setActual(int i) {
 		loggedIn = i;
-		progressBar.setActual(i);
+		ProgressBarFactory.setValue(progressBar, i, BarColor.neutral);
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class AssessmentModeProgressionComponent extends FormBaseComponentImpl {
 		
 		if(loggedIn != stats.getNumInOpenOlat()) {
 			loggedIn = stats.getNumInOpenOlat();
-			progressBar.setActual(loggedIn);
+			ProgressBarFactory.setValue(progressBar, loggedIn, BarColor.neutral);
 			dirty |= true;
 		}
 		

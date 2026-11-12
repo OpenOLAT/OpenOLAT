@@ -94,7 +94,7 @@ public class CourseQuotaStatisticsExport extends OpenXMLWorkbookResource {
 			String numOfFiles = row.getNumOfFiles() != null ? row.getNumOfFiles().toString() : "";
 			String size = row.getTotalUsedSize() != null ? Formatter.formatKBytes(row.getTotalUsedSize()) : "";
 			String quota = row.getQuota();
-			String usedQuotaProgress = row.getCurUsed() != null ? Math.round(row.getCurUsed().getActual()) + "%" : "";
+			String usedQuotaProgress = row.getCurUsed() != null ? Math.round(row.getCurUsed().getTotal()) + "%" : "";
 
 			dataRow.addCell(c++, resource);
 			dataRow.addCell(c++, type);

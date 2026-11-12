@@ -45,6 +45,9 @@ import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.components.widget.FigureWidget;
 import org.olat.core.gui.components.widget.WidgetFactory;
@@ -357,7 +360,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		mainVC.contextPut("numberOfQuestions", getNumberOfQuestions());
 
 		updateProgressBar();
-		progressBar.setActual(questionIndex + 1);
+		ProgressBarFactory.setValue(progressBar, questionIndex + 1, BarColor.neutral);
 
 		// AI correction state → template flags. Only one of the three blocks
 		// is rendered at a time (overlay while pending, feedback on done,
@@ -388,11 +391,10 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 	private void updateProgressBar() {
 		if (progressBar == null) {
-			progressBar = new ProgressBar("progress", 100, 0.0f, getNumberOfQuestions(), null);
-			progressBar.setWidthInPercent(true);
-			progressBar.setLabelAlignment(ProgressBar.LabelAlignment.none);
-			progressBar.setRenderSize(ProgressBar.RenderSize.small);
-			mainVC.put("progressBar", progressBar);
+			progressBar = ProgressBarFactory.createProgressBar("progressBar", mainVC, getLocale());
+			progressBar.setMax(getNumberOfQuestions());
+			progressBar.setRenderSize(RenderSize.small);
+			progressBar.setAriaHidden(true);
 		}
 	}
 
@@ -406,7 +408,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 		retryButton.setTitle("quiz.retry");
 		retryButton.setAriaLabel("quiz.retry");
 		updateProgressBar();
-		progressBar.setActual(getNumberOfPassedQuestions());
+		ProgressBarFactory.setValue(progressBar, getNumberOfPassedQuestions(), BarColor.neutral);
 		
 		FigureWidget figures = WidgetFactory.createFigureWidget("quiz.figures", mainVC, translate("quiz.your.result"), "o_icon_score");
 		figures.setValue(String.valueOf(getNumberOfPassedQuestions()));

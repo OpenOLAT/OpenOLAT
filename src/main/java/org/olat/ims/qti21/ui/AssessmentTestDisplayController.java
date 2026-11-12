@@ -54,6 +54,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -2258,14 +2260,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				layoutCont.contextPut("displayQuestionProgress", deliveryOptions.isDisplayQuestionProgress());
 				
 				if(deliveryOptions.isDisplayScoreProgress()) {
-					scoreProgress = uifactory.addProgressBar("scoreProgress", null, 100, 0, 0, "", formLayout);
-					scoreProgress.setWidthInPercent(true);
+					scoreProgress = uifactory.addProgressBar("scoreProgress", null, formLayout);
+					scoreProgress.setAriaHidden(true);
 					formLayout.add("", scoreProgress);
 				}
 				
 				if(deliveryOptions.isDisplayQuestionProgress()) {
-					questionProgress = uifactory.addProgressBar("questionProgress", null, 100, 0, 0, "", formLayout);
-					questionProgress.setWidthInPercent(true);
+					questionProgress = uifactory.addProgressBar("questionProgress", null, formLayout);
+					questionProgress.setAriaHidden(true);
 					formLayout.add("questionProgress", questionProgress);
 				}
 			}
@@ -2721,7 +2723,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				
 				if(deliveryOptions.isDisplayQuestionProgress()) {
 					questionProgress.setMax(testPlanInfos.getNumOfItems());
-					questionProgress.setActual(testPlanInfos.getNumOfAnsweredItems());
+					ProgressBarFactory.setValue(questionProgress, testPlanInfos.getNumOfAnsweredItems(), BarColor.neutral);
 					qtiWorksStatus.setNumOfItems(testPlanInfos.getNumOfItems());
 					qtiWorksStatus.setNumOfAnsweredItems(testPlanInfos.getNumOfAnsweredItems());
 				}
@@ -2739,7 +2741,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					
 					qtiWorksStatus.setScore(score);
 					qtiWorksStatus.setMaxScore(maxScore);
-					scoreProgress.setActual((float)score);
+					ProgressBarFactory.setValue(scoreProgress, (float)score, BarColor.neutral);
 					scoreProgress.setMax((float)maxScore);
 				}
 			}

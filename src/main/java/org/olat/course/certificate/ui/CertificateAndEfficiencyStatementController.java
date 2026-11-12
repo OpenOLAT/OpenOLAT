@@ -42,9 +42,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -384,15 +385,12 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	}
 	
 	private void setIdentityCompletion(float completion, BarColor barColor) {
-		ProgressBar completionItem = new ProgressBar("completion", 100, completion,
-				Float.valueOf(100), "%");
-		completionItem.setWidthInPercent(true);
-		completionItem.setLabelAlignment(LabelAlignment.right);
-		completionItem.setLabelMaxEnabled(false);
+		ProgressBar completionItem = ProgressBarFactory.createProgressBar("completion", mainVC, getLocale());
+		completionItem.setMax(100);
+		ProgressBarFactory.setValue(completionItem, completion, barColor);
+		completionItem.setLabelFormat(LabelFormat.percent);
 		completionItem.setRenderStyle(RenderStyle.radial);
 		completionItem.setRenderSize(RenderSize.inline);
-		completionItem.setBarColor(barColor);
-		mainVC.put("completion", completionItem);
 	}
 	
 	private void populateCertificateInfos(Certificate certificateToShow) {
