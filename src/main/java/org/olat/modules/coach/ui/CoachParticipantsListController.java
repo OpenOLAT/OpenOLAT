@@ -21,7 +21,6 @@ package org.olat.modules.coach.ui;
 
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -30,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 
@@ -40,15 +40,15 @@ import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
  *
  */
 public class CoachParticipantsListController extends AbstractParticipantsListController {
+
+	private final List<CoachingRoles> roles;
 	
-	private final GroupRoles role;
-	
-	public CoachParticipantsListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, GroupRoles role) {
-		super(ureq, wControl, stackPanel, role.name());
-		this.role = role;
+	public CoachParticipantsListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, List<CoachingRoles> roles) {
+		super(ureq, wControl, stackPanel, "coaches-owners");
+		this.roles = roles;
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(true);
 		loadOrganisationsFilterFromModel();
 	}
 
@@ -58,14 +58,14 @@ public class CoachParticipantsListController extends AbstractParticipantsListCon
 	}
 	
 	@Override
-	protected List<ParticipantStatisticsEntry> loadStatistics() {
-		SearchParticipantsStatisticsParams params = SearchParticipantsStatisticsParams.as(getIdentity(), role);
+	protected SearchParticipantsStatisticsParams getSearchParams() {
+		SearchParticipantsStatisticsParams params = SearchParticipantsStatisticsParams.as(getIdentity(), roles);
 		params
 			.withOrganisations(organisationsEnabled)
 			.withReservations(false)
 			.withCourseCompletion(true)
 			.withCourseStatus(true);
-		return coachingService.getParticipantsStatistics(params, userPropertyHandlers, getLocale());
+		return params;
 	}
 	
 	@Override

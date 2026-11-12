@@ -505,7 +505,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			boolean withStatistics, boolean withCertificates, boolean withStatements, boolean withCompletions) {
 
 		Map<Long,CourseStatEntry> mapAs = statistics.stream()
-				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, v) -> u));
+				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, _) -> u));
 		if(!mapAs.isEmpty()) {
 			if(withStatistics || withCertificates) {
 				coachingDao.loadCoursesStatistics(curriculumElement, identity, roles, withCertificates, mapAs);
@@ -523,7 +523,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		
 		Map<Long,CourseStatEntry> mapAs = statistics.stream()
 				.filter(se -> roles.contains(se.getRole()))
-				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, v) -> u));
+				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, _) -> u));
 		if(!mapAs.isEmpty()) {
 			if(!coursesStatisticsLoaded && (withStatistics || withCertificates)) {
 				coachingDao.loadCoursesStatistics(null, identity, roles, withCertificates, mapAs);

@@ -25,10 +25,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.model.OrganisationWithParents;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -41,12 +46,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
+import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,13 +73,33 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 
 	private List<ParticipantStatisticsEntry> backupList;
 	
-	private final UserManager userManager;
+	private final Locale locale;
+	private final Identity identity;
+	private final OnlineStatusFactory onlineStatus;
+	private final SearchParticipantsStatisticsParams params;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	public ParticipantsTableDataModel(UserManager userManager, List<UserPropertyHandler> userPropertyHandlers,
-			FlexiTableColumnModel columnModel) {
+	private boolean reservationsLoaded;
+	private boolean organisationsLoaded;
+	private boolean statmentsAndCompletionLoaded;
+	
+	@Autowired
+	private CoachingDAO coachingDao;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private IdentityPowerSearchQueries identityPowerSearchQueries;
+	
+	public ParticipantsTableDataModel(List<UserPropertyHandler> userPropertyHandlers,
+			FlexiTableColumnModel columnModel, Identity identity, SearchParticipantsStatisticsParams params, OnlineStatusFactory onlineStatus, Locale locale) {
 		super(columnModel);
-		this.userManager = userManager;
+		CoreSpringFactory.autowireObject(this);
+		this.params = params;
+		this.locale = locale;
+		this.identity = identity;
+		this.onlineStatus = onlineStatus;
 		this.userPropertyHandlers = userPropertyHandlers;
 	}
 	
@@ -111,6 +142,16 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 			final List<String> assessment = getFilteredList(filters, AbstractParticipantsListController.FILTER_ASSESSMENT);
 			LocalDateTime now = DateUtils.toLocalDateTime(new Date());
 			final String lastVisit = getFiltered(filters, AbstractParticipantsListController.FILTER_LAST_VISIT);
+			
+			if(organisations != null && !organisations.isEmpty()) {
+				ensureLoaded(ParticipantCols.organisations.name());
+			}
+			if(assessment != null && !assessment.isEmpty()) {
+				ensureLoaded(ParticipantCols.completion.name());	
+			}
+			if(confirmedBy != null) {
+				ensureLoaded(ParticipantCols.reservationConfirmedByUser.name());
+			}
 			
 			List<ParticipantStatisticsEntry> filteredRows = new ArrayList<>(backupList.size());
 			for(ParticipantStatisticsEntry row:backupList) {
@@ -345,7 +386,31 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 
 	@Override
 	public void sort(SortKey orderBy) {
-		super.setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
+		if(orderBy != null && backupList != null) {
+			ensureLoaded(orderBy.getKey());
+			super.setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
+		}
+	}
+	
+	/**
+	 * The main query with the complete list of participants loads
+	 * the number of courses, courses visited, last visit and certificates.
+	 * 
+	 * @param column The column name
+	 */
+	private void ensureLoaded(String column) {
+		if(!statmentsAndCompletionLoaded && (ParticipantCols.completion.name().equalsIgnoreCase(column)
+				|| ParticipantCols.successStatus.name().equalsIgnoreCase(column))) {
+			loadParticipantsStatistics(backupList, true, false, false);
+			statmentsAndCompletionLoaded = true;
+		} else if(!organisationsLoaded && ParticipantCols.organisations.name().equalsIgnoreCase(column)) {
+			loadParticipantsStatistics(backupList, false, false, true);
+			organisationsLoaded = true;
+		} else if(!reservationsLoaded && (ParticipantCols.reservationConfirmedByUser.name().equalsIgnoreCase(column)
+				|| ParticipantCols.reservationConfirmedByAdmin.name().equalsIgnoreCase(column))) {
+			loadParticipantsStatistics(backupList, false, true, false);
+			reservationsLoaded = true;
+		}
 	}
 
 	@Override
@@ -381,6 +446,102 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 	public void setObjects(List<ParticipantStatisticsEntry> objects) {
 		this.backupList = objects;
 		super.setObjects(objects);
+	}
+	
+	@Override
+	public void preload(int firstRow, int maxResults) {
+		loadModel(false);
+		if(maxResults == -1) {
+			maxResults = getRowCount() - firstRow;
+		}
+		preloadRows(firstRow, maxResults);
+	}
+	
+	public void loadModel(boolean reset) {
+		if(reset) {
+			backupList = null;
+			organisationsLoaded = false;
+			reservationsLoaded = false;
+			statmentsAndCompletionLoaded = false;
+		}
+		if(backupList == null) {
+			List<Group> organisationsGroups = params.getOrganisations() == null
+					? List.of()
+					: params.getOrganisations().stream().map(Organisation::getGroup).toList();
+			List<ParticipantStatisticsEntry> statsEntries = coachingDao.loadParticipantsCoursesStatistics(identity, params.getRoles(),
+				organisationsGroups, params.getRelationRole(), userPropertyHandlers, locale);
+
+			if(params.getRelationRole() != null) {
+				Map<Long,ParticipantStatisticsEntry> statisticsEntries = statsEntries.stream()
+						.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, e -> e, (u, _) -> u));
+				coachingDao.loadRelationUsers(identity, params.getRelationRole(), statsEntries, statisticsEntries, userPropertyHandlers, locale);
+			}
+			
+			if(!params.getOrganisations().isEmpty()) {
+				// Load members which are not in a course
+				Map<Long,ParticipantStatisticsEntry> statisticsEntries = statsEntries.stream()
+						.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, e -> e, (u, _) -> u));
+				coachingDao.loadOrganisationsMembers(organisationsGroups, params.excludedRoles(),
+						statsEntries, statisticsEntries, userPropertyHandlers, locale);
+				
+				// Remove guests and invites, set managers as read-only
+				Set<Long> excluded = coachingDao.loadOrganisationMemberKeys(organisationsGroups, params.excludedRoles());
+				Set<Long> readOnly = coachingDao.loadOrganisationMemberKeys(organisationsGroups, params.readOnlyRoles());
+				List<ParticipantStatisticsEntry> filteredEntries = new ArrayList<>(statsEntries.size());
+				for(ParticipantStatisticsEntry entry:statsEntries) {
+					if(excluded.contains(entry.getIdentityKey())) {
+						continue;
+					}
+					entry.setReadOnlyDueToAdditionalOrgRoles(readOnly.contains(entry.getIdentityKey()));
+					filteredEntries.add(entry);
+				}
+				statsEntries = filteredEntries;
+			}
+			
+			setObjects(statsEntries);
+		}
+	}
+	
+	private void preloadRows(int firstResult, int maxResults) {
+		List<ParticipantStatisticsEntry> rows = new ArrayList<>(maxResults);
+		List<ParticipantStatisticsEntry> entriesRows = getObjects();
+		for(int i=firstResult; i<entriesRows.size() && i<(firstResult + maxResults); i++) {
+			ParticipantStatisticsEntry backupRow = entriesRows.get(i);
+			rows.add(backupRow);
+		}
+		loadParticipantsStatistics(rows, true, true, true);
+		onlineStatus.loadOnlineStatus(rows);
+	}
+	
+	private void loadParticipantsStatistics(List<ParticipantStatisticsEntry> statsEntries,
+			boolean withStatmentsAndCompletion, boolean withReservations, boolean withOrganisations) {
+		List<Group> organisationsGroups =  params.getOrganisations().stream()
+				.map(Organisation::getGroup)
+				.toList();
+		Map<Long,ParticipantStatisticsEntry> statisticsEntries = statsEntries.stream()
+				.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, e -> e, (u, _) -> u));
+		
+		if(withStatmentsAndCompletion) {
+			coachingDao.loadParticipantsStatementsAndCompletions(identity, params.getRoles(),
+				organisationsGroups, params.getRelationRole(),
+				params.withCourseStatus(), params.withCourseCompletion(), statisticsEntries);
+		}
+		
+		if(params.withReservations() && withReservations) {
+			for(ParticipantStatisticsEntry entry:statsEntries) {
+				entry.resetReservations();
+			}
+			if(curriculumModule.isEnabled()) {
+				coachingDao.loadCurriculumElementsReservations(identity, params.getRoles(),
+					organisationsGroups, params.getRelationRole(), statisticsEntries);
+			}
+			coachingDao.loadRepositoryEntryReservation(identity, params.getRoles(),
+				organisationsGroups, params.getRelationRole(), statisticsEntries);
+		}
+		
+		if(params.withOrganisations() && withOrganisations) {
+			identityPowerSearchQueries.appendOrganisations(statsEntries);
+		}
 	}
 	
 	public enum ParticipantCols implements FlexiSortableColumnDef {
@@ -423,5 +584,10 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 			}
 			return null;
 		}
+	}
+	
+	public interface OnlineStatusFactory {
+	
+		void loadOnlineStatus(List<ParticipantStatisticsEntry> statisticsList);
 	}
 }

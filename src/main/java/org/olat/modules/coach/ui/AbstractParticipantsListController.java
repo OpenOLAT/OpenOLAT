@@ -87,6 +87,8 @@ import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
+import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
+import org.olat.modules.coach.ui.ParticipantsTableDataModel.OnlineStatusFactory;
 import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
 import org.olat.modules.coach.ui.component.CertificatesCellRenderer;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
@@ -107,7 +109,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public abstract class AbstractParticipantsListController extends FormBasicController implements Activateable2 {
+public abstract class AbstractParticipantsListController extends FormBasicController
+implements Activateable2, OnlineStatusFactory {
 
 	protected static final String FILTER_ORGANISATIONS = "organisations";
 	protected static final String FILTER_TO_BE_CONFIRMED = "tbc";
@@ -249,7 +252,8 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
 
-        tableModel = new ParticipantsTableDataModel(userManager, userPropertyHandlers, columnsModel);
+		SearchParticipantsStatisticsParams params = getSearchParams();
+        tableModel = new ParticipantsTableDataModel(userPropertyHandlers, columnsModel, getIdentity(), params, this, getLocale());
         tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
         tableEl.setCustomizeColumns(true);
         tableEl.setExportEnabled(true);
@@ -421,21 +425,20 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
         super.formInnerEvent(ureq, source, event);
     }
 
-    protected final void loadModel() {
-		List<ParticipantStatisticsEntry> statisticsList = loadStatistics();
-		loadOnlineStatus(statisticsList);
-		tableModel.setObjects(statisticsList);
+    protected final void loadModel(boolean reset) {
+		tableModel.loadModel(reset);
 		tableEl.reset(true, true, true);
     	tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
     }
     
-    protected abstract List<ParticipantStatisticsEntry> loadStatistics();
+    protected abstract SearchParticipantsStatisticsParams getSearchParams();
  
-    protected void loadOnlineStatus(List<ParticipantStatisticsEntry> statisticsList) {
+    @Override
+    public void loadOnlineStatus(List<ParticipantStatisticsEntry> statisticsList) {
     	if(!chatEnabled || statisticsList.isEmpty()) return;
     	
 		Map<Long,ParticipantStatisticsEntry> keyToMemberMap = statisticsList.stream()
-				.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, e -> e, (u, v) -> u));
+				.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, e -> e, (u, _) -> u));
 		
 		final Long me = getIdentity().getKey();
 		List<Long> loadStatus = new ArrayList<>();
@@ -483,7 +486,7 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
 
     private void reloadModel() {
         if (hasChanged) {
-            loadModel();
+            loadModel(true);
             hasChanged = false;
         }
     }

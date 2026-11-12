@@ -171,7 +171,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		// Coach statistics
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		List<ParticipantStatisticsEntry> participantsStats = coachingDAO
-				.loadParticipantsCoursesStatistics(coach, GroupRoles.coach, null, null, null, userPropertyHandlers, Locale.ENGLISH);
+				.loadParticipantsCoursesStatistics(coach, List.of(CoachingRoles.coach), null, null, userPropertyHandlers, Locale.ENGLISH);
 
 		Assert.assertNotNull(participantsStats);
 		Assert.assertEquals(2, participantsStats.size());
@@ -223,7 +223,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		// Coach statistics
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		List<ParticipantStatisticsEntry> participantsStats = coachingDAO
-				.loadParticipantsCoursesStatistics(owner, GroupRoles.owner, null, null, null, userPropertyHandlers, Locale.ENGLISH);
+				.loadParticipantsCoursesStatistics(owner, List.of(CoachingRoles.owner), null, null, userPropertyHandlers, Locale.ENGLISH);
 
 		Assert.assertNotNull(participantsStats);
 		Assert.assertEquals(2, participantsStats.size());
@@ -276,7 +276,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		// Coach statistics
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach)
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, List.of(CoachingRoles.coach))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> participantsStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
@@ -332,7 +332,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		// Owner statistics
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(owner, GroupRoles.owner)
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(owner, List.of(CoachingRoles.owner))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> participantsStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
@@ -425,7 +425,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(4.0f, nativeStat.getAverageScore(), 0.0001);
 
 		// Participants statistics as coach
-		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach)
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, List.of(CoachingRoles.coach))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
@@ -640,7 +640,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		// Coach statistics
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach)
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, List.of(CoachingRoles.coach))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> participantsStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
@@ -665,7 +665,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(3, entryParticipant1.getEntries().numOfEntries());
 
 		// Owner statistics
-		SearchParticipantsStatisticsParams participantsOwnerSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.owner)
+		SearchParticipantsStatisticsParams participantsOwnerSearch = SearchParticipantsStatisticsParams.as(coach, List.of(CoachingRoles.owner))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> participantsOwnerStats = coachingService.getParticipantsStatistics(participantsOwnerSearch, userPropertyHandlers, Locale.ENGLISH);
@@ -832,7 +832,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//user native
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.owner)
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, List.of(CoachingRoles.owner))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> usersStatistics = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
@@ -1029,7 +1029,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		// Participants as course coach
-		SearchParticipantsStatisticsParams courseCoachSearchParams = SearchParticipantsStatisticsParams.as(courseCoach, GroupRoles.coach)
+		SearchParticipantsStatisticsParams courseCoachSearchParams = SearchParticipantsStatisticsParams.as(courseCoach, List.of(CoachingRoles.coach))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> courseCoachUserStats = coachingService.getParticipantsStatistics(courseCoachSearchParams, userPropertyHandlers, Locale.ENGLISH);
@@ -1053,7 +1053,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entryParticipant31.getEntries().numOfEntries());
 		
 		// Participants as group coach of group 3
-		SearchParticipantsStatisticsParams groupCoachSearchParams = SearchParticipantsStatisticsParams.as(groupCoach, GroupRoles.coach)
+		SearchParticipantsStatisticsParams groupCoachSearchParams = SearchParticipantsStatisticsParams.as(groupCoach, List.of(CoachingRoles.coach))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> groupCoachUserStats = coachingService.getParticipantsStatistics(groupCoachSearchParams, userPropertyHandlers, Locale.ENGLISH);
@@ -1152,7 +1152,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertNull(entryCourse1.getAverageScore());
 
 		// Coach is owner of the first entry -> look at participants
-		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, GroupRoles.owner);
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, List.of(CoachingRoles.owner));
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
@@ -1215,7 +1215,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//Participants
-		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach);
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, List.of(CoachingRoles.coach));
 		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertTrue(nativeUserStats.isEmpty());
@@ -1301,7 +1301,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach)
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, List.of(CoachingRoles.coach))
 				.withCourseCompletion(true)
 				.withCourseStatus(true);
 		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, Locale.ENGLISH);
@@ -1843,7 +1843,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(owner, GroupRoles.owner)
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(owner, List.of(CoachingRoles.owner))
 				.withReservations(true);
 		List<ParticipantStatisticsEntry> participantsStats = coachingService.getParticipantsStatistics(participantsSearch,
 				userPropertyHandlers, Locale.ENGLISH);

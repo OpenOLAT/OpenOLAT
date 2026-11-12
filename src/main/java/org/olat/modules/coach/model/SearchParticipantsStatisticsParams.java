@@ -21,11 +21,11 @@ package org.olat.modules.coach.model;
 
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.modules.coach.CoachingRoles;
 
 /**
  * 
@@ -36,7 +36,7 @@ import org.olat.core.id.Organisation;
 public class SearchParticipantsStatisticsParams {
 	
 	private final Identity identity;
-	private final GroupRoles role;
+	private final List<CoachingRoles> roles;
 	private final RelationRole relationRole;
 	private final List<Organisation> organisations;
 	
@@ -45,33 +45,34 @@ public class SearchParticipantsStatisticsParams {
 	private boolean withCourseCompletion;
 	private boolean withCourseStatus;
 	private List<OrganisationRoles> excludedRoles;
+	private List<OrganisationRoles> readOnlyRoles;
 	
-	private SearchParticipantsStatisticsParams(Identity identity, GroupRoles role,
+	private SearchParticipantsStatisticsParams(Identity identity, List<CoachingRoles> roles,
 			List<Organisation> organisations, RelationRole relationRole) {
 		this.identity = identity;
-		this.role = role;
+		this.roles = roles;
 		this.relationRole = relationRole;
 		this.organisations = organisations;
 	}
 	
-	public static SearchParticipantsStatisticsParams as(Identity identity, GroupRoles role) {
-		return new SearchParticipantsStatisticsParams(identity, role, null, null);
+	public static SearchParticipantsStatisticsParams as(Identity identity, List<CoachingRoles> roles) {
+		return new SearchParticipantsStatisticsParams(identity, roles, null, null);
 	}
 	
 	public static SearchParticipantsStatisticsParams as(List<Organisation> organisations) {
-		return new SearchParticipantsStatisticsParams(null, null, organisations, null);
+		return new SearchParticipantsStatisticsParams(null, List.of(), organisations, null);
 	}
 	
 	public static SearchParticipantsStatisticsParams as(Identity identity, RelationRole relationRole) {
-		return new SearchParticipantsStatisticsParams(identity, null, null, relationRole);
+		return new SearchParticipantsStatisticsParams(identity, List.of(), null, relationRole);
 	}
 	
 	public Identity getIdentity() {
 		return identity;
 	}
 	
-	public GroupRoles getRole() {
-		return role;
+	public List<CoachingRoles> getRoles() {
+		return roles;
 	}
 
 	public RelationRole getRelationRole() {
@@ -79,7 +80,7 @@ public class SearchParticipantsStatisticsParams {
 	}
 
 	public List<Organisation> getOrganisations() {
-		return organisations;
+		return organisations == null ? List.of() : organisations;
 	}
 
 	public boolean withOrganisations() {
@@ -126,5 +127,16 @@ public class SearchParticipantsStatisticsParams {
 		this.excludedRoles = roles;
 		return this;
 	}
+
+	public List<OrganisationRoles> readOnlyRoles() {
+		return readOnlyRoles;
+	}
+
+	public SearchParticipantsStatisticsParams withReadOnlyRoles(List<OrganisationRoles> readOnlyRoles) {
+		this.readOnlyRoles = readOnlyRoles;
+		return this;
+	}
+	
+	
 	
 }

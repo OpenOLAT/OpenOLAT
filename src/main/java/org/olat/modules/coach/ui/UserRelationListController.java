@@ -19,8 +19,6 @@
  */
 package org.olat.modules.coach.ui;
 
-import java.util.List;
-
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.gui.UserRequest;
@@ -64,7 +62,7 @@ public class UserRelationListController extends AbstractParticipantsListControll
         canViewCourseProgressAndStatus = securityCallback.canViewCourseProgressAndStatus();
 
         super.initForm(ureq);
-        loadModel();
+        loadModel(true);
     }  
 
     @Override
@@ -73,14 +71,14 @@ public class UserRelationListController extends AbstractParticipantsListControll
 	}
 
     @Override
-	protected List<ParticipantStatisticsEntry> loadStatistics() {
+	public SearchParticipantsStatisticsParams getSearchParams() {
 		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(getIdentity(), relationRole);
 		searchParams
 			.withOrganisations(organisationsEnabled)
 			.withReservations(canViewReservations)
 			.withCourseCompletion(canViewCourseProgressAndStatus)
 			.withCourseStatus(canViewCourseProgressAndStatus);
-		return coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, getLocale());
+		return searchParams;
     }
 
     @Override

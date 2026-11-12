@@ -117,6 +117,12 @@ public class ParticipantStatisticsEntry extends UserPropertiesRow implements Ide
 	public long getReservations() {
 		return reservations;
 	}
+	
+	public void resetReservations() {
+		reservations = 0;
+		reservationsConfirmedByUser = 0;
+		reservationsConfirmedByAdmin = 0;
+	}
 
 	public void addReservations(long reservations) {
 		this.reservations += reservations;

@@ -67,7 +67,6 @@ public class OrganisationListController extends AbstractParticipantsListControll
         super(ureq, wControl, stackPanel, role.name());
 
         organisationRole = role;
-
         organisations = organisationService.getOrganisations(getIdentity(), role);
         
 		securityCallback = RoleSecurityCallbackFactory.create(organisationService
@@ -77,45 +76,28 @@ public class OrganisationListController extends AbstractParticipantsListControll
         canViewCourseProgressAndStatus = securityCallback.canViewCourseProgressAndStatus();
 
         initForm(ureq);
-        loadModel();
         setFilterOrganisations(organisations);
         if(tableEl.getSelectedFilterTab() == null || !tableEl.getSelectedFilterTab().getId().equals(initialTab)) {
         	tableEl.setSelectedFilterTab(ureq, tableEl.getFilterTabById(initialTab));
-        	tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
-        	tableEl.reset(true, true, true);
         }
+        loadModel(true);
     }  
     
     @Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initTableForm(formLayout, ureq, canViewReservations, canViewCoursesAndCurriculum, canViewCourseProgressAndStatus, true);
     }
-
-    @Override
-	protected List<ParticipantStatisticsEntry> loadStatistics() {
-    	if(organisations.isEmpty()) {
-    		return List.of();
-    	}
-		List<ParticipantStatisticsEntry> usersAndAuthors = coachingService.getParticipantsStatistics(searchParams(true), userPropertyHandlers, getLocale());
-		Set<Long> userAuthorKeys = usersAndAuthors.stream().map(ParticipantStatisticsEntry::getIdentityKey).collect(Collectors.toSet());
-		List<ParticipantStatisticsEntry> allEntries = coachingService.getParticipantsStatistics(searchParams(false), userPropertyHandlers, getLocale());
-		for (ParticipantStatisticsEntry entry : allEntries) {
-			entry.setReadOnlyDueToAdditionalOrgRoles(!userAuthorKeys.contains(entry.getIdentityKey()));
-		}		
-		return allEntries;
-    }
 	
-	private SearchParticipantsStatisticsParams searchParams(boolean limitToUserAndAuthor) {
+    @Override
+	public SearchParticipantsStatisticsParams getSearchParams() {
 		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(organisations)
 			.withOrganisations(true)
 			.withReservations(canViewReservations)
 			.withCourseCompletion(canViewCourseProgressAndStatus)
 			.withCourseStatus(canViewCourseProgressAndStatus);
-		if (limitToUserAndAuthor) {
-			return searchParams.excludedRoles(allExceptUserAndAuthor());
-		} else {
-			return searchParams.excludedRoles(guestAndInvitee());
-		}
+		// To remove guest and invitee
+		return searchParams.excludedRoles(guestAndInvitee())
+				.withReadOnlyRoles(allExceptUserAndAuthor());
 	}
 
     @Override
@@ -140,7 +122,7 @@ public class OrganisationListController extends AbstractParticipantsListControll
 		roleSecurityCallback.setReadOnlyDueToAdditionalOrgRoles(readOnly);
 		return roleSecurityCallback;
 	}
-    
+	
 	private List<OrganisationRoles> guestAndInvitee() {
 		List<OrganisationRoles> roles = new ArrayList<>();
 		roles.add(OrganisationRoles.invitee);

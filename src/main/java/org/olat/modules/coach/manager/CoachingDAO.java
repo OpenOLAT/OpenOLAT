@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.Query;
-import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
@@ -553,7 +552,7 @@ public class CoachingDAO {
 		
 		Map<Long,CourseStatEntry> mapAs = statistics.stream()
 				.filter(se -> roles.contains(se.getRole()))
-				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, v) -> u));
+				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, _) -> u));
 		if(!mapAs.isEmpty()) {
 			if(params.withStatistics() || params.withCertificates()) {
 				loadCoursesStatistics(null, identity, roles, params.withCertificates(), mapAs);
@@ -955,7 +954,7 @@ public class CoachingDAO {
 				.getResultList();
 	}
 	
-	protected void loadOrganisationsMembers(List<Group> organisationsGroups, List<OrganisationRoles> excludedRoles,
+	public void loadOrganisationsMembers(List<Group> organisationsGroups, List<OrganisationRoles> excludedRoles,
 			final List<ParticipantStatisticsEntry> statsEntries, final Map<Long,ParticipantStatisticsEntry> statisticsEntries,
 			final List<UserPropertyHandler> userPropertyHandlers, final Locale locale) {
 		QueryBuilder sb = new QueryBuilder();
@@ -970,10 +969,9 @@ public class CoachingDAO {
 		  .append(" inner join memberGroup.members as members")
 		  .append(" inner join members.identity as member on (members.role='user')")
 		  .append(" inner join member.user as memberUser")
-		  .where()
-		  .append(" memberGroup.key in (:organisationGroupKeys)");
+		  .append(" where memberGroup.key in (:organisationGroupKeys)");
 		if(excludedRoles != null && !excludedRoles.isEmpty()) {
-			sb.and().append("member.key not in (select managerMember.identity.key from bgroupmember as managerMember")
+			sb.append(" and member.key not in (select managerMember.identity.key from bgroupmember as managerMember")
 			  .append("  where managerMember.role in (:excludedRoles)")
 			  .append(")");
 		}
@@ -1011,7 +1009,7 @@ public class CoachingDAO {
 		}
 	}
 	
-	protected void loadRelationUsers(Identity identity, RelationRole relationRole,
+	public void loadRelationUsers(Identity identity, RelationRole relationRole,
 			final List<ParticipantStatisticsEntry> statsEntries, final Map<Long,ParticipantStatisticsEntry> statisticsEntries,
 			final List<UserPropertyHandler> userPropertyHandlers, final Locale locale) {
 		QueryBuilder sb = new QueryBuilder();
@@ -1051,20 +1049,42 @@ public class CoachingDAO {
 		}
 	}
 	
-	protected List<ParticipantStatisticsEntry> loadParticipantsCoursesStatistics(Identity coach, GroupRoles role,
-			List<Group> organisationsGroups, RelationRole userRelation, List<OrganisationRoles> excludedRoles,
+	public List<ParticipantStatisticsEntry> loadParticipantsCoursesStatistics(Identity coach, List<CoachingRoles> roles,
+			List<Group> organisationsGroups, RelationRole userRelation,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		List<Long> entryKeys = null;
-		List<Long> identityKeys = null;
-		if(role == GroupRoles.owner) {
-			entryKeys = loadCourseEntryKeys(coach, role, null);
-			if(entryKeys.isEmpty()) return new ArrayList<>();
-		} else if(role != GroupRoles.coach && organisationsGroups != null && !organisationsGroups.isEmpty()) {
-			identityKeys = loadOrganisationMemberKeys(organisationsGroups, excludedRoles);
-			if(identityKeys.isEmpty()) return new ArrayList<>();
-		}
 
 		QueryBuilder sb = new QueryBuilder();
+		if(!roles.isEmpty()) {
+			sb.append("with");
+			if(roles.contains(CoachingRoles.owner)) {
+				sb.append(" ownercourses as (")
+				  .append("  select distinct v.key as reKey from repositoryentry as v")
+				  .append("  inner join v.groups as vToGroup")
+				  .append("  inner join vToGroup.group as vGroup")
+				  .append("  inner join vGroup.members as member on (member.role=:role and member.identity.key=:coachKey)")
+				  .append("  where v.status ").in(RepositoryEntryStatusEnum.preparationToClosed())
+				  .append(")");
+			}
+
+			if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
+				if(roles.contains(CoachingRoles.owner)) {
+					sb.append(",");
+				}
+				sb.append(" coachedgroup as (")
+				  .append("  select cvGroup.key as groupKey from repositoryentry as cv")
+				  .append("  inner join cv.groups as cvToGroup")
+				  .append("  inner join cvToGroup.group as cvGroup")
+				  .append("  inner join cvGroup.members as coach on (coach.role in (:roles) and coach.identity.key=:coachKey)")
+				  .append("  where cv.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+				  .append(")");
+			}
+		} else if(organisationsGroups != null && !organisationsGroups.isEmpty()) {
+			sb.append("with orgmember as (")
+			  .append("  select omember.identity.key as orgMemberKey from bgroupmember as omember")
+			  .append("  where omember.group.key in (:organisationGroupKeys) and omember.role='user'");
+			sb.append(")");
+		}
+		
 		sb.append("select")
 		  .append("  participant.key,")
 		  .append("  participantUser.key,")
@@ -1086,51 +1106,56 @@ public class CoachingDAO {
 		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=re.key)")
 		  .append(" left join certificate as certificate on (certificate.identity.key=participant.key and certificate.last=true and certificate.olatResource.key=re.olatResource.key)")
 		  .where();
-		if(role == GroupRoles.coach) {
-			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-			  .append(")");
-		} else if(entryKeys != null) {
-			sb.append("re.key in (:entryKeys)");
-		} else if(identityKeys != null) {
-			sb.append("participant.key in (:identityKeys)");
+		if(!roles.isEmpty()) {
+			if(roles.contains(CoachingRoles.owner)) {
+				sb.append(" re.key in (select oc.reKey from ownercourses as oc)");
+			}
+			if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
+				if(roles.contains(CoachingRoles.owner)) {
+					sb.append(" or ");
+				}
+				sb.append("participantGroup.key in (select cg.groupKey from coachedgroup as cg)");
+			}
+		} else if(organisationsGroups != null && !organisationsGroups.isEmpty()) {
+			sb.append("participant.key in (select orgm.orgMemberKey from orgmember as orgm)")
+			  .append(" and re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		} else if(userRelation != null) {
 			sb.append("participant.key in (select relation.target.key from identitytoidentity as relation")
 			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
-			  .append(")");
-		}
-
-		if(identityKeys == null && excludedRoles != null && !excludedRoles.isEmpty()) {
-			sb.and().append("participant.key not in (select managerMember.identity.key from bgroupmember as managerMember")
-			  .append("  where managerMember.role in (:excludedRoles)")
-			  .append(")");
+			  .append(")")
+			  .append(" and re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		}
 
 		sb.append(" group by participant.key, participantUser.key") ;
 
-		final TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
-		if(role == GroupRoles.coach) {
+		if(!roles.isEmpty()) {
 			query.setParameter("coachKey", coach.getKey());
-		} else if(entryKeys != null) {
-			query.setParameter("entryKeys", entryKeys);
-		} else if(identityKeys != null) {
-			query.setParameter("identityKeys", identityKeys);
+			if(roles.contains(CoachingRoles.owner)) {
+				query.setParameter("role", CoachingRoles.owner.name());
+			}
+			if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
+				List<String> rolesList = CoachingRoles.intersect(roles, List.of(CoachingRoles.coach, CoachingRoles.mastercoach)).stream()
+						.map(CoachingRoles::name)
+						.toList();
+				query.setParameter("roles", rolesList);
+			}
+		} else if(organisationsGroups != null && !organisationsGroups.isEmpty()) {
+			List<Long> groupKeys = organisationsGroups.stream()
+					.map(Group::getKey)
+					.toList();
+			query.setParameter("organisationGroupKeys", groupKeys);
 		} else if(userRelation != null) {
 			query.setParameter("coachKey", coach.getKey());
 			query.setParameter("roleKey", userRelation.getKey());
 		}
-		if(identityKeys == null && excludedRoles != null && !excludedRoles.isEmpty()) {
-			List<String> rolesStrings = excludedRoles.stream()
-					.map(OrganisationRoles::name)
-					.toList();
-			query.setParameter("excludedRoles", rolesStrings);
-		}
-		query.setParameter("now", new Date(), TemporalType.TIMESTAMP);
+		
+		query.setParameter("now", LocalDateTime.now());
+		
 		final List<Object[]> rawList = query.getResultList();
 		final List<ParticipantStatisticsEntry> list = new ArrayList<>(rawList.size());
 		final int numOfProperties = userPropertyHandlers.size();
-		
 		for(Object[] rawStat:rawList) {
 			Long identityKey = ((Number)rawStat[0]).longValue();
 			String externalId = (String)rawStat[2];
@@ -1158,70 +1183,32 @@ public class CoachingDAO {
 		return list;
 	}
 	
-	private TypedQuery<Object[]> buildTypedQuery(QueryBuilder sb, Identity coach, GroupRoles role,
-			List<Group> organisationsGroups, RelationRole userRelation) {
-		
-		final TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
-		if(role == GroupRoles.coach || role == GroupRoles.owner) {
-			query.setParameter("coachKey", coach.getKey());
-		} else if(organisationsGroups != null && !organisationsGroups.isEmpty()) {
-			List<Long> groupKeys = organisationsGroups.stream()
-					.map(Group::getKey)
-					.toList();
-			query.setParameter("organisationGroupKeys", groupKeys);
-		} else if(userRelation != null) {
-			query.setParameter("coachKey", coach.getKey());
-			query.setParameter("roleKey", userRelation.getKey());
-		}
-		return query;
-	}
-	
 	private void writeUserProperties(String user, QueryBuilder sb, List<UserPropertyHandler> userPropertyHandlers) {
 		for(UserPropertyHandler handler:userPropertyHandlers) {
 			sb.append(" ").append(user).append(".").append(handler.getName()).append(" as ")
 			  .append("ident_user_").append(handler.getDatabaseColumnName()).append(",");
 		}
 	}
+	
+	public Set<Long> loadOrganisationMemberKeys(List<Group> organisationsGroups, List<OrganisationRoles> roles) {
+		String sb = """
+				select distinct member.identity.key from bgroupmember as member
+				where member.group.key in (:organisationGroupKeys) and member.role in (:roles)""";
 
-	private List<Long> loadCourseEntryKeys(Identity coach, GroupRoles role, RepositoryEntryStatusEnum[] status) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct re.key from repositoryentry as re")
-		  .append(" inner join re.groups as reToGroup")
-		  .append(" inner join reToGroup.group as courseGroup")
-		  .append(" inner join courseGroup.members as member on (member.role=:role and member.identity.key=:coachKey)");
-		if(status != null) {
-			sb.where()
-			  .append(" re.status").in(status);
-		}
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("role", role.name())
-				.setParameter("coachKey", coach.getKey())
-				.getResultList();
-	}
-
-	private List<Long> loadOrganisationMemberKeys(List<Group> organisationsGroups, List<OrganisationRoles> excludedRoles) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct member.identity.key from bgroupmember as member")
-		  .where()
-		  .append(" member.group.key in (:organisationGroupKeys) and member.role='user'");
-		if(excludedRoles != null && !excludedRoles.isEmpty()) {
-			sb.and().append(" member.identity.key not in (select excluded.identity.key from bgroupmember as excluded")
-			  .append("  where excluded.role in (:excludedRoles)")
-			  .append(")");
-		}
-
+		List<Long> groupKeys = organisationsGroups.stream()
+				.map(Group::getKey)
+				.toList();
+		List<String> rolesList = roles.stream()
+				.map(OrganisationRoles::name)
+				.toList();
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("organisationGroupKeys", organisationsGroups.stream().map(Group::getKey).toList());
-		if(excludedRoles != null && !excludedRoles.isEmpty()) {
-			query.setParameter("excludedRoles", excludedRoles.stream().map(OrganisationRoles::name).toList());
-		}
-		return query.getResultList();
+				.createQuery(sb, Long.class)
+				.setParameter("organisationGroupKeys", groupKeys)
+				.setParameter("roles", rolesList);
+		return new HashSet<>(query.getResultList());
 	}
 
-	protected void processParticipantsStatementsAndCompletions(Identity coach, GroupRoles role,
+	public void loadParticipantsStatementsAndCompletions(Identity coach, List<CoachingRoles> roles,
 			List<Group> organisationsGroups, RelationRole userRelation,
 			boolean withStatus, boolean withCompletion,
 			Map<Long,ParticipantStatisticsEntry> statEntries) {
@@ -1229,13 +1216,37 @@ public class CoachingDAO {
 			return;
 		}
 
-		List<Long> entryKeys = null;
-		if(role == GroupRoles.coach || role == GroupRoles.owner) {
-			entryKeys = loadCourseEntryKeys(coach, role, RepositoryEntryStatusEnum.coachPublishedToClosed());
-			if(entryKeys.isEmpty()) return;
-		}
+		List<Long> identitiesKeys = new ArrayList<>(statEntries.keySet());
 
 		QueryBuilder sb = new QueryBuilder();
+		if(!roles.isEmpty()) {
+			sb.append("with ownedRe as (");
+			if(roles.contains(CoachingRoles.owner)) {
+				sb.append("  select v.key as vKey, participantMember.identity.key as pKey from repositoryentry as v")
+				  .append("  inner join v.groups as vToGroup")
+				  .append("  inner join vToGroup.group as vGroup")
+				  .append("  inner join vGroup.members as ownerMember ")
+				  .append("  inner join v.groups as pToGroup")
+				  .append("  inner join pToGroup.group as pGroup")
+				  .append("  inner join pGroup.members as participantMember on (participantMember.role = 'participant')")
+				  .append("  where ownerMember.role=:role and ownerMember.identity.key=:coachKey")
+				  .append("  and v.status").in(RepositoryEntryStatusEnum.preparationToClosed());
+			}
+			if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
+				if(roles.contains(CoachingRoles.owner)) {
+					sb.append("  union");
+				}
+				sb.append("  select vc.key as vKey, participantMember.identity.key as pKey from repositoryentry as vc")
+				  .append("  inner join vc.groups as vcToGroup")
+				  .append("  inner join vcToGroup.group as vcGroup")
+				  .append("  inner join vcGroup.members as coachMember")
+				  .append("  inner join vcGroup.members as participantMember on (participantMember.role = 'participant')")
+				  .append("  where coachMember.role in (:roles) and coachMember.identity.key=:coachKey")
+				  .append("  and vc.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+			}
+			sb.append(")");
+		}
+
 		sb.append("select")
 		  .append("  ae.identity.key");
 		if(withStatus) {
@@ -1251,52 +1262,66 @@ public class CoachingDAO {
 			sb.append(" left join courseelement as rootElement on (rootElement.repositoryEntry.key=ae.repositoryEntry.key")
 			  .append("  and rootElement.subIdent=ae.subIdent)");
 		}
-		if(entryKeys != null) {
-			sb.where()
-			  .append("  ae.entryRoot=true")
-			  .and()
-			  .append("  ae.repositoryEntry.key in (:entryKeys)")
-			  .and()
-			  .append("  exists (select rel.key from repoentrytogroup as rel")
-			  .append("   inner join bgroupmember as participant on (participant.role='participant' and participant.group.key=rel.group.key)")
-			  .append("   where rel.entry.key=ae.repositoryEntry.key and participant.identity.key=ae.identity.key")
-			  .append("  )");
+		if(!roles.isEmpty()) {
+			sb.and()
+			  .append(" ae.entryRoot=true and (ae.repositoryEntry.key, ae.identity.key) in (select oc.vKey, oc.pKey from ownedRe as oc)");
+			if(identitiesKeys.size() < 1000) {
+				sb.and().append(" ae.identity.key in (:identitiesKeys)");
+			}
 		} else {
-			sb.append(" where ae.key in (select distinct ae2.key from repositoryentry as re")
+			sb.and().append(" ae.key in (select distinct ae2.key from repositoryentry as re")
 			  .append("  inner join re.groups as reToParticipantGroup")
 			  .append("  inner join reToParticipantGroup.group as participantGroup")
 			  .append("  inner join participantGroup.members as participant on (participant.role='participant')")
 			  .append("  inner join assessmententry as ae2 on (participant.identity.key=ae2.identity.key and ae2.repositoryEntry.key=re.key and ae2.entryRoot=true)")
 			  .where()
-			  .append("  re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-			  .and();
+			  .append("  re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+			
+			if(identitiesKeys.size() < 1000) {
+				sb.and().append(" participant.identity.key in (:identitiesKeys)");
+			}
 
 			if(!organisationsGroups.isEmpty()) {
-				sb.append("participant.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
+				sb.and().append("participant.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
 				  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
 				  .append(")");
 			} else if(userRelation != null) {
-				sb.append("participant.identity.key in (select relation.target.key from identitytoidentity as relation")
+				sb.and().append("participant.identity.key in (select relation.target.key from identitytoidentity as relation")
 				  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
 				  .append(")");
 			}
 			sb.append(" )");
 		}
+
 		sb.append(" group by ae.identity.key");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
-		if(entryKeys != null) {
-			query.setParameter("entryKeys", entryKeys);
+		if(!roles.isEmpty()) {
+			query.setParameter("coachKey", coach.getKey());
+			if(roles.contains(CoachingRoles.owner)) {
+				query.setParameter("role", CoachingRoles.owner.name());
+			}
+			if(roles.contains(CoachingRoles.coach) || roles.contains(CoachingRoles.mastercoach)) {
+				List<String> rolesList = CoachingRoles.intersect(roles, List.of(CoachingRoles.coach, CoachingRoles.mastercoach)).stream()
+						.map(CoachingRoles::name)
+						.toList();
+				query.setParameter("roles", rolesList);
+			}
 		} else if(!organisationsGroups.isEmpty()) {
 			query.setParameter("organisationGroupKeys", organisationsGroups.stream().map(Group::getKey).toList());
 		} else if(userRelation != null) {
 			query.setParameter("coachKey", coach.getKey());
 			query.setParameter("roleKey", userRelation.getKey());
 		}
+		if(identitiesKeys.size() < 1000) {
+			query.setParameter("identitiesKeys", identitiesKeys);
+		}
 
 		final List<Object[]> rawList = query.getResultList();
 		for(Object[] rawObjects:rawList) {
+			if(rawObjects[0] == null) continue;
+			
 			Long identityKey = ((Number)rawObjects[0]).longValue();
 			ParticipantStatisticsEntry stats = statEntries.get(identityKey);
 			if(stats != null) {
@@ -1309,16 +1334,25 @@ public class CoachingDAO {
 					stats.setSuccessStatus(new SuccessStatus(numPassed, numFailed, numUndefined, total));
 				}
 				if(withCompletion) {
-					Double completion = PersistenceHelper.extractDouble(rawObjects, pos);
+					Double completion = PersistenceHelper.extractDouble(rawObjects, pos++);
 					stats.setAverageCompletion(completion);
 				}
 			}
 		}
 	}
 	
-	protected void loadRepositoryEntryReservation(Identity identity, GroupRoles role,
+	public void loadRepositoryEntryReservation(Identity identity, List<CoachingRoles> roles,
 			List<Group> organisationsGroups, RelationRole userRelation,
 			Map<Long,ParticipantStatisticsEntry> statEntries) {
+		if((roles.size() == 1 && roles.contains(CoachingRoles.mastercoach))
+				|| statEntries.isEmpty()) {
+			return;
+		}
+		
+		List<Long> identitiesKeys = statEntries.size() <= 1000
+				? new ArrayList<>(statEntries.keySet())
+				: List.of();
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  reservation.identity.key,")
@@ -1327,33 +1361,66 @@ public class CoachingDAO {
 		  .append("  sum(case when reservation.confirmableBy='").append(ConfirmationByEnum.ADMINISTRATIVE_ROLE.name()).append("' then 1 else 0 end) as confirmedByOther")
 		  .append(" from resourcereservation as reservation")
 		  .append(" inner join reservation.resource as resource")
-		  .append(" inner join repositoryentry as re on (re.olatResource.key=resource.key)")
-		  .where();
+		  .append(" inner join repositoryentry as re on (re.olatResource.key=resource.key)");
 		
-		if(role == GroupRoles.coach) {
-			sb.append("re.key in (select distinct reToCoachGroup.entry.key from repoentrytogroup as reToCoachGroup")
-			  .append("  inner join bgroupmember as coach on (coach.role='coach' and coach.group.key=reToCoachGroup.group.key)")
-			  .append("  where reToCoachGroup.defaultGroup=true and coach.identity.key=:coachKey")
-			  .append(" )");
-		} else if(role == GroupRoles.owner) {
-			sb.append("re.key in (select distinct reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-			  .append("  where owner.identity.key=:coachKey")
-			  .append(" )");
+		if(!roles.isEmpty()) {
+			sb.and().append("(");
+			if(roles.contains(CoachingRoles.owner)) {
+				sb.append("re.key in (select distinct reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+				  .append("  inner join bgroupmember as owner on (owner.role=:orole and owner.group.key=reToOwnerGroup.group.key)")
+				  .append("  where owner.identity.key=:coachKey")
+				  .append(" )");
+			}
+			if(roles.contains(CoachingRoles.coach)) {
+				if(roles.contains(CoachingRoles.owner)) {
+					sb.append(" or ");
+				}
+				sb.append("re.key in (select distinct reToCoachGroup.entry.key from repoentrytogroup as reToCoachGroup")
+				  .append("  inner join bgroupmember as coach on (coach.role=:crole and coach.group.key=reToCoachGroup.group.key)")
+				  .append("  where reToCoachGroup.defaultGroup=true and coach.identity.key=:coachKey")
+				  .append(" )");
+			} 
+			sb.append(")");
 		} else if(!organisationsGroups.isEmpty()) {
-			sb.append("reservation.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
+			sb.and().append("reservation.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
 			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
 			  .append(")");
 		} else if(userRelation != null) {
-			sb.append("reservation.identity.key in (select relation.target.key from identitytoidentity as relation")
+			sb.and().append("reservation.identity.key in (select relation.target.key from identitytoidentity as relation")
 			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
 			  .append(")");
 		}
 		
-		sb.append(" group by reservation.identity.key");
+		if(!identitiesKeys.isEmpty()) {
+			sb.and().append(" reservation.identity.key in (:identitiesKeys)");
+		}
 		
-		final TypedQuery<Object[]> query = buildTypedQuery(sb, identity, role,
-				organisationsGroups, userRelation);
+		sb.append(" group by reservation.identity.key");
+	
+		final TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(!roles.isEmpty()) {
+			query.setParameter("coachKey", identity.getKey());
+			if(roles.contains(CoachingRoles.owner)) {
+				query.setParameter("orole", CoachingRoles.owner.name());
+			}
+			if(roles.contains(CoachingRoles.coach)) {
+				query.setParameter("crole", CoachingRoles.coach.name());
+			}
+		} else if(organisationsGroups != null && !organisationsGroups.isEmpty()) {
+			List<Long> groupKeys = organisationsGroups.stream()
+					.map(Group::getKey)
+					.toList();
+			query.setParameter("organisationGroupKeys", groupKeys);
+		} else if(userRelation != null) {
+			query.setParameter("coachKey", identity.getKey());
+			query.setParameter("roleKey", userRelation.getKey());
+		}
+
+		if(!identitiesKeys.isEmpty()) {
+			query.setParameter("identitiesKeys", identitiesKeys);
+		}
+		
 		final List<Object[]> rawList = query.getResultList();
 		for(Object[] rawObjects:rawList) {
 			Long identityKey = ((Number)rawObjects[0]).longValue();
@@ -1369,9 +1436,15 @@ public class CoachingDAO {
 		}
 	}
 	
-	protected void loadCurriculumElementsReservations(Identity identity, GroupRoles role,
+	public void loadCurriculumElementsReservations(Identity identity, List<CoachingRoles> roles,
 			List<Group> organisationsGroups, RelationRole userRelation,
 			Map<Long,ParticipantStatisticsEntry> statEntries) {
+		if(statEntries.isEmpty()) return;
+		
+		List<Long> identitiesKeys = statEntries.size() <= 1000
+				? new ArrayList<>(statEntries.keySet())
+				: List.of();
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  reservation.identity.key,")
@@ -1381,30 +1454,48 @@ public class CoachingDAO {
 		  .append(" from resourcereservation as reservation")
 		  .append(" inner join reservation.resource as resource")
 		  .append(" inner join curriculumelement as curEl on (curEl.resource.key=resource.key)")
-		  .append(" inner join curEl.group as baseGroup")
-		  .where();
+		  .append(" inner join curEl.group as baseGroup");
 
-		if(role == GroupRoles.coach) {
-			sb.append("baseGroup.key in (select distinct coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-			  .append(")");
-		} else if(role == GroupRoles.owner) {
-			sb.append("baseGroup.key in (select distinct owner.group.key from bgroupmember as owner")
-			  .append("  where owner.role='owner' and owner.identity.key=:coachKey")
+		if(!roles.isEmpty()) {
+			sb.and().append("baseGroup.key in (select distinct coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role in (:roles) and coach.identity.key=:coachKey")
 			  .append(")");
 		} else if(!organisationsGroups.isEmpty()) {
-			sb.append("reservation.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
+			sb.and().append("reservation.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
 			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
 			  .append(")");
 		} else if(userRelation != null) {
-			sb.append("reservation.identity.key in (select relation.target.key from identitytoidentity as relation")
+			sb.and().append("reservation.identity.key in (select relation.target.key from identitytoidentity as relation")
 			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
 			  .append(")");
+		}
+		if(!identitiesKeys.isEmpty()) {
+			sb.and().append(" reservation.identity.key in (:identitiesKeys)");
 		}
 		
 		sb.append(" group by reservation.identity.key");
 		
-		final TypedQuery<Object[]> query = buildTypedQuery(sb, identity, role, organisationsGroups, userRelation);
+		final TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(!roles.isEmpty()) {
+			List<String> rolesList = roles.stream()
+					.map(CoachingRoles::name)
+					.toList();
+			query.setParameter("coachKey", identity.getKey());
+			query.setParameter("roles", rolesList);
+		} else if(organisationsGroups != null && !organisationsGroups.isEmpty()) {
+			List<Long> groupKeys = organisationsGroups.stream()
+					.map(Group::getKey)
+					.toList();
+			query.setParameter("organisationGroupKeys", groupKeys);
+		} else if(userRelation != null) {
+			query.setParameter("coachKey", identity.getKey());
+			query.setParameter("roleKey", userRelation.getKey());
+		}
+		if(!identitiesKeys.isEmpty()) {
+			query.setParameter("identitiesKeys", identitiesKeys);
+		}
+		
 		final List<Object[]> rawList = query.getResultList();
 		for(Object[] rawObjects:rawList) {
 			Long identityKey = ((Number)rawObjects[0]).longValue();

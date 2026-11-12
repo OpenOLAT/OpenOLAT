@@ -66,10 +66,10 @@ import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
-import org.olat.modules.coach.model.CoursesSummaryKeyFigures;
 import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.CoursesSummary;
+import org.olat.modules.coach.model.CoursesSummaryKeyFigures;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -166,17 +166,16 @@ public class CoachingServiceImpl implements CoachingService {
 	public List<ParticipantStatisticsEntry> getParticipantsStatistics(SearchParticipantsStatisticsParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		Identity identity = params.getIdentity();
-		GroupRoles role = params.getRole();
+		List<CoachingRoles> roles = params.getRoles();
 		RelationRole userRelation = params.getRelationRole();
 		List<Organisation> organisations = params.getOrganisations();
 		List<Group> organisationsGroups = organisations == null || organisations.isEmpty()
 				? List.of()
 				: organisations.stream().map(Organisation::getGroup).toList();
-		
-		List<ParticipantStatisticsEntry> statsEntries = coachingDao.loadParticipantsCoursesStatistics(identity, role,
-				organisationsGroups, userRelation, params.excludedRoles(), userPropertyHandlers, locale);
+		List<ParticipantStatisticsEntry> statsEntries = coachingDao.loadParticipantsCoursesStatistics(identity, roles,
+				organisationsGroups, userRelation, userPropertyHandlers, locale);
 		Map<Long,ParticipantStatisticsEntry> statisticsEntries = statsEntries.stream()
-				.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, stats -> stats, (u, v) -> u));
+				.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, stats -> stats, (u, _) -> u));
 		
 		if(!organisationsGroups.isEmpty()) {
 			coachingDao.loadOrganisationsMembers(organisationsGroups, params.excludedRoles(),
@@ -186,16 +185,16 @@ public class CoachingServiceImpl implements CoachingService {
 			coachingDao.loadRelationUsers(identity, userRelation, statsEntries, statisticsEntries, userPropertyHandlers, locale);
 		}
 		
-		coachingDao.processParticipantsStatementsAndCompletions(identity, role,
+		coachingDao.loadParticipantsStatementsAndCompletions(identity, roles,
 			organisationsGroups, userRelation,
 			params.withCourseStatus(), params.withCourseCompletion(), statisticsEntries);
 		
 		if(params.withReservations()) {
 			if(curriculumModule.isEnabled()) {
-				coachingDao.loadCurriculumElementsReservations(identity, role,
+				coachingDao.loadCurriculumElementsReservations(identity, roles,
 					organisationsGroups, userRelation, statisticsEntries);
 			}
-			coachingDao.loadRepositoryEntryReservation(identity, role,
+			coachingDao.loadRepositoryEntryReservation(identity, roles,
 				organisationsGroups, userRelation, statisticsEntries);
 		}
 		
@@ -270,7 +269,7 @@ public class CoachingServiceImpl implements CoachingService {
 		
 		Map<Long,CourseStatEntry> mapAs = statistics.stream()
 				.filter(se -> roles.contains(se.getRole()))
-				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, v) -> u));
+				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, _) -> u));
 		if(!mapAs.isEmpty()) {
 			coachingDao.loadCoursesStatistics(null, identity, roles, false, mapAs);
 			coachingDao.loadCoursesStatementsAndCompletions(null, identity, roles, true, false, mapAs);
@@ -286,10 +285,10 @@ public class CoachingServiceImpl implements CoachingService {
 				case published -> entry -> RepositoryEntryStatusEnum.published == entry.getRepoStatus();
 				case access -> entry -> RepositoryEntryStatusEnum.coachpublished == entry.getRepoStatus();
 				case finished -> entry -> RepositoryEntryStatusEnum.closed == entry.getRepoStatus();
-				default -> entry -> true;
+				default -> _ -> true;
 			};
 		}
-		return entry -> true;
+		return _ -> true;
 	}
 
 	@Override

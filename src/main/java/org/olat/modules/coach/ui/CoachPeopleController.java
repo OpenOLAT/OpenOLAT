@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.admin.user.UserCreateController;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
@@ -77,8 +76,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 
 	private static final String MAIN_CONTROLLER = "component";
 	
-	private static final String COACH_SCOPE = "coach";
-	private static final String OWNER_SCOPE = "owner";
+	private static final String MY_PARTICIPANTS = "MyParticipants";
 	private static final String PRINCIPAL_SCOPE = "principal";
 	private static final String LINE_MANAGER_SCOPE = "linemanager";
 	private static final String EDU_MANAGER_SCOPE = "educationmanager";
@@ -91,6 +89,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private final ScopeSelection searchScopes;
 	private final List<Scope> scopes;
 
+	private final CoachingSecurity coachingSec;
 	private final List<RelationRole> userRelationRoles;
 
 	private UserCreateController userCreateCtrl;
@@ -108,6 +107,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 
 	public CoachPeopleController(UserRequest ureq, WindowControl wControl, TooledStackedPanel content, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
+		this.coachingSec = coachingSec;
 		this.content = content;
 		
 		mainVC = createVelocityContainer("people");
@@ -117,11 +117,8 @@ public class CoachPeopleController extends BasicController implements Activateab
 		
 		// As coach / course owner
 		scopes = new ArrayList<>(4);
-		if(coachingSec.coach()) {
-			scopes.add(ScopeFactory.createScope(COACH_SCOPE, translate("lectures.teacher.menu.title"), null, "o_icon o_icon_coaching_tool"));
-		}
-		if(coachingSec.owner()) {
-			scopes.add(ScopeFactory.createScope(OWNER_SCOPE, translate("lectures.owner.menu.title"), null, "o_icon o_icon_coaching_tool"));
+		if(coachingSec.coach() || coachingSec.owner() || coachingSec.isMasterCoach()) {
+			scopes.add(ScopeFactory.createScope(MY_PARTICIPANTS, translate("coaching.my.participants"), null, "o_icon o_icon_coaching_tool"));
 		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -238,14 +235,10 @@ public class CoachPeopleController extends BasicController implements Activateab
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		List<ContextEntry> subEntries = entries.subList(1, entries.size());
-		if(COACH_SCOPE.equalsIgnoreCase(type)) {
-			doOpenAsCoach(ureq, GroupRoles.coach, COACH_SCOPE)
+		if(MY_PARTICIPANTS.equalsIgnoreCase(type) || "coach".equalsIgnoreCase(type) || "owner".equalsIgnoreCase(type)) {
+			doOpenAsCoach(ureq, MY_PARTICIPANTS)
 					.activate(ureq, subEntries, entries.get(0).getTransientState());
-			searchScopes.setSelectedKey(COACH_SCOPE);
-		} else if(OWNER_SCOPE.equalsIgnoreCase(type)) {
-			doOpenAsCoach(ureq, GroupRoles.owner, OWNER_SCOPE)
-				.activate(ureq, subEntries, entries.get(0).getTransientState());
-			searchScopes.setSelectedKey(OWNER_SCOPE);
+			searchScopes.setSelectedKey(MY_PARTICIPANTS);
 		} else if(PRINCIPAL_SCOPE.equalsIgnoreCase(type)) {
 			doOrganisationsWithRole(ureq, OrganisationRoles.principal, AbstractParticipantsListController.ALL_TAB_ID)
 					.activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -308,10 +301,8 @@ public class CoachPeopleController extends BasicController implements Activateab
 	}
 	
 	private void doOpen(UserRequest ureq, String scope) {
-		if(COACH_SCOPE.equalsIgnoreCase(scope)) {
-			doOpenAsCoach(ureq, GroupRoles.coach, COACH_SCOPE);
-		} else if(OWNER_SCOPE.equalsIgnoreCase(scope)) {
-			doOpenAsCoach(ureq, GroupRoles.owner, OWNER_SCOPE);
+		if(MY_PARTICIPANTS.equalsIgnoreCase(scope)) {
+			doOpenAsCoach(ureq, MY_PARTICIPANTS);
 		} else if(PRINCIPAL_SCOPE.equalsIgnoreCase(scope)) {
 			doOrganisationsWithRole(ureq, OrganisationRoles.principal,
 					AbstractParticipantsListController.ALL_TAB_ID);
@@ -329,13 +320,13 @@ public class CoachPeopleController extends BasicController implements Activateab
 		}
 	}
 	
-	private Activateable2 doOpenAsCoach(UserRequest ureq, GroupRoles role, String scope) {
+	private Activateable2 doOpenAsCoach(UserRequest ureq, String scope) {
 		cleanUp();
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(scope, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		ownerParticipantsCtrl = new CoachParticipantsListController(ureq, bwControl, content, role);
+		ownerParticipantsCtrl = new CoachParticipantsListController(ureq, bwControl, content, coachingSec.getCoachingRoles());
 		listenTo(ownerParticipantsCtrl);
 		mainVC.put(MAIN_CONTROLLER, ownerParticipantsCtrl.getInitialComponent());
 		return ownerParticipantsCtrl;

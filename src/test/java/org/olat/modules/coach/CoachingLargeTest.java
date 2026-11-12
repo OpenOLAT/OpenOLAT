@@ -280,7 +280,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getParticipantsStatisticsAsCoach() {
-		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach10, GroupRoles.coach);
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach10, List.of(CoachingRoles.coach));
 		List<ParticipantStatisticsEntry> statEntries = coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(statEntries);
 	}

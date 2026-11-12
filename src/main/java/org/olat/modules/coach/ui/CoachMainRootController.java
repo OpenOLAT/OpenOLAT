@@ -21,7 +21,6 @@ package org.olat.modules.coach.ui;
 
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
@@ -139,8 +138,8 @@ public class CoachMainRootController extends BasicController implements Activate
 
 		Roles roles = ureq.getUserSession().getRoles();
 		coachAssignmentsAvailable = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal() || roles.isAuthor();
-		showPeopleView = coachingSec.coach() || coachingSec.owner() || roles.isPrincipal() || roles.isLineManager() ||roles.isEducationManager()
-				|| !identityRelationsService.getRelationsAsSource(getIdentity()).isEmpty();
+		showPeopleView = coachingSec.coach() || coachingSec.masterCoach() || coachingSec.owner() || roles.isPrincipal() || roles.isLineManager()
+				||roles.isEducationManager() || !identityRelationsService.getRelationsAsSource(getIdentity()).isEmpty();
 		showPendingConfirmations = curriculumModule.isEnabled() && accessControlModule.isInvoiceEnabled() && canViewPendingCourseBookings();
 		mainVC = createVelocityContainer("coaching");
 		putInitialPanel(mainVC);
@@ -334,7 +333,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("QuickSearch", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		quickSearchCtrl = new CoachParticipantsListController(ureq, bwControl, content, GroupRoles.coach);
+		quickSearchCtrl = new CoachParticipantsListController(ureq, bwControl, content, coachingSec.getCoachingRoles());
 		listenTo(quickSearchCtrl);
 		quickSearchCtrl.activate(ureq, List.of(), new SearchStateEntry(searchString));
 		content.pushController(translate("students.menu.title"), quickSearchCtrl);
