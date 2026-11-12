@@ -602,11 +602,12 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" and membership.role='").append(GroupRoles.owner.name()).append("')")
 			  .append(" and v.status");
 			
-			if (params.getStatus() != null) {
-				sb.in(params.getStatus());
-			} else {
-				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
+			RepositoryEntryStatusEnum[] ownedStatus = params.getStatus() != null
+					? params.getStatus() : RepositoryEntryStatusEnum.preparationToClosed();
+			if (params.isRestrictStatusToReviewToPublished()) {
+				ownedStatus = reviewToPublishedOnly(ownedStatus);
 			}
+			sb.in(ownedStatus);
 		}
 		
 		if (withOrClause) {
@@ -623,7 +624,12 @@ public class RepositoryEntryAuthorQueries {
 				  .append("  where reToOrg.entry.key=v.key and reToOrg.organisation.key in (:sharedOrganisationKeys))");
 			}
 			sb.append(" and v.status");
-			sb.in(nonDecommissionedStatus(params.hasStatus() ? params.getStatus() : RepositoryEntryStatusEnum.reviewToClosed()));
+			RepositoryEntryStatusEnum[] sharedStatus = nonDecommissionedStatus(
+					params.hasStatus() ? params.getStatus() : RepositoryEntryStatusEnum.reviewToClosed());
+			if (params.isRestrictStatusToReviewToPublished()) {
+				sharedStatus = reviewToPublishedOnly(sharedStatus);
+			}
+			sb.in(sharedStatus);
 			sb.append(params.isCanReference() ? " and v.canReference=true" : " and v.canCopy=true");
 		}
 		
@@ -668,6 +674,21 @@ public class RepositoryEntryAuthorQueries {
 				.filter(s -> !s.decommissioned())
 				.toArray(RepositoryEntryStatusEnum[]::new);
 		return filteredFallback.length > 0 ? filteredFallback : RepositoryEntryStatusEnum.reviewToPublished();
+	}
+
+	/**
+	 * Restricts the given status values to those also present in
+	 * {@link RepositoryEntryStatusEnum#reviewToPublished()} (review, coachpublished,
+	 * published). 
+	 *
+	 * @param status the status array to restrict (an explicit selection, or an already-resolved default)
+	 * @return a non-empty array containing only statuses from reviewToPublished()
+	 */
+	private RepositoryEntryStatusEnum[] reviewToPublishedOnly(RepositoryEntryStatusEnum[] status) {
+		RepositoryEntryStatusEnum[] filtered = Arrays.stream(status)
+				.filter(s -> RepositoryEntryStatusEnum.isInArray(s, RepositoryEntryStatusEnum.reviewToPublished()))
+				.toArray(RepositoryEntryStatusEnum[]::new);
+		return filtered.length > 0 ? filtered : RepositoryEntryStatusEnum.reviewToPublished();
 	}
 
 	/**

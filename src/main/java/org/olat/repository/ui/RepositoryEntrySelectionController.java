@@ -87,6 +87,7 @@ public class RepositoryEntrySelectionController extends BasicController {
 		searchParams.setResourceTypes(resourceTypes);
 		searchParams.setCanReference(true);
 		searchParams.setExcludeDecommissionedStatus(true);
+		searchParams.setRestrictStatusToReviewToPublished(true);
 		if (defaultOrganisations != null && !defaultOrganisations.isEmpty()) {
 			List<OrganisationRef> organisationRefs = defaultOrganisations.stream()
 					.map(OrganisationRef.class::cast)

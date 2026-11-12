@@ -54,6 +54,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private boolean canDownload = false;
 	private boolean canReference = false;
 	private boolean excludeDecommissionedStatus = false;
+	private boolean restrictStatusToReviewToPublished = false;
 	
 	private String idAndRefs;
 	private String idRefsAndTitle;
@@ -197,6 +198,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setExcludeDecommissionedStatus(boolean excludeDecommissionedStatus) {
 		this.excludeDecommissionedStatus = excludeDecommissionedStatus;
+	}
+
+	public boolean isRestrictStatusToReviewToPublished() {
+		return restrictStatusToReviewToPublished;
+	}
+
+	public void setRestrictStatusToReviewToPublished(boolean restrictStatusToReviewToPublished) {
+		this.restrictStatusToReviewToPublished = restrictStatusToReviewToPublished;
 	}
 
 	public OrderBy getOrderBy() {
