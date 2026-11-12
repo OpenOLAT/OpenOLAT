@@ -67,41 +67,43 @@ div.b_scrollblock {
 	@extend %o_scrollblock;
 }
 
-@mixin o-make-colored-table($bgcolor){
+// A table with the fill of a message box: the token --o-box-{$box}-bg and its
+// shade tokens -table-border, -table-stripe-bg and -table-header-bg
+@mixin o-make-colored-table($box){
 	border-collapse: collapse;
 	td, th {
 		padding: $table-cell-padding;
-		background: $bgcolor;
-		border: 1px solid lighten($bgcolor,5%);
+		background: var(--o-box-#{$box}-bg);
+		border: 1px solid var(--o-box-#{$box}-table-border);
 	}
 	thead td, th {
-		background: darken($bgcolor,10%);
+		background: var(--o-box-#{$box}-table-header-bg);
 		font-weight: bold;
 	}
 	tbody tr:nth-child(even) td {
-		background: lighten($bgcolor,5%);
-		border: 1px solid $bgcolor;
+		background: var(--o-box-#{$box}-table-stripe-bg);
+		border: 1px solid var(--o-box-#{$box}-bg);
 	}
 	&.b_no_stripes tbody tr:nth-child(even) td {
-		background: $bgcolor;
-		border: 1px solid lighten($bgcolor,5%);
+		background: var(--o-box-#{$box}-bg);
+		border: 1px solid var(--o-box-#{$box}-table-border);
 	}
 
 	@media print {
 		td, th {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
-			background: $bgcolor !important;
+			background: var(--o-box-#{$box}-bg) !important;
 		}
 		thead td, th {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
-			background: darken($bgcolor,10%) !important;
+			background: var(--o-box-#{$box}-table-header-bg) !important;
 		}
 		tbody tr:nth-child(even) td {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
-			background: lighten($bgcolor,5%)  !important;
+			background: var(--o-box-#{$box}-table-stripe-bg) !important;
 		}
 	}
 }
@@ -141,7 +143,7 @@ table {
 			border: 1px solid $o-content-table-border;
 		}
 		thead td, th {
-			background: rgba($gray-base, 10%);
+			background: color-mix(in srgb, var(--o-content-table-bordered-header-bg) 10%, transparent);
 			font-weight: bold;
 		}
 	}
@@ -167,19 +169,19 @@ table {
 		}
 	}
 	&.b_gray {
-		@include o-make-colored-table($o-box-info-bg);
+		@include o-make-colored-table("info");
 	}
 	&.b_blue {
-		@include o-make-colored-table($o-box-note-bg);
+		@include o-make-colored-table("note");
 	}
 	&.b_green {
-		@include o-make-colored-table($o-box-success-bg);
+		@include o-make-colored-table("success");
 	}
 	&.b_yellow {
-		@include o-make-colored-table($o-box-warning-bg);
+		@include o-make-colored-table("warning");
 	}
 	&.b_red {
-		@include o-make-colored-table($o-box-error-bg);
+		@include o-make-colored-table("error");
 	}
 }
 

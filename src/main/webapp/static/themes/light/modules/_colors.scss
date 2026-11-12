@@ -28,7 +28,7 @@
 // Tinted fill, e.g. the page editor block background
 .o_color_background_10 {
 	border-radius: $border-radius-base;
-	border: 1px solid gray;
+	border: 1px solid var(--o-border-strong);
 }
 #{o-swatch-alias-selector("o_color_", ".o_color_background_10")} {
 	background-color: var(--o-sw-soft-bg);

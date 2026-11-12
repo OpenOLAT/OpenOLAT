@@ -140,6 +140,170 @@ $o-contrast-check: "error" !default;
 	@return #000000;
 }
 
+/* Helper method to select the hover colour of an icon on a background
+ * (OO-10043). Returns the hover colour when it reaches the contrast ratio
+ * on the background. Else it returns the colour with the better contrast:
+ * the hover colour or the base colour. On a dark navigation bar a darker
+ * hover colour loses contrast, on a white bar a lighter one does.
+ *
+ * @param {Color} $hover - The hover colour, e.g. darken($color, 10%)
+ * @param {Color} $base - The colour without hover, the fallback
+ * @param {Color} $background - The background colour
+ * @param {Number} $ratio - The minimum contrast ratio, default 3 (WCAG non-text)
+ * @return {Color}
+ */
+@function o-contrast-hover($hover, $base, $background, $ratio: 3) {
+	@if contrast($hover, $background) >= $ratio or contrast($hover, $background) >= contrast($base, $background) {
+		@return $hover;
+	}
+	@return $base;
+}
+
+/* Helper method to select the darkest of some background colours, the one
+ * with the lowest luminance (OO-10043). A colour that must keep its contrast
+ * on all of them is adjusted against this one, e.g. a mark on a white, a
+ * striped and a hovered table row (decision D26).
+ *
+ * @param {Color} $colors - The background colours
+ * @return {Color}
+ */
+@function o-darkest-color($colors...) {
+	$darkest: list.nth($colors, 1);
+	@each $color in $colors {
+		@if luminance($color) < luminance($darkest) {
+			$darkest: $color;
+		}
+	}
+	@return $darkest;
+}
+
+/* The fill of a hover or pressed state: the fill of the normal state darker
+ * or lighter by the amount (OO-10043). A fill that cannot get darker
+ * (darken() gives the same colour, a black fill) gets lighter by the same
+ * amount, so that the state is visible (decision D20).
+ *
+ * @param {Color} $bg - The fill of the normal state
+ * @param {Number} $amount - The amount in percent
+ * @param {String} $function - "darken" (default) or "lighten"
+ * @return {Color}
+ */
+@function o-contrast-shade($bg, $amount, $function: "darken") {
+	@if $function == "lighten" {
+		@return lighten($bg, $amount);
+	}
+	$shade: darken($bg, $amount);
+	@if $amount > 0% and o-color-round($shade) == o-color-round($bg) {
+		@return lighten($bg, $amount);
+	}
+	@return $shade;
+}
+
+/* Helper method for the amount of a hover or pressed fill (OO-10043,
+ * decisions D9 and D13): the state must keep the contrast of the normal
+ * state and must be visible. Returns the largest amount from $min up to
+ * $max, in steps of 1%, at which the text colour keeps the contrast ratio on
+ * the darker (or lighter) background. Returns $max when the text passes at
+ * $max (no change), when the text fails on the background itself (a shade
+ * cannot repair the normal state), and when no amount from $min passes: a
+ * fill less than 3% darker or lighter does not show the state, the state
+ * keeps its amount and its text gets the colour of o-contrast-shade-text().
+ *
+ * @param {Color} $fg - The text colour on the fill
+ * @param {Color} $bg - The fill of the normal state
+ * @param {Number} $max - The amount of the state, e.g. 10% for the hover
+ * @param {String} $function - "darken" (default) or "lighten"
+ * @param {Number} $ratio - The minimum contrast ratio, default 4.5
+ * @param {Number} $min - The smallest visible amount, default 3%
+ * @return {Number} The amount in percent
+ */
+@function o-contrast-shade-amount($fg, $bg, $max, $function: "darken", $ratio: 4.5, $min: 3%) {
+	@if contrast($fg, $bg) < $ratio {
+		@return $max;
+	}
+	$amount: math.div($max, 1%);
+	@while $amount >= math.div($min, 1%) {
+		@if contrast($fg, o-contrast-shade($bg, $amount * 1%, $function)) >= $ratio {
+			@return $amount * 1%;
+		}
+		$amount: $amount - 1;
+	}
+	@return $max;
+}
+
+/* A colour with its channels rounded to 0 to 255, as the hex value of a
+ * token (o-hex() in _palette.scss)
+ *
+ * @param {Color} $color - The colour
+ * @return {Color}
+ */
+@function o-color-round($color) {
+	@return rgb(math.clamp(0, math.round(color.channel($color, "red", $space: rgb)), 255),
+		math.clamp(0, math.round(color.channel($color, "green", $space: rgb)), 255),
+		math.clamp(0, math.round(color.channel($color, "blue", $space: rgb)), 255));
+}
+
+/* Helper method for the text colour of a hover or pressed state (OO-10043,
+ * decision D13). Returns $fg when it passes on the fill of the state, and
+ * when it fails on the fill of the normal state already (a state cannot
+ * repair the normal state). Else returns $fg adjusted with o-a11y-color()
+ * for the fill of the state. When o-a11y-color() cannot reach the ratio
+ * (dark text on a fill that gets darker), returns white or black, the colour
+ * with the better contrast (o-contrast-text()). The adjusted text passes
+ * also as rounded hex value on the rounded fill (the hex values of the
+ * tokens).
+ *
+ * @param {Color} $fg - The text colour of the normal state
+ * @param {Color} $bg - The fill of the normal state
+ * @param {Color} $state-bg - The fill of the state
+ * @param {Number} $ratio - The minimum contrast ratio, default 4.5
+ * @return {Color}
+ */
+@function o-contrast-state-text($fg, $bg, $state-bg, $ratio: 4.5) {
+	@if contrast($fg, $bg) < $ratio or contrast($fg, $state-bg) >= $ratio {
+		@return $fg;
+	}
+	// o-a11y-color() lightens a light text on a fill with room for white,
+	// else it darkens: black is the end of that way
+	$darkens: not (luminance($fg) > luminance($state-bg) and contrast(#fff, $state-bg) >= $ratio);
+	// the token of the fill is a rounded hex value too
+	$state-hex: o-color-round($state-bg);
+	@if not $darkens or contrast(#000, $state-bg) >= $ratio {
+		$text: o-color-round(o-a11y-color($fg, $state-bg, $ratio));
+		@if contrast($text, $state-hex) < $ratio {
+			// the rounded channels lost the last part of the ratio: one step more
+			$text: o-color-round(o-a11y-color($fg, $state-bg, $ratio + 0.05));
+		}
+		@if contrast($text, $state-hex) >= $ratio {
+			@return $text;
+		}
+	}
+	@return o-contrast-text($state-bg);
+}
+
+/* Helper method for the text colour on the hover or pressed fill of
+ * o-contrast-shade-amount() (OO-10043, decision D13): o-contrast-state-text()
+ * on the fill darker or lighter by that amount. $fg when the amount keeps the
+ * contrast, the adjusted text when the state keeps its amount because no
+ * visible amount passes.
+ *
+ * @param {Color} $fg - The text colour of the normal state
+ * @param {Color} $bg - The fill of the normal state
+ * @param {Number} $max - The amount of the state, e.g. 10% for the hover
+ * @param {String} $function - "darken" (default) or "lighten"
+ * @param {Number} $ratio - The minimum contrast ratio, default 4.5
+ * @param {Color} $state-bg - The fill of the state when a Sass variable of
+ *        the theme holds it: the text changes only when the fill is the
+ *        computed one, a fill of the theme keeps the text $fg
+ * @return {Color}
+ */
+@function o-contrast-shade-text($fg, $bg, $max, $function: "darken", $ratio: 4.5, $state-bg: null) {
+	$shade: o-contrast-shade($bg, o-contrast-shade-amount($fg, $bg, $max, $function, $ratio), $function);
+	@if $state-bg != null and $state-bg != $shade {
+		@return $fg;
+	}
+	@return o-contrast-state-text($fg, $bg, $shade, $ratio);
+}
+
 /* Helper method to select the foreground color for a background color.
  * Unlike o-a11y-color() it does not modify a color. It returns the first
  * candidate that reaches the contrast ratio on the background and stops

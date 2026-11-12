@@ -178,8 +178,8 @@
 		break-inside : avoid-page;
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
-	  	background-color: rgba(0,0,0,.1) !important;
-	  	border: 1px solid rgba(0,0,0,.5);
+	  	background-color: color-mix(in srgb, var(--o-backdrop) 10%, transparent) !important;
+	  	border: 1px solid color-mix(in srgb, var(--o-backdrop) 50%, transparent);
 	}
 	.progress-bar {
 		-webkit-print-color-adjust: exact;
@@ -187,16 +187,16 @@
 		background-color: #000 !important;
 		
 		&.progress-bar-success {
-			background-color: $progress-bar-success-bg !important;
+			background-color: var(--o-state-success-bg) !important;
 		}
 		&.progress-bar-info {
-			background-color: $progress-bar-info-bg !important;
+			background-color: var(--o-state-neutral-bg) !important;
 		}
 		&.progress-bar-warning {
-			background-color: $progress-bar-warning-bg !important;
+			background-color: var(--o-state-warning-bg) !important;
 		}
 		&.progress-bar-danger {
-			background-color: $progress-bar-danger-bg !important;
+			background-color: var(--o-state-danger-bg) !important;
 		}
 	}
 	
@@ -229,10 +229,10 @@
 		color-adjust: exact;
 		
 		.o_progress_failed & .percentage:before {
-			color: #efe5e5 !important;
+			color: var(--o-state-danger-soft-bg) !important;
 		}
 		.o_progress_passed & .percentage:before {
-			color: #e5efe5 !important;
+			color: var(--o-state-success-soft-bg) !important;
 		}
 		&[data-progress="0"] .percentage:before {
 			display: none;

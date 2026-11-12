@@ -30,7 +30,7 @@
 	}
 	img {
 		border-radius: $o-portfolio-lead-border-radius;
-		border: 1px $o-portfolio-lead-border-color solid;
+		border: 1px var(--o-portfolio-lead-border) solid;
 		background: var(--o-bg);
 		height: auto;	/* expand to fit */
 		width: auto;
@@ -120,11 +120,11 @@
 			&:has(.o_realchooser:hover),
 			&:has(.o_realchooser:focus) {
 				outline: 0;
-				color: #333;
-				background-color: #dfdfdf;
+				color: var(--o-btn-default-fg);
+				background-color: var(--o-btn-default-bg-hover);
 				button {
-					color: #333;
-					background-color: #dfdfdf;
+					color: var(--o-btn-default-fg);
+					background-color: var(--o-btn-default-bg-hover);
 					border: none;
 					box-shadow: none;
 				}
@@ -138,7 +138,7 @@
 		.o_dnd {
 			.o_dnd_icon {
 				font-size: 1em;
-				color: black;
+				color: var(--o-text);
 				display: inline-block;
 				margin-right: 5px;
 			}
@@ -189,7 +189,7 @@
 	}
 	
 	.o_portfolio_status_block {
-		border-top: 1px solid $o-portfolio-lead-border-color;
+		border-top: 1px solid var(--o-portfolio-lead-border);
 		padding: 5px 0 0 0;
 		display: grid;
 		grid-template-columns: 1fr auto;

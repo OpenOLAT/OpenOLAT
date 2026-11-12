@@ -244,12 +244,12 @@
 /* Ghost button */
 .btn.o_button_ghost {
 	color: var(--o-btn-ghost-fg);
-	background-color: $o-button-ghost-background-color;
-	border-color: $o-button-ghost-border-color;
+	background-color: var(--o-btn-ghost-bg);
+	border-color: var(--o-btn-ghost-border);
 	&:hover {
-		color: $o-button-ghost-hover-color;
-		background-color: $o-button-ghost-hover-background-color;
-		border-color: $o-button-ghost-hover-border-color;
+		color: var(--o-btn-ghost-hover-fg);
+		background-color: var(--o-btn-ghost-hover-bg);
+		border-color: var(--o-btn-ghost-hover-border);
 	}
 	&.btn-danger {
 		color: var(--o-state-danger-text);
@@ -269,9 +269,9 @@
 /* Mega button */
 .btn.o_button_mega {
 	height: $o-button-mega-height;
-	background-color: $o-button-mega-bg-color;
+	background-color: var(--o-btn-mega-bg);
 	&:hover {
-		background-color: $o-button-mega-hover-bg-color;
+		background-color: var(--o-btn-mega-hover-bg);
 	}
 	
 	display: flex;
@@ -296,22 +296,24 @@
 
 /* Primary light button */
 .o_button_primary_light {
-	@include button-variant($o-button-primary-light-color, $o-button-primary-light-bg, $o-button-primary-light-border);
+	@include button-variant(var(--o-btn-primary-light-fg), var(--o-btn-primary-light-bg), var(--o-btn-primary-light-border),
+		var(--o-btn-primary-light-fg-hover), var(--o-btn-primary-light-fg-active));
 	&:focus,
 	&:hover {
-	  color: $o-button-primary-light-hover-color;
-	  background-color: $o-button-primary-light-hover-bg;
-	  border-color: $o-button-primary-light-hover-border;
+	  color: var(--o-btn-primary-light-hover-fg);
+	  background-color: var(--o-btn-primary-light-hover-bg);
+	  border-color: var(--o-btn-primary-light-hover-border);
 	}
 }
 
 .o_button_danger_light {
-	@include button-variant($o-button-danger-light-color, $o-button-danger-light-bg, $o-button-danger-light-border);
+	@include button-variant(var(--o-btn-danger-light-fg), var(--o-btn-danger-light-bg), var(--o-btn-danger-light-border),
+		var(--o-btn-danger-light-fg-hover), var(--o-btn-danger-light-fg-active));
 	&:focus,
 	&:hover {
-		color: $o-button-danger-light-hover-color;
-		background-color: $o-button-danger-light-hover-bg;
-		border-color: $o-button-danger-light-hover-border;
+		color: var(--o-btn-danger-light-hover-fg);
+		background-color: var(--o-btn-danger-light-hover-bg);
+		border-color: var(--o-btn-danger-light-hover-border);
 	}
 }
 
@@ -413,7 +415,7 @@
 .panel-placeholder {
 	border-width: $o-panel-placeholder-border-width;
 	border-style: dashed;
-	border-color: $o-panel-placeholder-border-color;
+	border-color: var(--o-panel-placeholder-border);
 	border-radius: $o-panel-placeholder-border-radius;
 	background-color: $o-panel-placeholder-bg;
 	
@@ -437,7 +439,7 @@
 		border-top-left-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
 		border-width: $o-panel-placeholder-border-width;
 		border-style: dashed;
-		border-color: $o-panel-placeholder-border-color;
+		border-color: var(--o-panel-placeholder-border);
 		border-top: none;
 		border-left: none;
 		border-right: none;
@@ -449,7 +451,7 @@
 		border-bottom-left-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
 		border-width: $o-panel-placeholder-border-width;
 		border-style: dashed;
-		border-color: $o-panel-placeholder-border-color;
+		border-color: var(--o-panel-placeholder-border);
 		border-bottom: none;
 		border-left: none;
 		border-right: none;
@@ -518,7 +520,7 @@
 }
 
 /* colors (used in repo and else where) //FIXME: FG refactor to something meaningfull*/
-.o_ochre { color: #c8a959; }
+.o_ochre { color: var(--o-state-warning-text); }
 .o_blue { color: #12223F; }
 
 
@@ -785,13 +787,13 @@
 	flex-direction: column;
 	gap: 10px;
 	padding-top: 10px;
-	border-top: 1px solid rgba(0,0,0,0.06);
+	border-top: 1px solid color-mix(in srgb, var(--o-backdrop) 6%, transparent);
 }
 
 .o_skeleton_bar {
 	height: 12px;
 	border-radius: 6px;
-	background-color: rgba(0,0,0,0.06);
+	background-color: color-mix(in srgb, var(--o-backdrop) 6%, transparent);
 
 	&.o_skeleton_bar_full {
 		width: 100%;

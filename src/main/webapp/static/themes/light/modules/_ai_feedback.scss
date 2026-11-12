@@ -41,7 +41,7 @@
  * ---------------------------------------------------------------------- */
 .o_ai_paragraph_feedback {
 	color: var(--o-text-muted);
-	background: rgba(0, 0, 0, 0.04);
+	background: color-mix(in srgb, var(--o-backdrop) 4%, transparent);
 	border-radius: 3px;
 	padding: 0.5rem 0.75rem;
 	margin: 0 0 0.75rem 0.5rem;
@@ -56,39 +56,39 @@
  * Inline mark spans
  * ---------------------------------------------------------------------- */
 .o_ai_mark_correct {
-	background: rgba(76, 175, 80, 0.18);
+	background: color-mix(in srgb, var(--o-ai-mark-correct) 18%, transparent);
 	border-radius: 2px;
 	padding: 0 1px;
 	cursor: default;
 
 	&[title]:hover {
-		background: rgba(76, 175, 80, 0.32);
+		background: color-mix(in srgb, var(--o-ai-mark-correct) 32%, transparent);
 	}
 }
 
 .o_ai_mark_ambiguous {
-	background: rgba(255, 193, 7, 0.22);
+	background: color-mix(in srgb, var(--o-ai-mark-ambiguous) 22%, transparent);
 	border-radius: 2px;
 	padding: 0 1px;
 	cursor: default;
 
 	&[title]:hover {
-		background: rgba(255, 193, 7, 0.38);
+		background: color-mix(in srgb, var(--o-ai-mark-ambiguous) 38%, transparent);
 	}
 }
 
 .o_ai_mark_wrong {
-	background: rgba(244, 67, 54, 0.18);
+	background: color-mix(in srgb, var(--o-ai-mark-wrong) 18%, transparent);
 	border-radius: 2px;
 	padding: 0 1px;
 	cursor: default;
 	text-decoration-line: underline;
 	text-decoration-style: wavy;
-	text-decoration-color: rgba(244, 67, 54, 0.55);
+	text-decoration-color: color-mix(in srgb, var(--o-ai-mark-wrong) 55%, transparent);
 	text-underline-offset: 2px;
 
 	&[title]:hover {
-		background: rgba(244, 67, 54, 0.30);
+		background: color-mix(in srgb, var(--o-ai-mark-wrong) 30%, transparent);
 	}
 }
 

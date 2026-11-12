@@ -307,7 +307,7 @@ form .o_form, form.o_form {
 	
 	input.o_show_hide_eye + i.o_icon {
 		cursor: pointer;
-		color: grey !important;
+		color: var(--o-text-muted) !important;
 		pointer-events: auto;
 	}
 
@@ -398,8 +398,8 @@ form .o_form, form.o_form {
 			 	border: 1px solid var(--o-radio-card-border);			  			 	
 				background-color: $o-radio-card-bg;			 	
 			  	&:hover {
-					background-color: $o-radio-card-bg-hover;
-				 	border: 1px solid $o-radio-card-border-color-hover;			  
+					background-color: var(--o-radio-card-hover-bg);
+				 	border: 1px solid var(--o-radio-card-hover-border);			  
 				 	.o_radio_label {
 				 		color: var(--o-radio-card-label-hover);
 					}
@@ -408,8 +408,16 @@ form .o_form, form.o_form {
 		  	input {
 				margin: auto;
 				left: 10px;
-				top: calc(50% - 6px);	
-		  	}		  	
+				top: calc(50% - 6px);
+				// Focus ring (OO-10043, D30): the card shows the ring, not the
+				// radio or checkbox inside it.
+				&:focus-visible {
+					outline: 0;
+					~ .o_radio_card {
+						@include o-focus-ring;
+					}
+				}
+		  	}
 		  	.o_radio_text_wrapper {		  	
 		  		flex-grow: 1;
 				flex-shrink: 1;
@@ -448,11 +456,11 @@ form .o_form, form.o_form {
 			/* Checked and disabled states */		  	
 		  	input:checked {
 		  		~ .o_radio_card {		  		
-					background-color: $o-radio-card-bg-checked;
-				 	border: 1px solid $o-radio-card-border-color-checked;	
+					background-color: var(--o-radio-card-checked-bg);
+				 	border: 1px solid var(--o-radio-card-checked-border);	
 				 	.o_icon,
 					.o_radio_label {
-						color: $o-radio-card-label-color-checked;
+						color: var(--o-radio-card-checked-label);
 					}	  		  	
 				}
 		  	}
@@ -713,15 +721,16 @@ form .o_form, form.o_form {
 		z-index: 2; 
 		@include opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
 		
-		/* same highlight style as in bootstrap form-control-focus mixin */
+		/* the focus of the invisible chooser on the visible field: border of
+		   the field and the focus ring (mixin form-control-focus, OO-10043, D24) */
 		&:focus +.o_fakechooser {	
-			$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
-			outline: 0;
-			@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
 			input {
 				border-color: var(--o-focus);
 			}
 		}	
+		&:focus-visible +.o_fakechooser {
+			@include o-focus-ring;
+		}
 
 	}
 	/* the fake drag&drop area */	
@@ -769,23 +778,23 @@ form .o_form, form.o_form {
 				    background-color: var(--o-file-upload-btn-bg-hover);
 				}
 			}
-			/* same highlight style as in bootstrap form-control-focus mixin */
+			/* the focus of the invisible chooser on the button: border and
+			   the focus ring (mixin form-control-focus, OO-10043, D24) */
 			&:focus+script+.o_dnd .btn,
 			&:focus+.o_dnd .btn  {
-				$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
 				border-color: var(--o-focus);
-				outline: 0;
-				@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
+			}
+			&:focus-visible+script+.o_dnd .btn,
+			&:focus-visible+.o_dnd .btn  {
+				@include o-focus-ring;
 			}
 		}
 	}
 	&.panel-placeholder:hover {
-		border-color: darken($o-panel-placeholder-border-color, 10%);
+		border-color: var(--o-panel-placeholder-border-hover);
+		// the hover of the area: the border of the focus, no glow (OO-10043, D24)
 		.o_dnd .btn {
-			$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
 			border-color: var(--o-focus);
-			outline: 0;
-			@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
 		}
 	}
 }
@@ -989,15 +998,16 @@ form.o_dnd_over {
 
 		&:has(input:checked) {
 			z-index: 2;
-			background-color: $o-radio-card-bg-checked;
-			border-color: $o-radio-card-border-color-checked;
-			color: $o-radio-card-label-color-checked;
+			background-color: var(--o-radio-card-checked-bg);
+			border-color: var(--o-radio-card-checked-border);
+			color: var(--o-radio-card-checked-label);
 		}
 
-		&:focus-within {
+		// the radio of the item is invisible: the item shows the focus ring,
+		// inset, the items touch (OO-10043, D24)
+		&:has(input:focus-visible) {
 			z-index: 3;
-			outline: 2px solid var(--o-focus);
-			outline-offset: -1px;
+			@include o-focus-ring(-2px);
 		}
 
 		label {
@@ -1078,10 +1088,10 @@ legend.control-label {
 
 /* TOGGLE SWITCH */
 .o_button_toggle {
-	border: 1px solid $o-toggle-border-color;
+	border: 1px solid var(--o-toggle-border);
 	@include border-top-radius($o-toggle-size*0.5 + 2px);
 	@include border-bottom-radius($o-toggle-size*0.5 + 2px);
-	background: $o-toggle-bg;
+	background: var(--o-toggle-bg);
 	display: inline-block;
 	&.o_toggle_block {
 		display: block;
@@ -1098,7 +1108,7 @@ legend.control-label {
 	white-space: nowrap;
 	
 	i {
-		color: $o-toggle-color;
+		color: var(--o-toggle-handle);
 		text-shadow: 1px 0 2px color-mix(in srgb, var(--o-shadow-color) 25%, transparent);		
 	}	
 	span {
@@ -1114,11 +1124,11 @@ legend.control-label {
 		background: var(--o-toggle-on-bg);
 		border-color: var(--o-toggle-on-border);
 		i {
-			color: $o-toggle-on-color;
+			color: var(--o-toggle-on-handle);
 			text-shadow: -1px 0 2px color-mix(in srgb, var(--o-shadow-color) 25%, transparent);
 		}
 		span {
-			color: $o-toggle-on-text-color;
+			color: var(--o-toggle-on-text);
 		}
 	}
 	&[aria-checked="false"] {
@@ -1399,12 +1409,12 @@ dialog {
 
 		&::before {
 			top: 0;
-			background: linear-gradient(rgba(99, 99, 99, 0.1), transparent);
+			background: linear-gradient(color-mix(in srgb, var(--o-shadow-color) 10%, transparent), transparent);
 		}
 
 		&::after {
 			bottom: 0;
-			background: linear-gradient(transparent, rgba(99, 99, 99, 0.1));
+			background: linear-gradient(transparent, color-mix(in srgb, var(--o-shadow-color) 10%, transparent));
 		}
 	}
 	

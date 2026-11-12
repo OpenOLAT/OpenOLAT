@@ -133,9 +133,11 @@ body .modal #o_link_chooser .container-fluid {
 	@include container-fixed;
 }
 
-.tox .tox-form .tox-listboxfield .tox-listbox--select:focus,
-.tox .tox-form .tox-textarea:focus,
-.tox .tox-form .tox-textfield:focus {
+// the focus of the form fields of Bootstrap, also over the halo of the
+// TinyMCE skin (OO-10043, D24)
+.tox .tox-form .tox-listboxfield .tox-listbox--select,
+.tox .tox-form .tox-textarea,
+.tox .tox-form .tox-textfield {
 	@include form-control-focus;
 }
 

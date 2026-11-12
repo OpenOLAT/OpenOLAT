@@ -94,9 +94,9 @@
 	    	display: inline-block;
 	    	
 	    	&.o_disabled {
-		    	color: $o-toolbar-link-disabled-color !important;
+		    	color: var(--o-toolbar-link-disabled) !important;
 		    	&:hover {
-		      		color: $o-toolbar-link-disabled-color !important;
+		      		color: var(--o-toolbar-link-disabled) !important;
 		    	}
 	    	}
 			&.active {
@@ -255,9 +255,9 @@
 			}
 
 			&.o_disabled {
-		    	color: $o-toolbar-nav-link-disabled-color !important;
+		    	color: var(--o-toolbar-nav-link-disabled) !important;
 		    	&:hover {
-		      		color: $o-toolbar-nav-link-disabled-color !important;
+		      		color: var(--o-toolbar-nav-link-disabled) !important;
 		    	}
 	    	}
 			
@@ -521,7 +521,7 @@
 	&.o_warning {
 		padding-top:10px;
 		padding-bottom:10px;
-		border: 1px solid $o-box-warning-color;
+		border: 1px solid var(--o-box-warning-border);
 		border-radius: $border-radius-small;
 	}
 }

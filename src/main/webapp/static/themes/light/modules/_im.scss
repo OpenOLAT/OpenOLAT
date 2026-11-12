@@ -44,10 +44,10 @@
 			text-decoration: none;
 		}
 		.o_icon_message {
-			color: $o-im-newmessage-color;
+			color: var(--o-im-newmessage);
 			&:hover {
-				color: $o-im-newmessage-hover-color;		
-			}	
+				color: var(--o-im-newmessage-hover);
+			}
 		}		
 	}
 }
@@ -83,7 +83,7 @@
 	
 	.o_im_resource_infos {
 		border-right: 1px solid $o-im-chat-border;
-		background-color: $o-im-chat-roster-bg;
+		background-color: var(--o-im-chat-roster-bg);
 		align-self: center;
 	}
 	
@@ -104,7 +104,7 @@
 	.o_im_roster {
 		border-right: 1px solid $o-im-chat-border;
 		border-top: 1px solid $o-im-chat-border;
-		background-color: $o-im-chat-roster-bg;
+		background-color: var(--o-im-chat-roster-bg);
 	}
 	
 	.o_im_chat {
@@ -140,7 +140,7 @@
 	height: $o-portrait-small-size;
 	border-radius: 50%;
 	border: none;
-	background-color: #eee;
+	background-color: var(--o-bg-subtle);
 	background-position: 50% 50%;
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -201,12 +201,12 @@
 	}
 			
 	.o_im_from { 
-		color: $o-im-chat-from-color; 
+		color: var(--o-im-chat-from); 
 		font-size: $o-im-chat-from-font-size; 
 		font-weight: bold;
 		@extend %o_undecorated;
 		&:hover {
-			color: darken($o-im-chat-from-color, 10%); 		
+			color: var(--o-im-chat-from-hover); 		
 		}
 	}
 	

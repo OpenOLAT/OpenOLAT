@@ -126,13 +126,13 @@
 		border-radius: 50%;
 		
 		&.o_rubric_insufficient {
-			background-color: $o-evaluation-insufficient-color !important;
+			background-color: var(--o-evaluation-insufficient) !important;
 		}
 		&.o_rubric_neutral {
-			background-color: $o-evaluation-neutral-color !important;
+			background-color: var(--o-evaluation-neutral) !important;
 		}
 		&.o_rubric_sufficient {
-			background-color: $o-evaluation-sufficient-color !important;
+			background-color: var(--o-evaluation-sufficient) !important;
 		}
 	}
 	.o_avg {
@@ -162,13 +162,13 @@
 		-o-transform: rotate(45deg);
 	}
 	.o_rubric_insufficient {
-		color: $o-evaluation-insufficient-color;
+		color: var(--o-evaluation-insufficient-text);
 	}
 	.o_rubric_neutral {
-		color: $o-evaluation-neutral-color;
+		color: var(--o-evaluation-neutral-text);
 	}
 	.o_rubric_sufficient {
-		color: $o-evaluation-sufficient-color;
+		color: var(--o-evaluation-sufficient-text);
 	}
 	.o_qual_ana_unrated {
 		color: $o-qual-hm-base-background-color;
@@ -214,13 +214,13 @@
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 		&.o_rubric_insufficient {
-			background-color: $o-evaluation-insufficient-color !important;
+			background-color: var(--o-evaluation-insufficient) !important;
 		}
 		&.o_rubric_neutral {
-			background-color: $o-evaluation-neutral-color !important;
+			background-color: var(--o-evaluation-neutral) !important;
 		}
 		&.o_rubric_sufficient {
-			background-color: $o-evaluation-sufficient-color !important;
+			background-color: var(--o-evaluation-sufficient) !important;
 		}
 		&.o_qual_hm_basecolor {
 			background-color: $o-qual-hm-base-background-color !important;
@@ -230,13 +230,13 @@
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 		.o_rubric_insufficient::before {
-			color: $o-evaluation-insufficient-color !important;
+			color: var(--o-evaluation-insufficient-text) !important;
 		}
 		.o_rubric_neutral::before {
-			color: $o-evaluation-neutral-color !important;
+			color: var(--o-evaluation-neutral-text) !important;
 		}
 		.o_rubric_sufficient::before {
-			color: $o-evaluation-sufficient-color !important;
+			color: var(--o-evaluation-sufficient-text) !important;
 		}
 		.o_qual_ana_unrated::before {
 			color: $o-qual-hm-base-background-color !important;

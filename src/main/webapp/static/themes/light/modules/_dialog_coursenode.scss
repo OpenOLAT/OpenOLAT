@@ -17,7 +17,7 @@
 .o_dialog_card_label_new {
   @extend %o_labeled;
   font-weight: bold;
-  background: #fff8e5;
+  background: var(--o-state-warning-soft-bg);
   text-transform: none;
   display: inline-flex;
   position: absolute;
@@ -110,7 +110,7 @@
     }
 
     .o_dialog_modified {
-      color: #777;
+      color: var(--o-text-muted);
     }
 
     .o_dialog_published {

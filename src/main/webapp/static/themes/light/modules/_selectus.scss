@@ -15,10 +15,10 @@ table.table tr.fx_r_onhold td span, table.table tr.fx_r_onhold td a, table.table
 		&.fx_r_a_decision.o_col_sticky_left,
 		&.fx_r_a_decision.o_col_sticky_right {
 			> td {
-				background-color: $o-selectus-table-a-decision-bg !important;	
+				background-color: var(--o-selectus-decision-a-bg) !important;	
 			}
 			&:hover > td {
-				background-color: $o-selectus-table-a-decision-bg-hover !important;	
+				background-color: var(--o-selectus-decision-a-hover-bg) !important;	
 			}	
 		}
 		
@@ -26,10 +26,10 @@ table.table tr.fx_r_onhold td span, table.table tr.fx_r_onhold td a, table.table
 		&.fx_r_b_decision.o_col_sticky_left,
 		&.fx_r_b_decision.o_col_sticky_right  {
 			> td {
-				background-color: $o-selectus-table-b-decision-bg !important;
+				background-color: var(--o-selectus-decision-b-bg) !important;
 			}
 			&:hover > td {
-				background-color: $o-selectus-table-b-decision-bg-hover !important;	
+				background-color: var(--o-selectus-decision-b-hover-bg) !important;	
 			}
 		}
 		
@@ -37,10 +37,10 @@ table.table tr.fx_r_onhold td span, table.table tr.fx_r_onhold td a, table.table
 		&.fx_r_c_decision.o_col_sticky_left,
 		&.fx_r_c_decision.o_col_sticky_right {
 			> td {
-				background-color: $o-selectus-table-c-decision-bg !important;
+				background-color: var(--o-selectus-decision-c-bg) !important;
 			}
 			&:hover > td {
-				background-color: $o-selectus-table-c-decision-bg-hover !important;	
+				background-color: var(--o-selectus-decision-c-hover-bg) !important;	
 			}	
 		}
 	}
@@ -52,21 +52,21 @@ span.o_icon-stack.o_position_status {
 	line-height: 1em;
 	
 	.o_position_status_filter {
-		&.o_published_screening { @include o-add-icon('circle-half-stroke',true); color: #17882e; }
-		&.o_published_screening_back { @include o-add-icon('circle',true); color: #e7c33f; }
+		&.o_published_screening { @include o-add-icon('circle-half-stroke',true); color: var(--o-selectus-status-published-screening); }
+		&.o_published_screening_back { @include o-add-icon('circle',true); color: var(--o-selectus-status-screening); }
 		
-		&.o_closed_screening { @include o-add-icon('circle-half-stroke',true); color: #de5a3e; }
-		&.o_closed_screening_back { @include o-add-icon('circle',true); color: #e7c33f; } 
+		&.o_closed_screening { @include o-add-icon('circle-half-stroke',true); color: var(--o-selectus-status-closed-screening); }
+		&.o_closed_screening_back { @include o-add-icon('circle',true); color: var(--o-selectus-status-screening); } 
 		
 	}
 }
 
 .o_position_status_filter {
-	&.o_preparation { @include o-add-icon('circle',true); color: #949494; }
-	&.o_published {  @include o-add-icon('circle',true); color: #006e0d; }
-	&.o_closed_no_rating { @include o-add-icon('circle',false); color: #bd1f10; }
-	&.o_closed { @include o-add-icon('circle',true); color: #bd1f10; }
-	&.o_reporting { @include o-add-icon('circle',true); color: #303030; }
+	&.o_preparation { @include o-add-icon('circle',true); color: var(--o-selectus-status-preparation); }
+	&.o_published {  @include o-add-icon('circle',true); color: var(--o-selectus-status-published); }
+	&.o_closed_no_rating { @include o-add-icon('circle',false); color: var(--o-selectus-status-closed); }
+	&.o_closed { @include o-add-icon('circle',true); color: var(--o-selectus-status-closed); }
+	&.o_reporting { @include o-add-icon('circle',true); color: var(--o-selectus-status-reporting); }
 }
 
 .o_position_status_filter {
@@ -92,13 +92,13 @@ span.o_icon-stack.o_position_status {
 }
 
 .o_reference_status_filter {
-	&.o_not_sent { @include o-add-icon('square',true); color: #949494; }
-	&.o_sent_awaiting { @include o-add-icon('square',false); color: #bd1f10; }
-	&.o_sent_awaiting_accepted { @include o-add-icon('square',false); color: #006e0d; }
-	&.o_submitted { @include o-add-icon('square',true); color: #006e0d; }
-	&.o_late { @include o-add-icon('square',true); color: #bd1f10; }
-	&.o_declined { @include o-add-icon('square',true); color: #bd1f10; }
-	&.o_deactivated { @include o-add-icon('square',true); color: #ccc; }
+	&.o_not_sent { @include o-add-icon('square',true); color: var(--o-selectus-status-preparation); }
+	&.o_sent_awaiting { @include o-add-icon('square',false); color: var(--o-selectus-status-closed); }
+	&.o_sent_awaiting_accepted { @include o-add-icon('square',false); color: var(--o-selectus-status-published); }
+	&.o_submitted { @include o-add-icon('square',true); color: var(--o-selectus-status-published); }
+	&.o_late { @include o-add-icon('square',true); color: var(--o-selectus-status-closed); }
+	&.o_declined { @include o-add-icon('square',true); color: var(--o-selectus-status-closed); }
+	&.o_deactivated { @include o-add-icon('square',true); color: var(--o-selectus-status-deactivated); }
 }
 
 .o_reference_application_link {
@@ -130,14 +130,21 @@ div.o_sel_applications_to_reference .o_warning {
 	&.b_closed { @include o-add-icon('circle',true); color: #de5a3e; }
 }
 
-div.f_rating_overview { float:left; border:1px solid #aaa; width:4px; height:16px; margin-right:2px; }
+div.f_rating_overview { float:left; border:1px solid var(--o-btn-default-border); width:4px; height:16px; margin-right:2px; }
 div.f_rating_overview span { display:none; }
-span.f_rating_overview { display:inline; border:1px solid #aaa; width:12px; height:16px; margin-right:2px; }
-div.f_rating_0, span.f_rating_0 { background-color:white; color:white; }
-div.f_rating_1, span.f_rating_1 { background-color:red; color:red; }
-div.f_rating_2, span.f_rating_2 { background-color:#ffcd00; color:#ffcd00; }
-div.f_rating_3, span.f_rating_3{ background-color:green; color:green; }
-div.f_rating_abstention, span.f_rating_abstention{ background-color:black; color:black; }
+span.f_rating_overview { display:inline; border:1px solid var(--o-btn-default-border); width:12px; height:16px; margin-right:2px; }
+// The marks of no rating (0) and of the ratings C (1), B (2) and A (3) and
+// of the abstention: the fill of the rating button, the letter or icon
+// inside has the colour of the fill. Mark B has its own token with 3:1 on a
+// white, a striped and a hovered table row, the yellow of the button has
+// 1.50:1 (decisions D18 and D26 of OO-10043). No rating has the fill of a
+// rating button that is not selected, the default button; the abstention
+// has the fill of the abstention button (decision D28).
+div.f_rating_0, span.f_rating_0 { background-color: var(--o-btn-default-bg); color: var(--o-btn-default-bg); }
+div.f_rating_1, span.f_rating_1 { background-color: var(--o-selectus-rating-c-bg); color: var(--o-selectus-rating-c-bg); }
+div.f_rating_2, span.f_rating_2 { background-color: var(--o-selectus-rating-b-marker); color: var(--o-selectus-rating-b-marker); }
+div.f_rating_3, span.f_rating_3{ background-color: var(--o-selectus-rating-a-bg); color: var(--o-selectus-rating-a-bg); }
+div.f_rating_abstention, span.f_rating_abstention{ background-color: var(--o-selectus-rating-abstain-bg); color: var(--o-selectus-rating-abstain-bg); }
 
 .f_rating_items.f_rating_enabled {
 	white-space: nowrap;
@@ -149,34 +156,46 @@ div.f_rating_abstention, span.f_rating_abstention{ background-color:black; color
 
 .f_rating_items.f_rating_enabled .o_btn_rating {
 	&.o_btn_rating_on[title='A'] {
-	  @include button-variant(white, green, var(--o-btn-default-border));
+	  @include button-variant(var(--o-selectus-rating-a-fg), var(--o-selectus-rating-a-bg), var(--o-btn-default-border));
 	}
 	&.o_btn_rating_on[title='B'] {
-	  @include button-variant(white, #ffcd00, var(--o-btn-default-border));
+	  @include button-variant(var(--o-selectus-rating-b-fg), var(--o-selectus-rating-b-bg), var(--o-btn-default-border));
 	}
 	&.o_btn_rating_on[title='C'] {
-	  @include button-variant(white, red, var(--o-btn-default-border));
+	  @include button-variant(var(--o-selectus-rating-c-fg), var(--o-selectus-rating-c-bg), var(--o-btn-default-border));
 	}
 	&.o_btn_rating_on.o_btn_rating_abstain {
-	  @include button-variant(white, #555566, var(--o-btn-default-border));
+	  @include button-variant(var(--o-selectus-rating-abstain-fg), var(--o-selectus-rating-abstain-bg), var(--o-btn-default-border));
 	}
 }
 
-@mixin progress-bar-rating-styles($color) {
-  @include gradient-vertical($start-color: $color, $end-color: darken($color, 10%));
+// The bar of a rating in the statistics: the fill of the rating button as
+// vertical gradient to its hover shade, 10% darker (decisions D15 and D16 of
+// OO-10043). The rules of the Bootstrap mixin gradient-vertical without its
+// IE 9 filter, which cannot read a token.
+@mixin progress-bar-rating-styles($token) {
+	background-image: -webkit-linear-gradient(top, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
+	background-image: -o-linear-gradient(top, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
+	background-image: linear-gradient(to bottom, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
+	background-repeat: repeat-x;
 }
 
+// The bar of rating A has no rule here: PositionApplicationsController
+// renders it with the class progress-bar-success (decision D25).
 .progress-bar {
 	&.o_bar_rating_b {
-		@include progress-bar-rating-styles(#ffcd00);
+		@include progress-bar-rating-styles("selectus-rating-b-bg");
+		// the dark text of button B, white has 1.50:1 on the yellow (decision D17)
+		color: var(--o-selectus-rating-b-fg);
+		text-shadow: none;
 	}
 	&.o_bar_rating_c {
-		@include progress-bar-rating-styles(#FF0000);
+		@include progress-bar-rating-styles("selectus-rating-c-bg");
 	}
+	// the colours of the abstention button (decision D16)
 	&.o_bar_rating_abstain {
-		@include progress-bar-rating-styles(#eeeeee);
-		color: #333;
-		text-shadow: none;
+		@include progress-bar-rating-styles("selectus-rating-abstain-bg");
+		color: var(--o-selectus-rating-abstain-fg);
 	}
 }
 
@@ -184,14 +203,18 @@ div.f_rating_abstention, span.f_rating_abstention{ background-color:black; color
 	display:none;
 }
 
+// The letter of a rating in the explanation of the rating policy: the fill of
+// the rating button. The letters B and C have their own tokens with 4.5:1 on
+// a white, a striped and a hovered table row (decisions D18 and D26 of
+// OO-10043).
 span.o_rating_expl[title='A'] {
-	color: green;
+	color: var(--o-selectus-rating-a-bg);
 }
 span.o_rating_expl[title='B'] {
-	color: #ffcd00;
+	color: var(--o-selectus-rating-b-text);
 }
 span.o_rating_expl[title='C'] {
-	color: red;
+	color: var(--o-selectus-rating-c-text);
 }
 
 div.o_app_notes_content.o_app_notes_content_full {
@@ -486,7 +509,7 @@ table.table tr.fx_r_mail_disabled {
 }
 
 .o_doc_image_preview {
-	border: 1px solid #ddd;
+	border: 1px solid var(--o-border);
 	border-radius: 4px;
 	background-color: var(--o-bg-subtle);
 	margin-bottom: 5px;

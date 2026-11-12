@@ -44,13 +44,13 @@
 			@include o-add-icon('xmark');
 			@include o-add-icon-font();
 			&:before {
-				color: #000;
+				color: var(--o-text);
 				opacity: 0.5;
 			}
 			background: var(--o-bg-raised) !important;
 			padding: 1px 0 0 1px;
 			text-indent: 0;
-			color: black;
+			color: var(--o-text);
 		}
 		
 		.ui-button.ui-corner-all {
@@ -60,7 +60,7 @@
 	}
 
 	.ui-widget-content {
-		border-color: #fff;
+		border-color: var(--o-bg-raised);
 		padding: 5px;
 		overflow: auto;
 		background: var(--o-bg-raised) !important;
@@ -278,7 +278,7 @@ body:has(.basicLightbox) {
 	&.twentytwenty-horizontal, &.twentytwenty-vertical {
 		.twentytwenty-before-label::before, .twentytwenty-after-label::before {
 			line-height: 30px;
-			background-color: rgba(85, 85, 85, 0.8);
+			background-color: color-mix(in srgb, var(--o-backdrop) 80%, transparent);
 			border-radius: $border-radius-large;
 			font-size: unset;
 			font-family: unset;
@@ -323,7 +323,7 @@ body:has(.basicLightbox) {
 		}
 
 		.twentytwenty-handle {
-			background-color: rgba(black, 0.33);
+			background-color: color-mix(in srgb, var(--o-backdrop) 33%, transparent);
 		}
 	}
 }
@@ -331,7 +331,7 @@ body:has(.basicLightbox) {
 // Milkdown
 
 .ProseMirror[data-placeholder]::before {
-	color: #bbb;
+	color: var(--o-input-placeholder);
 	position: absolute;
 	content: attr(data-placeholder);
 	pointer-events: none;
@@ -352,7 +352,7 @@ body:has(.basicLightbox) {
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
 	margin-bottom: $line-height-computed;
-	border: 1px solid rgba($gray-base, 10%);
+	border: 1px solid color-mix(in srgb, var(--o-milkdown-table-border) 10%, transparent);
 	border-radius: $border-radius-base;
 	box-shadow: $o-cc-box-shadow;
 	background: transparent;
@@ -367,8 +367,8 @@ body:has(.basicLightbox) {
 	td, th {
 		padding: $table-cell-padding;
 		vertical-align: top;
-		border-top: 1px solid rgba($gray-base, 10%);
-		border-left: 1px solid rgba($gray-base, 10%);
+		border-top: 1px solid color-mix(in srgb, var(--o-milkdown-table-border) 10%, transparent);
+		border-left: 1px solid color-mix(in srgb, var(--o-milkdown-table-border) 10%, transparent);
 		> p {
 			margin: 0;
 		}
@@ -381,7 +381,7 @@ body:has(.basicLightbox) {
 		border-top: none;
 	}
 	th, thead td {
-		background: rgba($gray-base, 10%);
+		background: color-mix(in srgb, var(--o-milkdown-table-header-bg) 10%, transparent);
 		font-weight: bold;
 		text-align: left;
 	}

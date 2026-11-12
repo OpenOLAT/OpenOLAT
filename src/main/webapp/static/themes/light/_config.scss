@@ -27,10 +27,83 @@
 */
 @use "sass:math";
 @use "sass:color";
+@use "sass:map";
+@use "sass:meta";
 
 @import "functions";
 // the colour variables below read the palette swatches
 @import "palette";
+
+// Compile warning for the old state colours (OO-10043). The rules of theme.css
+// and content.css read the state tokens (modules/_tokens.scss), not the
+// Bootstrap variables $brand-danger, $brand-warning, $brand-success,
+// $brand-info and $state-{danger,warning,success,info}-{text,bg,border}. A
+// client config sets them before this file. When one of them differs from the
+// default of the light theme, modules/_tokens.scss prints one warning per
+// stylesheet (theme.css and content.css, not email.css). The warning never
+// stops the compile. To silence it, set in the client config:
+//   $o-legacy-color-warning: false;
+// See themes.README.
+$o-legacy-color-warning: true !default;
+// The defaults of the light theme: this file and the Bootstrap _variables.scss
+$o-legacy-color-defaults: (
+	"brand-danger": #D6001C, "brand-warning": #F2AF40, "brand-success": #5CB85C, "brand-info": #2B78E4,
+	"state-danger-text": #A94442, "state-danger-bg": #F2DEDE, "state-danger-border": #EBCCD1,
+	"state-warning-text": #8A6D3B, "state-warning-bg": #FCF8E3, "state-warning-border": #FAEBCC,
+	"state-success-text": #3C763D, "state-success-bg": #DFF0D8, "state-success-border": #D6E9C6,
+	"state-info-text": #31708F, "state-info-bg": #D9EDF7, "state-info-border": #BCE8F1
+);
+// The values of the client config: only the variables that exist before the
+// defaults of this file are assigned
+$o-legacy-color-values: ();
+@if meta.global-variable-exists("brand-danger") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("brand-danger": $brand-danger));
+}
+@if meta.global-variable-exists("brand-warning") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("brand-warning": $brand-warning));
+}
+@if meta.global-variable-exists("brand-success") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("brand-success": $brand-success));
+}
+@if meta.global-variable-exists("brand-info") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("brand-info": $brand-info));
+}
+@if meta.global-variable-exists("state-danger-text") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-danger-text": $state-danger-text));
+}
+@if meta.global-variable-exists("state-danger-bg") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-danger-bg": $state-danger-bg));
+}
+@if meta.global-variable-exists("state-danger-border") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-danger-border": $state-danger-border));
+}
+@if meta.global-variable-exists("state-warning-text") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-warning-text": $state-warning-text));
+}
+@if meta.global-variable-exists("state-warning-bg") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-warning-bg": $state-warning-bg));
+}
+@if meta.global-variable-exists("state-warning-border") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-warning-border": $state-warning-border));
+}
+@if meta.global-variable-exists("state-success-text") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-success-text": $state-success-text));
+}
+@if meta.global-variable-exists("state-success-bg") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-success-bg": $state-success-bg));
+}
+@if meta.global-variable-exists("state-success-border") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-success-border": $state-success-border));
+}
+@if meta.global-variable-exists("state-info-text") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-info-text": $state-info-text));
+}
+@if meta.global-variable-exists("state-info-bg") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-info-bg": $state-info-bg));
+}
+@if meta.global-variable-exists("state-info-border") {
+	$o-legacy-color-values: map.merge($o-legacy-color-values, ("state-info-border": $state-info-border));
+}
 
 /* To add place for the scroll bar */
 $modal-lg						: 920px !default;
@@ -79,8 +152,11 @@ $panel-default-heading-bg		: #f9fafb !default;
 $panel-default-border			: #e4e7ec !default;
 $nav-tabs-border-color			: $panel-default-border !default;
 /* Modern dropdown */
-$dropdown-border				: rgba(0, 0, 0, .03) !default;
-$o-dropdown-box-shadow			: 0 4px 16px rgba(16, 24, 40, 0.1), 0 1px 3px rgba(16, 24, 40, 0.06) !default;
+// a dark tint: the token backdrop with the alpha (decision D11 of OO-10043)
+$dropdown-border				: color-mix(in srgb, var(--o-backdrop) 3%, transparent) !default;
+/* The shadows read the token shadow-color (black) with their alpha, decision D3 of OO-10043.
+   email.scss does not read the $o-*-box-shadow variables. */
+$o-dropdown-box-shadow			: 0 4px 16px color-mix(in srgb, var(--o-shadow-color) 10%, transparent), 0 1px 3px color-mix(in srgb, var(--o-shadow-color) 6%, transparent) !default;
 /* Modern table */ 
 $table-bg-accent				: #f9fafb !default;
 
@@ -97,7 +173,8 @@ $brand-success					: #5cb85c !default; //#469C30 !default;
 
 $progress-bar-neutral-bg			: $o-base-blue-color !default;
 
-$o-color-info					: $brand-info !default;
+// The colours of the message boxes of a state: the fill of the state (OO-10043)
+$o-color-info					: o-state-color("neutral", "bg") !default;
 $o-color-info-text-bg			: #FCFCFC !default;
 $o-color-note					: #666666 !default;
 $o-color-note-text-bg			: #FAFAFB !default;
@@ -105,27 +182,42 @@ $o-color-tip					: #345566 !default;
 $o-color-tip-text-bg			: #F2F5F4 !default;
 $o-color-important				: #41BBDB !default;
 $o-color-important-text-bg		: #F4FAFA !default;
-$o-color-success				: $brand-success !default;
+$o-color-success				: o-state-color("success", "bg") !default;
 $o-color-success-text-bg		: #F3F9F5 !default;
-$o-color-warning				: $brand-warning !default;
+$o-color-warning				: o-state-color("warning", "bg") !default;
 $o-color-warning-text-bg		: #FEFDF8 !default;
-$o-color-error					: $brand-danger !default;
+$o-color-error					: o-state-color("danger", "bg") !default;
 $o-color-error-text-bg			: #FFF8F6 !default;
 
+// Focus ring (OO-10043, decision D24): true when the client config sets
+// $input-border-focus. Read before the Bootstrap defaults below define it.
+$o-focus-color-from-input-border: meta.global-variable-exists("input-border-focus");
 
 /* 	Add standard bootstrap variables to the mix */
 @import "../../bootstrap/stylesheets/bootstrap/variables";
 
+/* Focus ring of every control (OO-10043, decision D24): outline of
+   $o-focus-ring-width in the colour of the token focus, $o-focus-ring-offset
+   away from the control, on :focus-visible (modules/_focus.scss).
+   $o-focus-color is the base colour of the token focus. Default: the primary
+   colour, adjusted to 3:1 on the page background. A theme that sets
+   $input-border-focus keeps that colour. A value that the theme sets for
+   $o-focus-color or $input-border-focus is not adjusted. */
+$o-focus-color						: null !default;
+@if not $o-focus-color {
+	@if $o-focus-color-from-input-border {
+		$o-focus-color: $input-border-focus;
+	} @else {
+		$o-focus-color: o-a11y-color($brand-primary, $body-bg, 3);
+	}
+}
+$o-focus-ring-width					: 2px !default;
+$o-focus-ring-offset				: 2px !default;
+
 /* General purpose brand based style */
 $o-brand-box-border				: darken($brand-primary, 5%) !default;
-$o-brand-box-bg 				: rgba($brand-primary,0.1) !default;
+$o-brand-box-bg 				: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
 $o-brand-text					: $brand-primary !default;
-/* Override if color contrast not high enough */
-@if contrast($brand-primary, #FFF) < 4.5 {
-	$o-brand-box-border				: darken($brand-primary, 20%) !default;
-	$o-brand-box-bg 				: rgba($brand-primary, 0.2) !default;
-	$o-brand-text					: darken($brand-primary, 15%) !default;
-}
 /* override primary button to match a11y standards */
 $btn-primary-bg:                 $brand-primary !default;
 $btn-primary-color:              o-a11y-color(#fff, $btn-primary-bg) !default;
@@ -196,7 +288,7 @@ $o-empty-border-radius			: $panel-border-radius !default;
 $o-empty-msg-color				: $text-color !default;
 
 /* Empty panel component */
-$o-empty-panel-icon-bg-color		: rgb($brand-primary, 0.1) !default;
+$o-empty-panel-icon-bg-color		: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
 
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;
@@ -224,7 +316,9 @@ $o-navbar-padding-vertical			: $navbar-padding-vertical !default;
 $o-navbar-collapse-max-height		: $navbar-collapse-max-height !default;
 $o-navbar-border-color				: $navbar-default-border !default;
 $o-navbar-bg						: $navbar-default-bg !default;
-$o-navbar-color						: $navbar-default-color !default;
+// text and tool icons of the navbar: the Bootstrap text colour (#777) adjusted
+// to 4.5:1 on the navbar, #777 has 4.48:1 on white (decision D23 of OO-10043)
+$o-navbar-color						: o-a11y-color($navbar-default-color, $o-navbar-bg) !default;
 $o-navbar-link-color				: #475467 !default;
 $o-navbar-link-hover-color			: darken($o-navbar-link-color, 10%) !default;
 $o-navbar-link-hover-bg 			: $navbar-default-link-hover-bg !default;
@@ -237,8 +331,9 @@ $o-navbar-toggle-border-radius		: $border-radius-base !default;
 $o-navbar-toggle-hover-bg			: $navbar-default-toggle-hover-bg !default;
 $o-navbar-toggle-icon-bar-bg		: $navbar-default-toggle-icon-bar-bg !default;
 $o-navbar-tab-close-color			: o-state-color("danger", "text") !default;
-$o-navbar-tab-close-hover-color		: darken($o-navbar-tab-close-color, 10%)!default;
-$o-navbar-tools-permanent-color		: $navbar-default-color !default;
+// darker on hover; on a dark navbar the close colour itself when the darker colour has less than 3:1 (OO-10043)
+$o-navbar-tab-close-hover-color		: o-contrast-hover(darken($o-navbar-tab-close-color, 10%), $o-navbar-tab-close-color, $o-navbar-bg) !default;
+$o-navbar-tools-permanent-color		: o-a11y-color($navbar-default-color, $o-navbar-bg) !default;
 $o-navbar-login-color 				: $brand-warning !default;
 $o-navbar-logout-color				: o-state-color("danger", "text") !default;
 $o-navbar-brand-font-size			: $font-size-large !default;
@@ -307,14 +402,15 @@ $o-footer-margin-top				: $padding-large-vertical !default;
 
 /* Toolbar in course, editor etc */
 $o-toolbar-bg-color				: $navbar-default-bg !default;
-$o-toolbar-box-shadow			: 0 1px 2px rgba(16, 24, 40, 0.04) !default;
+$o-toolbar-box-shadow			: 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
 $o-toolbar-edit_bg-color		: #fff !default;
 $o-toolbar-edit_stripe-color	: #fff0d9 !default; 
 $o-toolbar-border-color			: $navbar-default-border !default;
 $o-toolbar-border-radius		: $navbar-border-radius !default;
 $o-toolbar-link-color			: $navbar-default-link-color !default;
 $o-toolbar-link-hover-color		: $navbar-default-link-hover-color !default;
-$o-toolbar-link-disabled-color	: lighten($navbar-default-link-color, 20%) !default;
+// the disabled text, not a lighter link colour (M9 of OO-10043)
+$o-toolbar-link-disabled-color	: $btn-link-disabled-color !default;
 $o-toolbar-link-active-color	: $link-color !default;
 $o-toolbar-link-active-bg		: transparent !default;
 $o-toolbar-dropdown-active-bg	: transparent !default;
@@ -402,7 +498,7 @@ $o-icon-panel-border				: 1px solid #e4e7ec !default;
 $o-icon-panel-border-radius			: $panel-border-radius !default;
 $o-icon-panel-icon-bg-color			: #f9fafb !default;
 $o-icon-panel-content-bg-color		: $panel-bg !default;
-$o-icon-panel-box-shadow 			: 0 1px 2px rgba(16, 24, 40, 0.04) !default;
+$o-icon-panel-box-shadow 			: 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
 
 /* Wizard */
 $o-wizard-steps-bg-color				: #f9fafb !default;
@@ -466,11 +562,12 @@ $o-bento-border-radius					: $panel-border-radius !default;
 
 /* Login page */
 $o-login-header-color			: $brand-primary !default;
-$o-login-bg-color				: rgba(255,255,255,0.95) !default;
+// The translucent defaults mix a token with transparent (OO-10043): your value replaces them
+$o-login-bg-color				: color-mix(in srgb, var(--o-scrim) 95%, transparent) !default;
 $o-login-border-color			: #e4e7ec !default;
 $o-login-border					: 1px solid $o-login-border-color !default;
 $o-login-border-radius			: $panel-border-radius !default;
-$o-login-box-shadow				: 0 8px 32px rgba(16, 24, 40, 0.12), 0 2px 8px rgba(16, 24, 40, 0.06) !default;
+$o-login-box-shadow				: 0 8px 32px color-mix(in srgb, var(--o-shadow-color) 12%, transparent), 0 2px 8px color-mix(in srgb, var(--o-shadow-color) 6%, transparent) !default;
 
 $o-login-padding				: 50px !default;
 $o-login-xs-padding				: 10px !default;
@@ -478,13 +575,13 @@ $o-login-help-bg-color			: #e4e7ec !default;
 $o-login-help-link-color		: o-a11y-color($link-color, $o-login-help-bg-color) !default;
 $o-login-form-width				: 480px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
-$o-login-form-bg-gradient-steps	: rgba(255,255,255,0.1) 0.2%, rgba(255,255,255,0.6) 60%, rgba(255,255,255,0.8) 100% !default;
+$o-login-form-bg-gradient-steps	: color-mix(in srgb, var(--o-scrim) 10%, transparent) 0.2%, color-mix(in srgb, var(--o-scrim) 60%, transparent) 60%, color-mix(in srgb, var(--o-scrim) 80%, transparent) 100% !default;
 $o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
 $o-login-form-bg-position-left 	: center !default;
 $o-login-form-bg-position-top	: center !default;
 $o-login-infomessage-border		: transparent !default;
 $o-login-infomessage-radius		: $border-radius-base !default;
-$o-login-infomessage-bg			: rgba(255,255,255,.5) !default;
+$o-login-infomessage-bg			: color-mix(in srgb, var(--o-scrim) 50%, transparent) !default;
 $o-login-lead-color				: $text-color !default;
 $o-login-lead-header-color		: $o-content-header-base-color !default;
 $o-login-border-color			: #e4e7ec !default;
@@ -502,8 +599,8 @@ $o-coursesite-rowelem-space-xs		: 0px 	!default;
 $o-coursesite-rowelem-border 		: $input-border !default;
 $o-coursesite-rowelem-border-radius : $border-radius-base !default;
 $o-coursesite-rowelem-bg			: #fff !default;
-$o-coursesite-rowelem-hover-bg			: rgba($gray-light, 0.01) !default;
-$o-coursesite-rowelem-hover-box-shadow	: inset 0 1px 4px rgba($brand-primary, 0.05) !default;
+$o-coursesite-rowelem-hover-bg			: color-mix(in srgb, var(--o-coursesite-row-hover) 1%, transparent) !default;
+$o-coursesite-rowelem-hover-box-shadow	: inset 0 1px 4px color-mix(in srgb, var(--o-primary) 5%, transparent) !default;
 $o-coursesite-rowelem-hover-visual-transform	: scale(1.02) !default;
 $o-coursesite-catalog-space 		: $padding-large-vertical * 2 !default;
 $o-coursesite-catalog-space-sm 		: $padding-large-vertical !default;
@@ -528,9 +625,9 @@ $o-coursesite-details-color		: o-a11y-color($btn-success-color, $o-coursesite-de
 $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-cat2-header-height			: 240px !default;
-$o-cat2-header-noimage-bg				: linear-gradient(190deg, lighten($brand-primary, 80%) 10%, $brand-primary 100%), linear-gradient(40deg, lighten($brand-primary, 55%) 0%, adjust-hue($brand-primary, 5deg)60%) !default;
+$o-cat2-header-noimage-bg				: linear-gradient(190deg, var(--o-catalog-header-noimage-stop-1) 10%, var(--o-primary) 100%), linear-gradient(40deg, var(--o-catalog-header-noimage-stop-3) 0%, var(--o-catalog-header-noimage-stop-4) 60%) !default;
 $o-cat2-header-noimage-bg-blend-mode		: screen, normal !default;
-$o-cat2-header-box-bg-color				: rgba(255,255,255,.7) !default;
+$o-cat2-header-box-bg-color				: color-mix(in srgb, var(--o-scrim) 70%, transparent) !default;
 $o-cat2-search-row-margin-bottom		: 5px !default;
 $o-cat2-launcher-margin-top				: 30px !default;
 $o-cat2-launcher-margin-top-xs			: 40px !default;
@@ -571,13 +668,17 @@ $o-course-show-icon-editor-menu : true !default;	// show icons in menu - looks p
 $o-course-state-passed-color	: o-state-color("success", "text") !default;
 $o-course-assessment-chart-size:	62px !default;
 $o-course-assessment-chart-padding:	2px !default;
-$o-course-node-published		: $state-success-text !default;
-$o-course-node-warning			: $state-warning-text !default;
+$o-course-node-published		: o-state-color("success", "text") !default;
+$o-course-node-warning			: o-state-color("warning", "text") !default;
 $o-course-node-locked			: o-state-color("neutral", "text") !default;
-$o-course-node-error			: $state-danger-text !default;
+$o-course-node-error			: o-state-color("danger", "text") !default;
 // text of a deleted course element in the editor overview: the disabled text colour (token course-node-deleted)
 $o-course-node-deleted			: $btn-link-disabled-color !default;
-$o-cn-style-border					: 1px solid #e4e7ec !default;
+// the border of a styled course element: width and style; the colour is the
+// token course-style-border (decision D19 of OO-10043, replaces the shorthand
+// $o-cn-style-border)
+$o-cn-style-border-line-width		: 1px !default;
+$o-cn-style-border-line-style		: solid !default;
 $o-cn-style-border-radius			: $panel-border-radius !default;
 $o-cn-style-border-width			: 3px !default;
 $o-cn-style-bg						: #f9fafb !default;
@@ -585,7 +686,7 @@ $o-cn-style-text-pading				: $panel-body-padding !default;
 $o-cn-style-image-bg				: $brand-primary !default;
 $o-cn-style-image-height			: 120px !default;
 $o-cn-style-image-width				: 240px !default;
-$o-cn-style-cover-text-bg			: rgba(255, 255, 255, 0.95) !default;
+$o-cn-style-cover-text-bg			: color-mix(in srgb, var(--o-scrim) 95%, transparent) !default;
 $o-cn-style-cover-text-padding		: 8px !default;
 // Colour category colours: the "bg" of the same palette swatch the category
 // chooser (o_colcat_*) uses, see $o-swatch-alias-keys-category in _palette.scss.
@@ -611,7 +712,7 @@ $o-lp-default					: #888 !default;
 $o-lp-icon-bg-color				: #fff !default;
 $o-lp-icon-radius				: 6px !default;
 $o-lp-border					: 1px solid $navbar-default-border !default;
-$o-lp-bg						: rgba(0,0,0,0.025) !default;
+$o-lp-bg						: color-mix(in srgb, var(--o-backdrop) 2.5%, transparent) !default;
 $o-lp-step-top					: 13px !default;
 $o-lp-step-size					: 13px !default;
 $o-lp-path-width				: 2px !default;
@@ -620,7 +721,7 @@ $o-lp-left						: 3px !default;
 $o-lp-pagination-done-bgcolor				: o-state-color("success", "text") !default;
 $o-lp-pagination-done-border-color			: #2E5C2E !default;
 $o-lp-pagination-done-color					: #FFFFFF !default;
-$o-lp-pagination-in-progress-bgcolor		: rgba($o-lp-in-progress, 0.2) !default;
+$o-lp-pagination-in-progress-bgcolor		: color-mix(in srgb, var(--o-lp-in-progress) 20%, transparent) !default;
 $o-lp-pagination-in-progress-icon-bgcolor	: #fcfcfc !default;
 
 /* Curriculum */
@@ -798,7 +899,7 @@ $o-editor-selected-border-color						: $brand-primary !default;
 $o-editor-element-border-width						: 1px !default;
 $o-editor-inspector-border-width					: 1px;
 $o-editor-inspector-border-color					: $o-editor-border-color;
-$o-editor-inspector-box-shadow						: 0px 8px 16px rgba(0, 0, 0, 0.15);
+$o-editor-inspector-box-shadow						: 0px 8px 16px color-mix(in srgb, var(--o-shadow-color) 15%, transparent);
 $o-editor-tools-box-shadow							: $o-editor-inspector-box-shadow;
 $o-editor-layout-inner-v-border						: 1px solid $o-editor-border-color;
 $o-editor-layout-inner-h-border						: 1px dashed $o-editor-border-color;
@@ -826,7 +927,7 @@ $o-ce-padding-large									: 32px;
 $o-ce-padding-light									: 24px;
 $o-ce-padding-normal								: 16px;
 $o-ce-padding-compact								: 8px;
-$o-cc-box-shadow		 							: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04) !default;
+$o-cc-box-shadow		 							: 0 1px 3px color-mix(in srgb, var(--o-shadow-color) 6%, transparent), 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
 
 /* QTI2 eAssessment */
 $o-qti-status-notPresented-color					: o-state-color("inactive", "border", "light") !default;
@@ -853,7 +954,7 @@ $o-qti-run-infos-progress-bg						: #eee !default;
 $o-qti-run-infos-question-progress-color				: $progress-bar-neutral-bg !default;
 $o-qti-run-infos-score-progress-color				: $progress-bar-neutral-bg !default;
 $o-qti-badResponse-color							: o-state-color("danger", "text") !default;
-$o-qti-badResponse-warning-color					: $state-warning-text !default;
+$o-qti-badResponse-warning-color					: o-state-color("warning", "text") !default;
 $o-qti-highlight-color								: o-state-color("danger", "bg") !default;
 $o-qti-bar-green									: o-state-color("success", "border") !default;
 $o-qti-bar-red										: o-state-color("danger", "border") !default;
@@ -917,7 +1018,7 @@ $o-video-controls-bg								: rgba(50, 50, 50, 0.95);
 $o-video-marker-bg-color							: #eaecf0;
 $o-video-time-marker-default-bg-color				: o-state-color("neutral", "bg");
 
-$o-video-startbox-main-bg-color						: rgba($brand-primary,0.1);
+$o-video-startbox-main-bg-color						: color-mix(in srgb, var(--o-primary) 10%, transparent);
 $o-video-startbox-border-radius						: $border-radius-base !default;
 
 $o-video-correct-segments-color						: o-state-color("success", "text");
@@ -976,7 +1077,8 @@ $o-im-status-available-color	: o-state-color("success", "text") !default;
 $o-im-status-dnd-color			: o-state-color("critical", "text") !default;
 $o-im-status-unavailable-color	: o-state-color("danger", "text") !default;
 $o-im-newmessage-color			: o-state-color("danger", "text") !default;
-$o-im-newmessage-hover-color	: lighten(o-state-color("warning", "text"), 10%) !default;
+// the icon is in the navbar: the lighter warning text when it has 3:1 on the navbar, else the warning text (OO-10043)
+$o-im-newmessage-hover-color	: o-contrast-hover(lighten(o-state-color("warning", "text"), 10%), o-state-color("warning", "text"), $o-navbar-bg) !default;
 
 /* Forum module */
 $o-forum-message-header-bg				: $panel-default-heading-bg !default;
@@ -997,12 +1099,14 @@ $o-evaluation-step-background-color 		: $table-bg-accent !default;
 $o-evaluation-slider-margin-bottom			: 1em !default;
 $o-evaluation-slider-hover-background-color	: $table-bg-hover !default;
 
-$o-evaluation-insufficient-color 			: $brand-danger !default;
-$o-evaluation-insufficient-fill 			: lighten($o-evaluation-insufficient-color, 50%) !default;
-$o-evaluation-neutral-color					: $brand-warning !default;
-$o-evaluation-neutral-fill					: lighten($o-evaluation-neutral-color, 30%) !default;
-$o-evaluation-sufficient-color				: $brand-success !default;
-$o-evaluation-sufficient-fill				: lighten($o-evaluation-sufficient-color, 30%) !default;
+// The rubric ratings: the fill of the state; the fill of the box plot is the
+// light fill of the state (lighten() would make the danger fill white)
+$o-evaluation-insufficient-color 			: o-state-color("danger", "bg") !default;
+$o-evaluation-insufficient-fill 			: if($o-evaluation-insufficient-color == o-state-color("danger", "bg"), o-state-color("danger", "bg", "light"), lighten($o-evaluation-insufficient-color, 50%)) !default;
+$o-evaluation-neutral-color					: o-state-color("warning", "bg") !default;
+$o-evaluation-neutral-fill					: if($o-evaluation-neutral-color == o-state-color("warning", "bg"), o-state-color("warning", "bg", "light"), lighten($o-evaluation-neutral-color, 30%)) !default;
+$o-evaluation-sufficient-color				: o-state-color("success", "bg") !default;
+$o-evaluation-sufficient-fill				: if($o-evaluation-sufficient-color == o-state-color("success", "bg"), o-state-color("success", "bg", "light"), lighten($o-evaluation-sufficient-color, 30%)) !default;
 $o-evaluation-anonymous-info-display		: inherit !default;
 
 /* Box-Plot graphic */
@@ -1015,8 +1119,8 @@ $o-qual-hm-base-background-color	: #337ab7;
 /* Portlets site */
 $o-portlet-border-radius		: $panel-border-radius !default;
 $o-portlet-bg					: $panel-bg !default;
-$o-portlet-edit-border			: $panel-warning-border !default;
-$o-portlet-edit-bg				: $panel-warning-heading-bg !default;
+$o-portlet-edit-border			: o-state-color("warning", "soft-border") !default;
+$o-portlet-edit-bg				: o-state-color("warning", "soft-bg") !default;
 
 /* Full text search results */
 $o-search-details-font-size		: $font-size-small !default;
@@ -1056,7 +1160,8 @@ $o-chelp-bg						: $btn-primary-bg !default;
 $o-chelp-border					: $btn-primary-border !default;
 $o-chelp-border-radius			: 2px !default;
 /* Form context help, aka help text */
-$o-chelp-tooltip-color			: lighten($text-color, 25%) !default;
+// muted text, not a lighter text colour (M9 of OO-10043)
+$o-chelp-tooltip-color			: $text-muted !default;
 
 /* Date component */
 $o-datecomp-border				: $gray !default;
@@ -1129,7 +1234,7 @@ $o-radial-progress-percentage-info-color	: o-state-color("neutral", "text") !def
 
 /* Drawing (border cannot be change without modifications of the jquery plugin and hotspot interaction) */
 $o-drawing-border-width		: 2px !default;
-$o-drawing-select-bg		: transparentize($brand-primary, 0.5) !default;
+$o-drawing-select-bg		: color-mix(in srgb, var(--o-primary) 50%, transparent) !default;
 
 /* Placeholder panels */
 $o-panel-placeholder-border-width			: 2px !default;
@@ -1224,7 +1329,7 @@ $o-user-portrait-initials-font-size-large	: 44px !default;
 $o-user-portrait-im-scale-large				: 1 !default;
 $o-user-portrait-im-margin-size-large		: 6px !default;
 $o-users-portrait-img-border				: 2px solid white !default;
-$o-users-portrait-img-box-shadow			: 0px 1px 3px 0px rgba(0,0,0,0.2) !default;
+$o-users-portrait-img-box-shadow			: 0px 1px 3px 0px color-mix(in srgb, var(--o-shadow-color) 20%, transparent) !default;
 $o-users-portrait-overlap				: 0.3; // 30%
 $o-user-info-border						: solid 1px #d4d4d4 !default;
 $o-user-info-border-radius				: 4px !default;
@@ -1246,7 +1351,7 @@ $o-user-info-status-right				: $o-user-info-profile-padding !default;
 $o-print-header-logo-height		: 2cm !default;
 $o-print-header-logo-width		: 5cm !default;
 $o-bookmark-color				: #bc2d0c !default;
-$o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
+$o-imagebg-text-background		: color-mix(in srgb, var(--o-scrim) 80%, transparent) !default;
 
 /* User autentication */
 $o-panel-authentication-border	: 1px solid #e4e7ec !default;
@@ -1346,7 +1451,7 @@ $o-export-area-meta-color					: #777;
 $o-export-area-rowelem-space-md				: 10px !default;
 
 /* Practice */
-$o-practice-play-main-bg-color				: rgba($brand-primary,0.1);
+$o-practice-play-main-bg-color				: color-mix(in srgb, var(--o-primary) 10%, transparent);
 $o-practice-play-bg-color					: #f9fafb;
 $o-practice-play-border-color				: #e4e7ec;
 $o-practice-play-border-radius				: $border-radius-base !default;
@@ -1409,8 +1514,8 @@ $o-dialog-cn-label-new-color				: o-a11y-color(#998100) !default;
 $o-card-border								: 1px solid #e4e7ec !default;
 $o-card-border-radius						: $border-radius-base !default;
 $o-card-bg-color							: #f9fafb !default;
-$o-card-box-shadow 							: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04) !default;
-$o-card-box-hover-shadow					: 0 4px 12px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.04) !default;
+$o-card-box-shadow 							: 0 1px 3px color-mix(in srgb, var(--o-shadow-color) 6%, transparent), 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
+$o-card-box-hover-shadow					: 0 4px 12px color-mix(in srgb, var(--o-shadow-color) 8%, transparent), 0 2px 4px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
 
 /* Performance Widget */
 $o-widget-min-width							: 260px !default;
@@ -1448,7 +1553,7 @@ $o-fact-sheet-gap							: 20px !default;
 $o-fact-min-width							: 320px !default;
 $o-fact-icon-size							: 32px !default;
 $o-fact-icon-font-size						: 14px !default;
-$o-fact-icon-bg-color						: rgb($brand-primary, 0.1) !default;
+$o-fact-icon-bg-color						: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
 $o-fact-value-font-size						: 16px !default;
 
 /* Dashboard Widget */
@@ -1482,7 +1587,10 @@ $o-scope-toggle-on-bg-color					: $brand-primary !default;
 $o-scope-toggle-on-color					: white !default;
 $o-scope-toggle-on-border-color				: white !default;
 $o-scope-toggle-bg-hover-color				: darken($o-scope-toggle-bg-color, 10%) !default;
-$o-scope-toggle-on-bg-hover-color			: lighten($o-scope-toggle-on-bg-color, 10%) !default;
+// lighter under the pointer, at most 10%: the text keeps 4.5:1 (decision D9 of
+// OO-10043). Below 3% the hover fill is 10% lighter and the text gets the
+// colour of the token scope-toggle-on-hover-fg (decision D13).
+$o-scope-toggle-on-bg-hover-color			: lighten($o-scope-toggle-on-bg-color, o-contrast-shade-amount($o-scope-toggle-on-color, $o-scope-toggle-on-bg-color, 10%, "lighten")) !default;
 $o-scope-pref-wdith							: 180px !default;
 $o-scope-height								: 45px !default;
 $o-scope-title-font-weight					: bold !default;
@@ -1505,8 +1613,9 @@ $o-cp-deposit-color							: o-state-color("success", "text");
 $o-cp-withdraw-color						: o-state-color("danger", "text");
 
 
-/* Not available visual */
-$o-not-available-bg: 		linear-gradient(40deg, rgba($brand-primary,1), rgba(#fff, 0.5) 90%), linear-gradient(160deg, rgba(#000,1), rgba($brand-primary, 0.3) 40%), linear-gradient(280deg, rgba($brand-primary,0.7), rgba(#000, 0.6) 80%) !default;
+/* Not available visual: gradients of the primary colour and the tokens
+   not-available-dark and not-available-light (decision D11 of OO-10043) */
+$o-not-available-bg: 		linear-gradient(40deg, var(--o-primary), color-mix(in srgb, var(--o-not-available-light) 50%, transparent) 90%), linear-gradient(160deg, var(--o-not-available-dark), color-mix(in srgb, var(--o-primary) 30%, transparent) 40%), linear-gradient(280deg, color-mix(in srgb, var(--o-primary) 70%, transparent), color-mix(in srgb, var(--o-not-available-dark) 60%, transparent) 80%) !default;
 
 /* Vertical timeline */
 $o-v-timeline-rows-gap								: 5px !default;
@@ -1550,7 +1659,7 @@ $o-figure-card-figure-font-size				: 18px !default;
 $o-figure-card-label-font-size				: 14px !default;
 $o-figure-card-icon-size						: 22px !default;
 $o-figure-card-icon-color					: $brand-primary !default;
-$o-figure-card-icon-bg-color					: rgb($brand-primary, 0.1) !default;
+$o-figure-card-icon-bg-color					: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
 $o-dashboard-widget-indicators-min-height		: math.ceil(max($o-figure-card-figure-font-size * $line-height-base, $o-figure-card-icon-size) + $o-figure-card-label-font-size * $line-height-base + 2 * nth($o-figure-card-padding, 1) + 2 * nth($o-card-border, 1)) !default;
 
 /* day navigation */

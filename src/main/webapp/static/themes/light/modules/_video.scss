@@ -34,7 +34,7 @@
 				opacity: 0.8;
 			}
 			&:hover {
-				border: 1px solid #bbb;
+				border: 1px solid var(--o-border-strong);
 				span {
 					opacity: 0.9;			
 				}
@@ -73,7 +73,7 @@
 		bottom: 2px;
 		right: 3px;
 		padding: 3px 4px;
-		background: #333;
+		background: color-mix(in srgb, var(--o-backdrop) 80%, transparent);
 		color: var(--o-white);
 		font-size: $font-size-small;
 		line-height: $font-size-small;
@@ -638,7 +638,7 @@
 	border-radius: 4px;
 	border-width: 1px;
 	border-color: $o-video-border-color;
-	color: $o-video-color;
+	color: var(--o-video-bright);
 
 	&.o_video_selected {
 		z-index: 2;
@@ -835,7 +835,8 @@
 	top: 0;
 	bottom: 60px;
 	right: 0;
-	background-color: rgba(0, 0, 0, 0.5);
+	// the dark layer behind the comments (decision D12 of OO-10043)
+	background-color: color-mix(in srgb, var(--o-backdrop) 50%, transparent);
 	z-index: 1;
 }
 
@@ -946,7 +947,7 @@
 		transform: translateX(-50%);
 		width: 100%;
 		aspect-ratio: 1.778;
-		background-color: black;
+		background-color: var(--o-backdrop);
 	}
 
 	#videoElement {
@@ -1103,36 +1104,36 @@
 
 	.decoration {
 		fill: none;
-		stroke: black;
+		stroke: var(--o-recorder-decoration);
 	}
 
 	.decoration-recording {
-		fill: #f99;
-		stroke: black;
+		fill: var(--o-recorder-recording);
+		stroke: var(--o-recorder-decoration);
 	}
 
 	.strong-symbol {
-		fill: #ff0000;
+		fill: var(--o-recorder-record);
 	}
 
 	.strong-symbol:hover {
-		fill: #ff4040;
+		fill: var(--o-recorder-record-hover);
 	}
 
 	.strong-symbol:active {
-		fill: #ff6060;
+		fill: var(--o-recorder-record-active);
 	}
 
 	.symbol {
-		fill: #000000;
+		fill: var(--o-recorder-symbol);
 	}
 
 	.symbol:hover {
-		fill: #202020;
+		fill: var(--o-recorder-symbol-hover);
 	}
 
 	.symbol:active {
-		fill: #404040;
+		fill: var(--o-recorder-symbol-active);
 	}
 
 	.o_dialog {
@@ -1148,7 +1149,7 @@
 	position: relative;
 	width: 100%;
 	height: 200px;
-	background-color: #eee;
+	background-color: var(--o-bg-subtle);
 
 	.o_audio_canvas {
 		position: absolute;

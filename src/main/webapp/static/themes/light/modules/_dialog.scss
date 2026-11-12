@@ -1,9 +1,9 @@
 /* Info and other dialog boxes, displayed inline in content */
 .o_info, %o_info { 
-	@include o-make-message-box($o-box-info-bg, $o-box-info-color);
+	@include o-make-message-box($o-box-info-bg, var(--o-box-info-border));
 }
 .o_info_with_icon, %o_info_with_icon { 
-	@include o-make-message-box($o-box-info-bg, $o-box-info-color, 'circle-info');
+	@include o-make-message-box($o-box-info-bg, var(--o-box-info-border), 'circle-info', var(--o-box-info-text));
 }
 .o_note, %o_note { 
 	@include o-make-message-box($o-box-note-bg, $o-box-note-color);
@@ -24,25 +24,25 @@
 	@include o-make-message-box($o-box-important-bg, $o-box-important-color, 'circle-exclamation');
 }
 .o_success, %o_success { 
-	@include o-make-message-box($o-box-success-bg, $o-box-success-color);
+	@include o-make-message-box($o-box-success-bg, var(--o-box-success-border));
 }
 .o_success_with_icon, %o_success_with_icon { 
-	@include o-make-message-box($o-box-success-bg, $o-box-success-color, 'circle-check');
+	@include o-make-message-box($o-box-success-bg, var(--o-box-success-border), 'circle-check', var(--o-box-success-text));
 }
 .o_warning, %o_warning { 
-	@include o-make-message-box($o-box-warning-bg, $o-box-warning-color);
+	@include o-make-message-box($o-box-warning-bg, var(--o-box-warning-border));
 }
 .o_warning_line, %o_warning_line { 
 	@include o-make-message-line($o-line-warning-bg, $o-line-warning-color);
 }
 .o_warning_with_icon, %o_warning_with_icon { 
-	@include o-make-message-box($o-box-warning-bg, $o-box-warning-color, 'triangle-exclamation');
+	@include o-make-message-box($o-box-warning-bg, var(--o-box-warning-border), 'triangle-exclamation', var(--o-box-warning-text));
 }
 .o_error, %o_error { 
-	@include o-make-message-box($o-box-error-bg, $o-box-error-color);
+	@include o-make-message-box($o-box-error-bg, var(--o-box-error-border));
 }
 .o_error_with_icon, %o_error_with_icon { 
-	@include o-make-message-box($o-box-error-bg, $o-box-error-color, 'circle-xmark');
+	@include o-make-message-box($o-box-error-bg, var(--o-box-error-border), 'circle-xmark', var(--o-box-error-text));
 }
 .o_error_line, %o_error_line { 
 	@include o-make-message-line($o-line-error-bg, $o-line-error-color);
@@ -108,7 +108,7 @@ div.o_callout_overlay {
  	.alert {
 		color: var(--o-text);
 	  	background-color: $o-box-info-bg;
-	  	border-color: $o-box-info-color;
+	  	border-color: var(--o-box-info-border);
 		position: relative;
 		width: auto;
 		margin:0 auto;
@@ -163,7 +163,7 @@ dialog.dialog {
 	
 	padding: 20px 10px;
 	border: none;
-	background: rgba(0,0,0,.0);
+	background: transparent;
 	height: 100vh;
 	
 	&.o_wizard {
@@ -190,7 +190,7 @@ dialog.o-modal-alert-danger,
 dialog.o-modal-alert-info {
 	padding: 20px 10px;
 	border: none;
-	background: rgba(0,0,0,.0);
+	background: transparent;
 	height: 100vh;
 	
 	.modal-dialog {
@@ -209,7 +209,7 @@ dialog.popover {
   		background-color: var(--o-popover-bg);
 		border: 1px solid $popover-fallback-border-color;
 		border: 1px solid var(--o-popover-border);
-		border-bottom: 1px solid darken($popover-title-bg, 5%);
+		border-bottom: 1px solid var(--o-popover-title-bg-edge);
   		border-top-left-radius: $border-radius-large;
   		border-top-right-radius: $border-radius-large;
 		@include box-shadow(0 5px 10px color-mix(in srgb, var(--o-shadow-color) 20%, transparent));
@@ -383,11 +383,11 @@ body .modal-body.alert {
 	border-radius: $border-radius-large;
 }
 .o-modal-alert-success {
-	@include o-alert-variant($o-box-success-bg, $o-box-success-color, 'circle-check');
+	@include o-alert-variant($o-box-success-bg, var(--o-box-success-text), 'circle-check');
 }
 .o-modal-alert-warning {
- 	@include o-alert-variant($o-box-warning-bg, $o-box-warning-color, 'triangle-exclamation');
+ 	@include o-alert-variant($o-box-warning-bg, var(--o-box-warning-text), 'triangle-exclamation');
 }
 .o-modal-alert-danger {
-	@include o-alert-variant($o-box-error-bg, $o-box-error-color, 'circle-xmark');
+	@include o-alert-variant($o-box-error-bg, var(--o-box-error-text), 'circle-xmark');
 }

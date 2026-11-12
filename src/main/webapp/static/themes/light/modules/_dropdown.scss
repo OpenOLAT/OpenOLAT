@@ -57,9 +57,8 @@
     white-space: nowrap; // prevent links from randomly breaking onto new lines
   }
 
-/* a11y: accessibility fix: visually set focus for drop-down toggles */
+/* a11y: the focus ring for drop-down toggles: the Bootstrap rule
+   .dropdown-toggle:focus has outline 0 (OO-10043, D24) */
 .dropdown-toggle:focus-visible {
-	// Firefox drops the WebKit color of tab-focus and would keep the outline 0 of Bootstrap
-	outline: 5px auto;
-	@include tab-focus;
+	@include o-focus-ring;
 }

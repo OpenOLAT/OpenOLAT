@@ -25,6 +25,16 @@
  *
  *            A token without shade tokens stops the compile.
  *
+ * Two optional arguments give the text of the states (decision D13 of
+ * OO-10043): $color-hover for the states with the fill {bg}-hover (focus,
+ * hover, active), $color-active for the pressed state with hover or focus
+ * (fill {bg}-active). Default: $color. The light buttons and the filter
+ * buttons of a table pass their text tokens -fg-hover and -fg-active:
+ *
+ *            @include button-variant(var(--o-table-filter-fg),
+ *                var(--o-table-filter-bg), var(--o-table-filter-border),
+ *                var(--o-table-filter-fg-hover), var(--o-table-filter-fg-active));
+ *
  * @author gnaegi,  www.frentix.com
  * @date November 2026
  * =================================================
@@ -68,7 +78,7 @@ $o-button-variant-tokens: ();
 	@return var(--o-#{$name});
 }
 
-@mixin button-variant($color, $background, $border) {
+@mixin button-variant($color, $background, $border, $color-hover: $color, $color-active: $color-hover) {
 	$background-hover: o-button-variant-shade($background, "hover", 10%);
 	$background-active: o-button-variant-shade($background, "active", 17%);
 	$border-hover: o-button-variant-shade($border, "hover", 12%);
@@ -80,19 +90,19 @@ $o-button-variant-tokens: ();
 
 	&:focus,
 	&.focus {
-		color: $color;
+		color: $color-hover;
 		background-color: $background-hover;
 		border-color: $border-focus;
 	}
 	&:hover {
-		color: $color;
+		color: $color-hover;
 		background-color: $background-hover;
 		border-color: $border-hover;
 	}
 	&:active,
 	&.active,
 	.open > &.dropdown-toggle {
-		color: $color;
+		color: $color-hover;
 		background-color: $background-hover;
 		background-image: none;
 		border-color: $border-hover;
@@ -100,7 +110,7 @@ $o-button-variant-tokens: ();
 		&:hover,
 		&:focus,
 		&.focus {
-			color: $color;
+			color: $color-active;
 			background-color: $background-active;
 			border-color: $border-focus;
 		}

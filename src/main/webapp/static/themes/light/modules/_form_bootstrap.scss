@@ -11,11 +11,10 @@
  * @date November 2026
  * =================================================
  */
-/* ---- Focus states ---- */
-.form-control:focus {
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--o-focus) 15%, transparent);
-	border-color: var(--o-focus);
-}
+/* ---- Focus states ----
+   The Bootstrap rule .form-control:focus reads the mixin form-control-focus
+   of _focus.scss: border in the colour of the token focus, no halo, the
+   focus ring on :focus-visible (OO-10043, D24). */
 /* ---- Transitions for modern behavior ---- */
 @media (prefers-reduced-motion: no-preference) {
 	.form-control {

@@ -280,7 +280,7 @@ a.o_validation_open_results {
 		}
 		
 		&.o_template_course {
-			border: $o-box-warning-color;
+			border: var(--o-box-warning-border);
 			border-style: dashed;
 			background-color: $o-box-warning-bg;
 		}
@@ -469,6 +469,12 @@ a.o_validation_open_results {
 		overflow: hidden;
 		div {
 			overflow: hidden;
+		}
+		// the row cuts its content: inset focus ring (OO-10043, D24)
+		a, button {
+			&:focus:focus-visible {
+				@include o-focus-ring-inset;
+			}
 		}
 		
 		.o_implementation {

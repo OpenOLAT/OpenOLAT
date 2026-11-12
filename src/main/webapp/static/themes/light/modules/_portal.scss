@@ -51,7 +51,7 @@
 		right: -1px;
 		z-index: 2;
 		background-color: var(--o-bg);
-		border: 1px solid $o-portlet-edit-border; 
+		border: 1px solid var(--o-portlet-edit-border); 
 	  	@include border-top-radius($o-portlet-border-radius);
 	  	@include border-bottom-radius($o-portlet-border-radius);
 	  	padding: $padding-base-vertical $padding-base-horizontal;
@@ -65,7 +65,7 @@
 		height: 100%; 
 		width: 100%; 
 		z-index: 1;
-		background: $o-portlet-edit-bg; 
+		background: var(--o-portlet-edit-bg); 
 		opacity: 0.8; 
 	}	
 

@@ -64,7 +64,7 @@
 		font-style: italic;
 	}
 	.publicationTitle {
-		color: black;
+		color: var(--o-text);
 	}
 
 	.links {
@@ -73,7 +73,7 @@
 	
 	.notes {
 		padding-left: 2em;
-		color:grey;
+		color:var(--o-text-muted);
 	}
 	.note {
 		font-style: italic;

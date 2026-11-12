@@ -1,7 +1,7 @@
 #o_navbar_wrapper {
 	z-index: $o-navbar-z-index;
 	border-top: 1px solid $o-navbar-border-color;
-	box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
 
 	#o_navbar_container {
 		position: relative;
@@ -60,10 +60,10 @@ a.o_disabled.navbar-text {
 			padding: 0;
 			width: 1em; height: 1em;
 			i {
-				&:before { color: $o-navbar-tab-close-color; }
+				&:before { color: var(--o-navbar-tab-close); }
 			}
-			&:hover { 
-				i:before { color: $o-navbar-tab-close-hover-color; }
+			&:hover {
+				i:before { color: var(--o-navbar-tab-close-hover); }
 			}
 	    }
 	}
@@ -152,7 +152,7 @@ a.o_disabled.navbar-text {
 				font-size: 100%;
 				color: $o-offcanvas-link-color;
 				margin: 0 0 0.5em 0;
-				border-bottom: 1px solid #888;
+				border-bottom: 1px solid var(--o-offcanvas-category-border);
 				line-height: 2em;
 			}
 			a {
@@ -160,15 +160,15 @@ a.o_disabled.navbar-text {
 				color: $o-offcanvas-link-color;
 				&:hover,
 				&:focus {
-					color: $o-offcanvas-link-hover-color;
+					color: var(--o-offcanvas-link-hover);
 					background-color: $o-offcanvas-link-hover-bg;
 				}
 				&.o_logout {
-					color: $o-offcanvas-logout-color;
+					color: var(--o-offcanvas-logout);
 					padding-left: 0;
 					&:hover,
 					&:focus {
-						color: $o-offcanvas-logout-hover-color;
+						color: var(--o-offcanvas-logout-hover);
 					}
 				}				
 			}
@@ -209,7 +209,7 @@ a.o_disabled.navbar-text {
       			&:hover,
       			&:focus {
         			background-color: $o-offcanvas-link-hover-bg;
-        			color: $o-offcanvas-link-hover-color;
+        			color: var(--o-offcanvas-link-hover);
       			}
     		}
    			.active a {
@@ -223,7 +223,7 @@ a.o_disabled.navbar-text {
   			.o_navbar-link {
     			color: $o-offcanvas-link-color;
     			&:hover {
-      				color: $o-offcanvas-link-hover-color;
+      				color: var(--o-offcanvas-link-hover);
     			}
   			}
   			// Dropdowns get custom display when collapsed
@@ -382,6 +382,32 @@ body.o_dmz {
    }
 }  
 
+// The focus ring in the navbar reads navbar-focus: 3:1 on the navbar, also
+// on a dark or coloured navbar. The items of the navbar and the logo get an
+// inset ring: the navbar is at the top edge of the window, which cuts the
+// ring, and the items touch (OO-10043, D24). The dropdown menus of the
+// navbar are on the raised surface: they keep the focus colour.
+.o_navbar {
+	a, button {
+		&:focus:focus-visible {
+			outline-color: var(--o-navbar-focus);
+		}
+	}
+	.o_navbar-brand,
+	.o_navbar-nav > li > a {
+		&:focus:focus-visible {
+			@include o-focus-ring-inset(var(--o-navbar-focus));
+		}
+	}
+	.dropdown-menu {
+		a, button {
+			&:focus:focus-visible {
+				outline-color: var(--o-focus);
+			}
+		}
+	}
+}
+
 .o_navbar-nav {
 	margin: ($o-navbar-padding-vertical * 0.5) (-$o-navbar-padding-horizontal);
 
@@ -468,7 +494,7 @@ body.o_dmz {
   	padding: 10px $o-navbar-padding-horizontal;
   	border-top: 1px solid $o-navbar-border-color;
   	border-bottom: 1px solid $o-navbar-border-color;
-  	$shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(255,255,255,.1);
+  	$shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent), 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
   	@include box-shadow($shadow);
 
   	// Mixin behavior for optimum display
@@ -583,11 +609,11 @@ body.o_dmz {
     right: 10px;
     padding-left: 0px;
     padding-right: 0px;
-    color: $o-navbar-tab-close-color;
+    color: var(--o-dropdown-tab-close);
     background-color: inherit;
 
     &:focus, &:hover {
-      color: $o-navbar-tab-close-hover-color;
+      color: var(--o-dropdown-tab-close-hover);
       background-color: inherit;
     }
   }

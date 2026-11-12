@@ -56,7 +56,7 @@
 	}
 	
 	div:hover {
-		border: 1px solid #333; 
+		border: 1px solid var(--o-text); 
 	}
 	
 	a {
@@ -173,10 +173,10 @@
 	
 	table.fc-list-table .fc-list-event {
 		background-color: var(--o-bg);
-		color: #5D5D5D ! important;
+		color: var(--o-text) ! important;
 		
 		a, span {
-			color: #5D5D5D ! important;
+			color: var(--o-text) ! important;
 		}
 	}
 }

@@ -8,11 +8,10 @@
   	padding: 0 0 0;
   	color: $o-autocomplete-color;
   	background-color: $o-autocomplete-bg-color;
-  	/* same border style as in bootstrap form */
+  	/* border of the focused field, no glow (OO-10043, D24) */
   	border: 1px solid var(--o-focus);
   	@include border-top-radius($o-autocomplete-border-radius);
   	@include border-bottom-radius($o-autocomplete-border-radius);
-    @include box-shadow(0 0 8px color-mix(in srgb, var(--o-focus) 60%, transparent));
 }
 
 .tt-suggestion {

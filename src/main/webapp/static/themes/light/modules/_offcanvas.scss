@@ -75,9 +75,9 @@ body.o_dmz #o_container_page_width_toggler {
 	display: none;
 	
 	.o_offcanvas_close {
-		color: 	$o-offcanvas-logout-color;
+		color: 	var(--o-offcanvas-logout);
 		:hover {
-			color: 	$o-offcanvas-logout-hover-color;		
+			color: 	var(--o-offcanvas-logout-hover);		
 		}
 	}
 	

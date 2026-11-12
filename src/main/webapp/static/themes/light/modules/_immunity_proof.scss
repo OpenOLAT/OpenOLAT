@@ -7,7 +7,7 @@
 	margin: auto;
 	padding: 1em;	
 	
-	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, color-mix(in srgb, var(--o-shadow-color) 30%, transparent) 0px 8px 16px -8px;
+	box-shadow: color-mix(in srgb, var(--o-shadow-color) 25%, transparent) 0px 13px 27px -5px, color-mix(in srgb, var(--o-shadow-color) 30%, transparent) 0px 8px 16px -8px;
 	
 	&.validated {
 		background-color: var(--o-immunity-proof-validated-bg-tint);
@@ -43,7 +43,7 @@
 	
 	border-radius: 4px;
 	
-	box-shadow: rgba(10, 37, 64, 0.35) 0px 0px 6px 0px inset;
+	box-shadow: color-mix(in srgb, var(--o-shadow-color) 35%, transparent) 0px 0px 6px 0px inset;
 	
 	&.validated {
 		color: var(--o-immunity-proof-validated-fg);

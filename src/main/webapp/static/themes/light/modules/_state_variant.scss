@@ -1,0 +1,264 @@
+/*
+ * =================================================
+ *
+ * Bootstrap state mixins that read the colour tokens (OO-10043).
+ *
+ * Replaces the Bootstrap mixins label-variant, progress-bar-variant,
+ * alert-variant, form-control-validation, table-row-variant,
+ * list-group-item-variant, bg-variant and text-emphasis-variant
+ * (bootstrap/mixins/) with the same rules and selectors. Imported after
+ * the Bootstrap mixins and after _button_variant.scss.
+ *
+ * Each mixin takes colours or tokens:
+ *
+ *   colours  @include label-variant($gray-light);
+ *            The Bootstrap mixin as it is (meta.get-mixin()), with the
+ *            darker colours of darken(). Client themes and the labels
+ *            default and primary use it.
+ *   tokens   @include label-variant(var(--o-state-success-bg));
+ *            _bootstrap.scss and content.scss hand the state tokens to the
+ *            Bootstrap import. The states read the shade tokens of the
+ *            token ($o-token-shades in _tokens.scss):
+ *
+ *            mixin                     state colours
+ *            label-variant             text {name}-fg (e.g. state-success-fg
+ *                                      for state-success-bg), hover {bg}-hover
+ *            progress-bar-variant      text {name}-fg
+ *            alert-variant             hr the border token, .alert-link the
+ *                                      text token
+ *            form-control-validation   focus border {border}-hover, glow the
+ *                                      border token 60% translucent
+ *            table-row-variant         hover {bg}-hover
+ *            list-group-item-variant   hover {bg}-hover, active text white
+ *            bg-variant                hover {bg}-hover
+ *            text-emphasis-variant     hover {text}-hover
+ *
+ *            A token without the shade token stops the compile.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+@use "sass:list";
+@use "sass:map";
+@use "sass:meta";
+@use "sass:string";
+
+// The Bootstrap mixins, for colour arguments
+$o-bootstrap-state-mixins: ();
+@each $name in ("label-variant", "progress-bar-variant", "alert-variant", "form-control-validation",
+		"table-row-variant", "list-group-item-variant", "bg-variant", "text-emphasis-variant") {
+	$o-bootstrap-state-mixins: map.merge($o-bootstrap-state-mixins, ($name: meta.get-mixin($name)));
+}
+
+// Includes the Bootstrap mixin with the colour arguments
+@mixin o-bootstrap-state-mixin($name, $args...) {
+	@include meta.apply(map.get($o-bootstrap-state-mixins, $name), $args...);
+}
+
+// True for a token var(--o-{name}), false for a colour. Any other value
+// stops the compile (o-button-variant-token).
+@function o-state-variant-is-token($value) {
+	@return o-button-variant-token($value) != null;
+}
+
+// The text token on a fill token var(--o-{name}-bg): var(--o-{name}-fg)
+@function o-state-variant-fg($value) {
+	$token: o-button-variant-token($value);
+	@if string.length($token) < 4 or string.slice($token, -3) != "-bg" {
+		@error "state variant: the fill token needs the name {name}-bg, got '#{$token}'";
+	}
+	@return var(--o-#{string.slice($token, 1, -4)}-fg);
+}
+
+@mixin label-variant($args...) {
+	$fill: list.nth($args, 1);
+	@if not o-state-variant-is-token($fill) {
+		@include o-bootstrap-state-mixin("label-variant", $args...);
+	} @else {
+		background-color: $fill;
+		color: o-state-variant-fg($fill);
+
+		&[href] {
+			&:hover,
+			&:focus {
+				background-color: o-button-variant-shade($fill, "hover", 10%);
+			}
+		}
+	}
+}
+
+@mixin progress-bar-variant($args...) {
+	$fill: list.nth($args, 1);
+	@if not o-state-variant-is-token($fill) {
+		@include o-bootstrap-state-mixin("progress-bar-variant", $args...);
+	} @else {
+		background-color: $fill;
+		color: o-state-variant-fg($fill);
+
+		.progress-striped & {
+			@include gradient-striped;
+		}
+	}
+}
+
+@mixin alert-variant($args...) {
+	$fill: list.nth($args, 1);
+	@if not o-state-variant-is-token($fill) {
+		@include o-bootstrap-state-mixin("alert-variant", $args...);
+	} @else {
+		$line: list.nth($args, 2);
+		$fg: list.nth($args, 3);
+		color: $fg;
+		background-color: $fill;
+		border-color: $line;
+
+		hr {
+			border-top-color: $line;
+		}
+
+		.alert-link {
+			color: $fg;
+		}
+	}
+}
+
+@mixin form-control-validation($args...) {
+	@if list.length($args) < 3 or not o-state-variant-is-token(list.nth($args, 1)) {
+		@include o-bootstrap-state-mixin("form-control-validation", $args...);
+	} @else {
+		$fg: list.nth($args, 1);
+		$line: list.nth($args, 2);
+		$fill: list.nth($args, 3);
+		$inset: inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent);
+
+		.help-block,
+		.control-label,
+		.radio,
+		.checkbox,
+		.radio-inline,
+		.checkbox-inline,
+		&.radio label,
+		&.checkbox label,
+		&.radio-inline label,
+		&.checkbox-inline label  {
+			color: $fg;
+		}
+		.form-control {
+			border-color: $line;
+			@include box-shadow($inset);
+			&:focus {
+				border-color: o-button-variant-shade($line, "hover", 10%);
+				@include box-shadow($inset, 0 0 6px color-mix(in srgb, #{$line} 60%, transparent));
+			}
+		}
+		.input-group-addon {
+			color: $fg;
+			background-color: $fill;
+			border-color: $line;
+		}
+		.form-control-feedback {
+			color: $fg;
+		}
+	}
+}
+
+@mixin table-row-variant($args...) {
+	$state: list.nth($args, 1);
+	$fill: list.nth($args, 2);
+	@if not o-state-variant-is-token($fill) {
+		@include o-bootstrap-state-mixin("table-row-variant", $args...);
+	} @else {
+		.table > thead > tr,
+		.table > tbody > tr,
+		.table > tfoot > tr {
+			> td.#{$state},
+			> th.#{$state},
+			&.#{$state} > td,
+			&.#{$state} > th {
+				background-color: $fill;
+			}
+		}
+
+		.table-hover > tbody > tr {
+			> td.#{$state}:hover,
+			> th.#{$state}:hover,
+			&.#{$state}:hover > td,
+			&:hover > .#{$state},
+			&.#{$state}:hover > th {
+				background-color: o-button-variant-shade($fill, "hover", 5%);
+			}
+		}
+	}
+}
+
+@mixin list-group-item-variant($args...) {
+	$state: list.nth($args, 1);
+	$fill: list.nth($args, 2);
+	@if not o-state-variant-is-token($fill) {
+		@include o-bootstrap-state-mixin("list-group-item-variant", $args...);
+	} @else {
+		$fg: list.nth($args, 3);
+		.list-group-item-#{$state} {
+			color: $fg;
+			background-color: $fill;
+
+		}
+
+		a.list-group-item-#{$state},
+		button.list-group-item-#{$state} {
+			color: $fg;
+
+			.list-group-item-heading {
+				color: inherit;
+			}
+
+			&:hover,
+			&:focus {
+				color: $fg;
+				background-color: o-button-variant-shade($fill, "hover", 5%);
+			}
+			&.active,
+			&.active:hover,
+			&.active:focus {
+				color: var(--o-white);
+				background-color: $fg;
+				border-color: $fg;
+			}
+		}
+	}
+}
+
+// The hover of a .bg-* link reads the hover shade of the table rows (5%,
+// Bootstrap 10%)
+@mixin bg-variant($args...) {
+	$parent: list.nth($args, 1);
+	$fill: list.nth($args, 2);
+	@if not o-state-variant-is-token($fill) {
+		@include o-bootstrap-state-mixin("bg-variant", $args...);
+	} @else {
+		#{$parent} {
+			background-color: $fill;
+		}
+		a#{$parent}:hover,
+		a#{$parent}:focus {
+			background-color: o-button-variant-shade($fill, "hover", 5%);
+		}
+	}
+}
+
+@mixin text-emphasis-variant($args...) {
+	$parent: list.nth($args, 1);
+	$fg: list.nth($args, 2);
+	@if not o-state-variant-is-token($fg) {
+		@include o-bootstrap-state-mixin("text-emphasis-variant", $args...);
+	} @else {
+		#{$parent} {
+			color: $fg;
+		}
+		a#{$parent}:hover,
+		a#{$parent}:focus {
+			color: o-button-variant-shade($fg, "hover", 10%);
+		}
+	}
+}

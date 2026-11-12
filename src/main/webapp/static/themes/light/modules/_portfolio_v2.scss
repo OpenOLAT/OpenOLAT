@@ -66,14 +66,14 @@
 .o_section_lead, .o_page_lead, .o_assignment_lead {
 	padding: $o-portfolio-lead-space-sm $o-portfolio-lead-space-sm;
 	margin-bottom: $o-portfolio-lead-space-sm;
-	background-color: $o-portfolio-lead-background-color;
+	background-color: var(--o-portfolio-lead-bg);
 	border-radius: $o-portfolio-lead-border-radius;
-	border: 1px $o-portfolio-lead-border-color solid;
+	border: 1px var(--o-portfolio-lead-border) solid;
 }
 
 .o_section_ended .o_section_lead {
-	border-color: $o-portfolio-lead-ended-border-color;
-	background-color: $o-portfolio-lead-ended-background-color;
+	border-color: var(--o-portfolio-lead-ended-border);
+	background-color: var(--o-portfolio-lead-ended-bg);
 }
 
 
@@ -271,7 +271,7 @@
 	.axis path,
 	.axis line {
 		fill: none;
-		stroke: #000;
+		stroke: var(--o-text);
 		shape-rendering: crispEdges;
 	}
 	.x.axis line, .x.axis path {
@@ -280,16 +280,16 @@
 	
 	path.o_timeline_curve {
 		fill: none;
-		stroke: #ccc;
+		stroke: var(--o-border-strong);
 		shape-rendering: crispEdges;
 	}
 	
 	.y.axis .tick line, .y.axis path.domain {
-		stroke: #ddd;
+		stroke: var(--o-border);
 	}
 
 	text {
-		fill: #888; 
+		fill: var(--o-text-muted); 
 		stroke: none; 
 		font-size: 10px;
 	}
@@ -564,9 +564,9 @@
 			padding: 3px;	
 			margin-bottom: 2px;
 			li {
-				background: #f2f2f2;
+				background: var(--o-bg-subtle);
 				li {
-					background: #eee;
+					background: var(--o-bg-hover);
 				}
 				.table {
 					margin-bottom: 0px
@@ -632,7 +632,7 @@
 	
 	.o_page_lead {
 		border: 0;
-		border-bottom: 1px solid $o-portfolio-lead-border-color;
+		border-bottom: 1px solid var(--o-portfolio-lead-border);
 		border-radius: 0;
 		background-color: none;
 		padding: 0;

@@ -172,7 +172,7 @@
 	    	@include border-bottom-radius($o-tree-border-radius);
 		}
 		.o_dnd_item.o_dnd_over, .o_dnd_item.o_dnd_over .o_tree_link {
-			background-color: #ffff60;
+			background-color: var(--o-tree-dnd-over-bg);
 		}
 		.o_dnd_sibling {
 			height:7px;
@@ -210,12 +210,12 @@
 		div:has(>.o_tree_move_controls) {
 			display: grid;
 			grid-template-columns: 1fr auto;
-			background-color: $o-radio-card-bg-checked;
-			border: 1px solid $o-radio-card-border-color-checked;	
+			background-color: var(--o-radio-card-checked-bg);
+			border: 1px solid var(--o-radio-card-checked-border);	
 		}
 		
 		.active.o_tree_link:hover, .active.o_tree_link:focus {
-			background-color: $o-radio-card-bg-checked;
+			background-color: var(--o-radio-card-checked-bg);
 		}
 		
 		input[type=radio] {

@@ -69,7 +69,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Alert Boxes (Plain)</h3>
-      <p>Styled message boxes for different semantic levels. Used via <code>&lt;div class="o_info"&gt;</code> etc. These are OpenOlat-specific alert styles, not Bootstrap alerts.</p>
+      <p>Styled message boxes for different semantic levels. Used via <code>&lt;div class="o_info"&gt;</code> etc. These are OpenOlat-specific alert styles, not Bootstrap alerts. The border of <code>o_info</code>, <code>o_success</code>, <code>o_warning</code> and <code>o_error</code> reads <code>--o-box-{info,success,warning,error}-border</code> (default: the fill of the state), the icon reads <code>--o-box-*-text</code> (default: the text of the state). The fill is the Sass value <code>$o-box-*-bg</code>. The note, tip and important boxes read Sass colours.</p>
       <div class="cl-classes">
         <code>o_info</code> <code>o_note</code> <code>o_tip</code> <code>o_important</code>
         <code>o_success</code> <code>o_warning</code> <code>o_error</code>
@@ -141,7 +141,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Bootstrap Alerts</h3>
-      <p>Standard Bootstrap alert boxes used in some contexts.</p>
+      <p>Standard Bootstrap alert boxes used in some contexts. They read the soft roles of the state tokens: the fill <code>--o-state-*-soft-bg</code>, the border <code>--o-state-*-soft-border</code> and the text <code>--o-state-*-soft-fg</code>. <code>alert-info</code> reads the state <code>neutral</code>.</p>
       <div class="cl-classes">
         <code>alert</code> <code>alert-info</code> <code>alert-success</code> <code>alert-warning</code> <code>alert-danger</code>
       </div>
@@ -392,7 +392,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Star Rating</h3>
-      <p>Star rating component with filled/empty stars. Shows current rating and optional average.</p>
+      <p>Star rating component with filled/empty stars. Shows current rating and optional average. The filled and the empty star read the token <code>--o-rating-star</code> (default: the palette step <code>yellow-400</code>).</p>
       <div class="cl-classes">
         <code>o_rating</code> <code>o_rating_items</code> <code>o_icon_rating_on</code> <code>o_icon_rating_off</code>
       </div>
@@ -447,7 +447,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Bootstrap Badges</h3>
-      <p>Small count or status indicators.</p>
+      <p>Small count or status indicators. <code>label-success</code>, <code>label-info</code>, <code>label-warning</code> and <code>label-danger</code> read the fill <code>--o-state-*-bg</code> and the text <code>--o-state-*-fg</code> of their state (<code>info</code> is the state <code>neutral</code>); the link hover reads <code>--o-state-*-bg-hover</code>.</p>
       <div class="cl-classes">
         <code>badge</code> <code>label</code> <code>label-default</code> <code>label-primary</code>
         <code>label-success</code> <code>label-warning</code> <code>label-danger</code>

@@ -4,7 +4,7 @@
 	align-items: flex-end;
 	justify-content: space-between;
 	padding: $o-export-area-rowelem-space-md;
-	border-bottom: 1px solid grey;
+	border-bottom: 1px solid var(--o-border);
 	
 	.o_export_type {
 		font-size: 60px;

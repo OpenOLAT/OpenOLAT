@@ -76,8 +76,8 @@
 				right: 0;
 				bottom: 0;
 				border-radius: 50%;
-				border: 3px solid rgba(0,0,0,0);
-				background: linear-gradient(180deg, rgb(255, 110, 110) 0%, rgb(255, 199, 0) 33%, rgb(114, 206, 141) 60%, rgb(0, 122, 255) 100%) border-box;
+				border: 3px solid transparent;
+				background: linear-gradient(180deg, var(--o-red-400) 0%, var(--o-yellow-400) 33%, var(--o-green-400) 60%, var(--o-blue-500) 100%) border-box;
 				mask-clip: padding-box, border-box;
 				mask-size: auto, auto;
 				mask-image: linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px);
@@ -97,7 +97,7 @@
 		
 		border-radius: 50%;
 		line-height: 12px;
-		border: solid 1px white;
+		border: solid 1px var(--o-bg);
 		background-color: var(--o-bg);
 	}
 	@media print {

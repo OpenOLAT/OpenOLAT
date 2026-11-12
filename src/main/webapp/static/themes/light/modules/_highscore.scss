@@ -7,7 +7,7 @@
 			@if $o-hs-position-title-color == gradient {
 				/* apply only for webkit capable browsers (Safari, Edge, Chrome) */
 				@media screen and (-webkit-min-device-pixel-ratio:0) {
-					background: linear-gradient(330deg, #e05252 0%, #99e052 25%, #52e0e0 50%, #9952e0 75%, #e05252 100%);
+					background: linear-gradient(330deg, var(--o-red-500) 0%, var(--o-lime-300) 25%, var(--o-teal-300) 50%, var(--o-violet-500) 75%, var(--o-red-500) 100%);
 					-webkit-background-clip: text;
 					-webkit-text-fill-color: transparent;
 					display: inline;
@@ -43,7 +43,7 @@
 		width: 30%;
 		position: absolute;
 		bottom: 0;
-		text-shadow: hsla(0,0%,40%,.5) 0 -1px 0, hsla(0,0%,100%,.6) 0 2px 1px;  
+		text-shadow: color-mix(in srgb, var(--o-shadow-color) 50%, transparent) 0 -1px 0, color-mix(in srgb, var(--o-scrim) 60%, transparent) 0 2px 1px;  
 		
 		&:before {
 			position: absolute;
@@ -105,7 +105,7 @@
 		border-top-left-radius: $o-hs-podium-border-radius;
 		border-top-right-radius: $o-hs-podium-border-radius;
 		@if $o-hs-podium-bg-gradientstyle == true {
-			@include o-make-glossy-bg($o-hs-podium-first-bg);
+			@include o-make-glossy-bg("highscore-podium-first-bg");
 		} @else {
 			background: $o-hs-podium-first-bg;
 		}
@@ -122,7 +122,7 @@
 		height: $o-hs-podium-second-height;
 		left: 0;
 		@if $o-hs-podium-bg-gradientstyle == true {
-			@include o-make-glossy-bg($o-hs-podium-second-bg);
+			@include o-make-glossy-bg("highscore-podium-second-bg");
 		} @else {
 			background: $o-hs-podium-second-bg;
 		}		
@@ -142,7 +142,7 @@
 		height: $o-hs-podium-third-height;
 		left: 60%;
 		@if $o-hs-podium-bg-gradientstyle == true {
-			@include o-make-glossy-bg($o-hs-podium-third-bg);
+			@include o-make-glossy-bg("highscore-podium-third-bg");
 		} @else {
 			background: $o-hs-podium-third-bg;
 		}		
@@ -178,13 +178,13 @@
 			.o_myself {
 				fill: var(--o-highscore-bar-myself);
 				&:hover {
-					fill: $o-hs-histogram-bar-myself-hover-color;
+					fill: var(--o-highscore-bar-myself-hover);
 				}
 			}
 			.o_other {
 				fill: $o-hs-histogram-bar-other-color;
 				&:hover {
-					fill: $o-hs-histogram-bar-other-hover-color;
+					fill: var(--o-highscore-bar-other-hover);
 				}
 			}
 			.o_empty {

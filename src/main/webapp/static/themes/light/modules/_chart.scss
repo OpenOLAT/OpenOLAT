@@ -1,9 +1,9 @@
 /* charts (crispEdges) */
 .d3chart {
 	.bar { shape-rendering: crispEdges; }
-	.bar_default_light { fill: $o-d3chart-light; }
+	.bar_default_light { fill: var(--o-chart-bar-light); }
 	.bar_default, .bubble_default { fill: $o-d3chart-default; }
-	.bar_default_dark { fill: $o-d3chart-dark; }
+	.bar_default_dark { fill: var(--o-chart-bar-dark); }
 	.bar_green { fill: var(--o-state-success-border); }
 	.bar_red { fill: var(--o-state-danger-border); }
 	.bar_grey { fill: var(--o-state-inactive-soft-border); }
@@ -12,7 +12,7 @@
 
 	.axis path, .axis line {
 		fill: none;
-		stroke: #000;
+		stroke: var(--o-text);
 		shape-rendering: crispEdges;
 	}
 	

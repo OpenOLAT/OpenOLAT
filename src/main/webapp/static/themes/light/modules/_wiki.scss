@@ -67,12 +67,12 @@ div.o_wiki_wrapper {
 	}
 	
 	div.imgthumb {
-		border: 1px solid #bbbbbb;
+		border: 1px solid var(--o-border-strong);
 		padding: 0.3em;
 	}
 	
 	table.gallery {
-		border: 1px solid #ccc;
+		border: 1px solid var(--o-border-strong);
 		margin: 2px;
 		padding: 2px;
 		background-color: var(--o-bg);
@@ -84,20 +84,20 @@ div.o_wiki_wrapper {
 	
 	table.gallery td {
 		background-color: var(--o-bg-subtle);
-		border: solid 2px white;
+		border: solid 2px var(--o-bg);
 		text-align: center;
 		vertical-align: middle;
 		width:  150px;
 	}
 	
 	img.gallery {
-		border: 1px solid #bbbbbb;
+		border: 1px solid var(--o-border-strong);
 		padding: 0.3em;
 	}
 	
 	a.edit {
 		font-style: italic;
-		color: red;
+		color: var(--o-state-danger-text);
 	}
 	
 	a.externallink {

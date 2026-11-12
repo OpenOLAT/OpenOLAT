@@ -100,7 +100,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Button Variants</h3>
-      <p>Semantic button styles: default, primary (preferred), danger, and special OpenOlat variants. The danger button reads the tokens <code>--o-btn-danger-bg</code>, <code>--o-btn-danger-fg</code> and <code>--o-btn-danger-border</code> (defaults: the danger state, the border one step darker) and their shade tokens for hover, focus and active. The dirty button has the fill of the warning state and a dark text.</p>
+      <p>Semantic button styles: default, primary (preferred), danger, and special OpenOlat variants. The danger button reads the tokens <code>--o-btn-danger-bg</code>, <code>--o-btn-danger-fg</code> and <code>--o-btn-danger-border</code> (defaults: the danger state, the border one step darker) and their shade tokens for hover, focus and active. The dirty button has the fill of the warning state and a dark text. <code>btn-success</code>, <code>btn-info</code> and <code>btn-warning</code> read the state tokens <code>--o-state-{success,neutral,warning}-bg</code>, <code>-fg</code> and <code>-border</code>. The light buttons <code>o_button_primary_light</code> and <code>o_button_danger_light</code> read <code>--o-btn-primary-light-*</code> and <code>--o-btn-danger-light-*</code> and their shade tokens.</p>
       <div class="cl-classes">
         <code>btn-default</code> <code>btn-primary</code> <code>btn-danger</code>
         <code>o_button_dirty</code> <code>o_button_primary_light</code>
@@ -134,7 +134,7 @@
     <div class="cl-component-header">
       <h3>Button States</h3>
       <p>Disabled and ghost button variants. Ghost buttons render as plain text links.</p>
-      <p><code>LinkRenderer</code> writes a disabled button as <code>&lt;a class="o_disabled disabled btn btn-default"&gt;</code> without <code>href</code> action. Ghost buttons use the link colour <code>var(--o-link)</code>. On hover the border gets the primary color and the background stays transparent.</p>
+      <p><code>LinkRenderer</code> writes a disabled button as <code>&lt;a class="o_disabled disabled btn btn-default"&gt;</code> without <code>href</code> action. Ghost buttons read <code>--o-btn-ghost-fg</code> (default: the link colour <code>--o-link</code>). On hover the text and the border read <code>--o-btn-ghost-hover-fg</code> and <code>--o-btn-ghost-hover-border</code> (default: the link colour), and the background <code>--o-btn-ghost-hover-bg</code> stays transparent.</p>
       <p>Button borders: <code>$btn-default-border</code> is <code>#6c757d</code> and <code>$btn-default-hover-border</code> is <code>#667085</code>. Form fields keep the lighter <code>$input-border</code> (<code>#d0d5dd</code>). So buttons and dropdown toggles have a darker border than text fields.</p>
       <div class="cl-classes">
         <code>o_disabled</code> <code>disabled</code> <code>o_button_ghost</code>

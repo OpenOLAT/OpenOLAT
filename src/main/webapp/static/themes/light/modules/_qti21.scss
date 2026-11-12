@@ -73,7 +73,7 @@ ul.sessionControl {
 .o_group_colors {
 	// pen colours of the drawing interaction, the same values as data-color in drawingInteraction.html
 	.black .o_icon:before { color: var(--o-gray-900); }
-	.white .o_icon:before { color: #FFFFFF; }
+	.white .o_icon:before { color: var(--o-white); }
 	.blue .o_icon:before { color: var(--o-blue-500); }
 	.green .o_icon:before { color: var(--o-green-500); }
 	.yellow .o_icon:before { color: var(--o-yellow-400); }
@@ -83,7 +83,7 @@ ul.sessionControl {
 
 .white.btn>i.o_icon_circle_color:before {
 	font-size: 110%;
-	color: #000000;
+	color: var(--o-gray-900);
 }
 
 /* Upload */
@@ -160,7 +160,12 @@ ul.sessionControl {
 		background-color: $o-drawing-select-bg !important;
 		border-color: var(--o-drawing-select-border) !important;
 	}
-	
+
+	// The 5 hotspot styles of the editor keep literal colours (decision D29 of
+	// OO-10043): the QTI item stores the style, and the test run draws it with
+	// the maphilight options of
+	// org/olat/ims/qti21/ui/components/_content/hotspotInteraction.html.
+	// Change both together, no tokens: the editor shows the colours of the test.
 	&.o_qti_hotspot-standard  {
 		.o_draw_circle, .o_draw_rectangle {
 			background-color: rgba(255, 255, 255, 0.5);
@@ -175,7 +180,7 @@ ul.sessionControl {
 	
 	&.o_qti_hotspot-light  {
 		.o_draw_circle, .o_draw_rectangle {
-			background-color: rgba(221, 221, 221, 0.0);
+			background-color: transparent;
 			border-color: #7E7E7E;
 		}
 		
@@ -414,25 +419,25 @@ span.o_qti_gaptext_score_alternative {
 	margin: 0 0 1em 0;
 	
 	&.o_hours {
-		@include o-make-message-box($o-box-info-bg, $o-box-info-color, 'circle-info');
+		@include o-make-message-box($o-box-info-bg, var(--o-box-info-border), 'circle-info', var(--o-box-info-text));
 		.o_qti_timer_second, .o_qti_timer_label_second {
 			display: none;
 		}
 	}
 	&.o_60_minutes {
-		@include o-make-message-box($o-box-info-bg, $o-box-info-color, 'circle-info');
+		@include o-make-message-box($o-box-info-bg, var(--o-box-info-border), 'circle-info', var(--o-box-info-text));
 		.o_qti_timer_hour, .o_qti_timer_label_hour, .o_qti_timer_second, .o_qti_timer_label_second {
 			display: none;
 		}
 	}
 	&.o_10_minutes {
-		@include o-make-message-box($o-box-warning-bg, $o-box-warning-color, 'triangle-exclamation');
+		@include o-make-message-box($o-box-warning-bg, var(--o-box-warning-border), 'triangle-exclamation', var(--o-box-warning-text));
 		.o_qti_timer_hour, .o_qti_timer_label_hour, .o_qti_timer_second, .o_qti_timer_label_second {
 			display: none;
 		}
 	}
 	&.o_5_minutes {
-		@include o-make-message-box($o-box-error-bg, $o-box-error-color, 'circle-xmark');
+		@include o-make-message-box($o-box-error-bg, var(--o-box-error-border), 'circle-xmark', var(--o-box-error-text));
 		.o_qti_timer_hour, .o_qti_timer_label_hour  {
 			display: none;
 		}
@@ -548,6 +553,8 @@ span.o_qti_gaptext_score_alternative {
 }
 
 /* Drawing */
+// the base of the hotspot styles of the editor, a literal colour (decision
+// D29 of OO-10043, see .o_qti_hotspot-standard)
 .o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {
 	background-color: rgba(229, 255, 204, 0.6);
 }
@@ -609,7 +616,7 @@ span.o_qti_gaptext_score_alternative {
 	}
 	
 	div.o_warning.badResponse, span.o_warning.badResponse {
-		color: $o-qti-badResponse-warning-color;
+		color: var(--o-qti-bad-response-warning);
 		font-weight: bold;
 	}
 	
@@ -629,7 +636,7 @@ span.o_qti_gaptext_score_alternative {
 
 	.gap {
 		font-weight: bold;
-		border: 1px dashed #000;
+		border: 1px dashed var(--o-qti-text-gap-border);
 	}
 }
 
@@ -1020,7 +1027,7 @@ tr.choiceinteraction {
 
 .choiceInteraction.choiceright table tr td.choiceInteraction {
 	background-color: $o-qti-choice-tablelayout-bg;
-	border-bottom: 3px solid white;
+	border-bottom: 3px solid var(--o-bg);
 }
 
 /* Text gap */
@@ -1099,7 +1106,7 @@ tr.choiceinteraction {
 /* Match interaction */
 .matchInteraction.choiceright table tr td.o_qti_item_kprim_text {
 	background-color: $o-qti-choice-tablelayout-bg;
-	border-bottom: 3px solid white;
+	border-bottom: 3px solid var(--o-bg);
 }
 
 table.table.o_qti_item_kprim>thead>tr>th, table.table.o_qti_item_kprim>tbody>tr>td {
@@ -1116,7 +1123,7 @@ table.o_qti_item_kprim {
 	}
 	
 	td.o_qti_item_kprim_input_wrong {
-		background-color: $o-qti-match-kprim-wrong-bg;
+		background-color: var(--o-qti-match-kprim-wrong-bg);
 	}
 	
 	td.o_qti_item_kprim_input_correct, td.o_qti_item_kprim_input_wrong,
@@ -1165,7 +1172,7 @@ table.o_qti_item_kprim {
 	background: $o-qti-match-sources-bg;
 	
 	&.oo-accepted {
-		border-color: $o-qti-match-drop-accept-border-color;
+		border-color: var(--o-qti-match-drop-accept-border);
 	}
 }
 
@@ -1180,7 +1187,7 @@ table.o_qti_item_kprim {
 	
 	&.oo-selected {
 		border: 2px $o-qti-match-source-border-style $o-qti-match-selected-border-color;
-		background: $o-qti-match-selected-bg;
+		background: var(--o-qti-match-selected-bg);
 	}
 	
 	&.oo-drag {
@@ -1196,7 +1203,7 @@ table.o_qti_item_kprim {
 }
 
 .o_match_dnd_targets .oo-accepted {
-	border: 2px solid $o-qti-match-drop-accept-border-color;
+	border: 2px solid var(--o-qti-match-drop-accept-border);
 	border-radius: $o-qti-match-border-radius;
 }
 
@@ -1266,7 +1273,7 @@ table.o_qti_item_kprim {
 	}
 	
 	td.o_match_true_false_unanswered {
-		background-color: $o-qti-match-true-false-unanswered-bg;
+		background-color: var(--o-qti-match-true-false-unanswered-bg);
 	}
 	
 	td.o_match_true_false_right {
@@ -1274,7 +1281,7 @@ table.o_qti_item_kprim {
 	}
 	
 	td.o_match_true_false_wrong {
-		background-color: $o-qti-match-true-false-wrong-bg;
+		background-color: var(--o-qti-match-true-false-wrong-bg);
 	}
 }
 
@@ -1372,7 +1379,7 @@ table.o_qti_item_kprim {
 				cursor: grab;
 				&.oo-selected {
 					border: 2px $o-qti-match-source-border-style $o-qti-match-selected-border-color;
-					background: $o-qti-match-selected-bg;
+					background: var(--o-qti-match-selected-bg);
 				}
 			}
 		}
@@ -1403,7 +1410,7 @@ table.o_qti_item_kprim {
 			background: $o-qti-order-target-bg;
 			
 			&.oo-accepted {
-				border-color: $o-qti-order-drop-accept-border-color;
+				border-color: var(--o-qti-order-drop-accept-border);
 			}
 			
 			> li {
@@ -1411,7 +1418,7 @@ table.o_qti_item_kprim {
 
 				&.oo-selected {
 					border: 2px $o-qti-match-source-border-style $o-qti-match-selected-border-color;
-					background: $o-qti-match-selected-bg;
+					background: var(--o-qti-match-selected-bg);
 				}
 			}
 		}	
@@ -1517,9 +1524,9 @@ table.o_qti_item_kprim {
 
 /* MathEntryInteraction styling for MathAssess */
 .o_assessmentitem .mathEntryInteraction {
-	border: 1px solid #ddedfc;
-	background-color: #edf1f6;
-	background: linear-gradient(to top, #edf1f6 0%, var(--o-neutral-50) 100%);
+	border: 1px solid var(--o-border);
+	background-color: var(--o-bg-subtle);
+	background: linear-gradient(to top, var(--o-bg-subtle) 0%, var(--o-neutral-50) 100%);
 	border-radius: $border-radius-base;
 	padding: 20px 0;
 
@@ -1575,15 +1582,16 @@ table.o_qti_item_kprim {
 	}
 
 	div.success {
-		background: $o-qti-success;
+		background: var(--o-qti-success-bg);
 	}
 
 	div.failure {
-		background-color:$o-qti-failure;
+		background-color: var(--o-qti-failure-bg);
 	}
 
 	div.error {
-		background-color:$o-qti-error;
+		color: var(--o-qti-error-fg);
+		background-color: var(--o-qti-error-bg);
 	}
 
 
@@ -1626,7 +1634,7 @@ table.o_qti_item_kprim {
 /* Correct solution feedback */
 .o_togglebox_wrapper .o_modal_correct_solution div.o_togglebox_content {
 	background-color: $o-box-warning-bg;
-	border-color: $o-box-warning-color;
+	border-color: var(--o-box-warning-border);
 }
 
 /* Candidate comment */
@@ -1895,7 +1903,7 @@ tr.o_test_session_error>td, tr.o_test_session_cancelled>td {
 /* Statistics */
 /* Override the same for QTI 1.2 */
 ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
-	background: #F5F5F5;
+	background: var(--o-bg-subtle);
 	padding: 1px 3px;
 	width: 90%;
 	display: inline-block;
@@ -2127,7 +2135,7 @@ div.o_qti_statistics {
 	}
 	
 	.o_qti_statistics_answer {
-		background: #F5F5F5;
+		background: var(--o-bg-subtle);
 		padding: 1px 2px;
 		width: 90%;
 	}

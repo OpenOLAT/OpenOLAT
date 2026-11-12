@@ -113,13 +113,13 @@ svg {
 }
 
 .o_practice_correct {
-	@include o-make-message-box($o-box-success-bg, $o-box-success-color, 'circle-check');
+	@include o-make-message-box($o-box-success-bg, var(--o-box-success-border), 'circle-check', var(--o-box-success-text));
 	margin: 0;
 	border-radius: 0;
 }
 
 .o_practice_incorrect {
-	@include o-make-message-box($o-box-error-bg, $o-box-error-color, 'circle-xmark');
+	@include o-make-message-box($o-box-error-bg, var(--o-box-error-border), 'circle-xmark', var(--o-box-error-text));
 	margin: 0;
 	border-radius: 0;
 }
@@ -253,7 +253,7 @@ svg {
 		background-color: $o-practice-play-bg-color;
 	
 		span>i {
-			color: #ccc;
+			color: var(--o-practice-icon);
 			font-size: 500%;
 		}
 		
@@ -283,7 +283,7 @@ svg {
 		right: 1em;
 	
 		>i {
-			color: #ccc;
+			color: var(--o-practice-icon);
 			font-size: 500%;
 		}
 	}

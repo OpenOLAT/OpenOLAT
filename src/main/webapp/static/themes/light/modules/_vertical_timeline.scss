@@ -26,7 +26,7 @@
                 h5 {
                     font-size: $font-size-h4;
                     font-weight: bold;
-                    color: #111;
+                    color: var(--o-heading);
                     padding-bottom: 2px;
                     margin-bottom: 4px;
                 }
@@ -137,14 +137,14 @@
 
                 .o_vertical_timeline_action {
                     font-size: 14px;
-                    color: #333; // slightly darker than details for visual hierarchy
+                    color: var(--o-heading); // slightly darker than details for visual hierarchy
                     padding-top: 4px;
                     line-height: 1.3;
                 }
 
                 .o_vertical_timeline_details {
                     font-size: 95%;
-                    color: #444;
+                    color: var(--o-text);
                     margin-top: 4px;
                 }
             }

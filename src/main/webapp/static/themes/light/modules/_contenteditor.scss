@@ -157,13 +157,14 @@
 	}
 }
 
-@mixin alert_box($mainColor, $backgroundColor) {
+// $mainColor: the border (15% translucent) and the icon; $iconColor: another colour for the icon
+@mixin alert_box($mainColor, $backgroundColor, $iconColor: $mainColor) {
 	box-shadow: $o-cc-box-shadow;
-	border-color: rgba($mainColor, 15%);
+	border-color: color-mix(in srgb, #{$mainColor} 15%, transparent);
 	background-color: $backgroundColor;
 
 	> .o_container_block > .o_container_block_alert > .o_alert_icon {
-		color: $mainColor;
+		color: $iconColor;
 	}
 	
 	&.o_page_layout {
@@ -195,7 +196,7 @@
 		}
 
 		&.o_alert_box_type_info {
-			@include alert_box($o-box-info-color, $o-box-info-bg);
+			@include alert_box(var(--o-box-info-border), $o-box-info-bg, var(--o-box-info-text));
 		}
 
 		&.o_alert_box_type_tip {
@@ -207,15 +208,15 @@
 		}
 
 		&.o_alert_box_type_warning {
-			@include alert_box($o-box-warning-color, $o-box-warning-bg);
+			@include alert_box(var(--o-box-warning-border), $o-box-warning-bg, var(--o-box-warning-text));
 		}
 
 		&.o_alert_box_type_error {
-			@include alert_box($o-box-error-color, $o-box-error-bg);
+			@include alert_box(var(--o-box-error-border), $o-box-error-bg, var(--o-box-error-text));
 		}
 
 		&.o_alert_box_type_success {
-			@include alert_box($o-box-success-color, $o-box-success-bg);
+			@include alert_box(var(--o-box-success-border), $o-box-success-bg, var(--o-box-success-text));
 		}
 
 		// Custom colour: o_alert_box_color_<key> sets the swatch tokens --o-sw-*
@@ -523,7 +524,7 @@
 .o_page_content_editor {
 	.o_page_part {
 		&.o_page_part_view:hover {
-			background-color: #eee;
+			background-color: var(--o-bg-hover);
 		}
 		@media (prefers-reduced-motion: no-preference) {
 			transition: background-color 0.2s ease;
@@ -547,7 +548,7 @@
 	}
 
 	.o_ceditor_inspector_header {
-		border-bottom: 1px solid #d9d9d9;
+		border-bottom: 1px solid var(--o-border);
 		padding: 9px 10px;
 		cursor: grab;
 
@@ -768,7 +769,7 @@
 
 		>a, >button {
 			margin-right: 0.5em;
-			color: black;
+			color: var(--o-text);
 			border: none;
 			background-color: transparent;
 		}
@@ -810,7 +811,7 @@
 		}
 
 		>*:not(:first-child) {
-			border-left: 1px solid #d9d9d9;
+			border-left: 1px solid var(--o-border);
 		}
 
 		>button>span {
@@ -838,7 +839,7 @@
 	.o_page_element_tools>a {
 		padding: 4px 0px 5px 6px;
 		text-decoration: none;
-		color: #000;
+		color: var(--o-text);
 	}
 
 	.o_page_container_tools {
@@ -846,11 +847,11 @@
 			margin: 0;
 			padding: 0 5px;
 			line-height: 25px;
-			border-left: 1px solid #d9d9d9;
+			border-left: 1px solid var(--o-border);
 			background: var(--o-bg-raised);
 		}
 		>*:last-child {
-			border-right: 1px solid #d9d9d9;
+			border-right: 1px solid var(--o-border);
 		}
 		>span.o_container_name {
 			background: transparent;
@@ -869,14 +870,14 @@
 			line-height: $o-editor-border-width;
 			vertical-align: middle;
 			a {
-				color: var(--o-white);
+				color: var(--o-editor-part-toolbar-link);
 				&:hover {
-					color: darken(#fff, 10%);
+					color: var(--o-editor-part-toolbar-link-hover);
 				}
 				&.o_disabled {
-					color: rgba(255,255,255,0.5) !important;
+					color: color-mix(in srgb, var(--o-editor-part-toolbar-link) 50%, transparent) !important;
 					&:hover {
-						color: rgba(255,255,255,0.5) !important;
+						color: color-mix(in srgb, var(--o-editor-part-toolbar-link) 50%, transparent) !important;
 					}
 				}
 			}
@@ -1172,7 +1173,7 @@
 		img.o_image_shadow {
 			padding: 0;
 			box-shadow: $o-cc-box-shadow;
-			border: 1px solid rgba($gray, 15%);
+			border: 1px solid color-mix(in srgb, var(--o-editor-image-shadow-border) 15%, transparent);
 			border-radius: $border-radius-base;
 		}
 
@@ -1185,9 +1186,9 @@
 			padding: 0;
 			border: 0;
 			border-radius: 0;
-		    -moz-box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.6), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px rgba(0,0,0,0.2);
-			-webkit-box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.6), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px rgba(0,0,0,0.2);
-	    	box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.6), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px rgba(0,0,0,0.2);
+		    -moz-box-shadow: 0px 0px 0px 1px color-mix(in srgb, var(--o-shadow-color) 60%, transparent), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
+			-webkit-box-shadow: 0px 0px 0px 1px color-mix(in srgb, var(--o-shadow-color) 60%, transparent), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
+	    	box-shadow: 0px 0px 0px 1px color-mix(in srgb, var(--o-shadow-color) 60%, transparent), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
 	    	margin: 15px;
 		}
 		img.o_image_polaroid {
@@ -1404,7 +1405,7 @@ table.o_ce_table {
 	}
 
 	border-radius: $o-portfolio-lead-border-radius;
-	border: 1px $o-portfolio-lead-border-color solid;
+	border: 1px var(--o-portfolio-lead-border) solid;
 }
 
 .o_ce_preview {
@@ -1425,7 +1426,7 @@ table.o_ce_table {
 	position: relative;
 
 	box-shadow: $o-cc-box-shadow;
-	background-color: mix($o-color-light-gray, white, 5%);
+	background-color: var(--o-page-code-box-bg);
 	border: 1px solid var(--o-code-block-border);
 	border-radius: $border-radius-base;
 
@@ -1892,11 +1893,11 @@ table.o_ce_table {
 			box-shadow: $o-cc-box-shadow;
 			border-radius: $border-radius-base;
 			overflow: hidden;
-			border: 1px solid rgba($gray-base, 10%);
+			border: 1px solid color-mix(in srgb, var(--o-page-table-border) 10%, transparent);
 
 			table.b_border {
 				td, th {
-					border-color: rgba($gray-base, 10%);
+					border-color: color-mix(in srgb, var(--o-page-table-border) 10%, transparent);
 				}
 
 				> thead > tr:first-child > * { 
@@ -2465,7 +2466,7 @@ table.o_ce_table {
 			}
 			div.o_spacer_wrapper:hover {
 				hr.o_spacer, hr.o_spacer:hover {
-					border-color: darken($hr-border, 10);
+					border-color: var(--o-page-spacer-border-hover);
 				}
 			}
 

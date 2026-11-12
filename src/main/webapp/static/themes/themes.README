@@ -141,10 +141,14 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
       -hover, -active, -focus   the colour of a state, e.g. --o-tag-bg-hover, --o-chelp-bg-hover
       -edge                     a darker edge around a fill, e.g. --o-focus-edge
       -tint                     a lighter tint as a surface, e.g. --o-immunity-proof-none-bg-tint
-      -stop-{n}                 the stop n of a gradient
+      -stop-{n}                 the stop n of a gradient, e.g. --o-highscore-podium-first-bg-stop-1
+    A gradient stop can also turn the hue of its token (adjust-hue()), e.g.
+    --o-catalog-header-noimage-stop-4.
     A translucent colour is no token. A rule mixes the token with transparent and keeps the
-    alpha, e.g. color-mix(in srgb, var(--o-focus) 15%, transparent). An override of the token
-    changes the translucent colour too. For your own
+    alpha, e.g. color-mix(in srgb, var(--o-backdrop) 50%, transparent). An override of the token
+    changes the translucent colour too. The defaults of the translucent $o-* variables (veils,
+    tints of the primary colour) are such mixes, e.g. $o-login-bg-color; your value of the
+    variable replaces it as before. For your own
     button rules use the mixin button-variant with colours as before, or with tokens:
       @include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
     To override a token, set the map $o-tokens in your config. The key is the token name without
@@ -197,19 +201,64 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
       --o-selectus-review-comment-link the links in the review comments of selectus
     e.g.
       $o-tokens: ("segments-tab-link": "content-link");
-    The status colours of the modules (icons, texts, tints, the danger button, the dirty button
-    and the book button of the course site) read the state tokens, not $brand-success,
-    $brand-info, $brand-warning, $brand-danger or $state-*. Your values of these Bootstrap
-    variables reach only the Bootstrap rules (.btn-success, .btn-info, .btn-warning, alerts,
-    labels, progress bars) and the message boxes. To change a status colour everywhere, set
-    the state tokens, e.g.
-      $o-tokens: ("state-danger-bg": "red-600", "state-danger-text": "red-600");
+    The status colours read the state tokens: the modules (icons, texts, tints, the danger
+    button, the dirty button and the book button of the course site), the Bootstrap rules
+    (.btn-success, .btn-info, .btn-warning, alerts, labels, progress bars, form validation)
+    and the message boxes. They do not read $brand-success, $brand-info, $brand-warning,
+    $brand-danger or $state-{success,info,warning,danger}-{text,bg,border} any more. Your
+    values of these Bootstrap variables reach only email.css, the own rules of your theme and
+    the login link of the navigation bar ($o-navbar-login-color, default $brand-warning).
+    When your config sets one of them to a value other than the default of the light theme,
+    the compile prints one warning for theme.css and one for content.css:
+      WARNING: OpenOLAT theme: your config sets $brand-danger, ... These variables do not
+      change the rules of theme.css and content.css any more ...
+    The warning does not stop the compile. What to do:
+      1. Set the colour of a state with $o-palette (the colour of a hue), $o-states (the hue
+         of a state) or $o-tokens (one token), e.g.
+           $o-tokens: ("state-danger-bg": "red-600", "state-danger-text": "red-600");
+      2. Remove the Bootstrap variables from your config when your theme does not need them
+         for email.css or for its own rules.
+      3. When you keep them on purpose, set
+           $o-legacy-color-warning: false;
+         in your config to hide the warning.
     The danger button has own tokens with the danger state as default: btn-danger-bg,
     btn-danger-fg, btn-danger-border (one step darker). To change the danger button alone:
       $o-tokens: ("btn-danger-bg": "red-600", "btn-danger-border": "red-700");
     The dirty button ($o-button-dirty-bg) and the book button ($o-coursesite-book-bg) have the
     fill of the warning state and a dark text. When you set their Sass variable, the text is
     the adjusted white as before.
+    The border of a styled course element is $o-cn-style-border-line-width (1px),
+    $o-cn-style-border-line-style (solid) and the token course-style-border (#E4E7EC, follows
+    "border"). The shorthand $o-cn-style-border is removed: when your config sets it, the
+    compile prints one warning per stylesheet and the value has no effect. Set e.g.
+      $o-cn-style-border-line-width: 2px;
+      $o-tokens: ("course-style-border": "neutral-300");
+    The text and the tool icons of the navigation bar ($o-navbar-color,
+    $o-navbar-tools-permanent-color) default to $navbar-default-color adjusted to 4.5:1 on
+    $o-navbar-bg. A value that your config sets is not adjusted.
+    The focus ring: every control shows the same ring on :focus-visible, an outline of 2px in
+    the colour of the token focus with a gap of 2px ($o-focus-ring-width, $o-focus-ring-offset).
+    The token reads $o-focus-color. Default: $brand-primary adjusted to 3:1 on $body-bg. When
+    your config sets $input-border-focus, the ring has that colour. A value that your config
+    sets for $o-focus-color or $input-border-focus is not adjusted: check 3:1 on the page
+    background yourself. The navigation bar and the footer have own tokens (navbar-focus,
+    footer-focus): the focus colour when it has 3:1 on the navigation bar or the footer, else
+    their link colour, adjusted to 3:1. On a coloured navigation bar you can set e.g.
+      $o-tokens: ("navbar-focus": "white");
+    Do not add own outline rules for :focus to your theme; the mixins of light/modules/_focus.scss
+    give a control the inset ring (o-focus-ring-inset) when it touches its neighbours.
+    The fixed greys and colours of the modules read tokens (decision D29): texts, borders and
+    fills read the semantic tokens (text, text-muted, border, border-strong, bg-subtle, bg-hover,
+    ...), status icons the state tokens, decorative colours palette steps. Your values of
+    $text-color, $panel-default-border, $input-border, ... now reach these rules too. Elements
+    without a fitting role have own tokens with the colour of before: the one-time code field
+    (otp-cell-bg, otp-cell-active-bg, otp-caret), the off-canvas menu (offcanvas-link-hover,
+    which reads $o-offcanvas-link-hover-color, offcanvas-category-border), the status icons of
+    selectus (selectus-status-*), the audio and video recorder (recorder-*), the sticky table
+    columns (table-sticky-col-bg, table-sticky-col-striped-bg), e.g.
+      $o-tokens: ("otp-cell-bg": "neutral-100", "selectus-status-screening": "yellow-600");
+    The QTI hotspot editor styles, the styles stored in content (image styles, text markers),
+    brand colours, the developer tools and the print sheets keep their literal colours.
     The compile stops for an unknown token or step, for a loop of references and for an override
     below the contrast of its pair (4.5:1 text, 3:1 borders and focus). An override changes every
     rule that reads the token; a rule that still reads the Sass variable keeps the Sass value. Do

@@ -32,9 +32,10 @@
 	}
 	
 	&.o_tag_selected {
+		color: var(--o-tag-selected-fg);
 		background-color: var(--o-tag-selected-bg);
 		border-color: var(--o-tag-selected-border);
-		
+
 		&.o_tag_clickable {
 			&:hover {
 				text-decoration: none;
@@ -50,6 +51,7 @@
 	}
 
 	&.o_tag_selected_remove {
+		color: var(--o-tag-selected-fg);
 		background-color: var(--o-tag-selected-bg);
 		border-color: var(--o-tag-selected-border);
 

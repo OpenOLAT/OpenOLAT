@@ -1,3 +1,20 @@
+/* The focus ring in an entry of the course list: inset, the image, the
+   title and the access area cut their content (overflow hidden). The start
+   and book buttons have a fill in the colour of the ring: the ring has the
+   text colour of the fill, inside the edge (OO-10043, D24). */
+.o_repo_entry_list_item {
+	a, button {
+		&:focus:focus-visible {
+			@include o-focus-ring-inset;
+		}
+	}
+	.btn-primary, .o_start, .o_book {
+		&:focus:focus-visible {
+			@include o-focus-ring-on-fill;
+		}
+	}
+}
+
 /* custom layout */
 .o_visual {
 	overflow: hidden;

@@ -41,12 +41,12 @@
 		
 		.o_table_row_expanded {
 			& > td {
-				background: $o-table-details-bg;
+				background: var(--o-table-details-bg);
 			}
 		}
 		.o_table_row_details {
 			& > td {
-				background: $o-table-details-bg;
+				background: var(--o-table-details-bg);
 				border-top: none;
 				padding: $o-table-details-padding;
 			}
@@ -147,12 +147,12 @@
 		left: 0;
 	}
 	tr.success .o_col_sticky_left, tr.success .o_col_sticky_right {
-		background-color: $alert-success-bg !important;
+		background-color: var(--o-state-success-soft-bg) !important;
 	} 
 	
 	.o_scrollable_left .o_col_sticky_left {
-		box-shadow: 2px 0 2px -2px darken($table-border-color,10%);
-    	background-color: rgb(250,250,250);
+		box-shadow: 2px 0 2px -2px var(--o-table-sticky-col-edge);
+    	background-color: var(--o-table-sticky-col-bg);
 	}
 	.o_multiselect.o_table_checkall.o_col_sticky_left {
 		z-index: 2;		/* make select-all menu appear above sticky columns */
@@ -161,8 +161,8 @@
 		right: 0;
 	}
 	.o_scrollable_right .o_col_sticky_right {
-		box-shadow: -2px 0 2px -2px darken($table-border-color,10%);
-    	background-color: rgb(250,250,250);
+		box-shadow: -2px 0 2px -2px var(--o-table-sticky-col-edge);
+    	background-color: var(--o-table-sticky-col-bg);
 	}
 		
 	/* Hover bg for expanded rows */
@@ -174,12 +174,12 @@
 					&:hover {
 						// ... darken the expanded row...
 						>td {
-							background-color: darken($o-table-details-bg,10%);
+							background-color: var(--o-table-details-bg-hover);
 						}
 						// ... and the details row.
 						+.o_table_row_details {
 							>td {
-								background-color: darken($o-table-details-bg,10%);
+								background-color: var(--o-table-details-bg-hover);
 							}
 						}
 					}
@@ -187,14 +187,14 @@
 					&:has(+.o_table_row_details:hover) {
 						// ... darken the expanded row...
 						>td {
-							background-color: darken($o-table-details-bg,10%);
+							background-color: var(--o-table-details-bg-hover);
 						}
 					}
 				}
 				// ... and the details row.
 				&.o_table_row_details:hover {
 					>td {
-						background-color: darken($o-table-details-bg,10%);
+						background-color: var(--o-table-details-bg-hover);
 					}
 				}
 			}
@@ -220,9 +220,9 @@
 	.o_scrollable_right .table-striped {
   		> tbody > tr:nth-child(odd) {
   			.o_col_sticky_right {		
-		    	background-color: rgb(245,245,245);
+		    	background-color: var(--o-table-sticky-col-striped-bg);
 				&:is(.o_table_row_expanded *) {
-					background: $o-table-details-bg;
+					background: var(--o-table-details-bg);
 				}
 		    }
 		}
@@ -230,9 +230,9 @@
 	.o_scrollable_left .table-striped {
   		> tbody > tr:nth-child(odd) {
   			.o_col_sticky_left {		
-		    	background-color: rgb(245,245,245);		    
+		    	background-color: var(--o-table-sticky-col-striped-bg);		    
 				&:is(.o_table_row_expanded *) {
-					background: $o-table-details-bg;
+					background: var(--o-table-details-bg);
 				}
 			}
 		}
@@ -375,7 +375,7 @@
 									height: 20px;
 									width: 32px;
 									padding: 0px 8px;
-									border: $o-cn-style-border;
+									border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border);
 								}
 							}
 							
@@ -489,12 +489,15 @@ table.table.o_table_nowrap>tbody>tr>td {
 			
 			/* special colors for the filter buttons itself */
 			.o_table_filter {
-				@include button-variant($o-table-filter-color, $o-table-filter-bg, $o-table-filter-border);
+				@include button-variant(var(--o-table-filter-fg), var(--o-table-filter-bg), var(--o-table-filter-border),
+					var(--o-table-filter-fg-hover), var(--o-table-filter-fg-active));
 				&.o_filter_active {
-					@include button-variant($o-table-filter-active-color, $o-table-filter-active-bg, $o-table-filter-active-border);
+					@include button-variant(var(--o-table-filter-active-fg), var(--o-table-filter-active-bg), var(--o-table-filter-active-border),
+						var(--o-table-filter-active-fg-hover), var(--o-table-filter-active-fg-active));
 				}
 				&.o_filter_open {
-					@include button-variant($o-table-filter-active-color, $o-table-filter-active-bg, $o-table-filter-active-border);
+					@include button-variant(var(--o-table-filter-active-fg), var(--o-table-filter-active-bg), var(--o-table-filter-active-border),
+						var(--o-table-filter-active-fg-hover), var(--o-table-filter-active-fg-active));
 					i.o_icon {
 						transform: rotate(180deg);
 					}
@@ -506,7 +509,8 @@ table.table.o_table_nowrap>tbody>tr>td {
 				padding-right: 0;
 				border: 1px solid transparent;
 				border-radius: $btn-border-radius-base;
-				@include button-variant($o-table-filter-color, $o-table-filter-bg, $o-table-filter-border);
+				@include button-variant(var(--o-table-filter-fg), var(--o-table-filter-bg), var(--o-table-filter-border),
+					var(--o-table-filter-fg-hover), var(--o-table-filter-fg-active));
 				
 				.checkbox {
 					width: 100%;
@@ -556,7 +560,7 @@ table.table.o_table_nowrap>tbody>tr>td {
 		margin: -2px auto 0 auto;
 		
 		padding: 0px 8px;
-		border: $o-cn-style-border;
+		border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border);
 	
 		>span {
 			display: none;
@@ -631,7 +635,7 @@ div:has(>.o_table_tabs):has(>.o_table_batch_buttons):not(:has(>.o_table_filters_
 	overflow-y: scroll;
 	margin-right: -15px;
 	label.control-label {
-		color: grey;
+		color: var(--o-text-muted);
 		font-weight: normal;
 		margin-top: 10px;
 		margin-bottom: 0px;
@@ -668,7 +672,7 @@ div:has(>.o_table_tabs):has(>.o_table_batch_buttons):not(:has(>.o_table_filters_
 .input-group.o_autocompletion {
 	margin-bottom: 10px;
 	a {
-		color: grey;
+		color: var(--o-text-muted);
 		opacity: .65;
 	}
 	.o_indicate_search {
@@ -777,10 +781,9 @@ a.o_orderby, a.o_orderby:hover {
 		vertical-align: baseline !important;
 	}
 	
+	// the buttons of the field take the border of the focus, no glow (OO-10043, D24)
 	input[type='text']:focus ~ a.btn	 {
-		$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
 		outline: 0;
-		@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
 		border-color: var(--o-focus);
 	}
 	
@@ -792,7 +795,7 @@ a.o_orderby, a.o_orderby:hover {
 	
 	a.btn.o_table_search_button, a.btn.o_sel_flexi_extendedsearch, a.btn.o_reset_quick_search {
 		display: inline-block;
-		color: grey;
+		color: var(--o-text-muted);
 		border-bottom-left-radius: 0;
 		border-top-left-radius: 0;
 		vertical-align: baseline;
@@ -1049,6 +1052,11 @@ a.o_orderby, a.o_orderby:hover {
 	display: flex;
 	width: 100%;
 	align-items: center;
+	// the link is the full row: the rows touch, a scrolling table body cuts
+	// the ring (OO-10043, D24)
+	&:focus:focus-visible {
+		@include o-focus-ring-inset;
+	}
 }
 .o_row_flex {
 	display: flex;

@@ -5,7 +5,7 @@
 	.o_rating_items {
 		white-space: nowrap;	
 		.o_icon {
-			color: var(--o-state-warning-text);
+			color: var(--o-rating-star);
 			background: none;
 			border: none;
 			padding: 1px;
@@ -86,7 +86,7 @@
 	}
 	
 	.o_comment_highlight {
-	  	@include box-shadow(0 1px 10px rgba(240,173,78,.5));
+	  	@include box-shadow(0 1px 10px color-mix(in srgb, var(--o-comment-highlight-glow) 50%, transparent));
 	}
 
 	.o_comment_wrapper {
@@ -195,21 +195,21 @@
 				.o_file_suffix {
 					position: absolute;
 					margin: $padding-base-vertical 0 0 $padding-base-vertical;
-					color: $o-brand-text;
-					border-color: $o-brand-box-border;
+					color: var(--o-primary-text);
+					border-color: var(--o-brand-box-border);
 				}
 
 				.o_visual_not_available {
 					width: 135px;
 					height: $o-portrait-size;
 					background-color: $o-brand-box-bg;
-					border: solid 1px $o-brand-box-border;
+					border: solid 1px var(--o-brand-box-border);
 					border-radius: $border-radius-large;
 				}
 
 				.o_attachment_title {
 					position: absolute;
-					color: $o-brand-text;
+					color: var(--o-primary-text);
 					margin-left: $padding-large-vertical;
 					margin-top: 50px;
 					max-width: 110px;

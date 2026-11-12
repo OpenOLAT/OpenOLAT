@@ -52,7 +52,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 	.o_quiz {
 		border: 1px solid var(--o-modal-content-border);
 		border-radius: $border-radius-base;
-		background-color: #f2f2f2;
+		background-color: var(--o-bg-subtle);
 		padding: 12px 20px 20px 20px;
 
 		&.o_correct {
@@ -524,7 +524,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		background-color: rgba(0, 0, 0, 0.6);
+		background-color: color-mix(in srgb, var(--o-backdrop) 60%, transparent);
 		border-radius: $border-radius-base;
 		z-index: 100;
 		color: var(--o-white);
@@ -555,7 +555,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 .o_essay_ai_correction_box {
 	margin-top: 1.25rem;
 	background-color: $o-box-warning-bg;
-	border: 1px solid $o-box-warning-color;
+	border: 1px solid var(--o-box-warning-border);
 	border-radius: $border-radius-base;
 	padding: 1rem 1.25rem;
 

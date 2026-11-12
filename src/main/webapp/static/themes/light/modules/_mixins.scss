@@ -3,7 +3,8 @@
 @use "sass:color";
 @use "sass:string";
 
-@mixin o-make-message-box($bgcolor, $color, $boxicon:false){
+// $color: the border and the icon; $iconcolor: another colour for the icon
+@mixin o-make-message-box($bgcolor, $color, $boxicon:false, $iconcolor:null){
 	margin: $o-box-margin 0;
 	padding: $o-box-padding;
 	border: $o-box-border-size solid $color;
@@ -19,7 +20,7 @@
 			position: absolute;
 			left: floor($o-box-padding * 0.5);
 			top: $o-box-padding;
-			color: $color;
+			color: if($iconcolor, $iconcolor, $color);
 			font-size: floor($font-size-base * 1.5);
 			text-align: center;
 			width: $fa-fw-width;
@@ -195,10 +196,12 @@
 
 
 
-@mixin o-make-glossy-bg($basecolor) {
-	background: $basecolor;
-	background: -moz-linear-gradient(top, lighten($basecolor,40%) 0%,lighten($basecolor,10%) 50%,$basecolor 51%,lighten($basecolor,20%) 100%);
-	background: -webkit-linear-gradient(top, lighten($basecolor,40%) 0%,lighten($basecolor,10%) 50%,$basecolor 51%,lighten($basecolor,20%) 100%);
-	background: linear-gradient(top, lighten($basecolor,40%) 0%,lighten($basecolor,10%) 50%,$basecolor 51%,lighten($basecolor,20%) 100%);
+// A glossy fill of the token --o-{$name}: the gradient reads its shade tokens
+// -stop-1, -stop-2 and -stop-4 (lighter by 40%, 10% and 20%, _tokens.scss)
+@mixin o-make-glossy-bg($name) {
+	background: var(--o-#{$name});
+	background: -moz-linear-gradient(top, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
+	background: -webkit-linear-gradient(top, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
+	background: linear-gradient(top, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='$basecolor', endColorstr='lighten($basecolor,20%)',GradientType=0 );
 }

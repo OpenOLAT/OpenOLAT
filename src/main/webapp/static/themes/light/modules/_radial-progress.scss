@@ -49,18 +49,18 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 	.radial-segment {
 		fill: transparent;
 		stroke-width: 8;
-		stroke: $progress-bar-bg;
+		stroke: var(--o-progress-bar-bg);
 		&.radial-segment-success {
-			stroke: $progress-bar-success-bg;
+			stroke: var(--o-state-success-bg);
 		}
 		&.radial-segment-info {
-			stroke: $progress-bar-info-bg;
+			stroke: var(--o-state-neutral-bg);
 		}
 		&.radial-segment-warning {
-			stroke: $progress-bar-warning-bg;
+			stroke: var(--o-state-warning-bg);
 		}
 		&.radial-segment-danger {
-			stroke: $progress-bar-danger-bg;
+			stroke: var(--o-state-danger-bg);
 		}
 		&.radial-segment-passed {
 			stroke: var(--o-course-state-passed);
@@ -69,27 +69,27 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 			stroke: var(--o-course-state-failed);
 		}
 		&.radial-segment-neutral {
-			stroke: $progress-bar-neutral-bg;
+			stroke: var(--o-progress-bar-neutral-bg);
 		}
 	}
 	&.radial-progress-pie .radial-segment {
 		stroke-width: 32;
 	}
 	.o_progress_marker {
-		stroke: $progress-bar-danger-bg;
+		stroke: var(--o-state-danger-bg);
 		stroke-width: 2px;
 		vector-effect: non-scaling-stroke;
 		&.o_progress_marker_primary {
-			stroke: $progress-bar-bg;
+			stroke: var(--o-progress-bar-bg);
 		}
 		&.o_progress_marker_success {
-			stroke: $progress-bar-success-bg;
+			stroke: var(--o-state-success-bg);
 		}
 		&.o_progress_marker_info {
-			stroke: $progress-bar-info-bg;
+			stroke: var(--o-state-neutral-bg);
 		}
 		&.o_progress_marker_warning {
-			stroke: $progress-bar-warning-bg;
+			stroke: var(--o-state-warning-bg);
 		}
 		&.o_progress_marker_passed {
 			stroke: var(--o-course-state-passed);
@@ -98,7 +98,7 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 			stroke: var(--o-course-state-failed);
 		}
 		&.o_progress_marker_neutral {
-			stroke: $progress-bar-neutral-bg;
+			stroke: var(--o-progress-bar-neutral-bg);
 		}
 	}
 	
@@ -442,9 +442,9 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 }
 .o_progress_failed .percentage {
 	@include o-add-icon('times');
-	color: #efe5e5;
+	color: var(--o-state-danger-soft-bg);
 }
 .o_progress_passed .percentage {
 	@include o-add-icon('check');
-	color: #e5efe5;
+	color: var(--o-state-success-soft-bg);
 }

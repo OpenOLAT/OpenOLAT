@@ -158,7 +158,7 @@
 .o_badge_details_box {
 	padding-top: 15px;
 	background-color: var(--o-bg-subtle);
-	border-color: #e7e7e7;
+	border-color: var(--o-border);
 	border-radius: 4px;
 	border-style: solid;
 	border-width: 1px;
@@ -201,7 +201,7 @@
 		margin-bottom: 20px;
 
 		background-color: var(--o-bg-subtle);
-		border-color: #e7e7e7;
+		border-color: var(--o-border);
 		border-radius: 4px;
 		border-style: solid;
 		border-width: 1px;
@@ -275,7 +275,7 @@
 			height: 120px;
 			margin: 8px;
 			border-radius: 8px;
-			border-color: gray;
+			border-color: var(--o-border-strong);
 			border-width: 1px;
 			border-style: solid;
 
@@ -284,15 +284,15 @@
 			}
 
 			&.o_selectable:active {
-				background-color: #dddddd;
+				background-color: var(--o-badge-template-selected-bg);
 			}
 
 			&.o_selectable:hover {
-				background-color: #eeeeee;
+				background-color: var(--o-bg-hover);
 			}
 
 			&.o_selected {
-				background-color: #dddddd;
+				background-color: var(--o-badge-template-selected-bg);
 				border: 3px solid var(--o-primary);
 			}
 
@@ -348,7 +348,7 @@
 
 				.o_line, .o_template_image_placeholder .o_polyline {
 					fill: none;
-					stroke: #000;
+					stroke: var(--o-text);
 					stroke-linecap: round;
 					stroke-linejoin: round;
 					stroke-width: 10px;

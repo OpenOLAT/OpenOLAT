@@ -93,9 +93,9 @@
 .o_tag.o_competence,
 .o_tag.o_taxonomy {
 	@extend %o_nowrap;
-	background-color: #ffffff;
+	background-color: var(--o-competence-bg);
 	color: $o-competences-font-color;
-	border-color: $o-competences-color; 
+	border-color: var(--o-competence-border); 
 	border-radius: 0.5em;
 	vertical-align: bottom;
 	max-width: 100%;
@@ -109,30 +109,30 @@
 	&.o_tag_clickable {
 		&:hover {
 			text-decoration: none;
-			background-color: darken(#ffffff, 10%);
-			border-color: $o-competences-color;
+			background-color: var(--o-competence-bg-hover);
+			border-color: var(--o-competence-border);
 		}
 		
 		&:active {
-			background-color: darken(#ffffff, 15%);
-			border-color: $o-competences-color;
+			background-color: var(--o-competence-bg-active);
+			border-color: var(--o-competence-border);
 		}
 	}
 	
 	&.o_tag_selected {
 		color: var(--o-competence-selected);
-		background-color: #fff;
+		background-color: var(--o-competence-bg);
 		border-color: var(--o-competence-selected-border);
 		
 		&.o_tag_clickable {
 			&:hover {
 				text-decoration: none;
-				background-color: darken(#ffffff, 10%);
+				background-color: var(--o-competence-bg-hover);
 				border-color: var(--o-competence-selected-border-hover);
 			}
 			
 			&:active {
-				background-color: darken(#ffffff, 15%);
+				background-color: var(--o-competence-bg-active);
 				border-color: var(--o-competence-selected-border-active);
 			}
 		}

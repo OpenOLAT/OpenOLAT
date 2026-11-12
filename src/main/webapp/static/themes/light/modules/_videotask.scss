@@ -32,11 +32,11 @@
 
 .o_videotask_categories .btn.btn-default.o_disabled,
 .o_videotask_categories .btn.btn-default:active {
-	color: $o-video-color !important;
+	color: var(--o-video-bright) !important;
 }
 
 .o_videotask_categories .btn.btn-default:hover {
-	border-color: darken($o-video-color,10%);
+	border-color: var(--o-video-bright-edge);
 
 	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
 		background-color: var(--o-sw-border);
@@ -46,11 +46,11 @@
 .o_videotask_tooltip {
 	.tooltip-inner {
 		min-width: unset;
-		border: 1px solid darken($o-video-color,10%);
+		border: 1px solid var(--o-video-bright-edge);
 	}
 	
 	&.tooltip.top .tooltip-arrow {
-		border-top-color: darken($o-video-color,10%);
+		border-top-color: var(--o-video-bright-edge);
 	}
 
 	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
@@ -175,14 +175,14 @@
 	
 	>.o_warning {
 		background-color: $o-box-warning-bg;
-		color: $o-box-warning-color;
-		border: 1px solid $o-box-warning-color;
+		color: var(--o-box-warning-text);
+		border: 1px solid var(--o-box-warning-border);
 	}
 	
 	>.o_correct {
 		background-color: $o-box-success-bg;
-		color: $o-box-success-color;
-		border: 1px solid $o-box-success-color;
+		color: var(--o-box-success-text);
+		border: 1px solid var(--o-box-success-border);
 	}
 }
 
@@ -223,7 +223,7 @@
 		font-size: 20px;
 		line-height: 16px;
 		color: var(--o-state-success-text);
-		background-color: white;
+		background-color: var(--o-bg);
 		width: 16px;
 		height: 16px;
 		
@@ -247,7 +247,7 @@
 		font-size: 20px;
 		line-height: 16px;
 		color: var(--o-state-danger-text);
-		background-color: white;
+		background-color: var(--o-bg);
 		width: 16px;
 		height: 16px;
 		
@@ -284,7 +284,7 @@
 		font-size: 14px;
 		line-height: 12px;
 		color: var(--o-state-success-text);
-		background-color: white;
+		background-color: var(--o-bg);
 		width: 12px;
 		height: 12px;
 		border-radius: 6px;

@@ -31,34 +31,34 @@ svg.o_bp {
 	- A line in the box representing the median 
 	*/
 	.o_bp_v_b {
-		fill: $o-box-plot-quartile-fill;
+		fill: var(--o-box-plot-quartile-fill);
 	}
 	
 	
 	/* Color variations */
 	&.o_rubric_insufficient {
 		.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
-			stroke: $o-evaluation-insufficient-color;
+			stroke: var(--o-evaluation-insufficient);
 		}
 		.o_bp_v_b {
-			fill:  $o-evaluation-insufficient-fill;
+			fill:  var(--o-evaluation-insufficient-fill);
 		}
 	}
 	
 	&.o_rubric_neutral {
 		.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
-			stroke: $o-evaluation-neutral-color;
+			stroke: var(--o-evaluation-neutral);
 		}
 		.o_bp_v_b {
-			fill:  $o-evaluation-neutral-fill;
+			fill:  var(--o-evaluation-neutral-fill);
 		}
 	}
 	&.o_rubric_sufficient {
 			.o_bp_v_s, .o_bp_v_e, .o_bp_v_l, .o_bp_v_a, .o_bp_v_m {
-			stroke: $o-evaluation-sufficient-color;
+			stroke: var(--o-evaluation-sufficient);
 		}
 		.o_bp_v_b {
-			fill:  $o-evaluation-sufficient-fill;
+			fill:  var(--o-evaluation-sufficient-fill);
 		}
 	}
 }

@@ -17,6 +17,13 @@
 		color: var(--o-footer-link);
 		&:hover { color: $o-footer-default-link-hover-color;}
 	}
+	// the focus ring reads footer-focus: 3:1 on the footer, also on a dark or
+	// coloured footer (OO-10043, D24)
+	a, button {
+		&:focus:focus-visible {
+			outline-color: var(--o-footer-focus);
+		}
+	}
 }
 #o_footer_container {
 	position: relative;

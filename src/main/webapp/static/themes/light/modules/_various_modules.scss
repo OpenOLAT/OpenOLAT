@@ -41,7 +41,7 @@ a.o_chelp,
 /* context help for input element in forms, right from label and context help tooltips */
 .o_form_chelp, 
 .o_chelp_tooltip {
-	color: $o-chelp-tooltip-color;
+	color: var(--o-chelp-tooltip);
 }
 
 #o_container_page_width_toggler {
@@ -181,7 +181,7 @@ ul.o_dropdown {
 
 			.o_icon {
 				font-size: 36px;
-				color: $o-brand-text;
+				color: var(--o-primary-text);
 			}
 		}
 		
@@ -217,7 +217,7 @@ ul.o_dropdown {
 
 			.o_icon {
 				font-size: 48px;
-				color: $o-brand-text;
+				color: var(--o-primary-text);
 			}
 		}
 	}
@@ -311,7 +311,7 @@ ul.o_dropdown {
 		width:200px; 
 		height:200px;
 		display: inline-block; /* render centered if title larger than image */
-		background-color: #fff;
+		background-color: var(--o-bg-raised);
 		margin: 0 -5px; /* remove ugly border */
 	}
 }
@@ -332,11 +332,11 @@ ul.o_dropdown {
 .o_htmleditor {
 	.o_metadata {
 		/* match tinymce style */
-		border: 1px solid #999;
+		border: 1px solid var(--o-border-strong);
 		border-top-left-radius: 3px;
 		border-top-right-radius: 3px;
 		border-bottom: 0;
-		background: #eee;
+		background: var(--o-bg-subtle);
 		position: relative;
 		top: 1px;
 		padding: 5px;
@@ -672,7 +672,7 @@ ul.o_certificates li {
 	
 	.o_achievement_meta > span.o_issuer {
 		font-size: 100%;
-		color: black;
+		color: var(--o-text);
 	}
 	
 	.o_achievement_actions {
@@ -1152,7 +1152,7 @@ div.o_reminder_custom_email {
 		background: none;
 	}
 	.btn-primary {
-		color: #000;
+		color: var(--o-text);
 		font-size: ceil(($font-size-base * 1.7));
 		background: none;
 	}
@@ -1161,7 +1161,7 @@ div.o_reminder_custom_email {
 		background: none;
 	}
 	.o_segment_separator {
-		color: #000;
+		color: var(--o-text);
 	}
 }
 
@@ -1172,8 +1172,8 @@ div.o_reminder_custom_email {
 	.btn, .btn:hover, .btn:active, .btn:focus {
 		border: none;
 		border-radius: 0;
-		border-color: white;
-		border-bottom: 4px solid white;
+		border-color: var(--o-bg);
+		border-bottom: 4px solid var(--o-bg);
 		box-shadow: none;
 		background: none;
 		padding-right: 0;
@@ -1189,7 +1189,7 @@ div.o_reminder_custom_email {
 		background: none;
 	}
 	.o_segment_separator {
-		color: #000;
+		color: var(--o-text);
 	}
 
 }
@@ -1229,7 +1229,7 @@ div.o_reminder_custom_email {
 		width: 36px;
 		height: 36px;
 		border-radius: 18px;
-		border: 2px solid #fff;
+		border: 2px solid var(--o-bg);
 		background-color: $o-empty-panel-icon-bg-color;
 		box-shadow: 0px 1px 3px 0px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
 		display: flex;
@@ -1380,7 +1380,7 @@ div.o_reminder_custom_email {
 			height: 20px;
 			width: 32px;
 			padding: 0px 8px;
-			border: $o-cn-style-border;
+			border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border);
 			border-top-left-radius: 0px;
 			border-top-right-radius: 0px;
 		}
@@ -1403,7 +1403,7 @@ div.o_reminder_custom_email {
 		top: -10px;
 		
 		padding: 0px 8px;
-		border: $o-cn-style-border;
+		border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border);
 		border-top-left-radius: $border-radius-base;
 		border-top-right-radius: $border-radius-base;
 	
@@ -1471,11 +1471,11 @@ dialog#o_ajax_busy {
 
 #o_ajax_progress {
 	display: none;
-	border: 1px solid #888;
+	border: 1px solid var(--o-border-strong);
 	border-radius: 4px;
 	background: color-mix(in srgb, var(--o-scrim) 85%, transparent);
 	padding: 20px 15px;
-	color:#222;
+	color:var(--o-text);
 	text-align: left;
 		
 	.progress {
@@ -1653,18 +1653,18 @@ ul.o_assessment_docs>li:last-child {
 			bottom: -3px;
 			width: 2px;
 			margin-left: -1px;
-			background-color: $progress-bar-danger-bg;
+			background-color: var(--o-state-danger-bg);
 			&.o_progress_marker_primary {
-				background-color: $progress-bar-bg;
+				background-color: var(--o-progress-bar-bg);
 			}
 			&.o_progress_marker_success {
-				background-color: $progress-bar-success-bg;
+				background-color: var(--o-state-success-bg);
 			}
 			&.o_progress_marker_info {
-				background-color: $progress-bar-info-bg;
+				background-color: var(--o-state-neutral-bg);
 			}
 			&.o_progress_marker_warning {
-				background-color: $progress-bar-warning-bg;
+				background-color: var(--o-state-warning-bg);
 			}
 			&.o_progress_marker_passed {
 				background-color: var(--o-course-state-passed);
@@ -1673,7 +1673,7 @@ ul.o_assessment_docs>li:last-child {
 				background-color: var(--o-course-state-failed);
 			}
 			&.o_progress_marker_neutral {
-				background-color: $progress-bar-neutral-bg;
+				background-color: var(--o-progress-bar-neutral-bg);
 			}
 		}
 	}
@@ -1753,17 +1753,18 @@ ul.o_assessment_docs>li:last-child {
 
 /* label */
 
-// inspired by button-variant
-@mixin labeled-variant($color, $background, $border) {
-	color: $color;
-	background-color: $background;
-	border-color: $border;
+// inspired by button-variant: the tokens --o-{$name}-fg, -bg and -border, and
+// the shade tokens -bg-hover and -border-hover for a label as a link
+@mixin labeled-variant($name) {
+	color: var(--o-#{$name}-fg);
+	background-color: var(--o-#{$name}-bg);
+	border-color: var(--o-#{$name}-border);
 	
 	// .o_empty is a drop down button without a menu
 	&:is(a):not(.o_empty):hover {
-		color: $color;
-		background-color: darken($background, 10%);
-		border-color: darken($border, 12%);
+		color: var(--o-#{$name}-fg);
+		background-color: var(--o-#{$name}-bg-hover);
+		border-color: var(--o-#{$name}-border-hover);
 	}
 }
 
@@ -1771,7 +1772,7 @@ ul.o_assessment_docs>li:last-child {
 .o_labeled,
 a.o_labeled {
 	// a label without a status class (status colours: semantic states in _states.scss, OO-10042)
-	@include labeled-variant(#FFFFFF, o-palette("gray", 600), o-palette("gray", 700));
+	@include labeled-variant("labeled");
 	display: inline-block;
 	text-align: center;
 	text-decoration: none;
@@ -1788,7 +1789,7 @@ a.o_labeled {
 .o_labeled_light,
 a.o_labeled_light {
 	@extend %o_labeled;
-	@include labeled-variant(o-palette("gray", 600), #FFFFFF, o-palette("gray", 600));
+	@include labeled-variant("labeled-light");
 	padding: 2px 5px;
 	font-size: 85%;
 	line-height: 85%;
@@ -1879,7 +1880,7 @@ a.o_labeled_light {
 	font-family: $font-family-monospace;
 	background: var(--o-bg-subtle);
 	padding: 10px;
-	border: 1px solid #c2c2c2;
+	border: 1px solid var(--o-border-strong);
 }
 
 /* files and folders */
@@ -1895,7 +1896,7 @@ a.o_labeled_light {
 
 /* Tags */
 .o_tag_admin {
-	background: repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+	background: repeating-linear-gradient(135deg, transparent, transparent 3px, color-mix(in srgb, var(--o-backdrop) 10%, transparent) 3px, color-mix(in srgb, var(--o-backdrop) 10%, transparent) 6px);
 }
 
 .o_tag_admin {

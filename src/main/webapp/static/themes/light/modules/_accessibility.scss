@@ -16,3 +16,70 @@
 	color: #000 !important;
 	background: #fff !important;
 }
+
+/* The focus ring of every other element that gets the focus with the
+   keyboard (OO-10043, D24): instead of the ring of the browser. The
+   specificity of :where() is 0, so every rule that sets an outline of an
+   element wins, as over the ring of the browser. Links, buttons, form
+   fields: modules/_focus.scss. */
+:where(:focus-visible) {
+	@include o-focus-ring;
+}
+
+/* Inset focus ring (OO-10043, D24) for the Bootstrap controls that touch
+   their neighbours: a ring with the 2px gap would cover the neighbour. The
+   ring lies on the edge of the control. A rule with :focus:focus-visible
+   is stronger than the ring of tab-focus (.btn:focus:focus-visible). */
+// button groups with two buttons or more and the segments: the buttons
+// touch (margin -1px). A single dropdown button in a .btn-group keeps the
+// ring with the gap.
+.btn-group:has(> .btn + .btn, > .btn + .btn-group, > .btn-group + .btn, > .btn-group + .btn-group) {
+	> .btn,
+	> .btn-group > .btn {
+		&:focus:focus-visible {
+			@include o-focus-ring-inset;
+		}
+	}
+	// on the fill of a primary or pressed button: the text colour of the fill
+	> .btn-primary,
+	> .btn.active {
+		&:focus:focus-visible {
+			@include o-focus-ring-on-fill;
+		}
+	}
+}
+.btn-group-vertical > .btn,
+.o_segments .btn,
+// input groups: the field and its buttons touch
+.input-group .form-control,
+.input-group-btn > .btn,
+// pills (table filters) are 2px apart, tabs touch each other and the line
+// below them
+.nav-pills > li > a,
+.nav-tabs > li > a,
+// pagination: the items touch (margin -1px)
+.pagination > li > a,
+.pagination > li > span,
+// dropdown menu items: the full width of the menu, which can scroll
+.dropdown-menu > li > a {
+	&:focus:focus-visible {
+		@include o-focus-ring-inset;
+	}
+}
+// On a fill in the colour of the ring (primary, selected, pressed, active
+// filter) the inset ring has the text colour of the fill (4.5:1 by the
+// contrast pairs of the fill), one ring width inside the edge.
+.btn-group > .btn-primary,
+.btn-group > .btn.active,
+.o_segments .btn-primary,
+.input-group-btn > .btn-primary,
+.nav-pills > li.active > a,
+.nav-pills > li > .o_filter_active,
+.nav-pills > li > .o_filter_open,
+.pagination > .active > a,
+.pagination > .active > span,
+.dropdown-menu > .active > a {
+	&:focus:focus-visible {
+		@include o-focus-ring-on-fill;
+	}
+}

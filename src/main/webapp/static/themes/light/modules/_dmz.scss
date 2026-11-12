@@ -397,17 +397,17 @@ body.o_dmz {
 	
 	&.o_validation_invalid {
 		label.control-label {
-			color: $o-box-error-color;
+			color: var(--o-box-error-text);
 		}
 
 		.o_sel_registration_otp {
 			.o_background {
-				--otp-border-color: #{$o-box-error-color};				
+				--otp-border-color: var(--o-box-error-border);				
 			}
 
 			input.o_sel_registration_otp {
-				--otp-cell-bg-color: #{$o-box-error-bg};
-				--otp-cell-bg-color-focus: #{darken($o-box-error-bg, 10%)};
+				--otp-cell-bg-color: var(--o-box-error-bg);
+				--otp-cell-bg-color-focus: var(--o-registration-otp-error-bg-focus);
 			}
 		}
 	}
@@ -415,11 +415,11 @@ body.o_dmz {
 	&.o_validation_valid {
 		.o_sel_registration_otp {
 			.o_background {
-				--otp-border-color: #{$o-box-success-color};
+				--otp-border-color: var(--o-box-success-border);
 			}
 
 			input.o_sel_registration_otp {
-				--otp-cell-bg-color: #{$o-box-success-bg};
+				--otp-cell-bg-color: var(--o-box-success-bg);
 				--otp-cell-bg-color-focus: transparent;
 			}
 		}
@@ -460,24 +460,24 @@ body.o_dmz {
 	align-items: center;
 	gap: 2rem;
 	input.o_sel_registration_otp {
-		--otp-cell-bg-color: #EEE;
-		--otp-cell-bg-color-focus: #BBB;
+		--otp-cell-bg-color: var(--o-otp-cell-bg);
+		--otp-cell-bg-color-focus: var(--o-otp-cell-active-bg);
 		
 		--_otp-digit: 0;
 
 		all: unset;
 		background:
 			linear-gradient(90deg,
-							var(--otp-cell-bg-color-focus, #BBB) calc(var(--otp-gap) * var(--otp-ls)),
+							var(--otp-cell-bg-color-focus, var(--o-otp-cell-active-bg)) calc(var(--otp-gap) * var(--otp-ls)),
 							transparent 0),
 			linear-gradient(90deg,
-							var(--otp-cell-bg-color, #EEE) calc(var(--otp-gap) * var(--otp-ls)),
+							var(--otp-cell-bg-color, var(--o-otp-cell-bg)) calc(var(--otp-gap) * var(--otp-ls)),
 							transparent 0
 			);
 		background-position: calc(var(--_otp-digit) * var(--_otp-bgsz)) 0, 0 0;
 		background-repeat: no-repeat, repeat-x;
 		background-size: var(--_otp-bgsz) 100%;
-		caret-color: var(--otp-cc, #222);
+		caret-color: var(--otp-cc, var(--o-otp-caret));
 		caret-shape: block;
 		clip-path: inset(20% calc(var(--otp-ls) / 2) 20% 0%);
 		font-family: ui-monospace, monospace;

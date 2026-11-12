@@ -87,9 +87,9 @@
 					grid-template-columns: 1fr;
 				}
 				
-				.o_rubric_sufficient { .o_radio_desc { color: $o-evaluation-sufficient-color; } }
-				.o_rubric_neutral { .o_radio_desc { color: $o-evaluation-neutral-color; } }
-				.o_rubric_insufficient { .o_radio_desc { color: $o-evaluation-insufficient-color; } }
+				.o_rubric_sufficient { .o_radio_desc { color: var(--o-evaluation-sufficient-text); } }
+				.o_rubric_neutral { .o_radio_desc { color: var(--o-evaluation-neutral-text); } }
+				.o_rubric_insufficient { .o_radio_desc { color: var(--o-evaluation-insufficient-text); } }
 			}
 		}
 		.o_evaluation_no_response {
@@ -277,9 +277,9 @@
 
 .d3chart {
 	.o_eva_bar { fill: $o-d3chart-default; }
-	.o_rubric_sufficient { fill: $o-evaluation-sufficient-color; }
-	.o_rubric_neutral { fill: $o-evaluation-neutral-color; }
-	.o_rubric_insufficient { fill: $o-evaluation-insufficient-color; }
+	.o_rubric_sufficient { fill: var(--o-evaluation-sufficient); }
+	.o_rubric_neutral { fill: var(--o-evaluation-neutral); }
+	.o_rubric_insufficient { fill: var(--o-evaluation-insufficient); }
 	.o_rubric_unrated { fill: $o-d3chart-default; }
 }
 
@@ -321,7 +321,7 @@
 		position: absolute;
 		width: 100%;
 		height: 11px;
-		border: 1px solid #999;
+		border: 1px solid var(--o-border-strong);
 		border-radius: 4px;
 	}
 	
@@ -479,9 +479,9 @@
 				@extend %o_nowrap;
 			}
 		}
-		.o_rubric_sufficient { color: $o-evaluation-sufficient-color; }
-		.o_rubric_neutral { color: $o-evaluation-neutral-color; }
-		.o_rubric_insufficient { color: $o-evaluation-insufficient-color; }
+		.o_rubric_sufficient { color: var(--o-evaluation-sufficient-text); }
+		.o_rubric_neutral { color: var(--o-evaluation-neutral-text); }
+		.o_rubric_insufficient { color: var(--o-evaluation-insufficient-text); }
 	}
 	
 	.o_evaluation_example {
@@ -605,13 +605,13 @@
 		background-color: $o-evaluation-step-background-color !important;
 	}
 	.o_icon_rubric_insufficient::before {
-		color: $o-evaluation-insufficient-color !important;
+		color: var(--o-evaluation-insufficient-text) !important;
 	}
 	.o_icon_rubric_neutral::before {
-		color: $o-evaluation-neutral-color !important;
+		color: var(--o-evaluation-neutral-text) !important;
 	}
 	.o_icon_rubric_sufficient::before {
-		color: $o-evaluation-sufficient-color !important;
+		color: var(--o-evaluation-sufficient-text) !important;
 	}
 }
 

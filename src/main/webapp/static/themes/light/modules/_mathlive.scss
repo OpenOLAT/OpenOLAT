@@ -11,14 +11,14 @@ math-field,
 	display: block;
 }
 
+// a text field: the focus ring also after a click (the focus is in the
+// shadow tree of the field), no glow (OO-10043, D24)
 math-field:focus,
 math-field:focus-within,
 .tox .tox-form math-field:focus,
 .tox .tox-form math-field:focus-within {
-	$color-rgba: color-mix(in srgb, var(--o-focus) 60%, transparent);
 	border-color: var(--o-focus);
-    outline: 0;
-    @include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent), 0 0 8px $color-rgba);
+	@include o-focus-ring;
 }
 
 math-field::part(menu-toggle) {

@@ -167,6 +167,27 @@ public class PaletteTest {
 		Assert.assertThrows(IllegalArgumentException.class, () -> incomplete.hex("blue", 500));
 	}
 
+	/**
+	 * The neutral scale --o-neutral-{step} has all steps of a hue, but it is
+	 * no hue: the choosers do not offer the greys of the theme.
+	 */
+	@Test
+	public void neutralScaleIsNoHue() {
+		Assert.assertFalse(palette.contains(Palette.NEUTRAL));
+		Assert.assertFalse(palette.getHues().contains(Palette.NEUTRAL));
+
+		StringBuilder css = new StringBuilder(":root{--o-neutral-0: #FFFFFF;--o-neutral-25: #F9FAFB;");
+		for (Integer step : Palette.STEPS) {
+			css.append("--o-red-").append(step).append(": #D2343C;");
+			css.append("--o-neutral-").append(step).append(": #657286;");
+		}
+		css.append("--o-neutral-1000: #000000}");
+		Palette withNeutral = Palette.fromCss(css.toString());
+		Assert.assertNotNull(withNeutral);
+		Assert.assertEquals(List.of("red"), List.copyOf(withNeutral.getHues()));
+		Assert.assertNull(Palette.fromCss(":root{--o-neutral-50: #F6F7FA;--o-neutral-100: #EAECF0}"));
+	}
+
 	@Test
 	public void cssWithOnlyIncompleteHues() {
 		Assert.assertNull(Palette.fromCss(":root{--o-red-50: #FEF5F5;--o-red-100: #FEE7E6}"));

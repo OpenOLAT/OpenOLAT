@@ -74,11 +74,11 @@
 				&:has(.o_realchooser:hover),
 				&:has(.o_realchooser:focus) {
 					outline: 0;
-					color: #333;
-					background-color: #dfdfdf;
+					color: var(--o-btn-default-fg);
+					background-color: var(--o-btn-default-bg-hover);
 					button {
-						color: #333;
-						background-color: #dfdfdf;
+						color: var(--o-btn-default-fg);
+						background-color: var(--o-btn-default-bg-hover);
 						border: none;
 						box-shadow: none;
 					}
@@ -93,7 +93,7 @@
 				margin: auto;
 				.o_dnd_icon {
 					font-size: 1em;
-					color: black;
+					color: var(--o-text);
 					display: inline-block;
 					margin-right: 5px;
 				}

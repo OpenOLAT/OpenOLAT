@@ -1,0 +1,85 @@
+/*
+ * =================================================
+ *
+ * Focus ring of every control (OO-10043, decision D24).
+ *
+ * One geometry for every control: an outline of $o-focus-ring-width in the
+ * colour of the token focus, $o-focus-ring-offset away from the control, on
+ * :focus-visible. The gap shows the page background, so the ring needs
+ * 3:1 on the page background only (contrast pair focus on bg).
+ *
+ * This file has mixins only and writes no CSS. Imported after the Bootstrap
+ * mixins (modules/_bootstrap.scss, content.scss): the mixins tab-focus and
+ * form-control-focus replace the Bootstrap mixins of the same name, so the
+ * Bootstrap rules of links, buttons, checkboxes, radios, file inputs and
+ * form fields get the ring.
+ *
+ *   o-focus-ring($offset, $color)  the ring
+ *   o-focus-ring-inset($color)     the ring on the edge of the control
+ *                                  (offset minus the ring width): a control
+ *                                  that touches its neighbours or that a
+ *                                  container with overflow hidden cuts
+ *   o-focus-ring-on-fill           the inset ring of a control with a fill
+ *                                  in the colour of the ring: the text
+ *                                  colour of the fill (4.5:1 by the
+ *                                  contrast pairs), one ring width inside
+ *                                  the edge
+ *   tab-focus                      links, buttons, checkboxes, radios: no
+ *                                  ring of the browser on :focus, the ring
+ *                                  on :focus-visible (no ring after a click)
+ *   form-control-focus             text fields: border in the colour of the
+ *                                  token focus, no glow, the ring on
+ *                                  :focus-visible (a text field matches it
+ *                                  also after a click)
+ *
+ * The fallback rule :where(:focus-visible) for the other elements and the
+ * inset rings of the Bootstrap groups are in modules/_accessibility.scss;
+ * the inset rings of OpenOlat components are in their modules (navbar,
+ * course list, curriculum rows, custom table rows).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+
+@mixin o-focus-ring($offset: $o-focus-ring-offset, $color: var(--o-focus)) {
+	outline: $o-focus-ring-width solid $color;
+	outline-offset: $offset;
+}
+
+// The ring on the edge of the control, for a control that touches its
+// neighbours or that a container cuts (overflow hidden).
+@mixin o-focus-ring-inset($color: var(--o-focus)) {
+	@include o-focus-ring(-$o-focus-ring-width, $color);
+}
+
+// The inset ring of a control with a fill in the colour of the ring
+// (primary, selected, pressed): the text colour of the fill, one ring width
+// inside the edge, so that the fill shows on both sides of the ring. At the
+// edge, the light ring would only make the control look smaller.
+@mixin o-focus-ring-on-fill() {
+	@include o-focus-ring(-2 * $o-focus-ring-width, currentColor);
+}
+
+// Replaces the Bootstrap mixin (bootstrap/mixins/_tab-focus.scss). Bootstrap
+// includes it in the rule of the :focus state.
+@mixin tab-focus() {
+	outline: 0;
+	&:focus-visible {
+		@include o-focus-ring;
+	}
+}
+
+// Replaces the Bootstrap mixin (bootstrap/mixins/_forms.scss). Bootstrap
+// includes it in the rule of the field. $color: the colour of the border and
+// of the ring.
+@mixin form-control-focus($color: var(--o-focus)) {
+	&:focus {
+		border-color: $color;
+		outline: 0;
+		box-shadow: none;
+	}
+	&:focus-visible {
+		@include o-focus-ring($color: $color);
+	}
+}

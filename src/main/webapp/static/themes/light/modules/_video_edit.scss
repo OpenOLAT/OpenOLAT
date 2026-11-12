@@ -458,7 +458,7 @@ $label_right_margin_dialog: 5px;
 			}
 
 			.o_category_list_item:active {
-				background-color: #ddd;
+				background-color: var(--o-video-category-active-bg);
 				font-weight: bold;
 			}
 
