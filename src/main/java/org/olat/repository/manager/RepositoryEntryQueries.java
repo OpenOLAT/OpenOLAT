@@ -352,8 +352,8 @@ public class RepositoryEntryQueries {
 					sb.append("  or exists (");
 					appendMethodOfferExistsPrefix(sb, offerOrganisations);
 					sb.append("     and (offer.validFrom is not null or offer.validTo is not null)");
-					sb.append("     and (offer.validFrom is null or offer.validFrom<=:offerValidAt)");
-					sb.append("     and (offer.validTo is null or offer.validTo>=:offerValidAt)");
+					sb.append("     and (offer.validFrom is null or date(offer.validFrom)<=:offerValidAt)");
+					sb.append("     and (offer.validTo is null or date(offer.validTo)>=:offerValidAt)");
 					sb.append("     and offer.validStatus is not null and locate(concat(',', v.status, ','), offer.validStatus) > 0");
 					sb.append("  ))");
 					offerValidAtUsed = true;

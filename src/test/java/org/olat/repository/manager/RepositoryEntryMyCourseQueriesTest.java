@@ -26,6 +26,7 @@ import static org.olat.test.JunitTestHelper.random;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -628,7 +629,32 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 				reToInFuture.getKey(),
 				reToInRange.getKey());
 	}
-	
+
+	@Test
+	public void searchViews_offer_period_sameDay() {
+		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		Date today = DateUtils.truncate(new Date(), Calendar.DATE);
+		Date yesterday = DateUtils.addDays(today, -1);
+		Date tomorrow = DateUtils.addDays(today, 1);
+
+		RepositoryEntry reToday = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, today, today);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, yesterday, yesterday);
+		createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, tomorrow, tomorrow);
+		dbInstance.commitAndCloseSession();
+
+		SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, Roles.userRoles());
+		params.setOfferOrganisations(offerOrganisations);
+		params.setOfferValidAt(DateUtils.addHours(today, 12));
+		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, -1);
+
+		assertThat(views).extracting(RepositoryEntryMyView::getKey).containsExactly(reToday.getKey());
+	}
+
 	@Test
 	public void searchViews_offer_method() {
 		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);

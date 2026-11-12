@@ -76,14 +76,8 @@ public class RepositoryCatalogInfoFactory {
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
-			SelectionValues availableStatuses = new SelectionValues();
-			ACService.RESTATUS_AVAILABLE_METHOD.stream()
-					.forEach(status -> availableStatuses.add(
-							SelectionValues.entry(status.name(), translator.translate(status.i18nKey()), null,
-									"o_icon o_icon-fw  o_icon_repo_status_" + status.name(), null, true)));
-			Set<String> defaultStatuses = Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD)
-					.map(RepositoryEntryStatusEnum::name)
-					.collect(Collectors.toSet());
+			SelectionValues availableStatuses = getAvailableStatuses(translator);
+			Set<String> defaultStatuses = getDefaultStatuses();
 			
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
 					false, true,
@@ -128,7 +122,8 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
 			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
-					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), null, null,
+					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"),
+					getAvailableStatuses(translator), getDefaultStatuses(),
 					false,
 					lifecycle != null ? lifecycle.getValidFrom() : null,
 					lifecycle != null ? lifecycle.getValidTo() : null,
@@ -136,6 +131,21 @@ public class RepositoryCatalogInfoFactory {
 					null, null, null, showRQCode, null, null, false);
 		}
 		return CatalogInfo.UNSUPPORTED;
+	}
+	
+	private static SelectionValues getAvailableStatuses(Translator translator) {
+		SelectionValues availableStatuses = new SelectionValues();
+		ACService.RESTATUS_AVAILABLE_METHOD.stream()
+				.forEach(status -> availableStatuses.add(
+						SelectionValues.entry(status.name(), translator.translate(status.i18nKey()), null,
+								"o_icon o_icon-fw  o_icon_repo_status_" + status.name(), null, true)));
+		return availableStatuses;
+	}
+	
+	private static Set<String> getDefaultStatuses() {
+		return Arrays.stream(ACService.RESTATUS_ACTIVE_METHOD)
+				.map(RepositoryEntryStatusEnum::name)
+				.collect(Collectors.toSet());
 	}
 
 	private static void addParentNames(List<String> names, CatalogEntry catalogEntry) {
