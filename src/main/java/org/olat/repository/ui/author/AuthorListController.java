@@ -235,6 +235,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FlexiFiltersTab bookmarkTab;
 	private FlexiFiltersTab searchTab;
 	private FlexiFiltersTab deletedTab;
+	private SelectionValues lifecycleValues;
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
 
@@ -833,6 +834,37 @@ public class AuthorListController extends FormBasicController implements Activat
 				AuthorSourceFilter.RUNTIMETYPE.name(), AuthorSourceFilter.TAXONOMYLEVEL.name());
 	}
 
+	private List<RepositoryEntryStatusEnum> computeOfferableStatus(boolean excludePreparation) {
+		List<RepositoryEntryStatusEnum> offerableStatus = new ArrayList<>(
+				List.of(RepositoryEntryStatusEnum.preparationToClosed()));
+		if(roles.isAuthor() || hasAdministratorRight) {
+			offerableStatus.add(RepositoryEntryStatusEnum.trash);
+		}
+		if(configuration.isSharedWithMeTab()) {
+			offerableStatus.removeIf(RepositoryEntryStatusEnum::decommissioned);
+		}
+		if(excludePreparation) {
+			offerableStatus.remove(RepositoryEntryStatusEnum.preparation);
+		}
+		return offerableStatus;
+	}
+
+	/**
+	 * "Preparation" is not offered as a Status filter option on the
+	 * redesigned selection dialog's "My wiki" / "Shared with me" tabs - their
+	 * query never returns a preparation entry either.
+	 */
+	private void refreshStatusFilterOptions(FlexiFiltersTab tab) {
+		if(lifecycleValues == null) return;
+
+		boolean excludePreparation = configuration.isRedesignedSelectionDialog()
+				&& (tab == myTab || tab == sharedWithMeTab);
+		lifecycleValues.clear();
+		for(RepositoryEntryStatusEnum status:computeOfferableStatus(excludePreparation)) {
+			lifecycleValues.add(SelectionValues.entry(status.name(), translate(status.i18nKey())));
+		}
+	}
+
 	protected void initFilters() {
 		TableConfiguration tableConfiguration = configuration.getTableConfiguration();
 
@@ -906,16 +938,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 
 		// life-cycle
-		List<RepositoryEntryStatusEnum> offerableStatus = new ArrayList<>(
-				List.of(RepositoryEntryStatusEnum.preparationToClosed()));
-		if(roles.isAuthor() || hasAdministratorRight) {
-			offerableStatus.add(RepositoryEntryStatusEnum.trash);
-		}
-		if(configuration.isSharedWithMeTab()) {
-			offerableStatus.removeIf(RepositoryEntryStatusEnum::decommissioned);
-		}
-		SelectionValues lifecycleValues = new SelectionValues();
-		for(RepositoryEntryStatusEnum status:offerableStatus) {
+		lifecycleValues = new SelectionValues();
+		for(RepositoryEntryStatusEnum status:computeOfferableStatus(false)) {
 			lifecycleValues.add(SelectionValues.entry(status.name(), translate(status.i18nKey())));
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
@@ -1816,6 +1840,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
+		refreshStatusFilterOptions(tab);
 		if(copyButton != null) {
 			copyButton.setVisible(deletedTab != tab);
 		}
