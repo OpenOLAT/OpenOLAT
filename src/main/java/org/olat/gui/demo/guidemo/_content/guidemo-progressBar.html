@@ -77,15 +77,15 @@ progressBar.setSegments(List.of(
 		new Segment(2, BarColor.warning, "pending")));</code></pre>
 $r.render("stacked")
 <pre><code class="small">progressBar.setMax(20);
-progressBar.setMarkers(List.of(new Marker(10, "minimum"), new Marker(16, "maximum")));</code></pre>
+progressBar.setMarkers(List.of(new Marker(10, BarColor.neutral, "minimum"), new Marker(16, BarColor.danger, "maximum")));</code></pre>
 $r.render("markers")
 <pre><code class="small">// Segments that fill the bar keep the rounded corners with markers
 progressBar.setRenderSize(RenderSize.small);
-progressBar.setMarkers(List.of(new Marker(5, "minimum")));</code></pre>
+progressBar.setMarkers(List.of(new Marker(5, BarColor.neutral, "minimum")));</code></pre>
 $r.render("markers-full")
 <pre><code class="small">// Radial and pie draw markers as lines from the center
 progressBar.setRenderStyle(RenderStyle.radial | pie);
-progressBar.setMarkers(List.of(new Marker(50, "minimum"), new Marker(80, "maximum")));</code></pre>
+progressBar.setMarkers(List.of(new Marker(50, BarColor.neutral, "minimum"), new Marker(80, BarColor.danger, "maximum")));</code></pre>
 <div class="row">
 	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("markers-radial")</div>
 	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("markers-pie")</div>
@@ -99,7 +99,7 @@ progressBar.setSegments(List.of(
 		new Segment(9, BarColor.success, "active"),
 		new Segment(4, BarColor.warning, "pending"),
 		new Segment(2, BarColor.danger, "cancelled")));
-progressBar.setMarkers(List.of(new Marker(10, "minimum"), new Marker(16, "maximum")));</code></pre>
+progressBar.setMarkers(List.of(new Marker(10, BarColor.neutral, "minimum"), new Marker(16, BarColor.danger, "maximum")));</code></pre>
 <div class="row">
 	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("segments-radial")</div>
 	<div class="col-xs-12 col-md-3 o_block_bottom">$r.render("segments-pie")</div>

@@ -1654,6 +1654,27 @@ ul.o_assessment_docs>li:last-child {
 			width: 2px;
 			margin-left: -1px;
 			background-color: $progress-bar-danger-bg;
+			&.o_progress_marker_primary {
+				background-color: $progress-bar-bg;
+			}
+			&.o_progress_marker_success {
+				background-color: $progress-bar-success-bg;
+			}
+			&.o_progress_marker_info {
+				background-color: $progress-bar-info-bg;
+			}
+			&.o_progress_marker_warning {
+				background-color: $progress-bar-warning-bg;
+			}
+			&.o_progress_marker_passed {
+				background-color: var(--o-course-state-passed);
+			}
+			&.o_progress_marker_failed {
+				background-color: var(--o-course-state-failed);
+			}
+			&.o_progress_marker_neutral {
+				background-color: $progress-bar-neutral-bg;
+			}
 		}
 	}
 	&.o_progress_label_after {

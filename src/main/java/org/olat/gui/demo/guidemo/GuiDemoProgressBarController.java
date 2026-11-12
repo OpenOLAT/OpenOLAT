@@ -107,7 +107,7 @@ public class GuiDemoProgressBarController extends FormBasicController {
 		markersBar.setSegments(List.of(
 				new Segment(6, BarColor.success, "active"),
 				new Segment(2, BarColor.warning, "pending")));
-		markersBar.setMarkers(List.of(new Marker(10, "minimum"), new Marker(16, "maximum")));
+		markersBar.setMarkers(List.of(new Marker(10, BarColor.neutral, "minimum"), new Marker(16, BarColor.danger, "maximum")));
 		
 		ProgressBar fullBar = createProgressBar("markers-full", 0, null);
 		fullBar.setMax(10);
@@ -116,7 +116,7 @@ public class GuiDemoProgressBarController extends FormBasicController {
 		fullBar.setSegments(List.of(
 				new Segment(7, BarColor.success, "active"),
 				new Segment(3, BarColor.warning, "pending")));
-		fullBar.setMarkers(List.of(new Marker(5, "minimum")));
+		fullBar.setMarkers(List.of(new Marker(5, BarColor.neutral, "minimum")));
 		
 		createRadialMarkersBar("markers-radial", RenderStyle.radial, RenderSize.medium);
 		createRadialMarkersBar("markers-pie", RenderStyle.pie, RenderSize.medium);
@@ -171,7 +171,7 @@ public class GuiDemoProgressBarController extends FormBasicController {
 		progressBar.setRenderStyle(style);
 		progressBar.setRenderSize(size);
 		progressBar.setLabelFormat(LabelFormat.percent);
-		progressBar.setMarkers(List.of(new Marker(50, "minimum"), new Marker(80, "maximum")));
+		progressBar.setMarkers(List.of(new Marker(50, BarColor.neutral, "minimum"), new Marker(80, BarColor.danger, "maximum")));
 	}
 	
 	private void createRadialSegmentsBar(String name, RenderStyle style, RenderSize size) {
@@ -185,7 +185,7 @@ public class GuiDemoProgressBarController extends FormBasicController {
 				new Segment(9, BarColor.success, "active"),
 				new Segment(4, BarColor.warning, "pending"),
 				new Segment(2, BarColor.danger, "cancelled")));
-		progressBar.setMarkers(List.of(new Marker(10, "minimum"), new Marker(16, "maximum")));
+		progressBar.setMarkers(List.of(new Marker(10, BarColor.neutral, "minimum"), new Marker(16, BarColor.danger, "maximum")));
 	}
 	
 	@Override

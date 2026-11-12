@@ -141,7 +141,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		
 		float base = getBase(bar);
 		for (Marker marker : bar.getMarkers()) {
-			target.append("<span class='o_progress_marker' style='left:").append(toPercent(toHundredths(marker.value(), base)))
+			target.append("<span class='").append(getMarkerCssClass(marker)).append("' style='left:").append(toPercent(toHundredths(marker.value(), base)))
 				.append("%;' title=\"").append(StringHelper.escapeHtml(getMarkerText(marker))).append("\" aria-hidden='true'></span>");
 		}
 		
@@ -243,7 +243,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			double angle = 2 * Math.PI * toHundredths(marker.value(), base) / FULL;
 			double cos = Math.cos(angle);
 			double sin = Math.sin(angle);
-			target.append("<line class='o_progress_marker' x1='").append(toCoordinate(16 + inner * cos))
+			target.append("<line class='").append(getMarkerCssClass(marker)).append("' x1='").append(toCoordinate(16 + inner * cos))
 				.append("' y1='").append(toCoordinate(16 + inner * sin))
 				.append("' x2='").append(toCoordinate(16 + 16 * cos))
 				.append("' y2='").append(toCoordinate(16 + 16 * sin))
@@ -407,6 +407,10 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			case failed -> "o_progress-bar-failed";
 			case neutral -> "o_progress-bar-neutral";
 		};
+	}
+	
+	private static String getMarkerCssClass(Marker marker) {
+		return marker.color() == BarColor.danger ? "o_progress_marker" : "o_progress_marker o_progress_marker_" + marker.color().name();
 	}
 	
 	private static String getRadialColorCssClass(BarColor color) {

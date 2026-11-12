@@ -62,7 +62,7 @@ public class ProgressBar extends AbstractComponent implements FormBaseComponent 
 		}
 	}
 	
-	public record Marker(float value, String label) {
+	public record Marker(float value, BarColor color, String label) {
 		//
 	}
 	

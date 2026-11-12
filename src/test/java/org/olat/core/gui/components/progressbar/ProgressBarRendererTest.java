@@ -179,7 +179,7 @@ public class ProgressBarRendererTest {
 		progressBar.setSegments(List.of(
 				new Segment(6, BarColor.success, "active"),
 				new Segment(2, BarColor.warning, "pending")));
-		progressBar.setMarkers(List.of(new Marker(10, "minimum")));
+		progressBar.setMarkers(List.of(new Marker(10, BarColor.danger, "minimum")));
 		
 		String html = render(progressBar);
 		
@@ -246,7 +246,7 @@ public class ProgressBarRendererTest {
 		ProgressBar progressBar = createProgressBar(100);
 		progressBar.setRenderStyle(RenderStyle.radial);
 		ProgressBarFactory.setValue(progressBar, 65, BarColor.success);
-		progressBar.setMarkers(List.of(new Marker(25, "minimum")));
+		progressBar.setMarkers(List.of(new Marker(25, BarColor.danger, "minimum")));
 		
 		String html = render(progressBar);
 		
@@ -254,7 +254,32 @@ public class ProgressBarRendererTest {
 				.contains("<line class='o_progress_marker' x1='16.0' y1='27.0' x2='16.0' y2='32.0'><title>minimum 25</title></line>")
 				.contains("role='img' aria-label=\"65 of 100, minimum 25\"");
 	}
-	
+
+	@Test
+	public void shouldRenderMarkerColor() {
+		ProgressBar progressBar = createProgressBar(100);
+		ProgressBarFactory.setValue(progressBar, 65, BarColor.success);
+		progressBar.setMarkers(List.of(new Marker(25, BarColor.neutral, "minimum"), new Marker(80, BarColor.danger, "maximum")));
+
+		String html = render(progressBar);
+
+		assertThat(html)
+				.contains("class='o_progress_marker o_progress_marker_neutral' style='left:25%;' title=\"minimum 25\"")
+				.contains("class='o_progress_marker' style='left:80%;' title=\"maximum 80\"");
+	}
+
+	@Test
+	public void shouldRenderRadialMarkerColor() {
+		ProgressBar progressBar = createProgressBar(100);
+		progressBar.setRenderStyle(RenderStyle.radial);
+		ProgressBarFactory.setValue(progressBar, 65, BarColor.success);
+		progressBar.setMarkers(List.of(new Marker(25, BarColor.neutral, "minimum")));
+
+		String html = render(progressBar);
+
+		assertThat(html).contains("<line class='o_progress_marker o_progress_marker_neutral' x1='16.0'");
+	}
+
 	@Test
 	public void shouldRenderRadialSegmentsAsArcs() {
 		ProgressBar progressBar = createProgressBar(3);

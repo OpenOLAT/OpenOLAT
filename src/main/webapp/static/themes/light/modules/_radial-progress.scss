@@ -79,6 +79,27 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 		stroke: $progress-bar-danger-bg;
 		stroke-width: 2px;
 		vector-effect: non-scaling-stroke;
+		&.o_progress_marker_primary {
+			stroke: $progress-bar-bg;
+		}
+		&.o_progress_marker_success {
+			stroke: $progress-bar-success-bg;
+		}
+		&.o_progress_marker_info {
+			stroke: $progress-bar-info-bg;
+		}
+		&.o_progress_marker_warning {
+			stroke: $progress-bar-warning-bg;
+		}
+		&.o_progress_marker_passed {
+			stroke: var(--o-course-state-passed);
+		}
+		&.o_progress_marker_failed {
+			stroke: var(--o-course-state-failed);
+		}
+		&.o_progress_marker_neutral {
+			stroke: $progress-bar-neutral-bg;
+		}
 	}
 	
 	/* progress bar size and no size for pie style */
