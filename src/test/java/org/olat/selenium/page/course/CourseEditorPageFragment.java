@@ -398,13 +398,15 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
+	 * OO-7574: the Form course element uses the redesigned selection dialog now -
+	 * see FormConfigController's FormCourseNodeReferenceProvider#useNewSelectionDialog().
 	 * @see chooseResource
 	 * @param resourceTitle The title of the survey
 	 * @return Itself
 	 */
 	public FormConfigurationPage chooseForm(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_re_reference .btn.btn-primary");
-		chooseResourceModern(chooseBy, resourceTitle);
+		chooseResourceModernV2(chooseBy, resourceTitle);
 		return new FormConfigurationPage(browser);
 	}
 	

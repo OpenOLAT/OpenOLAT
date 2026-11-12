@@ -337,6 +337,7 @@ getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
 - **Translation-reference-driven translation (mandatory):** When translating i18n strings between languages, always read `doc/i18n-translation-reference.yaml` first. Every term listed there **must** be translated exactly as defined; `keep_apart` and `never` on an entry name the traps. If existing translations use different words, flag the inconsistency to the user and offer to fix it.
 - **DE is the base language.** When new terms appear that are not in the translation reference, ask the user to add the term and provide the base translations before proceeding.
 - **Glossary sync:** When a term changes, change it in the concept map and rerun its generators; the manual glossary and `doc/i18n-translation-reference.yaml` follow from there.
+- Text edits to i18n files need to respect the literal \uXXXX escape convention of non-ASCII characters such as umlauts, not raw UTF-8.
 
 ## VFS (Virtual File System)
 

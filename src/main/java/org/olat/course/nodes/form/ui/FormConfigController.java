@@ -60,6 +60,7 @@ import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -408,6 +409,35 @@ public class FormConfigController extends FormBasicController implements Referen
 				return new Confirm(true, null);
 			}
 			return new Confirm(false, translate("error.repo.entry.not.replaceable"));
+		}
+
+		@Override
+		public boolean useNewSelectionDialog() {
+			return true;
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.forms");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-FORM_icon",
+					translate("select.no.form.yet"),
+					translate("select.no.form.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-FORM_icon",
+					translate("select.no.forms.in.view"),
+					translate("select.no.forms.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term");
 		}
 	}
 
