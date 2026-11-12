@@ -231,10 +231,8 @@ public class IQConfigurationController extends BasicController implements Refere
 
 		@Override
 		public boolean useNewSelectionDialog() {
-			// OO-7574: only the "Test" course element moves to the redesigned
-			// selection dialog for now - Self-Test and Survey (same controller,
-			// distinguished by type) stay on the old dialog until they're migrated too.
-			return QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type);
+			return QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)
+					|| QTI21Constants.QMD_ENTRY_TYPE_SELF.equals(type);
 		}
 
 		@Override

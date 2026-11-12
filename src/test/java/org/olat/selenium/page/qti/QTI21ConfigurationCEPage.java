@@ -211,7 +211,7 @@ public class QTI21ConfigurationCEPage {
 	private QTI21ConfigurationCEPage chooseTest(String resourceTitle, boolean closeInfoBox) {
 		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
 		By chooseBy = By.cssSelector(".o_re_reference .btn.btn-primary");
-		fragment.chooseResourceModern(chooseBy, resourceTitle);
+		fragment.chooseResourceModernV2(chooseBy, resourceTitle);
 		if(closeInfoBox) {
 			OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		}
