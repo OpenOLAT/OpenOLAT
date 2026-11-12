@@ -13,8 +13,8 @@
  */
 /* a11y: set max contrast for a11y checker tools */
 .sr-only {
-	color: #000 !important;
-	background: #fff !important;
+	color: #000 !important; // o-color-keep(a11y-checker)
+	background: #fff !important; // o-color-keep(a11y-checker)
 }
 
 /* The focus ring of every other element that gets the focus with the

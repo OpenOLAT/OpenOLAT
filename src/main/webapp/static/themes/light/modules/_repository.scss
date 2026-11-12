@@ -923,7 +923,7 @@ form { .o_form { .o_radio_cards_wrapper {
 			.o_ac_reservation_visual_placeholder {
 				width: 100%;
 				height: 100%;
-				background: $o-not-available-bg;
+				background: $o-not-available-bg; // o-color-keep(gradient)
 				background-repeat: no-repeat;
 				background-position: 50% 50%;
 				background-size: contain;

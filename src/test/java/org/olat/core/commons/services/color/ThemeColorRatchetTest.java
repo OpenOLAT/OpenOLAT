@@ -26,8 +26,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -44,6 +47,14 @@ import org.junit.Test;
  * chapter 26). When a module reads more tokens, lower its count in the
  * baseline. The patterns are the same as in the OO-colors inventory
  * script color_inventory.py.
+ * <p>
+ * A reference that stays by design has a marker, a silent Sass comment
+ * (OO-10043, decision D34): <code>// o-color-keep(reason)</code> at the end
+ * of a line, or <code>// o-color-keep-start(reason)</code> and
+ * <code>// o-color-keep-end</code> on own lines around a block. The module
+ * count does not include a marked reference. The baseline has the total of
+ * the marked references per reason (<code>keep.print=17</code>), so a new
+ * kept literal is visible in the review. The reasons: {@link #KEEP_REASONS}.
  *
  * Initial date: 8 Nov 2026<br>
  * @author gnaegi, https://www.frentix.com
@@ -102,17 +113,60 @@ public class ThemeColorRatchetTest {
 	private static final Pattern LINE_COMMENT = Pattern.compile("//[^\\n]*");
 	private static final Pattern SASS_NAME = Pattern.compile("\\$[\\w-]+");
 
+	/**
+	 * The reasons of the marker o-color-keep (decision D34 of OO-10043): the
+	 * literal colour or the colour variable is correct and stays.
+	 */
+	static final Map<String, String> KEEP_REASONS = Map.ofEntries(
+			Map.entry("hotspot", "hotspot styles of the QTI editor, copy of hotspotInteraction.html (B4-15)"),
+			Map.entry("print", "print sheet, black and white on paper"),
+			Map.entry("brand", "brand colour of another product"),
+			Map.entry("devtool", "developer tools, debug mode only"),
+			Map.entry("stored-content", "style that stored content uses (B4-16)"),
+			Map.entry("gradient", "gradient variable whose stops read tokens (D11)"),
+			Map.entry("mask", "mask image, only the alpha counts (D29)"),
+			Map.entry("email", "mixin that email.css reads, no tokens there"),
+			Map.entry("mixin-argument", "colour maths for a colour argument of a mixin"),
+			Map.entry("vendor-copy", "copy of a third-party stylesheet"),
+			Map.entry("a11y-checker", "maximum contrast for accessibility checkers"));
+
+	/** Prefix of the totals per reason in the baseline */
+	static final String KEEP_PREFIX = "keep.";
+
+	/** A line comment that starts with o-color-keep is a marker and must have the syntax of a marker */
+	private static final Pattern KEEP_MARKER = Pattern.compile("//\\s*o-color-keep");
+	private static final Pattern KEEP_MARKER_SYNTAX = Pattern.compile("//\\s*o-color-keep(?:(-start)?\\(([^)]*)\\)|(-end))(?:\\s.*)?");
+
+	/**
+	 * The old colour references of a module.
+	 *
+	 * @param counted The references outside a marker
+	 * @param kept The marked references per reason
+	 */
+	record ColorReferences(int counted, Map<String, Integer> kept) {
+		//
+	}
+
 	@Test
 	public void colorReferencesMatchBaseline() throws IOException {
 		Properties baseline = loadBaseline();
 		List<String> errors = new ArrayList<>();
+		Map<String, Integer> kept = new TreeMap<>();
 		try (Stream<Path> modules = Files.list(LIGHT_MODULES)) {
 			for (Path module : modules.filter(p -> p.getFileName().toString().endsWith(".scss")).sorted().toList()) {
 				String name = module.getFileName().toString();
 				if (SKIPPED.contains(name)) {
 					continue;
 				}
-				int count = countOldColorReferences(Files.readString(module, StandardCharsets.UTF_8));
+				ColorReferences references;
+				try {
+					references = countColorReferences(Files.readString(module, StandardCharsets.UTF_8));
+				} catch (IllegalArgumentException e) {
+					errors.add(name + ", " + e.getMessage());
+					continue;
+				}
+				references.kept().forEach((reason, c) -> kept.merge(reason, c, Integer::sum));
+				int count = references.counted();
 				int allowed = Integer.parseInt(baseline.getProperty(name, "0"));
 				if (count > allowed) {
 					errors.add(name + ": " + count + " old colour references, baseline " + allowed
@@ -123,7 +177,132 @@ public class ThemeColorRatchetTest {
 				}
 			}
 		}
+		for (String key : new TreeSet<>(baseline.stringPropertyNames())) {
+			if (key.startsWith(KEEP_PREFIX) && !KEEP_REASONS.containsKey(key.substring(KEEP_PREFIX.length()))) {
+				errors.add(BASELINE + ": " + key + " has an unknown reason. Reasons: " + new TreeSet<>(KEEP_REASONS.keySet()) + ".");
+			}
+		}
+		for (String reason : new TreeSet<>(KEEP_REASONS.keySet())) {
+			int count = kept.getOrDefault(reason, 0);
+			int allowed = Integer.parseInt(baseline.getProperty(KEEP_PREFIX + reason, "0"));
+			if (count > allowed) {
+				errors.add("o-color-keep(" + reason + "): " + count + " references stay by design, baseline " + allowed
+						+ ". New code uses a colour token var(--o-*). Mark only a reference that stays by design and set "
+						+ KEEP_PREFIX + reason + "=" + count + " in " + BASELINE + ".");
+			} else if (count < allowed) {
+				errors.add("o-color-keep(" + reason + "): " + count + " references stay by design, baseline " + allowed
+						+ ". Set " + KEEP_PREFIX + reason + "=" + count + " in " + BASELINE + ".");
+			}
+		}
 		Assert.assertTrue(String.join("\n", errors), errors.isEmpty());
+	}
+
+	@Test
+	public void keepLineMarker() {
+		String scss = """
+				.a { color: #000; background: #fff; } // o-color-keep(print) black and white on paper
+				.b { color: var(--o-text); }
+				""";
+		ColorReferences references = countColorReferences(scss);
+		Assert.assertEquals(0, references.counted());
+		Assert.assertEquals(Map.of("print", 2), references.kept());
+	}
+
+	@Test
+	public void keepBlockMarker() {
+		String scss = """
+				.a {
+					// o-color-keep-start(hotspot)
+					.b { border-color: #6E6E6E; }
+					.c { background-color: rgba(45, 0, 255, 0.5); }
+					// o-color-keep-end
+					.d { color: #0000ff; }
+				}
+				.e { background: $o-not-available-bg; } // o-color-keep(gradient)
+				""";
+		ColorReferences references = countColorReferences(scss);
+		// #0000ff of .d is outside the block
+		Assert.assertEquals(1, references.counted());
+		Assert.assertEquals(Map.of("hotspot", 2, "gradient", 1), references.kept());
+	}
+
+	@Test
+	public void keepLiteralOutsideMarkerCounts() {
+		String scss = """
+				.a { color: #000; } // o-color-keep(print)
+				.b { color: #000; }
+				// o-color-keep-start(devtool)
+				.c { color: #f0ad4e; }
+				// o-color-keep-end
+				.d { color: $text-color; } // a comment, no marker
+				""";
+		ColorReferences references = countColorReferences(scss);
+		Assert.assertEquals(2, references.counted());
+		Assert.assertEquals(Map.of("print", 1, "devtool", 1), references.kept());
+	}
+
+	@Test
+	public void keepUnknownReason() {
+		String scss = """
+				.a { color: #000; } // o-color-keep(black)
+				""";
+		IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> countColorReferences(scss));
+		Assert.assertTrue(e.getMessage(), e.getMessage().contains("line 1") && e.getMessage().contains("unknown reason \"black\""));
+	}
+
+	@Test
+	public void keepInvalidMarker() {
+		for (String marker : List.of("// o-color-keep", "// o-color-keep-begin(print)", "// o-color-keep-end(print)")) {
+			String scss = ".a { color: #000; } " + marker + "\n";
+			Assert.assertThrows(marker, IllegalArgumentException.class, () -> countColorReferences(scss));
+		}
+	}
+
+	@Test
+	public void keepStartWithoutEnd() {
+		String scss = """
+				// o-color-keep-start(print)
+				.a { color: #000; }
+				""";
+		IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> countColorReferences(scss));
+		Assert.assertTrue(e.getMessage(), e.getMessage().contains("line 1") && e.getMessage().contains("no o-color-keep-end"));
+	}
+
+	@Test
+	public void keepNestedStart() {
+		String scss = """
+				// o-color-keep-start(print)
+				.a { color: #000; }
+				// o-color-keep-start(print)
+				.b { color: #000; }
+				// o-color-keep-end
+				// o-color-keep-end
+				""";
+		IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> countColorReferences(scss));
+		Assert.assertTrue(e.getMessage(), e.getMessage().contains("line 3") && e.getMessage().contains("nested"));
+	}
+
+	@Test
+	public void keepEndWithoutStart() {
+		String scss = """
+				.a { color: #000; } // o-color-keep(print)
+				// o-color-keep-end
+				""";
+		IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> countColorReferences(scss));
+		Assert.assertTrue(e.getMessage(), e.getMessage().contains("line 2") && e.getMessage().contains("without o-color-keep-start"));
+	}
+
+	@Test
+	public void keepMarkerWithoutReference() {
+		// A marker holds at least one reference: no empty or loose markers
+		List<String> sources = List.of(
+				".a { color: var(--o-text); } // o-color-keep(print)\n",
+				"// o-color-keep-start(print)\n.a { color: var(--o-text); }\n// o-color-keep-end\n",
+				".a { // o-color-keep-start(print)\n color: #000; }\n// o-color-keep-end\n",
+				"// o-color-keep-start(print)\n.a { color: #000; } // o-color-keep(print)\n// o-color-keep-end\n");
+		for (String scss : sources) {
+			Assert.assertThrows(scss, IllegalArgumentException.class, () -> countColorReferences(scss));
+		}
 	}
 
 	@Test
@@ -202,6 +381,84 @@ public class ThemeColorRatchetTest {
 	// The SCSS source without block and line comments
 	static String withoutComments(String scss) {
 		return LINE_COMMENT.matcher(BLOCK_COMMENT.matcher(scss).replaceAll("")).replaceAll("");
+	}
+
+	/**
+	 * Counts the old colour references outside and inside the markers
+	 * o-color-keep. A block comment does not hold a marker. A marker holds
+	 * at least one reference, a block start and end stand on own lines.
+	 *
+	 * @param scss The source of a module
+	 * @return The references outside the markers and the marked references per reason
+	 * @throws IllegalArgumentException for a marker with a wrong syntax or an unknown
+	 *         reason, a nested block, a block without an end, an end without a start
+	 *         or a marker without a reference
+	 */
+	static ColorReferences countColorReferences(String scss) {
+		// The block comments keep their line breaks, so the line numbers stay
+		String[] lines = BLOCK_COMMENT.matcher(scss).replaceAll(m -> m.group().replaceAll("[^\\n]", "")).split("\n", -1);
+		StringBuilder outside = new StringBuilder();
+		Map<String, Integer> kept = new TreeMap<>();
+		StringBuilder block = null;
+		String blockReason = null;
+		int blockStart = 0;
+		for (int i = 0; i < lines.length; i++) {
+			int lineNumber = i + 1;
+			int slash = lines[i].indexOf("//");
+			String code = slash < 0 ? lines[i] : lines[i].substring(0, slash);
+			String comment = slash < 0 ? "" : lines[i].substring(slash).strip();
+			if (!KEEP_MARKER.matcher(comment).lookingAt()) {
+				(block == null ? outside : block).append(code).append('\n');
+				continue;
+			}
+			Matcher marker = KEEP_MARKER_SYNTAX.matcher(comment);
+			if (!marker.matches()) {
+				throw new IllegalArgumentException("line " + lineNumber + ": invalid marker \"" + comment
+						+ "\". Use // o-color-keep(reason), // o-color-keep-start(reason) or // o-color-keep-end.");
+			}
+			String reason = marker.group(2);
+			if (reason != null && !KEEP_REASONS.containsKey(reason)) {
+				throw new IllegalArgumentException("line " + lineNumber + ": unknown reason \"" + reason
+						+ "\". Reasons: " + new TreeSet<>(KEEP_REASONS.keySet()) + ".");
+			}
+			outside.append('\n');
+			if (marker.group(3) != null) {
+				// o-color-keep-end
+				if (block == null) {
+					throw new IllegalArgumentException("line " + lineNumber + ": o-color-keep-end without o-color-keep-start.");
+				}
+				if (!code.isBlank()) {
+					throw new IllegalArgumentException("line " + lineNumber + ": o-color-keep-end must stand on its own line.");
+				}
+				addKept(kept, blockReason, countOldColorReferences(block.toString()), blockStart);
+				block = null;
+			} else if (block != null) {
+				throw new IllegalArgumentException("line " + lineNumber + ": nested marker in the block of line " + blockStart
+						+ ". Close the block with // o-color-keep-end first.");
+			} else if (marker.group(1) != null) {
+				// o-color-keep-start(reason)
+				if (!code.isBlank()) {
+					throw new IllegalArgumentException("line " + lineNumber + ": o-color-keep-start must stand on its own line.");
+				}
+				block = new StringBuilder();
+				blockReason = reason;
+				blockStart = lineNumber;
+			} else {
+				addKept(kept, reason, countOldColorReferences(code), lineNumber);
+			}
+		}
+		if (block != null) {
+			throw new IllegalArgumentException("line " + blockStart + ": o-color-keep-start(" + blockReason + ") has no o-color-keep-end.");
+		}
+		return new ColorReferences(countOldColorReferences(outside.toString()), kept);
+	}
+
+	private static void addKept(Map<String, Integer> kept, String reason, int count, int lineNumber) {
+		if (count == 0) {
+			throw new IllegalArgumentException("line " + lineNumber + ": the marker o-color-keep(" + reason
+					+ ") holds no old colour reference. Remove the marker.");
+		}
+		kept.merge(reason, count, Integer::sum);
 	}
 
 	static int countOldColorReferences(String scss) {

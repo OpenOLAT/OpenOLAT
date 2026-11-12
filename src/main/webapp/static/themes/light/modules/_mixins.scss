@@ -10,7 +10,7 @@
 	border: $o-box-border-size solid $color;
 	border-radius: $o-box-border-radius;
 	background-color: $bgcolor;
-	h2, h3, h4, h5 { color: $text-color;}
+	h2, h3, h4, h5 { color: $text-color;} // o-color-keep(email)
 	
 	@if $boxicon {
 		position: relative;

@@ -307,6 +307,7 @@ body.o_dmz {
 			margin: 0;
 		}
 		
+		// o-color-keep-start(brand)
 		.btn-default.o_sel_auth_facebook i {
 			color: #4568b2;
 		}
@@ -330,6 +331,7 @@ body.o_dmz {
 		.o_sel_auth_azureAdfs i {
 			color: rgb(0, 114, 198);
 		}
+		// o-color-keep-end
 		
 		.btn-default.o_sel_auth_OpenIDConnect i {
 			color: var(--o-primary);

@@ -17,7 +17,7 @@ figure.image {
     display: inline-block;
     border: 1px solid gray;
     margin: 0 2px 0 1px;
-    background: #f5f2f0;
+    background: #f5f2f0; // o-color-keep(stored-content)
 }
 
 figure.image img {

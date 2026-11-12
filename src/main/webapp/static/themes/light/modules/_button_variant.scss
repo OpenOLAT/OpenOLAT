@@ -65,7 +65,7 @@ $o-button-variant-tokens: ();
 @function o-button-variant-shade($value, $shade, $amount) {
 	$token: o-button-variant-token($value);
 	@if $token == null {
-		@return darken($value, $amount);
+		@return darken($value, $amount); // o-color-keep(mixin-argument)
 	}
 	$name: "#{$token}-#{$shade}";
 	@if meta.global-variable-exists("o-token-shades") {

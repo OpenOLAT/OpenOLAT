@@ -40,7 +40,7 @@
 	.o_visual_not_available {
 		width: 100%;
 		height: 100%;
-		background: $o-not-available-bg !important; // Display in print
+		background: $o-not-available-bg !important; // o-color-keep(gradient) Display in print
 		background-repeat:no-repeat;
 		background-position:50% 50%;		
 		background-size: contain;
@@ -875,7 +875,7 @@
 			}
 		}
 		.o_catalog_header_item:not(.o_header_bg_image) {
-			background: $o-cat2-header-noimage-bg;
+			background: $o-cat2-header-noimage-bg; // o-color-keep(gradient)
 			background-blend-mode: $o-cat2-header-noimage-bg-blend-mode;
 		}
 		.o_header_bg_image {

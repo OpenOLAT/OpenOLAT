@@ -80,7 +80,7 @@
 				background: linear-gradient(180deg, var(--o-red-400) 0%, var(--o-yellow-400) 33%, var(--o-green-400) 60%, var(--o-blue-500) 100%) border-box;
 				mask-clip: padding-box, border-box;
 				mask-size: auto, auto;
-				mask-image: linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px);
+				mask-image: linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px); // o-color-keep(mask)
 				mask-composite: exclude;
 			}
 			&::after {

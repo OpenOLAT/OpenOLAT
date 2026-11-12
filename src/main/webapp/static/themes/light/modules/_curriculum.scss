@@ -273,7 +273,7 @@ a.o_validation_open_results {
 		}
 		
 		.o_visual_not_available {
-			background: $o-not-available-bg;
+			background: $o-not-available-bg; // o-color-keep(gradient)
 			background-repeat:no-repeat;
 			background-position:50% 50%;		
 			background-size: contain;

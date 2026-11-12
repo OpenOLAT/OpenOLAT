@@ -656,7 +656,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_width_expand { @include o-add-icon('expand');}
 .o_icon_width_collapse { @include o-add-icon('compress');} 
 .o_icon_wizard { @include o-add-icon('magic');}
-.o_icon_xing { @include o-add-brand-icon('xing'); color: #cfdc00;}
+.o_icon_xing { @include o-add-brand-icon('xing'); color: #cfdc00;} // o-color-keep(brand)
 .o_icon_linkedin { @include o-add-brand-icon('linkedin');}
 
 /* Disabled icons */

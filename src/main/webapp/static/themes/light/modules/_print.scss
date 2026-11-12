@@ -76,9 +76,9 @@
 		.form-control.textarea_disabled {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
-			background: #fff !important;
+			background: #fff !important; // o-color-keep(print)
 			height: auto !important;
-			color: #000 !important;
+			color: #000 !important; // o-color-keep(print)
 			resize: none;
 		}
 	}
@@ -96,7 +96,7 @@
 
 	/* Hide backgrounds */	
 	body.o_dmz {
-		background: white !important;
+		background: white !important; // o-color-keep(print)
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 	}
@@ -136,7 +136,7 @@
 		margin: 0 !important;
 		width: 100% !important;
 		height: fit-content !important;	
-		background: #fff !important;
+		background: #fff !important; // o-color-keep(print)
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 	}
@@ -149,7 +149,7 @@
   		align-items: unset;
   		margin: 0;
 		display: block;
-	    background: white !important;
+	    background: white !important; // o-color-keep(print)
 	    opacity: 1;
 	    transition: none;
 		height: 100%;	
@@ -184,7 +184,7 @@
 	.progress-bar {
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
-		background-color: #000 !important;
+		background-color: #000 !important; // o-color-keep(print)
 		
 		&.progress-bar-success {
 			background-color: var(--o-state-success-bg) !important;
@@ -248,7 +248,7 @@
 		width: 1240px;
 		min-width: 1240px;
 		max-width: 1240px;
-		background-color:white;
+		background-color:white; // o-color-keep(print)
 		/* 	Limit the inner content to certainly fit to the page. 
 		 	Smaller than page to take the unknown print borders into account. 
 		 */
@@ -292,7 +292,7 @@ body.o_print_a4_144 {
 	zoom: 1.0;
 	width: 1240px;
 	min-width: 1240px;
-	background-color:white;
+	background-color:white; // o-color-keep(print)
 	
 	.o_page_content {
 		min-width: 1240px;

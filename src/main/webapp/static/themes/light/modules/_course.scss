@@ -1054,6 +1054,7 @@
 	}
 	
 	/* print font styles */
+	// o-color-keep-start(print)
 	color: #000;
 	h1 {
 		font-size: 18pt;	
@@ -1080,6 +1081,7 @@
 			font-size: 14pt;
 		}
 	}
+	// o-color-keep-end
 }
 
 .tag.label.label-info {

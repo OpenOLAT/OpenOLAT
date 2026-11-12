@@ -152,7 +152,7 @@
 }
 
 .o_tb_topic_placeholder {
-	background: $o-not-available-bg;
+	background: $o-not-available-bg; // o-color-keep(gradient)
 	.o_tb_topic_title_abbr {
 		border: $o-tb-topic-placeholder-title-abbr-border-width $o-tb-topic-placeholder-title-abbr-border-style var(--o-topicbroker-placeholder-title-abbr-border);
 	}

@@ -1160,6 +1160,7 @@
 		}
 
 		/* Image styles */
+		// o-color-keep-start(stored-content)
 		img.o_image_classic {
 			/* not styled */
 			padding: 0;
@@ -1207,6 +1208,7 @@
 			border: solid 1px #CCC;
 			border-radius: 50%;
 		}
+		// o-color-keep-end
 
 		.o_image_title_dark {
 			color: $o-editor-title-dark;
