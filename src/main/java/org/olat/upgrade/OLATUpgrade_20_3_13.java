@@ -19,9 +19,16 @@
  */
 package org.olat.upgrade;
 
+import java.io.File;
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
+import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.PowerpointFileResource;
+import org.olat.fileresource.types.XlsFileResource;
+import org.olat.resource.OLATResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -37,6 +44,7 @@ public class OLATUpgrade_20_3_13 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_20.3.13";
 
 	private static final String DELETE_ORPHANED_PRIVATE_LIFECYCLES = "DELETE ORPHANED PRIVATE LIFECYCLES";
+	private static final String MIGRATE_POWERPOINT_RESOURCES = "MIGRATE POWERPOINT RESOURCES";
 
 	@Autowired
 	private DB dbInstance;
@@ -57,6 +65,7 @@ public class OLATUpgrade_20_3_13 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= deleteOrphanedPrivateLifecycles(upgradeManager, uhd);
+		allOk &= migratePowerPointResources(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -87,6 +96,41 @@ public class OLATUpgrade_20_3_13 extends OLATUpgrade {
 				allOk = false;
 			}
 			uhd.setBooleanDataValue(DELETE_ORPHANED_PRIVATE_LIFECYCLES, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	private boolean migratePowerPointResources(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_POWERPOINT_RESOURCES)) {
+			try {
+				log.info("Start migration of PowerPoint learning resources with type Excel");
+				
+				List<OLATResourceImpl> resources = dbInstance.getCurrentEntityManager()
+						.createQuery("select res from olatresource res where res.resName=:resName", OLATResourceImpl.class)
+						.setParameter("resName", XlsFileResource.TYPE_NAME)
+						.getResultList();
+				int migrated = 0;
+				for (OLATResourceImpl resource : resources) {
+					try {
+						File file = FileResourceManager.getInstance().getFileResource(resource);
+						if (PowerpointFileResource.validate(file)) {
+							resource.setResName(PowerpointFileResource.TYPE_NAME);
+							migrated++;
+						}
+					} catch (Exception e) {
+						log.warn("Could not check the file of the resource {}", resource.getKey());
+					}
+				}
+				dbInstance.commitAndCloseSession();
+				
+				log.info("End migration of PowerPoint learning resources with type Excel: {}", migrated);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_POWERPOINT_RESOURCES, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;

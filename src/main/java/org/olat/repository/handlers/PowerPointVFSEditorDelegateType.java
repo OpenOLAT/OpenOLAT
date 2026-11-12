@@ -24,7 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.services.doceditor.ContentProviderFactory;
 import org.olat.core.id.OLATResourceable;
-import org.olat.fileresource.types.XlsFileResource;
+import org.olat.fileresource.types.PowerpointFileResource;
 
 /**
  * 
@@ -36,7 +36,7 @@ public class PowerPointVFSEditorDelegateType implements DocumentEditorDelegateTy
 
 	@Override
 	public OLATResourceable getOLATResourceable() {
-		return new XlsFileResource();
+		return new PowerpointFileResource();
 	}
 	
 	@Override

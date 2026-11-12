@@ -188,6 +188,13 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, In
 		// Delete graders attached to the entry
 		gradedToIdentityDao.deleteGradersRelations(re);
 		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(re);
+		if(config != null) {
+			gradingConfigurationDao.deleteConfiguration(config);
+		}
+		dbInstance.commitAndCloseSession();
+		
 		return false;
 	}
 	

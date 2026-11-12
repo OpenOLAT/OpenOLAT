@@ -183,7 +183,21 @@ public class CatalogQueriesTest extends OlatTestCase {
 		setOfferValid(catalogItem, null, -2);
 		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
-	
+
+	@Test
+	public void shouldLoadRepositoryEntries_period_sameDay() {
+		TestCatalogItem catalogItem = createCatalogItem(true);
+		Date today = DateUtils.getStartOfDay(new Date());
+		catalogItem.getSearchParams().setOfferValidAt(DateUtils.addHours(today, 12));
+
+		setOfferValidDay(catalogItem, today);
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
+		setOfferValidDay(catalogItem, DateUtils.addDays(today, -1));
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
+		setOfferValidDay(catalogItem, DateUtils.addDays(today, 1));
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
+	}
+
 	@Test
 	public void shouldLoadRepositoryEntries_exclude_status_period() {
 		TestCatalogItem catalogItem = createCatalogItem(true);
@@ -682,7 +696,21 @@ public class CatalogQueriesTest extends OlatTestCase {
 		setOfferValid(catalogItem, null, -2);
 		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).doesNotContain(catalogItem.getCurriculumElement());
 	}
-	
+
+	@Test
+	public void shouldLoadCurriculumElements_period_sameDay() {
+		TestCatalogItem catalogItem = createCatalogItem(false);
+		Date today = DateUtils.getStartOfDay(new Date());
+		catalogItem.getSearchParams().setOfferValidAt(DateUtils.addHours(today, 12));
+
+		setOfferValidDay(catalogItem, today);
+		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).contains(catalogItem.getCurriculumElement());
+		setOfferValidDay(catalogItem, DateUtils.addDays(today, -1));
+		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).doesNotContain(catalogItem.getCurriculumElement());
+		setOfferValidDay(catalogItem, DateUtils.addDays(today, 1));
+		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).doesNotContain(catalogItem.getCurriculumElement());
+	}
+
 	@Test
 	public void shouldLoadCurriculumElements_exclude_status_period() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
@@ -1108,6 +1136,17 @@ public class CatalogQueriesTest extends OlatTestCase {
 					} else {
 						offer.setValidStatus(null);
 					}
+					acService.save(offer);
+				});
+		dbInstance.commitAndCloseSession();
+	}
+
+	private void setOfferValidDay(TestCatalogItem catalogItem, Date day) {
+		acService.findOfferByResource(catalogItem.getResource(), true, null, null).stream()
+				.forEach(offer -> {
+					offer.setValidFrom(day);
+					offer.setValidTo(day);
+					offer.setValidStatus(DEFAULT_VALID_STATUS);
 					acService.save(offer);
 				});
 		dbInstance.commitAndCloseSession();
