@@ -81,7 +81,7 @@ public class ScormWrapperController extends MainLayoutBasicController {
 		MapperKey mapperKey = registerSandboxedMapper(ureq, mapper);
 		String serverUri = Settings.isContentDomainNameEnabled()
 				? Settings.createContentServerURI()
-				: Settings.createServerURI();
+				: "";
 		String baseUri = serverUri + mapperKey.getUrl();
 		mainVC.contextPut("baseURI", baseUri);
 		mainVC.contextPut("currentURI", "start.html");
