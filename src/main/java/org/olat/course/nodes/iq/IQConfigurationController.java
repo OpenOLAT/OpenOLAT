@@ -83,6 +83,7 @@ import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.olat.resource.OLATResource;
@@ -226,6 +227,38 @@ public class IQConfigurationController extends BasicController implements Refere
 			}
 			String warning = translate("warning.publish");
 			return new Confirm(false, warning);
+		}
+
+		@Override
+		public boolean useNewSelectionDialog() {
+			// OO-7574: only the "Test" course element moves to the redesigned
+			// selection dialog for now - Self-Test and Survey (same controller,
+			// distinguished by type) stay on the old dialog until they're migrated too.
+			return QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type);
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.tests");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-IMSQTI21_icon",
+					translate("select.no.test.yet"),
+					translate("select.no.test.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-IMSQTI21_icon",
+					translate("select.no.tests.in.view"),
+					translate("select.no.tests.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term");
 		}
 	}
 	
