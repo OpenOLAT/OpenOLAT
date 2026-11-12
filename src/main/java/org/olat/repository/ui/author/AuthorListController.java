@@ -796,11 +796,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		if(configuration.isSharedWithMeTab()) {
-			List<String> sharedWithMeStatus = List.of(RepositoryEntryStatusEnum.review.name(),
-					RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name());
-			sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitAndDefaultFilters("SharedWithMe", translate("search.shared.with.me"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared")),
-					List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, sharedWithMeStatus)));
+			sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("SharedWithMe", translate("search.shared.with.me"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared")));
 			sharedWithMeTab.setElementCssClass("o_sel_author_shared_with_me");
 			sharedWithMeTab.setFiltersExpanded(true);
 			tabs.add(sharedWithMeTab);

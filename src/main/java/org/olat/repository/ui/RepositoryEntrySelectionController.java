@@ -22,6 +22,7 @@ package org.olat.repository.ui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -88,6 +89,7 @@ public class RepositoryEntrySelectionController extends BasicController {
 		searchParams.setCanReference(true);
 		searchParams.setExcludeDecommissionedStatus(true);
 		searchParams.setRestrictStatusToReviewToPublished(true);
+		searchParams.setSharedOrganisations(ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.author));
 		if (defaultOrganisations != null && !defaultOrganisations.isEmpty()) {
 			List<OrganisationRef> organisationRefs = defaultOrganisations.stream()
 					.map(OrganisationRef.class::cast)
