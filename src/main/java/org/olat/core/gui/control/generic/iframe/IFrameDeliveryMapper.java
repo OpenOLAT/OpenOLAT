@@ -433,7 +433,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";\n");
 			if(useContentDomain) {
 				sb.append("o_info = new Object();\n");
-				sb.append("o_info.uriprefix='/auth/';\n");
+				sb.append("o_info.uriprefix='").append(WebappHelper.getServletContextPath()).append("/auth/';\n");
 				if(StringHelper.containsNonWhitespace(courseDBId)) {
 					sb.append("o_info.course_id='").append(courseDBId).append("';\n");
 				}

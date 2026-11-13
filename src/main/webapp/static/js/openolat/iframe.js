@@ -20,9 +20,16 @@ function b_getMainWindow(mywin) {
 		return null;
 	}
 	// check if current window contains our iframe
-	var iframe = mywin.document.getElementById(b_iframeid)
-	if (iframe != null && iframe != 'undefined') {
-		return mywin;		
+	try {
+		var iframe = mywin.document.getElementById(b_iframeid)
+		if (iframe != null && iframe != 'undefined') {
+			return mywin;
+		}
+	} catch(e) {
+		// The window has another origin (content delivered by the content domain), its
+		// document cannot be accessed. The first ancestor with another origin is the
+		// OpenOlat window which contains our iframe.
+		return mywin;
 	}
 	// check if we are already on top - no more parent left
 	if (mywin == mywin.parent) {
