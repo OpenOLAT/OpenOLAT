@@ -435,8 +435,8 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment choosePortfolio(String resourceTitle) {
-		By chooseBy = By.cssSelector(".o_re_reference .btn.btn-primary");
-		return chooseResourceModern(chooseBy, resourceTitle);
+		By chooseBy = By.cssSelector(".o_sel_portfolio_config .o_re_reference .btn.btn-primary");
+		return chooseResourceModernV2(chooseBy, resourceTitle);
 	}
 	
 	/**

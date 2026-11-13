@@ -50,6 +50,7 @@ import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,6 +136,35 @@ public class PortfolioConfigController extends BasicController implements Refere
 				return new Confirm(false, translate("select.map.disabled.msg"));
 			}
 			return new Confirm(true, null);
+		}
+
+		@Override
+		public boolean useNewSelectionDialog() {
+			return true;
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.portfolio.templates");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_BinderTemplate_icon",
+					translate("select.no.portfolio.yet"),
+					translate("select.no.portfolio.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_BinderTemplate_icon",
+					translate("select.no.portfolios.in.view"),
+					translate("select.no.portfolios.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term");
 		}
 	}
 
