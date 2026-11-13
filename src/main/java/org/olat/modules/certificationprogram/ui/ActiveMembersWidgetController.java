@@ -232,10 +232,10 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 	}
 
 	@Override
-	protected String createShowAll(FormLayoutContainer widgetCont) {
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		setUrl(showAllLink, membersAreaBusinessPath + "[Active:0][All:0]");
-		return showAllLink.getComponent().getComponentName();
+		return List.of(showAllLink.getComponent().getComponentName());
 	}
 	
 	@Override

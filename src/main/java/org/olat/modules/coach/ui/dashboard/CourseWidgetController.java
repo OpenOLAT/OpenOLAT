@@ -204,10 +204,10 @@ public class CourseWidgetController extends TableWidgetController
 	}
 
 	@Override
-	protected String createShowAll(FormLayoutContainer widgetCont) {
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		setUrl(showAllLink, "[CoachSite:0][Courses:0][owner:0][All:0]");
-		return showAllLink.getComponent().getComponentName();
+		return List.of(showAllLink.getComponent().getComponentName());
 	}
 	
 	public void reload() {

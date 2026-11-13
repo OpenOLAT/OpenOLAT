@@ -231,10 +231,10 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	}
 
 	@Override
-	protected String createShowAll(FormLayoutContainer widgetCont) {
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		setUrl(showAllLink, "[Implementations:0][All:0]", getBaseBusinessPath() + "[Implementations:0][All:0]");
-		return showAllLink.getComponent().getComponentName();
+		return List.of(showAllLink.getComponent().getComponentName());
 	}
 
 	protected void createIndicator(FormLayoutContainer widgetCont, CurriculumElementStatus status) {

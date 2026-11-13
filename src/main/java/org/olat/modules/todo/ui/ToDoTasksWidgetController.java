@@ -188,11 +188,11 @@ public abstract class ToDoTasksWidgetController extends TableWidgetController im
 	}
 
 	@Override
-	protected String createShowAll(FormLayoutContainer widgetCont) {
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		String businessPath = "[ToDos:0][" + ToDoTaskListController.TAB_ID_ALL + ":0]";
 		setUrl(showAllLink, businessPath, getBaseBusinessPath() + businessPath);
-		return showAllLink.getComponent().getComponentName();
+		return List.of(showAllLink.getComponent().getComponentName());
 	}
 
 	@Override

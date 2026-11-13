@@ -69,6 +69,7 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	
 	private SampleFlexiTableModel dataModel;
 	private FlexiTableElement tableEl;
+	private FormLink secondLink;
 	private FormLink showAllLink;
 
 	private final String title;
@@ -177,9 +178,14 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 	}
 
 	@Override
-	protected String createShowAll(FormLayoutContainer widgetCont) {
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
-		return showAllLink.getComponent().getComponentName();
+		if (listView) {
+			secondLink = uifactory.addFormLink("second.button", widgetCont, Link.BUTTON);
+			secondLink.setElementCssClass("o_button_primary");
+			return List.of(secondLink.getComponent().getComponentName(), showAllLink.getComponent().getComponentName());
+		}
+		return List.of(showAllLink.getComponent().getComponentName());
 	}
 
 	@Override
@@ -217,6 +223,8 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 			if (event instanceof SelectionEvent se) {
 				doShowRowClicked(se.getIndex());
 			}
+		} else if (source == secondLink) {
+			showInfo("second.button.message");
 		} else if (source == showAllLink) {
 			doShowAll();
 		} else if (source instanceof FormLink link) {

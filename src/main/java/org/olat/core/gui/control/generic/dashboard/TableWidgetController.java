@@ -86,7 +86,7 @@ public abstract class TableWidgetController extends FormBasicController implemen
 		widgetCont.contextPut("headerToolsComponentName", createHeaderTools(widgetCont));
 		widgetCont.contextPut("tableComponentName", createTable(widgetCont));
 		widgetCont.contextPut("emptyComponentName", createEmptyState(widgetCont));
-		widgetCont.contextPut("showAllComponentName", createShowAll(widgetCont));
+		widgetCont.contextPut("footerButtonNames", createFooterButtons(widgetCont));
 		
 		initPrefs(ureq);
 	}
@@ -94,7 +94,7 @@ public abstract class TableWidgetController extends FormBasicController implemen
 	protected abstract String getTitle();
 	protected abstract String createTopArea(FormLayoutContainer widgetCont);
 	protected abstract String createTable(FormLayoutContainer widgetCont);
-	protected abstract String createShowAll(FormLayoutContainer widgetCont);
+	protected abstract List<String> createFooterButtons(FormLayoutContainer widgetCont);
 
 	@Override
 	public String getWidgetTitle() {

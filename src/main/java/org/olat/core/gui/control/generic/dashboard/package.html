@@ -271,7 +271,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
   <line class="sep" x1="600" y1="359" x2="850" y2="359"/>
   <text class="cls-text" x="608" y="374"># getTitle() : String</text>
   <text class="cls-text" x="608" y="389"># createTable(cont)</text>
-  <text class="cls-text" x="608" y="404"># createShowAll(cont)</text>
+  <text class="cls-text" x="608" y="404"># createFooterButtons(cont)</text>
   <text class="cls-text" x="608" y="419">+ getWidgetTitle() : String</text>
 
   <!-- ===== Arrows ===== -->
@@ -536,9 +536,9 @@ dashboard.addWidget("myStats", null, statsCtrl, BentoBoxSize.box_2_2);</code></p
     }
 
     @Override
-    protected String createShowAll(FormLayoutContainer widgetCont) {
+    protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
         FormLink showAll = DashboardUIFactory.createShowAllLink(widgetCont);
-        return showAll.getName();
+        return List.of(showAll.getName());
     }
 
     @Override

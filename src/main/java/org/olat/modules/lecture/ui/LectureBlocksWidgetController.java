@@ -145,9 +145,9 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 
 	@Override
-	protected String createShowAll(FormLayoutContainer widgetCont) {
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
-		return showAllLink.getComponent().getComponentName();
+		return List.of(showAllLink.getComponent().getComponentName());
 	}
 
 	@Override

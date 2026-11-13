@@ -34,15 +34,24 @@
 		</div>
 	#end
 	<div class="o_dashboard_widget_space"></div>
-	#set($showAllVisible = $r.available($showAllComponentName) && $r.visible($showAllComponentName))
-	#if($r.isNotEmpty($footerText) || $showAllVisible)
+	#set($buttonsVisible = false)
+	#foreach($buttonName in $footerButtonNames)
+		#if($r.available($buttonName) && $r.visible($buttonName))
+			#set($buttonsVisible = true)
+		#end
+	#end
+	#if($r.isNotEmpty($footerText) || $buttonsVisible)
 		<div class="o_dashboard_widget_footer">
 			#if($r.isNotEmpty($footerText))
 				<div class="o_dashboard_widget_footer_text">$footerText</div>
 			#end
-			#if($showAllVisible)
+			#if($buttonsVisible)
 				<div class="o_dashboard_widget_footer_buttons">
-					$r.render($showAllComponentName)
+					#foreach($buttonName in $footerButtonNames)
+						#if($r.available($buttonName) && $r.visible($buttonName))
+							$r.render($buttonName)
+						#end
+					#end
 				</div>
 			#end
 		</div>
