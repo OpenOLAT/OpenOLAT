@@ -982,15 +982,17 @@ public class ImportCurriculumsValidator {
 					allOk &= false;
 				}
 				break;// only one error per field
-			} else if(room.getStatus() == RoomStatus.inactive || room.getStatus() == RoomStatus.deleted) {
-				importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null,
-						translator.translate("error.room.inactive", rooms));
-				allOk &= false;
+			} else if(currentRooms.contains(RoomKey.valueOf(room))) {
+				// Already allocated, no error
 			} else if(!availableRooms.contains(room)) {
 				importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null,
 						translator.translate("error.permissions", rooms));
 				allOk &= false;
-			}
+			} else if(room.getStatus() == RoomStatus.inactive || room.getStatus() == RoomStatus.deleted) {
+				importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null,
+						translator.translate("error.room.inactive", rooms));
+				allOk &= false;
+			} 
 		}
 		
 		if(allOk && !equalsRooms(roomsList, currentRooms)) {
