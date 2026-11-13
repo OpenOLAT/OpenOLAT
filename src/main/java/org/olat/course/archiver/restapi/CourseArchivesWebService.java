@@ -98,7 +98,7 @@ public class CourseArchivesWebService extends ExportArchivesWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postArchive(CourseArchiveOptionsVO archiveOptionsVo, @Context HttpServletRequest httpRequest) {
-		if(isManager(httpRequest)) {
+		if(isRepositoryEntryAdmin(httpRequest)) {
 			return startArchive(archiveOptionsVo, httpRequest);
 		}
 		return Response.serverError().status(Status.FORBIDDEN).build();
@@ -115,7 +115,7 @@ public class CourseArchivesWebService extends ExportArchivesWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putArchive(@Context HttpServletRequest httpRequest) {
-		if(isManager(httpRequest)) {
+		if(isRepositoryEntryAdmin(httpRequest)) {
 			return startArchive(null, httpRequest);
 		}
 		return Response.serverError().status(Status.FORBIDDEN).build();
@@ -132,11 +132,12 @@ public class CourseArchivesWebService extends ExportArchivesWebService {
 	@Produces({ "application/zip" })
 	public Response getArchive(@PathParam("archiveKey") Long archiveKey, @Context HttpServletRequest httpRequest,
 			@Context HttpServletResponse httpResponse) {
-		if(isManager(httpRequest)) {
-			
+		if(isRepositoryEntryAdmin(httpRequest)) {
 			ExportMetadata metadata = exportManager.getExportMetadataByKey(archiveKey);
-			if(metadata == null) {
+			if(metadata == null || !entry.equals(metadata.getEntry())) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
+			} else if(metadata.isOnlyAdministrators() && !isManager(httpRequest)) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
 			
 			File file = VFSManager.olatRootFile(metadata.getFilePath());
@@ -163,9 +164,9 @@ public class CourseArchivesWebService extends ExportArchivesWebService {
 		CourseArchiveExportTask task = new CourseArchiveExportTask(options, OresHelper.clone(entry.getOlatResource()), locale);
 
 		Date expirationDate = CalendarUtils.endOfDay(DateUtils.addDays(ureq.getRequestTimestamp(), courseModule.getCourseArchiveRetention()));
-		
+
 		ExportMetadata metadata = exportManager.startExport(task, options.getTitle(), null, options.getFilename(),
-				ArchiveType.COMPLETE, expirationDate, true,
+				ArchiveType.COMPLETE, expirationDate, options.isOnlyAdministrators(),
 				entry, CourseArchiveListController.COURSE_ARCHIVE_SUB_IDENT, ureq.getIdentity());
 		
 		ExportMetadataVO metadataVo = ExportMetadataVO.valueOf(metadata);

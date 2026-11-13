@@ -33,6 +33,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -157,6 +158,9 @@ public class RemindersWebService {
 			reminder = reminderService.createReminder(entry, creator);
 		} else {
 			reminder = reminderService.loadByKey(reminderVo.getKey());
+			if(reminder == null || !entry.equals(reminder.getEntry())) {
+				throw new WebApplicationException(Status.NOT_FOUND);
+			}
 		}
 
 		reminder.setDescription(reminderVo.getDescription());
@@ -197,7 +201,7 @@ public class RemindersWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		Reminder reminder = reminderService.loadByKey(reminderKey);
-		if(reminder == null) {
+		if(reminder == null || !entry.equals(reminder.getEntry())) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		

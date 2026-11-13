@@ -76,12 +76,15 @@ public class ExportArchivesWebService {
 	@ApiResponse(responseCode = "403", description = "Not enough permissions to access the list")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getArchives(@Context HttpServletRequest request) {
-		if(!isManager(request)) {
+		if(!isRepositoryEntryAdmin(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		SearchExportMetadataParameters params = new SearchExportMetadataParameters(entry, null,
 				List.of(ArchiveType.COMPLETE, ArchiveType.PARTIAL));
+		if(!isManager(request)) {
+			params.setOnlyAdministrators(Boolean.FALSE);
+		}
 		List<ExportMetadata> metadataList = exportManager.searchMetadata(params);
 		
 		ExportMetadataVOes metadataVoes = new ExportMetadataVOes();
@@ -99,11 +102,18 @@ public class ExportArchivesWebService {
 		return entryVOs;
 	}
 	
-	protected final boolean isManager(HttpServletRequest request) {
+	protected final boolean isRepositoryEntryAdmin(HttpServletRequest request) {
 		UserRequest ureq = getUserRequest(request);
 		Identity identity = ureq.getIdentity();
 		return repositoryService.hasRoleExpanded(identity, entry,
 				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
 				GroupRoles.owner.name());
+	}
+	
+	protected final boolean isManager(HttpServletRequest request) {
+		UserRequest ureq = getUserRequest(request);
+		Identity identity = ureq.getIdentity();
+		return repositoryService.hasRoleExpanded(identity, entry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
 	}
 }
