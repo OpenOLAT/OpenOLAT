@@ -449,6 +449,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	
 		String title = translate("curriculum.import.title");
 		importCurriculumsCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, title, "");
+		importCurriculumsCtrl.setFinishText(translate("wizard.start.import.curriculum"));
 		listenTo(importCurriculumsCtrl);
 		getWindowControl().pushAsModalDialog(importCurriculumsCtrl.getInitialComponent());
 	}
