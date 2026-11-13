@@ -1393,7 +1393,7 @@ Classes for new code:
 <span class="o_labeled_light o_state_danger">Revoked</span>           <!-- text -->
 ```
 
-The existing status classes keep their names. `$o-state-wiring` in `modules/_states.scss` assigns each of the 395 status classes (e.g. `o_repo_status_published`, `o_lp_in_progress`, `label-success`) a state and a style; the module `@extend`s the placeholder `%o_state_<state>_<style>`. The map is generated from the OO-colors mapping; do not edit it by hand. `_states.scss` is imported after all other modules. GUI demo: Colors > tab "Badges / Status".
+The existing status classes keep their names. `$o-state-wiring` in `modules/_states.scss` assigns each of the 395 status classes (e.g. `o_repo_status_published`, `o_lp_in_progress`, `label-success`) a state and a style; the module `@extend`s the placeholder `%o_state_<state>_<style>`. The map is generated from the OO-colors mapping; do not edit it by hand. Three statuses have no state and are wired to the hue lime (`$o-state-hue-exceptions`): course published for coaches, curriculum element confirmed, topic broker enrolment running. An exception has the styles of a state, but no class `.o_state_*`. `_states.scss` is imported after all other modules. GUI demo: Colors > tab "Badges / Status".
 
 ### 26.3 Status Colour Without a Label
 

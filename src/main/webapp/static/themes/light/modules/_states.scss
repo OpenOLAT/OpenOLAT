@@ -35,7 +35,13 @@
 
 $o-state-styles: ("dark", "solid", "tint", "light", "text");
 
-@each $state, $hue in $o-states {
+// Exceptions: a status without a state, wired to a hue. "lime" is the status
+// "confirmed, but not open to all yet" between neutral and success (course
+// published for coaches, curriculum element confirmed, topic broker enrolment
+// running). An exception has the styles of a state, but no class .o_state_*.
+$o-state-hue-exceptions: ("lime": "lime");
+
+@each $state, $hue in map.merge($o-states, $o-state-hue-exceptions) {
 	@each $style in $o-state-styles {
 		%o_state_#{$state}_#{$style} {
 			@extend %o_swatch_#{$hue};
@@ -72,20 +78,22 @@ $o-state-styles: ("dark", "solid", "tint", "light", "text");
 		}
 	}
 
-	.o_state_#{$state} {
-		@extend %o_state_#{$state}_solid;
-	}
-	.o_state_#{$state}.o_state_dark {
-		@extend %o_state_#{$state}_dark;
-	}
-	.o_state_#{$state}.o_state_tint {
-		@extend %o_state_#{$state}_tint;
-	}
-	.o_state_#{$state}.o_state_light {
-		@extend %o_state_#{$state}_light;
-	}
-	.o_labeled_light.o_state_#{$state} {
-		@extend %o_state_#{$state}_text;
+	@if map.has-key($o-states, $state) {
+		.o_state_#{$state} {
+			@extend %o_state_#{$state}_solid;
+		}
+		.o_state_#{$state}.o_state_dark {
+			@extend %o_state_#{$state}_dark;
+		}
+		.o_state_#{$state}.o_state_tint {
+			@extend %o_state_#{$state}_tint;
+		}
+		.o_state_#{$state}.o_state_light {
+			@extend %o_state_#{$state}_light;
+		}
+		.o_labeled_light.o_state_#{$state} {
+			@extend %o_state_#{$state}_text;
+		}
 	}
 }
 
@@ -93,16 +101,16 @@ $o-state-styles: ("dark", "solid", "tint", "light", "text");
 $o-state-wiring: (
 	// BEGIN WIRING
 	// Repository
-	".o_labeled.o_repo_status_preparation": ("neutral", "tint"),
+	".o_labeled.o_repo_status_preparation": ("neutral", "solid"),
 	".o_labeled.o_repo_status_review": ("warning", "solid"),
-	".o_labeled.o_repo_status_coachpublished": ("success", "tint"),
+	".o_labeled.o_repo_status_coachpublished": ("lime", "solid"),
 	".o_labeled.o_repo_status_published": ("success", "solid"),
 	".o_labeled.o_repo_status_closed": ("finished", "solid"),
 	".o_labeled.o_repo_status_trash": ("inactive", "solid"),
 	".o_labeled.o_repo_status_deleted": ("inactive", "dark"),
 	".o_labeled_light.o_repo_status_preparation": ("neutral", "text"),
 	".o_labeled_light.o_repo_status_review": ("warning", "text"),
-	".o_labeled_light.o_repo_status_coachpublished": ("success", "text"),
+	".o_labeled_light.o_repo_status_coachpublished": ("lime", "text"),
 	".o_labeled_light.o_repo_status_published": ("success", "text"),
 	".o_labeled_light.o_repo_status_closed": ("finished", "text"),
 	".o_labeled_light.o_repo_status_trash": ("inactive", "text"),
@@ -197,8 +205,8 @@ $o-state-wiring: (
 	".o_labeled_light.o_curriculum_status_preparation": ("neutral", "text"),
 	".o_labeled.o_curriculum_status_provisional": ("warning", "tint"),
 	".o_labeled_light.o_curriculum_status_provisional": ("warning", "text"),
-	".o_labeled.o_curriculum_status_confirmed": ("success", "tint"),
-	".o_labeled_light.o_curriculum_status_confirmed": ("success", "text"),
+	".o_labeled.o_curriculum_status_confirmed": ("lime", "solid"),
+	".o_labeled_light.o_curriculum_status_confirmed": ("lime", "text"),
 	".o_labeled.o_curriculum_status_active": ("success", "solid"),
 	".o_labeled_light.o_curriculum_status_active": ("success", "text"),
 	".o_labeled.o_curriculum_status_cancelled": ("inactive", "solid"),
@@ -341,7 +349,7 @@ $o-state-wiring: (
 	".o_labeled_light.o_evaluation_done": ("success", "text"),
 	// Topic broker
 	".o_labeled.o_tb_label_broker_not_started": ("inactive", "tint"),
-	".o_labeled.o_tb_label_broker_enrollment_in_progress": ("success", "tint"),
+	".o_labeled.o_tb_label_broker_enrollment_in_progress": ("lime", "solid"),
 	".o_labeled.o_tb_label_enrolled": ("success", "solid"),
 	".o_labeled_light.o_tb_label_light_enrolled": ("success", "text"),
 	".o_labeled.o_tb_label_waiting": ("warning", "solid"),
@@ -365,13 +373,13 @@ $o-state-wiring: (
 	".o_labeled_light.o_after_today": ("neutral", "text"),
 	".o_labeled_light.o_past_deadline": ("critical", "text"),
 	// Open Badges
-	".o_labeled.o_badge_class_status_preparation": ("neutral", "tint"),
+	".o_labeled.o_badge_class_status_preparation": ("neutral", "solid"),
 	".o_labeled.o_badge_class_status_active": ("success", "solid"),
 	".o_labeled.o_badge_class_status_deleted": ("inactive", "dark"),
 	".o_labeled.o_badge_class_status_revoked": ("danger", "solid"),
 	".o_labeled.o_badge_assertion_status_reset": ("warning", "solid"),
 	".o_labeled.o_badge_assertion_status_expired": ("critical", "solid"),
-	".o_labeled.o_badge_assertion_status_editing": ("neutral", "tint"),
+	".o_labeled.o_badge_assertion_status_editing": ("neutral", "solid"),
 	".o_labeled.o_badge_assertion_status_issued": ("success", "solid"),
 	".o_labeled.o_badge_assertion_status_revoked": ("danger", "solid"),
 	".o_labeled.o_badge_verification_signed": ("neutral", "solid"),
@@ -412,7 +420,7 @@ $o-state-wiring: (
 	".o_labeled_light.o_ac_billing_address_active_light": ("success", "text"),
 	".o_labeled_light.o_ac_billing_address_inactive_light": ("inactive", "text"),
 	// Offer survey
-	".o_labeled.o_offer_survey_status_prepared": ("neutral", "tint"),
+	".o_labeled.o_offer_survey_status_prepared": ("neutral", "solid"),
 	".o_labeled_light.o_offer_survey_status_prepared": ("neutral", "text"),
 	".o_labeled.o_offer_survey_status_done": ("success", "solid"),
 	".o_labeled_light.o_offer_survey_status_done": ("success", "text"),
