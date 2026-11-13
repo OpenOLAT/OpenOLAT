@@ -521,7 +521,7 @@
 
 /* colors (used in repo and else where) //FIXME: FG refactor to something meaningfull*/
 .o_ochre { color: var(--o-state-warning-text); }
-.o_blue { color: #12223F; }
+.o_blue { color: #12223F; } // o-color-keep(stored-content)
 
 
 /* add to links that should not be decorated (system links) */ 

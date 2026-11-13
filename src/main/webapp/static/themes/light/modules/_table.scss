@@ -623,13 +623,6 @@ div:has(>.o_table_tabs):has(>.o_table_batch_buttons):not(:has(>.o_table_filters_
 	}
 }
 
-.input-group .input-group-btn .o_reset_filter_search {
-	width: 38px;
-	margin-left: -38px;
-	z-index:5;
-	color: grey;
-}
-
 .o_filter_search_list_values {
 	max-height: 300px;
 	overflow-y: scroll;

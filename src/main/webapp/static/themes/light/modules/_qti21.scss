@@ -967,7 +967,7 @@ body>li.o_assessmentitem_order_item  {
 .itemPrompt {
 	margin: 1.5em 0;
 	font-style: italic;
-	color: #666666;
+	color: #666666; // o-color-keep(stored-content)
 }
 
 .o_qti_item_body {
@@ -1611,6 +1611,7 @@ table.o_qti_item_kprim {
 
 /* Help for Math Input */
 
+// o-color-keep-start(stored-content)
 .o_assessmentitem table.inputHelp {
 	border-collapse: collapse;
 	width: 100%;
@@ -1638,6 +1639,7 @@ table.o_qti_item_kprim {
 		margin-right: 0.5em;
 	}
 }
+// o-color-keep-end
 
 /* Correct solution feedback */
 .o_togglebox_wrapper .o_modal_correct_solution div.o_togglebox_content {

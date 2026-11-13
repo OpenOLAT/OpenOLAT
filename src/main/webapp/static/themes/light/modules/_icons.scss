@@ -507,7 +507,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_right { @include o-add-icon('arrow-circle-right');}
 .o_icon_right_left { @include o-add-icon('right-left');}
 .o_icon_rss { @include o-add-icon('rss');}
-.o_icon_rss_unsubscribe { @include o-add-icon('rss'); color: #996633;}
+.o_icon_rss_unsubscribe { @include o-add-icon('rss'); color: #996633;} // o-color-keep(stored-content)
 .o_icon_role { @include o-add-icon('exchange');}
 .o_icon_room_management { @include o-add-icon('person-chalkboard');}
 .o_icon_rubric { @include o-add-icon('sliders');}

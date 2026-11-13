@@ -1237,8 +1237,10 @@ public class ColorTokensTest {
 	 * (B4-9); decorative colours palette steps (B4-13). The own tokens have
 	 * the values of today (B4-4, B4-11, B4-12, B4-14). The hotspot styles, the
 	 * styles stored in content, brand colours, developer tools and print
-	 * sheets keep their literals (B4-15 to B4-17); the rules without a reader
-	 * of B4-18 are not changed (they need a check of the stored content).
+	 * sheets keep their literals (B4-15 to B4-17). B4-18 (slice 23): the
+	 * rules without a reader and the invalid declarations are removed; the
+	 * styles that stored content can use (.o_blue, .o_icon_rss_unsubscribe,
+	 * .itemPrompt, table.inputHelp) keep their literals with a marker.
 	 */
 	@Test
 	public void decisionD29LiteralsReadTokens() {
@@ -1361,15 +1363,19 @@ public class ColorTokensTest {
 		assertSourceHas(modules.resolve("_dmz.scss"), "color: #4568b2;", "color: rgb(0, 114, 198);");
 		assertSourceHas(modules.resolve("_icons.scss"), "color: #cfdc00;");
 		assertSourceHas(modules.resolve("_devel.scss"), "background: #f0ad4e;");
-		// B4-18: the rules without a reader and the invalid declarations are not changed
-		assertSourceHas(modules.resolve("_selectus.scss"), "&.b_preparation_on {  @include o-add-icon('circle',true); color: #999; }",
-				"&.b_closed { @include o-add-icon('circle',true); color: #de5a3e; }", "boxShadow");
-		assertSourceHas(modules.resolve("_helpers.scss"), "o_blue");
-		assertSourceHas(modules.resolve("_qti21.scss"), "color: #666666");
-		assertSourceHas(modules.resolve("_user.scss"), "#4caf50", "#f3f3f3");
-		assertSourceHas(modules.resolve("_video.scss"), "box-shadow: red");
-		assertSourceHas(modules.resolve("_folder.scss"), "1px solid 1px solid #ccc");
-		assertSourceHas(modules.resolve("_topicbroker.scss"), "1px solid 1px solid #ccc");
+		// B4-18 (slice 23): the styles that stored content can use stay, the rules
+		// without a reader and the invalid declarations are removed
+		assertSourceHas(modules.resolve("_helpers.scss"), ".o_blue { color: #12223F; }");
+		assertSourceHas(modules.resolve("_icons.scss"), "color: #996633;");
+		assertSourceHas(modules.resolve("_qti21.scss"), "color: #666666", "background-color: #cad8e5;");
+		assertSourceLacks(modules.resolve("_selectus.scss"), "b_preparation", "b_published", "b_closed", "boxShadow");
+		assertSourceLacks(modules.resolve("_user.scss"), "o_userinfo_status", "o_userinfo_roles");
+		assertSourceLacks(modules.resolve("_table.scss"), "o_reset_filter_search");
+		assertSourceLacks(modules.resolve("_video.scss"), "o_cosegments_SELBOX", "box-shadow: red");
+		assertSourceLacks(modules.resolve("_folder.scss"), "1px solid 1px solid");
+		assertSourceLacks(modules.resolve("_topicbroker.scss"), "1px solid 1px solid");
+		assertSourceLacks(modules.resolve("_curriculum.scss"), "$o-curriculum-widget-template-label-border");
+		Assert.assertFalse("The compiled theme has a selectus status class b_*", css.contains(".b_preparation") || css.contains(".b_closed"));
 		assertSourceHas(modules.resolve("_portfolio_v2.scss"), "pink");
 		assertSourceHas(PaletteTest.LIGHT_THEME_CSS.getParent().resolve("_config.scss"), "$o-video-controls-selected", "$o-video-controls-bg");
 	}
@@ -1902,6 +1908,17 @@ public class ColorTokensTest {
 		String code = ThemeColorRatchetTest.withoutComments(read(scss));
 		for (String snippet : snippets) {
 			Assert.assertTrue(scss.getFileName() + " has no " + snippet, code.contains(snippet));
+		}
+	}
+
+	/**
+	 * @param scss The SCSS file
+	 * @param snippets Text that the file must not hold outside of a comment
+	 */
+	private static void assertSourceLacks(Path scss, String... snippets) {
+		String code = ThemeColorRatchetTest.withoutComments(read(scss));
+		for (String snippet : snippets) {
+			Assert.assertFalse(scss.getFileName() + " still has " + snippet, code.contains(snippet));
 		}
 	}
 

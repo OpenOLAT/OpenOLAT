@@ -69,28 +69,6 @@ span.o_icon-stack.o_position_status {
 	&.o_reporting { @include o-add-icon('circle',true); color: var(--o-selectus-status-reporting); }
 }
 
-.o_position_status_filter {
-	&.b_preparation_on {  @include o-add-icon('circle',true); color: #999; }
-	&.b_preparation_off {  @include o-add-icon('circle',true); color: #949494; }
-	
-	&.b_published_off {  @include o-add-icon('circle',true); color: #17882e; }
-	&.b_published_on {  @include o-add-icon('circle',true); color: #006e0d; }
-	
-	&.b_published_screening_off { @include o-add-icon('circle-half-stroke',true); color: #17882e; }
-	&.b_published_screening_2_off { @include o-add-icon('circle',true); color: #e7c33f; }
-	
-	&.b_published_screening_on { @include o-add-icon('circle',false); color: #006e0d; background-color: #e7c33f; }
-	
-	&.b_closed_screening_off { @include o-add-icon('circle',false); color: #de5a3e; background-color: #e7c33f; }
-	&.b_closed_screening_off { @include o-add-icon('circle',false); color: #bd1f10; background-color: #e7c33f; } 
-	
-	&.b_closed_no_rating_off { @include o-add-icon('circle',false); color: #de5a3e; }
-	&.b_closed_no_rating_on { @include o-add-icon('circle',false); color: #bd1f10; }
-	
-	&.b_closed_off { @include o-add-icon('circle',true); color: #de5a3e; }
-	&.b_closed_on { @include o-add-icon('circle',true); color: #bd1f10; }
-}
-
 .o_reference_status_filter {
 	&.o_not_sent { @include o-add-icon('square',true); color: var(--o-selectus-status-preparation); }
 	&.o_sent_awaiting { @include o-add-icon('square',false); color: var(--o-selectus-status-closed); }
@@ -119,15 +97,6 @@ div.o_sel_applications_to_reference .o_warning {
 
 .form-inline.o_form_fullname input, .form-inline.o_form_fullname select {
 	margin-left: -3px;
-}
-
-.o_position_status {
-	&.b_preparation { @include o-add-icon('circle',false); color: #999; }
-	&.b_published { @include o-add-icon('circle',true); color: #17882e; }
-	&.b_published_screening { @include o-add-icon('circle',false); color: #17882e; background-color: #e7c33f; }
-	&.b_closed_screening { @include o-add-icon('circle',false); color: #de5a3e; background-color: #e7c33f; }
-	&.b_closed_no_rating{ @include o-add-icon('circle',false); color: #de5a3e; }
-	&.b_closed { @include o-add-icon('circle',true); color: #de5a3e; }
 }
 
 div.f_rating_overview { float:left; border:1px solid var(--o-btn-default-border); width:4px; height:16px; margin-right:2px; }
@@ -329,10 +298,6 @@ td.col-right {
 		margin-bottom: 1em;
 		margin-top: 0.3em;
 	}
-}
-
-.review_glowing {
-	boxShadow: #8fd7d2 0px 0px 22px;
 }
 
 @keyframes glowingreview {
