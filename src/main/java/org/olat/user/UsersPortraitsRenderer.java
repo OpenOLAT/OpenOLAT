@@ -64,7 +64,7 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 		}
 		sb.append(">");
 		int numUsersVisible = opc.getMaxUsersVisible() < opc.getUserComps().size()? opc.getMaxUsersVisible(): opc.getUserComps().size();
-		int numUsersNotVisible = opc.getUserComps().size() - numUsersVisible;
+		long numUsersNotVisible = opc.getNumUsers() - numUsersVisible;
 		for (int i = 0; i < numUsersVisible; i++) {
 			UserPortraitComponent userPortraitComp = opc.getUserComps().get(i);
 			sb.append("<").append(itemTag).append(" class=\"o_portrait_user\">");
@@ -80,7 +80,7 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 		sb.append("</").append(itemsTag).append(">");
 		if (numUsersNotVisible > 0) {
 			sb.append("<span class=\"o_portrait_user_not_visible\">");
-			sb.append("+").append(numUsersNotVisible);
+			sb.append(numUsersNotVisible > 99? "99+": "+" + numUsersNotVisible);
 			sb.append("</span>");
 			
 		}

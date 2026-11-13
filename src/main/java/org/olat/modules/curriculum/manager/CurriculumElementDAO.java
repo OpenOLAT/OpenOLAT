@@ -1311,6 +1311,10 @@ public class CurriculumElementDAO {
 	}
 	
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, String role) {
+		return getMembersIdentity(element, role, -1);
+	}
+	
+	public List<Identity> getMembersIdentity(CurriculumElementRef element, String role, int maxResults) {
 		String sb = """
 				select ident from curriculumelement el
 				inner join el.group baseGroup
@@ -1318,11 +1322,14 @@ public class CurriculumElementDAO {
 				inner join membership.identity ident
 				inner join fetch ident.user identUser
 				where el.key=:elementKey and membership.role=:role""";
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("elementKey", element.getKey())
-				.setParameter("role", role)
-				.getResultList();
+				.setParameter("role", role);
+		if (maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
 	}
 	
 	public List<Identity> getMembersIdentity(List<Long> elementKeys, String role) {

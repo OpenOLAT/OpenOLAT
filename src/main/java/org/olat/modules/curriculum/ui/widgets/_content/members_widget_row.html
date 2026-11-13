@@ -1,0 +1,13 @@
+<div class="o_curriculum_members_row">
+	<div class="o_curriculum_members_portraits o_first_cell">
+		#if($r.isNotEmpty($row.getPortraitsName()))
+			$r.render($row.getPortraitsName())
+		#end
+	</div>
+	<div class="o_curriculum_members_state">
+		#if($r.isNotEmpty($row.stateCss()))
+			<span class="o_members_widget_state $row.stateCss()" aria-hidden="true"><i class="o_icon $row.iconCss()"></i></span>
+		#end
+	</div>
+	<div class="o_curriculum_members_label">$r.escapeHtml($row.label())</div>
+</div>

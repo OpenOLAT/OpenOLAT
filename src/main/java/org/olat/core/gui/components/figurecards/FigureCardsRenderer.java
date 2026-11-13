@@ -47,7 +47,7 @@ public class FigureCardsRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='o_figure_cards_container'>");
 		sb.append("<ul id='").append(cmp.getFormDispatchId()).append("'");
 		sb.append(" class='list-unstyled o_figure_cards o_figure_cards_n").append(cards.size());
-		sb.append(" ").append(cmp.getElementCssClass(), StringHelper.containsNonWhitespace(cmp.getElementCssClass()));
+		sb.append(" ").append(cmp.getFormItem().getElementCssClass(), StringHelper.containsNonWhitespace(cmp.getFormItem().getElementCssClass()));
 		sb.append("'>");
 		for (Component card : cards) {
 			sb.append("<li>");

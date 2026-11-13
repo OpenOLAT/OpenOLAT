@@ -501,6 +501,8 @@ public interface CurriculumService {
 	 * @return The list of memberships
 	 */
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role);
+	
+	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role, int maxResults);
 
 	public List<Long> getMemberKeys(List<CurriculumElementRef> elements, String... roles);
 	

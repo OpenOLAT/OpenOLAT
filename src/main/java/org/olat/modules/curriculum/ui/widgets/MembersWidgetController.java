@@ -19,36 +19,44 @@
  */
 package org.olat.modules.curriculum.ui.widgets;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.figurecards.FigureCardsFactory;
+import org.olat.core.gui.components.figurecards.FigureCardsItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.indicators.IndicatorsFactory;
-import org.olat.core.gui.components.indicators.IndicatorsItem;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.panel.EmptyPanelItem;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.Marker;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.Segment;
+import org.olat.core.gui.components.progressbar.ProgressBarFactory;
+import org.olat.core.gui.components.progressbar.ProgressBarRenderer;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
-import org.olat.core.gui.render.RenderResult;
-import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -57,11 +65,12 @@ import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumElementDetailsController;
-import org.olat.modules.curriculum.ui.CurriculumListManagerController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserPortraitFactory;
@@ -76,22 +85,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MembersWidgetController extends FormBasicController {
+public class MembersWidgetController extends TableWidgetController implements FlexiTableComponentDelegate {
+	
+	private static final int MAX_PORTRAITS = 5;
 
-	private IndicatorsItem participantsIndicatorsEl;
-	private FormLink participantsKeyLink;
-	private FormLink activeParticipantsLink;
-	private FormLink pendingParticipantsLink;
-	private FormLink ownersLink;
-	private FormLink elementOwnersLink;
-	private FormLink coachesLink;
-	private FormLink masterCoachesLink;
-	private EmptyPanelItem emptyStaff;
+	private FigureCardsItem figuresEl;
+	private FormLink participantsLink;
+	private FormLink toConfirmLink;
 	private FormLink detailsLink;
+	private FlexiTableElement tableEl;
+	private MembersDataModel dataModel;
 
-	private int counter = 0;
-	private boolean otherRolesInitialized = false;
+	private final CurriculumElement curriculumElement;
 	private CurriculumElementInfos curriculumElementInfos;
+	private final String businessPath;
 
 	@Autowired
 	private ACService acService;
@@ -101,11 +108,12 @@ public class MembersWidgetController extends FormBasicController {
 	private UserPortraitService userPortraitService;
 
 	public MembersWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
-		super(ureq, wControl, "members_widget", Util
-				.createPackageTranslator(CurriculumElementDetailsController.class, ureq.getLocale()));
-		setTranslator(Util.createPackageTranslator(DashboardUIFactory.class, getLocale(), getTranslator()));
-		curriculumElementInfos = loadInformations(curriculumElement);
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(CurriculumElementDetailsController.class, getLocale(), getTranslator()));
+		businessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElement.getKey() + "]";
+		this.curriculumElement = curriculumElement;
 		initForm(ureq);
+		loadModel(ureq);
 	}
 
 	private CurriculumElementInfos loadInformations(CurriculumElement curriculumElement) {
@@ -118,302 +126,261 @@ public class MembersWidgetController extends FormBasicController {
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		emptyStaff = uifactory.addEmptyPanel("staff.empty", null, formLayout);
-		emptyStaff.setTitle(translate("curriculum.no.course.staff.title"));
-		emptyStaff.setIconCssClass("o_icon o_icon-lg o_icon_coaching_tool");
-
-		participantsIndicatorsEl = IndicatorsFactory.createItem("participantsIndicators", formLayout);
-
-		participantsKeyLink = IndicatorsFactory.createIndicatorFormLink("participantsKey", "participants", "", "", formLayout);
-		participantsKeyLink.setUrl(getUrl("[Members:0]"));
-		activeParticipantsLink = IndicatorsFactory.createIndicatorFormLink("activeParticipants", "activeParticipants", "", "", formLayout);
-		activeParticipantsLink.setUrl(getUrl("[Members:0][Active:0][Participant:0]"));
-		pendingParticipantsLink = IndicatorsFactory.createIndicatorFormLink("pendingParticipants", "pendingParticipants", "", "", formLayout);
-		pendingParticipantsLink.setUrl(getUrl("[Members:0][Pending:0][All:0]"));
-
-		participantsIndicatorsEl.setKeyIndicator(participantsKeyLink);
-		participantsIndicatorsEl.setFocusIndicatorsItems(List.of(activeParticipantsLink, pendingParticipantsLink));
-
-		initOtherRoles(ureq);
-		updateParticipantsIndicator();
-
-		detailsLink = DashboardUIFactory.createDetailsLink(formLayout);
-		detailsLink.setUrl(getUrl("[Members:0]"));
-		flc.contextPut("detailsComponentName", detailsLink.getComponent().getComponentName());
+	protected String getTitle() {
+		return "<i class=\"o_icon o_icon_membersmanagement\"> </i> " + translate("curriculum.members");
 	}
 
-	private void updateParticipantsIndicator() {
-		Long max = curriculumElementInfos.curriculumElement().getMaxParticipants();
-		Long min = curriculumElementInfos.curriculumElement().getMinParticipants();
-		long numActive = curriculumElementInfos.numOfParticipants();
-		long numPending = curriculumElementInfos.numOfPending();
-		long total = numActive + numPending;
-
-		String figure;
-		String label = translate("curriculum.element.participants");
-		if (max != null && max > 0) {
-			ParticipantsAvailabilityNum availabilityNum = acService.getParticipantsAvailability(max, total, true);
-			figure = getSpeedometerHtml(total, max.doubleValue(), getSpeedometerCssClass(min, total, availabilityNum));
-			label = label + "<br>" + getParticipantsSubInfo(min, total, availabilityNum);
-		} else {
-			figure = Long.toString(total);
-			if (min != null && min > 0 && total < min) {
-				label = label + "<br><span class='text-muted'>"
-						+ translate("participants.to.minimum", Long.toString(min - total)) + "</span>";
-			}
-		}
-
-		participantsKeyLink.setI18nKey(IndicatorsFactory.createLinkText(label, figure));
-
-		activeParticipantsLink.setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_members_widget_icon o_membership_status_active\"></i> " + translate("membership.active"),
-				Long.toString(numActive)));
-		pendingParticipantsLink.setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_members_widget_icon o_membership_status_pending\"></i> " + translate("membership.pending"),
-				Long.toString(numPending)));
+	@Override
+	protected String createTopArea(FormLayoutContainer widgetCont) {
+		figuresEl = FigureCardsFactory.createItem("figures", widgetCont);
+		figuresEl.setElementCssClass("o_curriculum_members_figure");
+		participantsLink = FigureCardsFactory.createCardLink("participants", "participants", widgetCont);
+		setUrl(participantsLink, "[Members:0]", businessPath + "[Members:0]");
+		figuresEl.setCards(List.of(participantsLink));
+		return figuresEl.getComponent().getComponentName();
 	}
 
-	private String getSpeedometerCssClass(Long min, long total, ParticipantsAvailabilityNum availabilityNum) {
-		if (availabilityNum.availability() == ParticipantsAvailability.overbooked) {
-			return "o_speedometer_danger";
-		} else if (min != null && total < min) {
-			return "o_speedometer_warning";
-		}
-		return "o_speedometer_success";
+	@Override
+	protected String createTable(FormLayoutContainer widgetCont) {
+		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		dataModel = new MembersDataModel(tableColumnModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 10, false, getTranslator(), widgetCont);
+		tableEl.setCustomizeColumns(false);
+		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
+		VelocityContainer rowVC = createVelocityContainer("members_widget_row");
+		rowVC.setDomReplacementWrapperRequired(false);
+		tableEl.setRowRenderer(rowVC, this);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withIconCss("o_icon_group")
+				.withMessageTranslated(translate("widget.members.empty"))
+				.build());
+		return tableEl.getComponent().getComponentName();
 	}
 
-	private String getParticipantsSubInfo(Long min, long total, ParticipantsAvailabilityNum availabilityNum) {
-		ParticipantsAvailability availability = availabilityNum.availability();
-		if (availability == ParticipantsAvailability.fullyBooked || availability == ParticipantsAvailability.overbooked) {
-			return getAvailabilityText(availabilityNum);
-		}
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("<span class='text-muted'>");
-		sb.append(translate("filter.occupancy.status.free.num.seats", Long.toString(availabilityNum.numAvailable())));
-		if (min != null && min > 0 && total < min) {
-			sb.append(" / ");
-			sb.append(translate("participants.to.minimum", Long.toString(min - total)));
-		}
-		sb.append("</span>");
-		return sb.toString();
+	@Override
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
+		toConfirmLink = uifactory.addFormLink("to.confirm", "to.confirm", "", null, widgetCont, Link.BUTTON + Link.NONTRANSLATED);
+		toConfirmLink.setPrimary(true);
+		toConfirmLink.getComponent().setAriaRole(Link.ARIA_ROLE_LINK);
+		setUrl(toConfirmLink, "[Members:0][Pending:0][All:0]", businessPath + "[Members:0][Pending:0][All:0]");
+		
+		detailsLink = DashboardUIFactory.createDetailsLink(widgetCont);
+		setUrl(detailsLink, "[Members:0]", businessPath + "[Members:0]");
+		return List.of(toConfirmLink.getComponent().getComponentName(), detailsLink.getComponent().getComponentName());
 	}
 
-	private String getSpeedometerHtml(long value, double maxValue, String cssClass) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("<div class='o_speedometer ").append(cssClass).append("'>");
-		sb.append("<span class='o_speedometer_value'>").append(value).append("</span>");
-		if (maxValue > 0.0d && value > 0) {
-			double rotation = (value / maxValue) * 180;
-			double transposed = 180 - rotation;
-			sb.append("<span class='o_speedometer_indicator' style='--var-speed:-").append(Math.round(transposed)).append("deg;'></span>");
-		}
-		sb.append("</div>");
-		return sb.toString();
+	@Override
+	public boolean isRowClickEnabled() {
+		return true;
 	}
 
-	private String getAvailabilityText(ParticipantsAvailabilityNum availability) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("<span class='o_curriculum_widget_members_status_").append(availability.availability().name().toLowerCase()).append("'>");
-
-		String icon = switch(availability.availability()) {
-			case manyLeft -> null;
-			case fewLeft, fullyBooked -> "o_icon_warning";
-			case overbooked -> "o_icon_circle_exclamation";
-		};
-		if(icon != null) {
-			sb.append("<i class='o_icon o_icon-fw ").append(icon).append("'> </i> ");
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		if (rowObject instanceof MemberRow memberRow && memberRow.portraits() != null) {
+			return List.of(memberRow.portraits());
 		}
-
-		String text = switch(availability.availability()) {
-			case manyLeft -> translate("filter.occupancy.status.free.num.seats", Long.toString(availability.numAvailable()));
-			case fewLeft -> translate("filter.occupancy.status.free.few.num.seats", Long.toString(availability.numAvailable()));
-			case fullyBooked -> translate("filter.occupancy.status.fully.booked");
-			case overbooked -> translate("filter.occupancy.status.overbooked");
-		};
-		sb.append(text);
-		sb.append("</span>");
-		return sb.toString();
-	}
-
-	private void initOtherRoles(UserRequest ureq) {
-		if(otherRolesInitialized) return;// Only once
-
-		SearchMemberParameters params = new SearchMemberParameters(curriculumElementInfos.curriculumElement());
-		params.setRoles(List.of(CurriculumRoles.coach, CurriculumRoles.mastercoach, CurriculumRoles.owner, CurriculumRoles.curriculumelementowner));
-		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
-
-		List<Identity> coaches = getCurriculumMembers(members, CurriculumRoles.coach);
-		if(!coaches.isEmpty()) {
-			coachesLink = uifactory.addFormLink("curriculum.element.coaches", "curriculum.element.coaches", null, flc, Link.LINK);
-			coachesLink.setUrl(getUrl("[Members:0][Active:0][Coach:0]"));
-			UsersPortraitsComponent coachesCmp = createUsersPortraits(ureq, coaches);
-			coachesLink.setInnerComponent(new StaffRoleComponent("staff_role_" + counter++, coachesCmp, translate("search.role.coach")));
-		} else if(coachesLink != null) {
-			flc.remove(coachesLink);
-			coachesLink = null;
-		}
-
-		List<Identity> masterCoaches = getCurriculumMembers(members, CurriculumRoles.mastercoach);
-		if(!masterCoaches.isEmpty()) {
-			masterCoachesLink = uifactory.addFormLink("curriculum.element.mastercoaches", "curriculum.element.mastercoaches", null, flc, Link.LINK);
-			masterCoachesLink.setUrl(getUrl("[Members:0][Active:0][MasterCoach:0]"));
-			UsersPortraitsComponent masterCoachesCmp = createUsersPortraits(ureq, masterCoaches);
-			masterCoachesLink.setInnerComponent(new StaffRoleComponent("staff_role_" + counter++, masterCoachesCmp, translate("search.role.mastercoach")));
-		} else if(masterCoachesLink != null) {
-			flc.remove(masterCoachesLink);
-			masterCoachesLink = null;
-		}
-
-		List<Identity> owners = getCurriculumMembers(members, CurriculumRoles.owner);
-		if(!owners.isEmpty()) {
-			ownersLink = uifactory.addFormLink("course.owners", "search.role.course.owner", null, flc, Link.LINK);
-			ownersLink.setUrl(getUrl("[Members:0][Active:0][Owner:0]"));
-			UsersPortraitsComponent ownersCmp = createUsersPortraits(ureq, owners);
-			ownersLink.setInnerComponent(new StaffRoleComponent("staff_role_" + counter++, ownersCmp, translate("search.role.course.owner")));
-		} else if(ownersLink != null) {
-			flc.remove(ownersLink);
-			ownersLink = null;
-		}
-
-		List<Identity> elementOwners = getCurriculumMembers(members, CurriculumRoles.curriculumelementowner);
-		if(!elementOwners.isEmpty()) {
-			elementOwnersLink = uifactory.addFormLink("curriculum.element.owners", "curriculum.element.owners", null, flc, Link.LINK);
-			elementOwnersLink.setUrl(getUrl("[Members:0][Active:0][" + CurriculumRoles.curriculumelementowner.name() + ":0]"));
-			UsersPortraitsComponent elementOwnersCmp = createUsersPortraits(ureq, elementOwners);
-			elementOwnersLink.setInnerComponent(new StaffRoleComponent("staff_role_" + counter++, elementOwnersCmp, translate("search.role.owner")));
-		} else if(elementOwnersLink != null) {
-			flc.remove(elementOwnersLink);
-			elementOwnersLink = null;
-		}
-		boolean hasStaff = coachesLink != null || masterCoachesLink != null || ownersLink != null || elementOwnersLink != null;
-		emptyStaff.setVisible(!hasStaff);
-		otherRolesInitialized = true;
-	}
-
-	private String getUrl(String path) {
-		return BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(
-				"[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElementInfos.curriculumElement().getKey() + "]" + path);
-	}
-
-	private List<Identity> getCurriculumMembers(List<CurriculumMember> members, CurriculumRoles role) {
-		return members.stream()
-				.filter(m -> role.name().equals(m.getRole()))
-				.map(CurriculumMember::getIdentity)
-				.toList();
-	}
-
-	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, List<Identity> members) {
-		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), members);
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, null);
-		usersPortraitCmp.setSize(PortraitSize.medium);
-		usersPortraitCmp.setMaxUsersVisible(5);
-		usersPortraitCmp.setPortraitItemsTag(PortraitItemsTag.div); // Html tag "ul" not allowed inside "a"
-		usersPortraitCmp.setUsers(portraitUsers);
-		return usersPortraitCmp;
+		return List.of();
 	}
 
 	public void loadModel(UserRequest ureq) {
-		curriculumElementInfos = loadInformations(curriculumElementInfos.curriculumElement());
-		this.otherRolesInitialized = false;
-		initOtherRoles(ureq);
-		updateParticipantsIndicator();
+		curriculumElementInfos = loadInformations(curriculumElement);
+		updateFigure();
+		updateRows(ureq);
+		
+		long numPending = curriculumElementInfos.numOfPending();
+		toConfirmLink.setI18nKey(translate("widget.members.to.confirm", format(numPending)));
+		toConfirmLink.setVisible(numPending > 0);
+	}
+
+	private void updateFigure() {
+		CurriculumElement element = curriculumElementInfos.curriculumElement();
+		long max = element.getMaxParticipants() == null? 0: element.getMaxParticipants().longValue();
+		long min = element.getMinParticipants() == null? 0: element.getMinParticipants().longValue();
+		long numActive = curriculumElementInfos.numOfParticipants();
+		long numPending = curriculumElementInfos.numOfPending();
+		long total = numActive + numPending;
+		boolean withMax = max > 0;
+		boolean minNotReached = min > 0 && total < min;
+		
+		String figure = withMax? format(total) + "/" + format(max): format(total);
+		StringBuilder sb = new StringBuilder();
+		sb.append(FigureCardsFactory.createCardText(null, null, figure, translate("curriculum.element.participants")));
+		
+		ParticipantsAvailabilityNum availabilityNum = withMax? acService.getParticipantsAvailability(max, total, true): null;
+		String status = null;
+		String statusCss = null;
+		if (minNotReached) {
+			status = translate("participants.to.minimum", format(min - total));
+			statusCss = "o_curriculum_members_status_minimum";
+		} else if (availabilityNum != null && availabilityNum.availability() == ParticipantsAvailability.overbooked) {
+			status = translate("widget.members.overbooked", format(total - max));
+			statusCss = "o_curriculum_members_status_overbooked";
+		} else if (availabilityNum != null && availabilityNum.availability() == ParticipantsAvailability.fullyBooked) {
+			status = translate("filter.occupancy.status.fully.booked");
+			statusCss = "o_curriculum_members_status_fullybooked";
+		} else if (availabilityNum != null) {
+			status = translateCount(availabilityNum.numAvailable(), "widget.members.seats.left");
+		}
+		if (status != null) {
+			sb.append("<span class='o_curriculum_members_status");
+			if (statusCss != null) {
+				sb.append(" ").append(statusCss);
+			}
+			sb.append("'>").append(StringHelper.escapeHtml(status)).append("</span>");
+		}
+		
+		if (withMax) {
+			sb.append("<span class='o_curriculum_members_bar'>");
+			sb.append(renderBar(max, min, numActive, numPending, minNotReached));
+			sb.append("</span>");
+		}
+		participantsLink.setI18nKey(sb.toString());
+		participantsLink.setElementCssClass(withMax? "o_figure_card o_curriculum_members_with_bar": "o_figure_card");
+	}
+
+	private String renderBar(long max, long min, long numActive, long numPending, boolean minNotReached) {
+		long total = numActive + numPending;
+		ProgressBar progressBar = ProgressBarFactory.createProgressBar("members_bar", getLocale());
+		progressBar.setMax(Math.max(max, minNotReached? min: total));
+		progressBar.setRenderSize(RenderSize.small);
+		progressBar.setAriaHidden(true);
+		
+		List<Segment> segments = new ArrayList<>(2);
+		segments.add(new Segment(numActive, BarColor.success, "o_members_widget_bar_active", translate("widget.members.bar.active")));
+		segments.add(new Segment(numPending, BarColor.warning, translate("widget.members.bar.pending")));
+		List<Marker> markers = new ArrayList<>(2);
+		if (minNotReached) {
+			markers.add(new Marker(min, BarColor.neutral, translate("widget.members.bar.minimum")));
+		}
+		if (total > max) {
+			markers.add(new Marker(max, BarColor.danger, translate("widget.members.bar.maximum")));
+		}
+		progressBar.setSegments(segments);
+		progressBar.setMarkers(markers);
+		
+		StringOutput target = new StringOutput(512);
+		ProgressBarRenderer.renderProgressBar(target, progressBar, null);
+		return target.toString();
+	}
+
+	private void updateRows(UserRequest ureq) {
+		CurriculumElement element = curriculumElementInfos.curriculumElement();
+		SearchMemberParameters params = new SearchMemberParameters(element);
+		params.setRoles(List.of(CurriculumRoles.coach, CurriculumRoles.mastercoach, CurriculumRoles.owner, CurriculumRoles.curriculumelementowner));
+		List<CurriculumMember> staff = curriculumService.getCurriculumElementsMembers(params);
+		
+		long numActive = curriculumElementInfos.numOfParticipants();
+		long numPending = curriculumElementInfos.numOfPending();
+		List<MemberRow> rows = new ArrayList<>(6);
+		if (numActive > 0 || numPending > 0 || !staff.isEmpty()) {
+			List<Identity> participants = numActive > 0
+					? curriculumService.getMembersIdentity(element, CurriculumRoles.participant, MAX_PORTRAITS)
+					: List.of();
+			rows.add(new MemberRow(createPortraits(ureq, "users_active", participants, numActive), getStateCss(numActive, "o_members_widget_state_active"), "o_icon_check",
+					translateCount(numActive, "widget.members.active"), "[Members:0][Active:0][Participant:0]"));
+			
+			if (numPending > 0 || isPendingPossible(element)) {
+				List<Identity> pending = numPending > 0
+						? acService.getReservations(List.of(element.getResource())).stream().map(ResourceReservation::getIdentity).distinct().limit(MAX_PORTRAITS).toList()
+						: List.of();
+				rows.add(new MemberRow(createPortraits(ureq, "users_pending", pending, numPending), getStateCss(numPending, "o_members_widget_state_pending"), "o_membership_status_pending",
+						translateCount(numPending, "widget.members.pending"), "[Members:0][Pending:0][All:0]"));
+			}
+			
+			addStaffRow(ureq, rows, staff, CurriculumRoles.coach, "widget.members.coach", "Coach");
+			addStaffRow(ureq, rows, staff, CurriculumRoles.mastercoach, "widget.members.master.coach", "MasterCoach");
+			addStaffRow(ureq, rows, staff, CurriculumRoles.owner, "widget.members.course.owner", "Owner");
+			addStaffRow(ureq, rows, staff, CurriculumRoles.curriculumelementowner, "widget.members.element.owner", CurriculumRoles.curriculumelementowner.name());
+		}
+		dataModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+
+	private boolean isPendingPossible(CurriculumElement element) {
+		return acService.getOffers(element, true, false, null, false, null, null).stream()
+				.anyMatch(Offer::isConfirmationByManagerRequired);
+	}
+
+	private void addStaffRow(UserRequest ureq, List<MemberRow> rows, List<CurriculumMember> staff, CurriculumRoles role,
+			String i18nKey, String filter) {
+		List<Identity> identities = staff.stream()
+				.filter(member -> role.name().equals(member.getRole()))
+				.map(CurriculumMember::getIdentity)
+				.distinct()
+				.toList();
+		if (!identities.isEmpty()) {
+			rows.add(new MemberRow(createPortraits(ureq, "users_" + role.name(), identities, identities.size()), null, null,
+					translateCount(identities.size(), i18nKey), "[Members:0][Active:0][" + filter + ":0]"));
+		}
+	}
+
+	private UsersPortraitsComponent createPortraits(UserRequest ureq, String name, List<Identity> identities, long numUsers) {
+		if (identities.isEmpty()) {
+			return null;
+		}
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), identities);
+		UsersPortraitsComponent portraitsCmp = UserPortraitFactory.createUsersPortraits(ureq, name, null);
+		portraitsCmp.setSize(PortraitSize.small);
+		portraitsCmp.setMaxUsersVisible(MAX_PORTRAITS);
+		portraitsCmp.setPortraitItemsTag(PortraitItemsTag.div);
+		portraitsCmp.setUsers(portraitUsers);
+		portraitsCmp.setNumUsers(numUsers);
+		return portraitsCmp;
+	}
+
+	private String getStateCss(long count, String stateCss) {
+		return count == 0? "o_members_widget_state_muted": stateCss;
+	}
+
+	private String translateCount(long count, String i18nKey) {
+		return translate(count == 1? i18nKey + ".single": i18nKey, format(count));
+	}
+
+	private String format(long value) {
+		return String.valueOf(value);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(detailsLink == source) {
-			fireActivateMembersEvent(ureq);
-		} else if(coachesLink == source) {
-			fireActivateActiveEvent(ureq, "Coach");
-		} else if(masterCoachesLink == source) {
-			fireActivateActiveEvent(ureq, "MasterCoach");
-		} else if(ownersLink == source) {
-			fireActivateActiveEvent(ureq, "Owner");
-		} else if(elementOwnersLink == source) {
-			fireActivateActiveEvent(ureq, "Curriculumelementowner");
-		} else if(participantsKeyLink == source) {
-			fireActivateMembersEvent(ureq);
-		} else if(activeParticipantsLink == source) {
-			fireActivateActiveEvent(ureq, "Participant");
-		} else if(pendingParticipantsLink == source) {
-			fireActivatePendingEvent(ureq, "All");
+		if (source == tableEl) {
+			if (event instanceof SelectionEvent se) {
+				fireActivateEvent(ureq, dataModel.getObject(se.getIndex()).businessPath());
+			}
+		} else if (source instanceof FormLink link && link.getUserObject() instanceof String path) {
+			fireActivateEvent(ureq, path);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void fireActivateMembersEvent(UserRequest ureq) {
-		List<ContextEntry> entries = BusinessControlFactory.getInstance()
-				.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS));
+	private void fireActivateEvent(UserRequest ureq, String path) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(path);
 		fireEvent(ureq, new ActivateEvent(entries));
 	}
 
-	private void fireActivatePendingEvent(UserRequest ureq, String filter) {
-		List<ContextEntry> entries = BusinessControlFactory.getInstance()
-				.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS),
-						OresHelper.createOLATResourceableType("Pending"), OresHelper.createOLATResourceableType(filter));
-		fireEvent(ureq, new ActivateEvent(entries));
-	}
-
-	private void fireActivateActiveEvent(UserRequest ureq, String filter) {
-		List<ContextEntry> entries = BusinessControlFactory.getInstance()
-				.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS),
-						OresHelper.createOLATResourceableType("Active"), OresHelper.createOLATResourceableType(filter));
-		fireEvent(ureq, new ActivateEvent(entries));
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-
-	private static class StaffRoleComponent extends AbstractComponent {
-
-		private static final ComponentRenderer RENDERER = new StaffRoleRenderer();
-
-		private final UsersPortraitsComponent portraitsCmp;
-		private final String label;
-
-		StaffRoleComponent(String name, UsersPortraitsComponent portraitsCmp, String label) {
-			super(name);
-			this.portraitsCmp = portraitsCmp;
-			this.label = label;
+	public record MemberRow(UsersPortraitsComponent portraits, String stateCss, String iconCss, String label, String businessPath) {
+		
+		public String getPortraitsName() {
+			return portraits != null? portraits.getComponentName(): null;
 		}
+	}
 
-		UsersPortraitsComponent getPortraitsCmp() {
-			return portraitsCmp;
-		}
-
-		String getLabel() {
-			return label;
+	private class MembersDataModel extends DefaultFlexiTableDataModel<MemberRow> implements FlexiBusinessPathModel {
+		
+		public MembersDataModel(FlexiTableColumnModel columnModel) {
+			super(columnModel);
 		}
 
 		@Override
-		public ComponentRenderer getHTMLRendererSingleton() {
-			return RENDERER;
+		public Object getValueAt(int row, int col) {
+			return getObject(row);
 		}
 
 		@Override
-		protected void doDispatchRequest(UserRequest ureq) {
-			//
+		public String getUrl(Component source, Object object, String action) {
+			return object instanceof MemberRow memberRow
+					? BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(businessPath + memberRow.businessPath())
+					: null;
 		}
 	}
-
-	private static class StaffRoleRenderer extends DefaultComponentRenderer {
-
-		@Override
-		public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
-				Translator translator, RenderResult renderResult, String[] args) {
-			StaffRoleComponent cmp = (StaffRoleComponent) source;
-			sb.append("<div class=\"o_curriculum_widget_role_portrait_group\">");
-			renderer.render(cmp.getPortraitsCmp(), sb, args);
-			cmp.getPortraitsCmp().setDirty(false);
-			sb.append("<span class=\"o_curriculum_widget_role\">")
-			  .append(StringHelper.escapeHtml(cmp.getLabel()))
-			  .append("</span>");
-			sb.append("</div>");
-		}
-	}
-
 }

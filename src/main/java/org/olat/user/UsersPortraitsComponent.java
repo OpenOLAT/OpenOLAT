@@ -44,6 +44,7 @@ public class UsersPortraitsComponent extends AbstractComponent {
 	private PortraitLayout layout = PortraitLayout.overlappingPortraits;
 	private PortraitItemsTag itemsTag = PortraitItemsTag.ul;
 	private int maxUsersVisible = 10;
+	private long numUsers;
 	private List<UserPortraitComponent> userComps;
 
 	UsersPortraitsComponent(UserRequest ureq, String name) {
@@ -108,6 +109,15 @@ public class UsersPortraitsComponent extends AbstractComponent {
 		setDirty(true);
 	}
 
+	public long getNumUsers() {
+		return userComps == null? numUsers: Math.max(numUsers, userComps.size());
+	}
+	
+	public void setNumUsers(long numUsers) {
+		this.numUsers = numUsers;
+		setDirty(true);
+	}
+	
 	List<UserPortraitComponent> getUserComps() {
 		return userComps;
 	}
@@ -116,6 +126,7 @@ public class UsersPortraitsComponent extends AbstractComponent {
 		this.userComps = users.stream()
 				.map(this::createPortraitUserComponent)
 				.toList();
+		numUsers = 0;
 		setDirty(true);
 	}
 

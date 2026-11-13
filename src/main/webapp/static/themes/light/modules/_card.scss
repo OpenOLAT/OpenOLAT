@@ -367,9 +367,16 @@
 	}
 	
 	.o_dashboard_widget_header {
+		display: flex;
+		align-items: center;
+		min-height: $input-height-small;
 		margin: $o-dashboard-widget-header-margin;
 		h3 {
 			margin: 0;
+		}
+		> .o_dashboard_widget_header_content {
+			flex: 1 1 auto;
+			min-width: 0;
 		}
 	}
 	

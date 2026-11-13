@@ -1912,6 +1912,28 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getMembersIdentityMaxResults() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-2");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-3");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant1, CurriculumRoles.participant, actor);
+		curriculumService.addMember(element, participant2, CurriculumRoles.participant, actor);
+		curriculumService.addMember(element, participant3, CurriculumRoles.participant, actor);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> members = curriculumElementDao.getMembersIdentity(element, CurriculumRoles.participant.name(), 2);
+		assertThat(members).hasSize(2).isSubsetOf(participant1, participant2, participant3);
+		
+		members = curriculumElementDao.getMembersIdentity(element, CurriculumRoles.participant.name(), -1);
+		assertThat(members).containsExactlyInAnyOrder(participant1, participant2, participant3);
+	}
+	
+	@Test
 	public void getMembersIdentity_elementKeys() {
 		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");

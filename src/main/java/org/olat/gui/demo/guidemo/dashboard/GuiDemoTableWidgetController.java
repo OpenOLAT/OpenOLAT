@@ -182,7 +182,7 @@ public class GuiDemoTableWidgetController extends TableWidgetController
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
 		if (listView) {
 			secondLink = uifactory.addFormLink("second.button", widgetCont, Link.BUTTON);
-			secondLink.setElementCssClass("o_button_primary");
+			secondLink.setPrimary(true);
 			return List.of(secondLink.getComponent().getComponentName(), showAllLink.getComponent().getComponentName());
 		}
 		return List.of(showAllLink.getComponent().getComponentName());

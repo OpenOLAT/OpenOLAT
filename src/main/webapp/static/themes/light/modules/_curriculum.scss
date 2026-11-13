@@ -221,21 +221,6 @@ a.o_validation_open_results {
 
 /* Use the same color and border as o_widget */
 .o_curriculum_overview {
-	.o_curriculum_widget_course_staff h4 {
-			padding: 5px 15px;
-			margin: 5px 0;
-	}
-
-	.o_curriculum_widget_course_staff_card {
-		margin: $o-dashboard-widget-base-margin;
-	}
-	.o_curriculum_widget_course_staff {
-		border: $o-curriculum-widget-card-border-width $o-curriculum-widget-card-border-style var(--o-curriculum-widget-card-border);
-		border-radius: $o-curriculum-widget-card-border-radius;
-		background-color: var(--o-bg);
-		padding: 5px 0;
-	}
-	
 	.o_curriculum_course_cards {
 		margin: 0 $o-dashboard-widget-base-margin;
 		.o_table_flexi.o_rendertype_custom .o_table_row.row {
@@ -399,59 +384,87 @@ a.o_validation_open_results {
 			margin: 0;
 		}
 	}
+}
+.o_members_widget_state {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	font-size: 10px;
 	
-	.o_curriculum_widget_roles_portrait {
-		padding: 5px 15px;
-
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px 30px;
-
-		.o_curriculum_widget_role_portrait_group {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-		}
-
-		.o_curriculum_widget_role {
-			display: block;
-			padding: 7px 0;
-		}
+	&.o_members_widget_state_active {
+		@extend %o_state_success_dark;
 	}
+	&.o_members_widget_state_pending {
+		@extend %o_state_warning_solid;
+	}
+	&.o_members_widget_state_muted {
+		@extend %o_state_inactive_text;
+	}
+}
+.o_curriculum_members_figure.o_figure_cards.o_figure_cards_n1 {
+	@include o-figure-cards-two-line(1);
 	
-	.o_curriculum_widget_members_status_overbooked {
+	.o_figure_card > span {
+		grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+		grid-template-areas: "icon figure label status chevron";
+	}
+	.o_figure_card.o_curriculum_members_with_bar > span {
+		grid-template-areas: "icon figure label status chevron" "bar bar bar bar bar";
+		row-gap: 8px;
+	}
+	.o_curriculum_members_status {
+		grid-area: status;
+		white-space: nowrap;
+		font-size: $o-figure-card-label-font-size;
+	}
+	.o_curriculum_members_status_minimum {
+		font-weight: bold;
+		color: var(--o-progress-bar-neutral-bg);
+	}
+	.o_curriculum_members_status_overbooked {
+		font-weight: bold;
 		color: var(--o-state-danger-text);
 	}
-	.o_curriculum_widget_members_status_fullybooked .o_icon:before,
-	.o_curriculum_widget_members_status_fewleft .o_icon:before {
-		color: var(--o-state-warning-text);
+	.o_curriculum_members_status_fullybooked {
+		font-weight: bold;
+	}
+	.o_curriculum_members_bar {
+		grid-area: bar;
+		line-height: 0;
+		.o_progress {
+			display: block;
+		}
+		.progress {
+			margin: 0;
+		}
+		.progress-bar.o_members_widget_bar_active {
+			@extend %o_state_success_dark;
+		}
+	}
+	
+	@container (width < 300px) {
+		.o_figure_card.o_curriculum_members_with_bar > span {
+			grid-template-columns: auto auto minmax(0, 1fr) auto;
+			grid-template-areas: "icon figure label chevron" "bar bar bar bar" "status status status status";
+		}
 	}
 }
-.o_indicators_key {
-	.o_indicator_figure:has(.o_speedometer) {
-		height: auto;
-	}
-	.o_speedometer {
-		width: 160px;
-		height: 80px;
-		&:before {
-			border-width: 8px;
-		}
-		>span.o_speedometer_value {
-			font-size: $o-widget-figure-value-font-size;
-			line-height: 115px;
-		}
-		>span.o_speedometer_indicator:after {
-			border-width: 8px;
-		}
-	}
-}
-.o_members_widget_icon {
-	&.o_membership_status_active {
-		color: var(--o-state-success-text);
-	}
-	&.o_membership_status_pending {
-		color: var(--o-state-warning-text);
+.o_curriculum_members_row {
+	display: grid;
+	grid-template-columns: 170px 1.5em minmax(0, 1fr);
+	align-items: center;
+	column-gap: 6px;
+	min-height: 40px;
+	padding-right: $o-dashboard-widget-base-margin;
+	
+	.o_curriculum_members_label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 }
 .o_widget_implementation_row {

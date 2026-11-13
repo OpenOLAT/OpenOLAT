@@ -132,11 +132,44 @@
 			margin-left: -$o-users-portrait-overlap * $size;
 		}
 	}
+	.o_portrait_user_not_visible {
+		margin-left: -$o-users-portrait-overlap * $size;
+	}
+}
+
+@mixin o-users_portrait_not_visible_size($size, $font-size){
+	.o_portrait_user_not_visible {
+		width: $size;
+		height: $size;
+		font-size: $font-size;
+	}
 }
 
 .o_users_portraits {
 	.o_portrait_user_not_visible {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
 		margin-left: 5px;
+		border-radius: 50%;
+		border: $o-user-info-portrait-border-width $o-user-info-portrait-border-style var(--o-user-info-portrait-border);
+		box-shadow: $o-user-info-portrait-box-shadow;
+		background-color: var(--o-bg-subtle);
+		color: var(--o-text-muted);
+		white-space: nowrap;
+	}
+	&.o_users_portraits_xsmall {
+		@include o-users_portrait_not_visible_size(math.div($o-portrait-small-size, 2), $o-user-portrait-initials-font-size-xsmall);
+	}
+	&.o_users_portraits_small {
+		@include o-users_portrait_not_visible_size($o-portrait-small-size, $o-user-portrait-initials-font-size-small);
+	}
+	&.o_users_portraits_medium {
+		@include o-users_portrait_not_visible_size(math.div($o-portrait-size, 2), $o-user-portrait-initials-font-size-medium);
+	}
+	&.o_users_portraits_large {
+		@include o-users_portrait_not_visible_size($o-portrait-size, $o-user-portrait-initials-font-size-large);
 	}
 	&.o_users_portraits_overlapping_portraits {
 		display: flex;
