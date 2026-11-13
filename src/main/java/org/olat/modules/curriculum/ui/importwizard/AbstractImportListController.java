@@ -100,7 +100,6 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	protected FlexiFiltersTab withChangesTab;
 	protected FlexiFiltersTab withWarningsTab;
 	
-	protected FormLink errorsLink;
 	protected FlexiTableElement tableEl;
 	private DefaultFlexiTableDataModel<? extends AbstractImportRow> tableModel;
 
@@ -299,13 +298,12 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 		long numOfErrors = rows.stream()
 				.filter(row -> row.getValidationStatistics().errors() > 0)
 				.count();
-
 		if(numOfErrors > 0) {
-			String i18nKey = suffix + (numOfErrors > 1 ? ".link.plural" : ".link");
-			String link = translate(i18nKey, Long.toString(numOfErrors));	
-			errorsLink = uifactory.addFormLink(suffix + ".link", link, null, flc, Link.LINK | Link.NONTRANSLATED);
+			String i18nKey = suffix + (numOfErrors > 1 ? ".plural" : ".singular");
+			String link = translate(i18nKey, Long.toString(numOfErrors));
+			flc.contextPut("errorMessage", link);
 		} else {
-			flc.remove("errors.link");
+			flc.contextRemove("errorMessage");
 		}
 	}
 	
@@ -330,9 +328,7 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(errorsLink == source) {
-			doFilterErrors(ureq);
-		} else if(tableEl == source) {
+		if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				if(ActionsCellRenderer.CMD_ACTIONS.equals(se.getCommand())) {
 					String targetId = ActionsCellRenderer.getId(se.getIndex());
@@ -400,11 +396,6 @@ abstract class AbstractImportListController extends StepFormBasicController impl
 				row.getIgnoreEl().setEnabled(false);
 			}
 		}
-	}
-	
-	private void doFilterErrors(UserRequest ureq) {
-		tableEl.setSelectedFilterTab(ureq, withErrorsTab);
-		filterModel();
 	}
 
 	private void doOpenValidationCallout(UserRequest ureq, AbstractImportRow row, ImportCurriculumsCols col, String targetId) {

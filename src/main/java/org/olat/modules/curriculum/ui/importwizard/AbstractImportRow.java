@@ -126,12 +126,12 @@ public class AbstractImportRow {
 	}
 	
 	public void addValidationWarning(ImportCurriculumsCols col, String column, String placeholder, String message) {
-		validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+		validationMap.computeIfAbsent(col, _ -> CurriculumImportedValues.valueOf(column))
 			.addWarning(placeholder, message);
 	}
 	
 	public void addValidationError(ImportCurriculumsCols col, String column, String placeholder, String message) {
-		validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+		validationMap.computeIfAbsent(col, _ -> CurriculumImportedValues.valueOf(column))
 			.addError(placeholder, message);
 	}
 	
@@ -142,28 +142,28 @@ public class AbstractImportRow {
 			currentValue = DateUtils.toLocalTime(date);	
 		}
 		if(!Objects.equals(currentValue, newValue)) {
-			validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+			validationMap.computeIfAbsent(col, _ -> CurriculumImportedValues.valueOf(column))
 				.addChanged(currentValue, newValue);
 		}
 	}
 	
 	public void addRoomsChanged(String column, List<Room> currentValue, List<Room> newValue, ImportCurriculumsCols col) {
 		if(!Objects.equals(currentValue, newValue)) {
-			validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+			validationMap.computeIfAbsent(col, _ -> CurriculumImportedValues.valueOf(column))
 				.addChanged(currentValue, newValue);
 		}
 	}
 	
 	public void addChanged(String column, List<TaxonomyKey> currentValue, List<TaxonomyKey> newValue, ImportCurriculumsCols col) {
 		if(!Objects.equals(currentValue, newValue)) {
-			validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+			validationMap.computeIfAbsent(col, _ -> CurriculumImportedValues.valueOf(column))
 				.addChanged(currentValue, newValue);
 		}
 	}
 	
 	public void addChanged(String column, String currentValue, String newValue, ImportCurriculumsCols col) {
 		if(!equalsString(currentValue, newValue)) {
-			validationMap.computeIfAbsent(col, c -> CurriculumImportedValues.valueOf(column))
+			validationMap.computeIfAbsent(col, _ -> CurriculumImportedValues.valueOf(column))
 				.addChanged(currentValue, newValue);
 		}
 	}

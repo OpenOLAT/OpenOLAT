@@ -145,7 +145,7 @@ public class ImportedUserRow extends AbstractImportRow {
 		if(validationHandlersMap == null) {
 			validationHandlersMap = new HashMap<>();
 		}
-		validationHandlersMap.computeIfAbsent(handlerName, c -> new CurriculumImportedValue(column))
+		validationHandlersMap.computeIfAbsent(handlerName, _ -> new CurriculumImportedValue(column))
 			.setWarning(placeholder, message);
 	}
 	
@@ -153,7 +153,7 @@ public class ImportedUserRow extends AbstractImportRow {
 		if(validationHandlersMap == null) {
 			validationHandlersMap = new HashMap<>();
 		}
-		validationHandlersMap.computeIfAbsent(handlerName, c -> new CurriculumImportedValue(column))
+		validationHandlersMap.computeIfAbsent(handlerName, _ -> new CurriculumImportedValue(column))
 			.setError(placeholder, message);
 	}
 	

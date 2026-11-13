@@ -133,12 +133,12 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 	public void loadCurrentElements(List<ImportedRow> importedRows, List<ImportedRow> curriculumsRows) {
 		Map<String,ImportedRow> curriculumsMap = curriculumsRows.stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getCurriculumIdentifier()))
-				.collect(Collectors.toMap(ImportedRow::getCurriculumIdentifier, r -> r, (u, v) -> u));
+				.collect(Collectors.toMap(ImportedRow::getCurriculumIdentifier, r -> r, (u, _) -> u));
 		
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		Map<String,CurriculumElementType> typesMap = types.stream()
 				.filter(t -> StringHelper.containsNonWhitespace(t.getIdentifier()))
-				.collect(Collectors.toMap(CurriculumElementType::getIdentifier, t -> t, (u, v) -> u));
+				.collect(Collectors.toMap(CurriculumElementType::getIdentifier, t -> t, (u, _) -> u));
 
 		// Clear relations to courses and templates before loading or reloading them
 		for(ImportedRow importedRow:importedRows) {
@@ -292,12 +292,12 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
 		Map<TaxonomyKey,TaxonomyLevel> levelsMap = levels.stream()
 				.filter(t -> StringHelper.containsNonWhitespace(t.getMaterializedPathIdentifiers()))
-		        .collect(Collectors.toMap(TaxonomyKey::valueOf, t -> t, (u, v) -> u));
+		        .collect(Collectors.toMap(TaxonomyKey::valueOf, t -> t, (u, _) -> u));
 		
 		Map<TaxonomyKey,TaxonomyLevel> anonymLevelsMap = levels.stream()
 				.filter(t -> StringHelper.containsNonWhitespace(t.getMaterializedPathIdentifiers()))
 		        .collect(Collectors.toMap(level -> new TaxonomyKey(null, level.getMaterializedPathIdentifiers()),
-		        		t -> t, (u, v) -> u));
+		        		t -> t, (u, _) -> u));
 
 		for(ImportedRow importedRow:importedRows) {
 			String subjects = importedRow.getSubjects();
@@ -480,18 +480,18 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 	private void loadMembershipsRelations(List<ImportedMembershipRow> rows, List<ImportedRow> curriculumsRows, List<ImportedRow> elements, List<ImportedUserRow> users) {
 		Map<String, ImportedRow> curriculumsMaps = curriculumsRows.stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getCurriculumIdentifier()))
-				.collect(Collectors.toMap(ImportedRow::getCurriculumIdentifier, r -> r, (u, v) -> u));
+				.collect(Collectors.toMap(ImportedRow::getCurriculumIdentifier, r -> r, (u, _) -> u));
 		
 		Map<ElementInCurriculum, ImportedRow> elementsMaps = elements.stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getIdentifier()))
 				.filter(r -> r.type() == CurriculumExportType.IMPL || r.type() == CurriculumExportType.ELEM)
-				.collect(Collectors.toMap(r -> new ElementInCurriculum(r.getIdentifier(), r.getCurriculumIdentifier()), r -> r, (u, v) -> u));
+				.collect(Collectors.toMap(r -> new ElementInCurriculum(r.getIdentifier(), r.getCurriculumIdentifier()), r -> r, (u, _) -> u));
 		
 		Map<String, ImportedUserRow> usersMaps = users == null
 				? Map.of()
 				: users.stream()
 					.filter(r -> StringHelper.containsNonWhitespace(r.getUsername()))
-					.collect(Collectors.toMap(ImportedUserRow::getUsername, r -> r, (u, v) -> u));
+					.collect(Collectors.toMap(ImportedUserRow::getUsername, r -> r, (u, _) -> u));
 		
 		for(ImportedMembershipRow row:rows) {
 			if(StringHelper.containsNonWhitespace(row.getCurriculumIdentifier())) {
@@ -532,7 +532,7 @@ public class ImportCurriculumsObjectsLoader extends AbstractExcelReader {
 					&& role != null) {
 				
 				final CurriculumElement element = row.getElementRow().getCurriculumElement();
-				Set<Long> membersKeys = membersMap.computeIfAbsent(new ElementRoleKey(element.getKey(), role), key -> {
+				Set<Long> membersKeys = membersMap.computeIfAbsent(new ElementRoleKey(element.getKey(), role), _ -> {
 					List<Identity> members = curriculumService.getMembersIdentity(element, role);
 					List<Long> membersKeysList = members.stream()
 							.map(Identity::getKey)

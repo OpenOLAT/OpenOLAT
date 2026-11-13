@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -150,13 +149,11 @@ public class ImportCurriculumsReviewCurriculumsController extends AbstractImport
 		long numOfErrors = rows.stream()
 			.filter(row -> row.getValidationStatistics().errors() > 0)
 			.count();
-
 		if(numOfErrors > 0) {
-			String i18nKey = numOfErrors > 1 ? "error.link.plural" : "error.link";
-			String link = translate(i18nKey, Long.toString(numOfErrors));	
-			errorsLink = uifactory.addFormLink("errors.link", link, null, flc, Link.LINK | Link.NONTRANSLATED);
+			String i18nKey = numOfErrors > 1 ? "error.curriculum.plural" : "error.curriculum.singular";
+			flc.contextPut("errorMessage", translate(i18nKey, Long.toString(numOfErrors)));
 		} else {
-			flc.remove("errors.link");
+			flc.contextRemove("errorMessage");
 		}
 	}
 
