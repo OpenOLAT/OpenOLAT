@@ -998,6 +998,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.curriculum.ui.CurriculumElementWithViewsDataModelFilterStatusTest.class,
 	org.olat.modules.edubase.manager.EdubaseManagerImplTest.class,
 	org.olat.modules.edusharing.manager.EdusharingHtmlServiceImplTest.class,
+	org.olat.modules.edusharing.manager.EdusharingHttpClientTest.class,
+	org.olat.modules.edusharing.manager.EdusharingRestClientTest.class,
 	org.olat.modules.edusharing.manager.EdusharingSecurityImplTest.class,
 	org.olat.modules.fo.WordCountTest.class,
 	org.olat.modules.forms.manager.EvaluationFormMangerImplTest.class,

@@ -54,6 +54,7 @@ import org.olat.modules.edusharing.GetPreviewParameter;
 import org.olat.modules.edusharing.GetRenderedParameter;
 import org.olat.modules.edusharing.NodeIdentifier;
 import org.olat.modules.edusharing.Ticket;
+import org.olat.modules.edusharing.model.About;
 import org.olat.modules.edusharing.model.EdusharingErrorResponse;
 import org.olat.modules.edusharing.model.TicketImpl;
 import org.olat.modules.edusharing.model.Usage;
@@ -128,6 +129,16 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 	}
 	
 	@Override
+	public About getAbout() {
+		return client.getAbout();
+	}
+	
+	@Override
+	public About refreshAbout() {
+		return client.refreshAbout();
+	}
+	
+	@Override
 	public Ticket getTicket(Identity identity) {
 		Ticket ticket = null;
 		try {
@@ -196,7 +207,7 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 		String heightChecked = height != null? height: usage.getHeight();
 		NodeIdentifier nodeIdentifier = conversionService.toNodeIdentifier(usage.getObjectUrl());
 		String courseId = conversionService.toEdusharingCourseId(usage.getOlatResourceable());
-		EdusharingSignature signature = securityService.createSignature(null);
+		EdusharingSignature signature = securityService.createSignature(null, client.getSignatureAlgorithm());
 		String userIdentifier = userFactory.getUserIdentifier(viewer);
 		String encryptedUserIdentifier = securityService.encrypt(edusharingModule.getRepoPublicKey(), userIdentifier);
 		
@@ -214,6 +225,7 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 				signature.getTimeStamp(),
 				encryptedUserIdentifier,
 				"inline");
+		parameter.setSignatureAlgorithm(signature.getAlgorithm());
 		parameter.setWidth(widthChecked);
 		parameter.setHeight(heightChecked);
 		return client.getRendered(parameter);
@@ -228,7 +240,7 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 
 		NodeIdentifier nodeIdentifier = conversionService.toNodeIdentifier(usage.getObjectUrl());
 		String courseId = conversionService.toEdusharingCourseId(usage.getOlatResourceable());
-		EdusharingSignature signature = securityService.createSignature(null);
+		EdusharingSignature signature = securityService.createSignature(null, client.getSignatureAlgorithm());
 		String userIdentifier = userFactory.getUserIdentifier(viewer);
 		String encryptedUserIdentifier = securityService.encrypt(edusharingModule.getRepoPublicKey(), userIdentifier);
 		String encryptedTicket = securityService.encrypt(edusharingModule.getRepoPublicKey(), ticket.getTooken());
@@ -247,6 +259,7 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 				signature.getTimeStamp(),
 				encryptedUserIdentifier,
 				"window");
+		parameter.setSignatureAlgorithm(signature.getAlgorithm());
 		parameter.setEncryptedTicket(encryptedTicket);
 		return client.getRenderUrl(parameter);
 	}

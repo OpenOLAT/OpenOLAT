@@ -23,6 +23,8 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 4 Dec 2018<br>
@@ -30,12 +32,19 @@ import java.security.PublicKey;
  *
  */
 public interface EdusharingSecurityService {
-
-	public EdusharingSignature createSignature(String data) throws EdusharingException;
 	
-	public byte[] sign(PrivateKey privateKey, String data) throws EdusharingException;
+	public static final String SIGNATURE_SHA1 = "SHA1withRSA";
+	public static final String SIGNATURE_SHA512 = "SHA512withRSA";
+	
+	public static boolean isSignatureAlgorithmToSend(String algorithm) {
+		return StringHelper.containsNonWhitespace(algorithm) && !SIGNATURE_SHA1.equals(algorithm);
+	}
 
-	public boolean verify(PublicKey publicKey, byte[] realSig, String data) throws EdusharingException;
+	public EdusharingSignature createSignature(String data, String algorithm) throws EdusharingException;
+	
+	public byte[] sign(PrivateKey privateKey, String data, String algorithm) throws EdusharingException;
+
+	public boolean verify(PublicKey publicKey, byte[] realSig, String data, String algorithm) throws EdusharingException;
 
 	public String encrypt(PublicKey publicKey, String plain) throws EdusharingException;
 

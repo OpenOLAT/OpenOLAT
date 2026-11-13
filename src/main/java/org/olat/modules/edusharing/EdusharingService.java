@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.edusharing.model.About;
 
 /**
  * 
@@ -46,6 +47,10 @@ public interface EdusharingService {
 	 * @return the loaded properties
 	 */
 	public EdusharingProperties getEdusharingRepoConfig() throws EdusharingException;
+	
+	public About getAbout();
+	
+	public About refreshAbout();
 	
 	public Ticket getTicket(Identity identity);
 	

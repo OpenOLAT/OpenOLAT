@@ -23,6 +23,7 @@ import static org.olat.modules.edusharing.EdusharingModule.PROTECTION_PROFILE;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -42,6 +43,7 @@ import org.olat.modules.edusharing.EdusharingSecurityService;
 import org.olat.modules.edusharing.EdusharingSignature;
 import org.olat.modules.edusharing.NodeIdentifier;
 import org.olat.modules.edusharing.Ticket;
+import org.olat.modules.edusharing.model.About;
 import org.olat.modules.edusharing.model.Usages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +62,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class EdusharingRestClient {
 	
 	private static final Logger log = Tracing.createLoggerFor(EdusharingRestClient.class);
+	private static final int ABOUT_TIMEOUT_MILLIS = 5000;
 	
 	@Autowired
 	private EdusharingModule edusharingModule;
@@ -72,7 +75,59 @@ public class EdusharingRestClient {
 	
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	
+	long aboutRetryPauseMillis = 60000;
+	private volatile About about;
+	private volatile long aboutFailedAt;
+	
 
+	public About getAbout() {
+		About cached = about;
+		if (cached == null && System.currentTimeMillis() - aboutFailedAt >= aboutRetryPauseMillis) {
+			cached = refreshAbout();
+		}
+		return cached;
+	}
+	
+	public About refreshAbout() {
+		About loaded = loadAbout();
+		aboutFailedAt = loaded == null? System.currentTimeMillis(): 0;
+		about = loaded;
+		return loaded;
+	}
+	
+	public String getSignatureAlgorithm() {
+		return About.getSignatureAlgorithm(getAbout());
+	}
+	
+	private About loadAbout() {
+		String url = edusharingModule.getBaseUrl() + "rest/_about";
+		HttpGet request = new HttpGet(url);
+		request.setConfig(RequestConfig.copy(RequestConfig.DEFAULT)
+				.setConnectTimeout(ABOUT_TIMEOUT_MILLIS)
+				.setConnectionRequestTimeout(ABOUT_TIMEOUT_MILLIS)
+				.setSocketTimeout(ABOUT_TIMEOUT_MILLIS)
+				.build());
+		
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
+				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+			log.debug("edu-sharing rest getAbout response: {}", json);
+			
+			if (statusCode == HttpStatus.SC_OK) {
+				About loaded = objectMapper.readValue(json, About.class);
+				log.info("edu-sharing repository detected. url={}, version={}, signature algorithms={}", url,
+						loaded.getVersion() != null? loaded.getVersion().getRepository(): null,
+						loaded.getSignatureAlgorithms());
+				return loaded;
+			}
+			logUnsuccessful(httpResponse, url, json);
+		} catch(Exception e) {
+			log.warn("edu-sharing repository detection failed. url={}, error={}", url, e.getMessage());
+		}
+		return null;
+	}
+	
 	public String createTicket(Identity identity) throws EdusharingException {
 		String userIdentifier = edusharingUserFactory.getUserIdentifier(identity);
 		String url = edusharingModule.getBaseUrl() + "rest/authentication/v1/appauth/" + userIdentifier;
@@ -207,11 +262,14 @@ public class EdusharingRestClient {
 	}
 
 	private void decorateSignature(HttpRequest request, String signatureData) {
-		EdusharingSignature signature = edusharingSecurityService.createSignature(signatureData);
+		EdusharingSignature signature = edusharingSecurityService.createSignature(signatureData, getSignatureAlgorithm());
 		request.setHeader("X-Edu-App-Id", signature.getAppId());
 		request.setHeader("X-Edu-App-Sig", signature.getSignature());
 		request.setHeader("X-Edu-App-Signed", signature.getSigned());
 		request.setHeader("X-Edu-App-Ts", signature.getTimeStamp());
+		if (EdusharingSecurityService.isSignatureAlgorithmToSend(signature.getAlgorithm())) {
+			request.setHeader("X-Edu-App-SignedAlg", signature.getAlgorithm());
+		}
 	}
 
 	private void decorateTicket(HttpRequest request, Ticket ticket) {

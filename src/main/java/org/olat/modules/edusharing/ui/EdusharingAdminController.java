@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -43,14 +44,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.edusharing.EdusharingDispatcher;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.edusharing.EdusharingProperties;
 import org.olat.modules.edusharing.EdusharingSecurityService;
 import org.olat.modules.edusharing.EdusharingService;
 import org.olat.modules.edusharing.Ticket;
+import org.olat.modules.edusharing.model.About;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,6 +70,7 @@ public class EdusharingAdminController extends FormBasicController {
 	private MultipleSelectionElement enabledEl;
 	private MultipleSelectionElement cnEnabledEl;
 	private TextElement urlEl;
+	private StaticTextElement repoVersionEl;
 	private TextElement appIdEl;
 	private TextElement hostEl;
 	private TextElement h5pResizerUrlEl;
@@ -76,6 +79,7 @@ public class EdusharingAdminController extends FormBasicController {
 	private TextAreaElement repoPublicKeyEl;
 	private FormLink generateKeysLink;
 	private FormLink importMetadataLink;
+	private FormLink checkVersionLink;
 	private FormLink testLink;
 	
 	private DialogBoxController confirmEnableCtrl;
@@ -113,6 +117,12 @@ public class EdusharingAdminController extends FormBasicController {
 		String url = edusharingModule.getBaseUrl();
 		urlEl = uifactory.addTextElement("admin.url", 128, url, formLayout);
 		urlEl.setMandatory(true);
+		
+		repoVersionEl = uifactory.addStaticTextElement("admin.repo.version", "admin.repo.version", "", formLayout);
+		repoVersionEl.setExampleKey("admin.repo.version.supported", null);
+		updateRepoVersionUI(StringHelper.containsNonWhitespace(url)? edusharingService.getAbout(): null);
+		
+		checkVersionLink = uifactory.addFormLink("admin.repo.version.check", formLayout, Link.BUTTON);
 		
 		String appId = edusharingModule.getAppId();
 		appIdEl = uifactory.addTextElement("admin.app.id", 128, appId, formLayout);
@@ -153,9 +163,7 @@ public class EdusharingAdminController extends FormBasicController {
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		
-		if (Settings.isDebuging()) {
-			testLink = uifactory.addFormLink("admin.client.test", formLayout, Link.BUTTON);
-		}
+		testLink = uifactory.addFormLink("admin.client.test", formLayout, Link.BUTTON);
 	}
 	
 	@Override
@@ -166,12 +174,21 @@ public class EdusharingAdminController extends FormBasicController {
 			doConfirmGenerateKeys(ureq);
 		}if (source == importMetadataLink) {
 			doImportMetadataKeys();
+		} else if (source == checkVersionLink) {
+			doCheckVersion();
 		} else if (source == testLink) {
 			doTest();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if (fiSrc != checkVersionLink && fiSrc != testLink) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (confirmEnableCtrl == source) {
@@ -230,6 +247,20 @@ public class EdusharingAdminController extends FormBasicController {
 		
 		String repoPublicKey = repoPublicKeyEl.getValue();
 		edusharingModule.setRepoPublicKeyString(repoPublicKey);
+		
+		doCheckVersion();
+	}
+	
+	private void updateRepoVersionUI(About about) {
+		String algorithm = About.getSignatureAlgorithm(about);
+		String text = about != null && about.getVersion() != null
+				? translate("admin.repo.version.detected", StringHelper.escapeHtml(about.getVersion().getRepository()), algorithm)
+				: translate("admin.repo.version.not.detected", algorithm);
+		repoVersionEl.setValue(text);
+	}
+	
+	private void doCheckVersion() {
+		updateRepoVersionUI(edusharingService.refreshAbout());
 	}
 
 	private void doConfirmEnable(UserRequest ureq) {
@@ -272,6 +303,7 @@ public class EdusharingAdminController extends FormBasicController {
 	}
 	
 	private void doTest() {
+		doCheckVersion();
 		try {
 			Ticket ticket = edusharingService.getTicket(getIdentity());
 			if (ticket != null) {

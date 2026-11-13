@@ -29,6 +29,7 @@ import org.olat.modules.edusharing.GetPreviewParameter;
 import org.olat.modules.edusharing.GetRenderedParameter;
 import org.olat.modules.edusharing.NodeIdentifier;
 import org.olat.modules.edusharing.Ticket;
+import org.olat.modules.edusharing.model.About;
 import org.olat.modules.edusharing.model.Usages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -102,6 +103,21 @@ public class EdusharingClientImpl implements EdusharingClient {
 	@Override
 	public void deleteUsage(Ticket ticket, NodeIdentifier nodeIdentifier, String usageId) throws EdusharingException {
 		restClient.deleteUsage(ticket, nodeIdentifier, usageId);
+	}
+	
+	@Override
+	public String getSignatureAlgorithm() {
+		return restClient.getSignatureAlgorithm();
+	}
+	
+	@Override
+	public About getAbout() {
+		return restClient.getAbout();
+	}
+	
+	@Override
+	public About refreshAbout() {
+		return restClient.refreshAbout();
 	}
 
 }

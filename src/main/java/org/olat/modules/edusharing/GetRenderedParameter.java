@@ -43,6 +43,7 @@ public class GetRenderedParameter {
 	private String width;
 	private String height;
 	private String encryptedTicket;
+	private String signatureAlgorithm;
 
 	public GetRenderedParameter(String appId, String repoId, String nodeId, String resourceId, String courseId,
 			String version, String locale, String language, String signed, String signature, String timestamp,
@@ -136,6 +137,14 @@ public class GetRenderedParameter {
 
 	public void setEncryptedTicket(String encryptedTicket) {
 		this.encryptedTicket = encryptedTicket;
+	}
+	
+	public String getSignatureAlgorithm() {
+		return signatureAlgorithm;
+	}
+	
+	public void setSignatureAlgorithm(String signatureAlgorithm) {
+		this.signatureAlgorithm = signatureAlgorithm;
 	}
 	
 }

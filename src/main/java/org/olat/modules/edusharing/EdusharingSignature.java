@@ -34,5 +34,7 @@ public interface EdusharingSignature {
 	String getSigned();
 
 	String getSignature();
+	
+	String getAlgorithm();
 
 }

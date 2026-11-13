@@ -20,6 +20,7 @@
 package org.olat.modules.edusharing;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.edusharing.model.About;
 import org.olat.modules.edusharing.model.Usages;
 
 /**
@@ -47,5 +48,11 @@ public interface EdusharingClient {
 	public Usages getUsages(Ticket ticket, NodeIdentifier nodeIdentifier) throws EdusharingException;
 	
 	public void deleteUsage(Ticket ticket, NodeIdentifier nodeIdentifier, String usageId) throws EdusharingException;
+	
+	public String getSignatureAlgorithm();
+	
+	public About getAbout();
+	
+	public About refreshAbout();
 
 }

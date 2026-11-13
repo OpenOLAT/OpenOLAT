@@ -52,8 +52,6 @@ import org.springframework.stereotype.Service;
 public class EdusharingSecurityServiceImpl implements EdusharingSecurityService {
 
 	private static final String ALGORITHM_KEY = "RSA";
-	private static final String ALGORITHM_SIGNATURE = "SHA1withRSA";
-	// This algorithm depends in the crypto library used by edu-sharing.
 	
 	@Autowired
 	private EdusharingModule edusharinModule;
@@ -64,21 +62,21 @@ public class EdusharingSecurityServiceImpl implements EdusharingSecurityService 
 	}
 	
 	@Override
-	public EdusharingSignature createSignature(String data) throws EdusharingException {
+	public EdusharingSignature createSignature(String data, String algorithm) throws EdusharingException {
 		String appId = edusharinModule.getAppId();
 		String timeStamp = Long.toString(System.currentTimeMillis());
 		String signData = appId + StringHelper.blankIfNull(data) + timeStamp;
 		
 		PrivateKey privateKey = edusharinModule.getSoapKeys().getPrivate();
-		byte[] signatur = sign(privateKey, signData);
+		byte[] signatur = sign(privateKey, signData, algorithm);
 		signatur = new Base64().encode(signatur);
-		return new EdusharingSignatureImpl(appId, timeStamp, signData, new String(signatur));
+		return new EdusharingSignatureImpl(appId, timeStamp, signData, new String(signatur), algorithm);
 	}
 	
 	@Override
-	public byte[] sign(PrivateKey privateKey, String data) throws EdusharingException {
+	public byte[] sign(PrivateKey privateKey, String data, String algorithm) throws EdusharingException {
 		try {
-			Signature dsa = Signature.getInstance(ALGORITHM_SIGNATURE);
+			Signature dsa = Signature.getInstance(algorithm);
 			dsa.initSign(privateKey);
 			dsa.update(data.getBytes());
 			byte[] realSig = dsa.sign();
@@ -89,9 +87,9 @@ public class EdusharingSecurityServiceImpl implements EdusharingSecurityService 
 	}
 	
 	@Override
-	public boolean verify(PublicKey publicKey, byte[] realSig, String data) throws EdusharingException {
+	public boolean verify(PublicKey publicKey, byte[] realSig, String data, String algorithm) throws EdusharingException {
 		try {
-			Signature dsa = Signature.getInstance(ALGORITHM_SIGNATURE);
+			Signature dsa = Signature.getInstance(algorithm);
 			dsa.initVerify(publicKey);
 			dsa.update(data.getBytes());
 			return dsa.verify(realSig);

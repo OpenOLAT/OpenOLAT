@@ -20,14 +20,26 @@
 package org.olat.modules.edusharing.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static org.olat.modules.edusharing.EdusharingSecurityService.SIGNATURE_SHA1;
+import static org.olat.modules.edusharing.EdusharingSecurityService.SIGNATURE_SHA512;
 
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.util.Base64;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.olat.modules.edusharing.EdusharingModule;
+import org.olat.modules.edusharing.EdusharingSignature;
 
 /**
  * 
@@ -37,15 +49,82 @@ import org.junit.Test;
  */
 public class EdusharingSecurityImplTest {
 	
+	@Mock
+	private EdusharingModule edusharingModuleMock;
+	
+	@InjectMocks
 	EdusharingSecurityServiceImpl sut = new EdusharingSecurityServiceImpl();
+	
+	@Before
+	public void setUp() {
+		MockitoAnnotations.openMocks(this);
+	}
+	
+	@Test
+	public void shouldSignWithSHA1withRSA() throws Exception {
+		KeyPair keys = sut.generateKeys();
+		String data = "123";
+		
+		byte[] signed = sut.sign(keys.getPrivate(), data, SIGNATURE_SHA1);
+		
+		assertThat(verify(SIGNATURE_SHA1, keys.getPublic(), signed, data)).isTrue();
+		assertThat(verify(SIGNATURE_SHA512, keys.getPublic(), signed, data)).isFalse();
+	}
+	
+	@Test
+	public void shouldCreateSHA1withRSASignature() throws Exception {
+		KeyPair keys = sut.generateKeys();
+		when(edusharingModuleMock.getAppId()).thenReturn("openolat");
+		when(edusharingModuleMock.getSoapKeys()).thenReturn(keys);
+		
+		EdusharingSignature signature = sut.createSignature("data", SIGNATURE_SHA1);
+		
+		assertThat(signature.getAppId()).isEqualTo("openolat");
+		assertThat(signature.getAlgorithm()).isEqualTo(SIGNATURE_SHA1);
+		assertThat(signature.getSigned()).isEqualTo("openolat" + "data" + signature.getTimeStamp());
+		byte[] decoded = Base64.getDecoder().decode(signature.getSignature());
+		assertThat(verify(SIGNATURE_SHA1, keys.getPublic(), decoded, signature.getSigned())).isTrue();
+	}
+	
+	@Test
+	public void shouldSignWithSHA512withRSA() throws Exception {
+		KeyPair keys = sut.generateKeys();
+		String data = "123";
+		
+		byte[] signed = sut.sign(keys.getPrivate(), data, SIGNATURE_SHA512);
+		
+		assertThat(sut.verify(keys.getPublic(), signed, data, SIGNATURE_SHA512)).isTrue();
+		assertThat(verify(SIGNATURE_SHA512, keys.getPublic(), signed, data)).isTrue();
+		assertThat(verify(SIGNATURE_SHA1, keys.getPublic(), signed, data)).isFalse();
+	}
+	
+	@Test
+	public void shouldCreateSHA512withRSASignature() throws Exception {
+		KeyPair keys = sut.generateKeys();
+		when(edusharingModuleMock.getAppId()).thenReturn("openolat");
+		when(edusharingModuleMock.getSoapKeys()).thenReturn(keys);
+		
+		EdusharingSignature signature = sut.createSignature("data", SIGNATURE_SHA512);
+		
+		assertThat(signature.getAlgorithm()).isEqualTo(SIGNATURE_SHA512);
+		byte[] decoded = Base64.getDecoder().decode(signature.getSignature());
+		assertThat(verify(SIGNATURE_SHA512, keys.getPublic(), decoded, signature.getSigned())).isTrue();
+	}
+	
+	private boolean verify(String algorithm, PublicKey publicKey, byte[] signed, String data) throws GeneralSecurityException {
+		Signature verifier = Signature.getInstance(algorithm);
+		verifier.initVerify(publicKey);
+		verifier.update(data.getBytes(StandardCharsets.UTF_8));
+		return verifier.verify(signed);
+	}
 
 	@Test
 	public void shouldVerifyTrue() throws Exception {
 		KeyPair keys = sut.generateKeys();
 		String data = "123";
 
-		byte[] signed = sut.sign(keys.getPrivate(), data);
-		boolean verify = sut.verify(keys.getPublic(), signed, data);
+		byte[] signed = sut.sign(keys.getPrivate(), data, SIGNATURE_SHA1);
+		boolean verify = sut.verify(keys.getPublic(), signed, data, SIGNATURE_SHA1);
 		
 		assertThat(verify).isTrue();
 	}
@@ -56,8 +135,8 @@ public class EdusharingSecurityImplTest {
 		String data = "123";
 		String other = "ABC";
 		
-		byte[] signed = sut.sign(keys.getPrivate(), data);
-		boolean verify = sut.verify(keys.getPublic(), signed, other);
+		byte[] signed = sut.sign(keys.getPrivate(), data, SIGNATURE_SHA1);
+		boolean verify = sut.verify(keys.getPublic(), signed, other, SIGNATURE_SHA1);
 		
 		assertThat(verify).isFalse();
 	}
@@ -71,8 +150,8 @@ public class EdusharingSecurityImplTest {
 		String publicKeyString = sut.getPublicKey(keys);
 		PublicKey publicKey = sut.toPublicKey(publicKeyString);
 		
-		byte[] signed = sut.sign(privateKey, data);
-		boolean verify = sut.verify(publicKey, signed, data);
+		byte[] signed = sut.sign(privateKey, data, SIGNATURE_SHA1);
+		boolean verify = sut.verify(publicKey, signed, data, SIGNATURE_SHA1);
 		
 		assertThat(verify).isTrue();
 	}

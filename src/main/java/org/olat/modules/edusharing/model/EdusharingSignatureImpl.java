@@ -33,12 +33,14 @@ public class EdusharingSignatureImpl implements EdusharingSignature {
 	private final String timeStamp;
 	private final String signed;
 	private final String signature;
+	private final String algorithm;
 	
-	public EdusharingSignatureImpl(String appId, String timeStamp, String signed, String signature) {
+	public EdusharingSignatureImpl(String appId, String timeStamp, String signed, String signature, String algorithm) {
 		this.appId = appId;
 		this.timeStamp = timeStamp;
 		this.signed = signed;
 		this.signature = signature;
+		this.algorithm = algorithm;
 	}
 
 	@Override
@@ -59,6 +61,11 @@ public class EdusharingSignatureImpl implements EdusharingSignature {
 	@Override
 	public String getSignature() {
 		return signature;
+	}
+	
+	@Override
+	public String getAlgorithm() {
+		return algorithm;
 	}
 
 }

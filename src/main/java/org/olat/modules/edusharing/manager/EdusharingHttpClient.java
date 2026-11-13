@@ -37,6 +37,7 @@ import org.olat.modules.edusharing.EdusharingException;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.edusharing.EdusharingProperties;
 import org.olat.modules.edusharing.EdusharingResponse;
+import org.olat.modules.edusharing.EdusharingSecurityService;
 import org.olat.modules.edusharing.GetPreviewParameter;
 import org.olat.modules.edusharing.GetRenderedParameter;
 import org.olat.modules.edusharing.model.EdusharingHttpResponse;
@@ -118,6 +119,9 @@ class EdusharingHttpClient {
 		sb.append("&signed=").append(parameter.getSigned());
 		sb.append("&sig=").append(StringHelper.urlEncodeUTF8(parameter.getSignature()));
 		sb.append("&ts=").append(parameter.getTimestamp());
+		if (EdusharingSecurityService.isSignatureAlgorithmToSend(parameter.getSignatureAlgorithm())) {
+			sb.append("&signedAlg=").append(parameter.getSignatureAlgorithm());
+		}
 		sb.append("&u=").append(StringHelper.urlEncodeUTF8(parameter.getEncryptedUserIdentifier()));
 		sb.append("&display=").append(parameter.getDisplayMode()); // inline / dynamic / window
 		if (StringHelper.containsNonWhitespace(parameter.getWidth())) {
