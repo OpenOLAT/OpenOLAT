@@ -35,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.course.nodes.gta.rule.AssignTaskRuleSPI;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderRule;
@@ -311,5 +312,133 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 		Reminder deletedReminder = reminderService.loadByKey(reminder.getKey());
 		Assert.assertNull(deletedReminder);
 		conn.close();
+	}
+	
+	
+	/**
+	 * An owner of course B cannot update a reminder of course A through
+	 * course B.
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void postReminderOfOtherCourse()
+	throws IOException, URISyntaxException, InterruptedException {
+		IdentityWithLogin ownerA = JunitTestHelper.createAndPersistRndAuthor("rest-rem-10");
+		IdentityWithLogin ownerB = JunitTestHelper.createAndPersistRndAuthor("rest-rem-11");
+		RepositoryEntry courseEntryA = JunitTestHelper.deployBasicCourse(ownerA.getIdentity());
+		RepositoryEntry courseEntryB = JunitTestHelper.deployBasicCourse(ownerB.getIdentity());
+		Reminder reminderA = createReminder(courseEntryA, ownerA.getIdentity(), "Reminder of A");
+		dbInstance.commitAndCloseSession();
+		
+		ReminderVO reminderVo = new ReminderVO();
+		reminderVo.setKey(reminderA.getKey());
+		reminderVo.setDescription("Hacked");
+		reminderVo.setEmailSubject("Hacked subject");
+		reminderVo.setEmailBody("<p>Hacked body</p>");
+		
+		RestConnection conn = new RestConnection(ownerB);
+		HttpRequest method = conn.createPost(remindersUri(courseEntryB), reminderVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(404, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
+		
+		Reminder unchangedReminder = reminderService.loadByKey(reminderA.getKey());
+		Assert.assertEquals(courseEntryA, unchangedReminder.getEntry());
+		Assert.assertEquals("Reminder of A", unchangedReminder.getDescription());
+		Assert.assertEquals("Subject of A", unchangedReminder.getEmailSubject());
+	}
+	
+	/**
+	 * Update a reminder with a key which doesn't exist.
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void postReminderUnknownKey()
+	throws IOException, URISyntaxException, InterruptedException {
+		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-rem-12");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
+		dbInstance.commitAndCloseSession();
+		
+		ReminderVO reminderVo = new ReminderVO();
+		reminderVo.setKey(Long.valueOf(-25l));
+		reminderVo.setDescription("Unknown");
+		
+		RestConnection conn = new RestConnection(owner);
+		HttpRequest method = conn.createPost(remindersUri(courseEntry), reminderVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(404, response.statusCode());
+		ConnectionUtilities.consume(response);
+		conn.close();
+	}
+	
+	/**
+	 * An owner can update a reminder of its own course.
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void postOwnReminderAsOwner()
+	throws IOException, URISyntaxException, InterruptedException {
+		IdentityWithLogin owner = JunitTestHelper.createAndPersistRndAuthor("rest-rem-13");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner.getIdentity());
+		Reminder reminder = createReminder(courseEntry, owner.getIdentity(), "My reminder");
+		dbInstance.commitAndCloseSession();
+		
+		ReminderVO reminderVo = new ReminderVO();
+		reminderVo.setKey(reminder.getKey());
+		reminderVo.setDescription("My updated reminder");
+		reminderVo.setEmailSubject("My updated subject");
+		reminderVo.setEmailBody("<p>My updated body</p>");
+		
+		RestConnection conn = new RestConnection(owner);
+		HttpRequest method = conn.createPost(remindersUri(courseEntry), reminderVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		ReminderVO savedReminderVo = conn.parse(response, ReminderVO.class);
+		Assert.assertEquals(reminder.getKey(), savedReminderVo.getKey());
+		conn.close();
+		
+		Reminder updatedReminder = reminderService.loadByKey(reminder.getKey());
+		Assert.assertEquals("My updated reminder", updatedReminder.getDescription());
+		Assert.assertEquals("My updated subject", updatedReminder.getEmailSubject());
+	}
+	
+	/**
+	 * An owner of course B cannot delete a reminder of course A through
+	 * course B.
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void deleteReminderOfOtherCourse()
+	throws IOException, URISyntaxException, InterruptedException {
+		IdentityWithLogin ownerA = JunitTestHelper.createAndPersistRndAuthor("rest-rem-14");
+		IdentityWithLogin ownerB = JunitTestHelper.createAndPersistRndAuthor("rest-rem-15");
+		RepositoryEntry courseEntryA = JunitTestHelper.deployBasicCourse(ownerA.getIdentity());
+		RepositoryEntry courseEntryB = JunitTestHelper.deployBasicCourse(ownerB.getIdentity());
+		Reminder reminderA = createReminder(courseEntryA, ownerA.getIdentity(), "Reminder of A");
+		dbInstance.commitAndCloseSession();
+		
+		URI request = UriBuilder.fromUri(remindersUri(courseEntryB))
+				.path(reminderA.getKey().toString()).build();
+		RestConnection conn = new RestConnection(ownerB);
+		HttpResponse<InputStream> response = conn.execute(conn.createDelete(request, MediaType.APPLICATION_JSON));
+		Assert.assertEquals(404, response.statusCode());
+		ConnectionUtilities.consume(response);
+		
+		Reminder stillThereReminder = reminderService.loadByKey(reminderA.getKey());
+		Assert.assertNotNull(stillThereReminder);
+	}
+	
+	private URI remindersUri(RepositoryEntry courseEntry) {
+		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(courseEntry.getOlatResource().getResourceableId().toString()).path("reminders").build();
+	}
+	
+	private Reminder createReminder(RepositoryEntry entry, Identity creator, String description) {
+		Reminder reminder = reminderService.createReminder(entry, creator);
+		reminder.setDescription(description);
+		reminder.setEmailSubject("Subject of A");
+		reminder.setEmailBody("<p>Body</p>");
+		return reminderService.save(reminder);
 	}
 }
