@@ -494,7 +494,7 @@ public class CourseEditorPageFragment {
 
 		//find the row
 		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + resourceTitle + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
-		OOGraphene.click(selectRowBy, browser);
+		OOGraphene.waitElement(selectRowBy, browser).click();
 		
 		By selectBy = By.cssSelector(".o_modal_selection .modal-footer .o_button_group a.btn-primary.o_sel_re_selection_select");
 		OOGraphene.waitElement(selectBy, browser).click();
