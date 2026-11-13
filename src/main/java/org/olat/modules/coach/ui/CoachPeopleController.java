@@ -76,7 +76,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 
 	private static final String MAIN_CONTROLLER = "component";
 	
-	private static final String MY_PARTICIPANTS = "MyParticipants";
+	private static final String PARTICIPANTS = "Participants";
 	private static final String PRINCIPAL_SCOPE = "principal";
 	private static final String LINE_MANAGER_SCOPE = "linemanager";
 	private static final String EDU_MANAGER_SCOPE = "educationmanager";
@@ -118,7 +118,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 		// As coach / course owner
 		scopes = new ArrayList<>(4);
 		if(coachingSec.coach() || coachingSec.owner() || coachingSec.isMasterCoach()) {
-			scopes.add(ScopeFactory.createScope(MY_PARTICIPANTS, translate("coaching.my.participants"), null, "o_icon o_icon_coaching_tool"));
+			scopes.add(ScopeFactory.createScope(PARTICIPANTS, translate("coaching.my.participants"), null, "o_icon o_icon_coaching_tool"));
 		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -142,6 +142,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 		}
 		
 		searchScopes = ScopeFactory.createScopeSelection("search.scopes", mainVC, this, scopes);
+		searchScopes.setVisible(scopes.size() > 1);
 
 		putInitialPanel(mainVC);
 		openFirstScope(ureq);
@@ -235,10 +236,10 @@ public class CoachPeopleController extends BasicController implements Activateab
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		List<ContextEntry> subEntries = entries.subList(1, entries.size());
-		if(MY_PARTICIPANTS.equalsIgnoreCase(type) || "coach".equalsIgnoreCase(type) || "owner".equalsIgnoreCase(type)) {
-			doOpenAsCoach(ureq, MY_PARTICIPANTS)
+		if(PARTICIPANTS.equalsIgnoreCase(type) || "coach".equalsIgnoreCase(type) || "owner".equalsIgnoreCase(type)) {
+			doOpenAsCoach(ureq, PARTICIPANTS)
 					.activate(ureq, subEntries, entries.get(0).getTransientState());
-			searchScopes.setSelectedKey(MY_PARTICIPANTS);
+			searchScopes.setSelectedKey(PARTICIPANTS);
 		} else if(PRINCIPAL_SCOPE.equalsIgnoreCase(type)) {
 			doOrganisationsWithRole(ureq, OrganisationRoles.principal, AbstractParticipantsListController.ALL_TAB_ID)
 					.activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -301,8 +302,8 @@ public class CoachPeopleController extends BasicController implements Activateab
 	}
 	
 	private void doOpen(UserRequest ureq, String scope) {
-		if(MY_PARTICIPANTS.equalsIgnoreCase(scope)) {
-			doOpenAsCoach(ureq, MY_PARTICIPANTS);
+		if(PARTICIPANTS.equalsIgnoreCase(scope)) {
+			doOpenAsCoach(ureq, PARTICIPANTS);
 		} else if(PRINCIPAL_SCOPE.equalsIgnoreCase(scope)) {
 			doOrganisationsWithRole(ureq, OrganisationRoles.principal,
 					AbstractParticipantsListController.ALL_TAB_ID);
