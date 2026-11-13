@@ -1115,6 +1115,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		if(reloadedIdentity != null) {
 			Integer previousStatus = reloadedIdentity.getStatus();
 			reloadedIdentity.setStatus(status);
+			if(!status.equals(previousStatus)) {
+				updateUserLastModified(reloadedIdentity);
+			}
 			if(status.equals(Identity.STATUS_DELETED)) {
 				if(doer != null && reloadedIdentity.getDeletedBy() == null) {
 					reloadedIdentity.setDeletedBy(getDeletedByName(doer));
@@ -1139,6 +1142,18 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		}
 		dbInstance.commit();
 		return reloadedIdentity;
+	}
+	
+	/**
+	 * The status is part of the user data delivered by the REST API. Its changes
+	 * must be reflected in the last modified date of the user.
+	 * 
+	 * @param identity The identity (the user must be loaded in the persistence context)
+	 */
+	private void updateUserLastModified(IdentityImpl identity) {
+		if(identity.getUser() instanceof UserImpl user) {
+			user.setLastModified(new Date());
+		}
 	}
 	
 	@Override
@@ -1168,6 +1183,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public Identity reactivatedIdentity(Identity identity, boolean withExpiration) {
 		IdentityImpl reloadedIdentity = loadForUpdate(identity);
 		if(reloadedIdentity != null) {
+			if(!Identity.STATUS_ACTIV.equals(reloadedIdentity.getStatus())) {
+				updateUserLastModified(reloadedIdentity);
+			}
 			reloadedIdentity.setStatus(Identity.STATUS_ACTIV);
 			reloadedIdentity.setInactivationDate(null);
 			reloadedIdentity.setInactivationEmailDate(null);

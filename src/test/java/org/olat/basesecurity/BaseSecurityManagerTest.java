@@ -896,6 +896,71 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 
 	@Test
+	public void saveIdentityStatusUpdatesLastModified() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("status-lastmod-1");
+		dbInstance.commitAndCloseSession();
+		
+		Integer[] statusList = { Identity.STATUS_INACTIVE, Identity.STATUS_LOGIN_DENIED, Identity.STATUS_PENDING,
+				Identity.STATUS_PERMANENT, Identity.STATUS_ACTIV, Identity.STATUS_DELETED };
+		for(Integer status:statusList) {
+			JunitTestHelper.setUserLastModified(id, DateUtils.addDays(new Date(), -2));
+			securityManager.saveIdentityStatus(id, status, id);
+			dbInstance.commitAndCloseSession();
+			
+			Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());
+			Assert.assertEquals(status, reloadedIdentity.getStatus());
+			assertThat(reloadedIdentity.getUser().getLastModified())
+				.as("Last modified with status %s", status)
+				.isAfter(DateUtils.addDays(new Date(), -1));
+		}
+	}
+	
+	@Test
+	public void saveIdentitySameStatusKeepsLastModified() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("status-lastmod-2");
+		dbInstance.commitAndCloseSession();
+		JunitTestHelper.setUserLastModified(id, DateUtils.addDays(new Date(), -2));
+		
+		securityManager.saveIdentityStatus(id, Identity.STATUS_ACTIV, id);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());
+		assertThat(reloadedIdentity.getUser().getLastModified())
+			.isBefore(DateUtils.addDays(new Date(), -1));
+	}
+	
+	@Test
+	public void reactivatedIdentityUpdatesLastModified() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("status-lastmod-3");
+		dbInstance.commitAndCloseSession();
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, id);
+		dbInstance.commitAndCloseSession();
+		JunitTestHelper.setUserLastModified(id, DateUtils.addDays(new Date(), -2));
+		
+		securityManager.reactivatedIdentity(id, false);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, reloadedIdentity.getStatus());
+		assertThat(reloadedIdentity.getUser().getLastModified())
+			.isAfter(DateUtils.addDays(new Date(), -1));
+	}
+	
+	@Test
+	public void reactivatedActiveIdentityKeepsLastModified() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("status-lastmod-4");
+		dbInstance.commitAndCloseSession();
+		JunitTestHelper.setUserLastModified(id, DateUtils.addDays(new Date(), -2));
+		
+		securityManager.reactivatedIdentity(id, false);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reloadedIdentity = securityManager.loadIdentityByKey(id.getKey());
+		assertThat(reloadedIdentity.getUser().getLastModified())
+			.isBefore(DateUtils.addDays(new Date(), -1));
+	}
+	
+	@Test
 	public void reactivatedIdentity() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-login-0");
 		((IdentityImpl)id).setStatus(Identity.STATUS_INACTIVE);

@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
@@ -71,6 +72,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.user.UserImpl;
 import org.olat.user.UserManager;
 
 
@@ -307,6 +309,24 @@ public class JunitTestHelper {
 			return auth.getIdentity();
 		}
 		return null;
+	}
+	
+	/**
+	 * Set the last modified date of the user directly in the database,
+	 * bypassing the Hibernate listeners. The session is committed and closed.
+	 * 
+	 * @param identity The identity
+	 * @param lastModified The date to set
+	 */
+	public static final void setUserLastModified(Identity identity, Date lastModified) {
+		DB dbInstance = CoreSpringFactory.getImpl(DB.class);
+		String query = "update " + UserImpl.class.getName() + " as usr set usr.lastModified=:lastModified where usr.key=:userKey";
+		dbInstance.getCurrentEntityManager()
+			.createQuery(query)
+			.setParameter("lastModified", lastModified)
+			.setParameter("userKey", identity.getUser().getKey())
+			.executeUpdate();
+		dbInstance.commitAndCloseSession();
 	}
 	
 	public static final IdentityWithLogin createAndPersistRndAuthor(String prefixLogin) {

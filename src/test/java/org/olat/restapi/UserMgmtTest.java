@@ -109,6 +109,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.restapi.support.vo.FolderVO;
@@ -838,6 +839,127 @@ public class UserMgmtTest extends OlatRestTestCase {
 		//are the properties there?
 		Assert.assertFalse(vo.getProperties().isEmpty());
 		conn.close();
+	}
+	
+	@Test
+	public void getUserLastModified() throws IOException, URISyntaxException, InterruptedException {
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-lastmod-1");
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString()).build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		UserVO vo = conn.parse(response, UserVO.class);
+		conn.close();
+		
+		User user = userManager.loadUserByKey(id.getIdentity().getUser().getKey());
+		Assert.assertNotNull(vo.getLastModified());
+		Assert.assertEquals(user.getLastModified().getTime(), vo.getLastModified().getTime());
+	}
+	
+	@Test
+	public void getUsersModifiedSince() throws IOException, URISyntaxException, InterruptedException {
+		IdentityWithLogin changedId = JunitTestHelper.createAndPersistRndUser("user-lastmod-2");
+		IdentityWithLogin inactiveId = JunitTestHelper.createAndPersistRndUser("user-lastmod-3");
+		IdentityWithLogin unchangedId = JunitTestHelper.createAndPersistRndUser("user-lastmod-4");
+		dbInstance.commitAndCloseSession();
+		
+		Date before = DateUtils.addDays(new Date(), -2);
+		JunitTestHelper.setUserLastModified(changedId.getIdentity(), before);
+		JunitTestHelper.setUserLastModified(inactiveId.getIdentity(), before);
+		JunitTestHelper.setUserLastModified(unchangedId.getIdentity(), before);
+		
+		Identity changedIdentity = securityManager.loadIdentityByKey(changedId.getKey());
+		changedIdentity.getUser().setProperty(UserConstants.FIRSTNAME, "Modified");
+		userManager.updateUserFromIdentity(changedIdentity);
+		securityManager.saveIdentityStatus(inactiveId.getIdentity(), Identity.STATUS_INACTIVE, inactiveId.getIdentity());
+		dbInstance.commitAndCloseSession();
+		
+		Date modifiedSince = DateUtils.addDays(new Date(), -1);
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("modifiedSince", modifiedSince.toInstant().toString())
+				.queryParam("statusVisibleLimit", "all")
+				.build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<UserVO> vos = conn.parseList(response, UserVO.class);
+		conn.close();
+		
+		Assertions.assertThat(vos)
+			.map(UserVO::getKey)
+			.contains(changedId.getKey(), inactiveId.getKey())
+			.doesNotContain(unchangedId.getKey());
+		
+		UserVO changedVo = vos.stream()
+				.filter(vo -> changedId.getKey().equals(vo.getKey()))
+				.findFirst().orElse(null);
+		Assert.assertNotNull(changedVo);
+		Assert.assertEquals("Modified", changedVo.getFirstName());
+		Assert.assertFalse(changedVo.getProperties().isEmpty());
+		Assertions.assertThat(changedVo.getLastModified()).isAfter(modifiedSince);
+	}
+	
+	@Test
+	public void getUsersModifiedSinceLocalFormat() throws IOException, URISyntaxException, InterruptedException {
+		IdentityWithLogin changedId = JunitTestHelper.createAndPersistRndUser("user-lastmod-5");
+		IdentityWithLogin unchangedId = JunitTestHelper.createAndPersistRndUser("user-lastmod-6");
+		dbInstance.commitAndCloseSession();
+		JunitTestHelper.setUserLastModified(unchangedId.getIdentity(), DateUtils.addDays(new Date(), -2));
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("modifiedSince", ObjectFactory.formatDate(DateUtils.addDays(new Date(), -1)))
+				.build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		List<UserVO> vos = conn.parseList(response, UserVO.class);
+		conn.close();
+		
+		Assertions.assertThat(vos)
+			.map(UserVO::getKey)
+			.contains(changedId.getKey())
+			.doesNotContain(unchangedId.getKey());
+	}
+	
+	@Test
+	public void getUsersModifiedSinceInvalid() throws IOException, URISyntaxException, InterruptedException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("modifiedSince", "yesterday")
+				.build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(400, response.statusCode());
+		conn.close();
+	}
+	
+	@Test
+	public void createUserIgnoresLastModified() throws IOException, URISyntaxException, InterruptedException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
+		String username = UUID.randomUUID().toString();
+		UserVO vo = new UserVO();
+		vo.setLogin(username);
+		vo.setFirstName("Lucie");
+		vo.setLastName("Modified");
+		vo.setEmail(username + "@frentix.com");
+		vo.setLastModified(DateUtils.addDays(new Date(), -10));
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpRequest method = conn.createPut(request, vo, MediaType.APPLICATION_JSON, "en");
+		HttpResponse<InputStream> response = conn.execute(method);
+		assertTrue(response.statusCode() == 200 || response.statusCode() == 201);
+		UserVO savedVo = conn.parse(response, UserVO.class);
+		conn.close();
+		
+		Identity savedIdentity = securityManager.loadIdentityByKey(savedVo.getKey());
+		Assertions.assertThat(savedIdentity.getUser().getLastModified())
+			.isAfter(DateUtils.addDays(new Date(), -1));
 	}
 	
 	@Test

@@ -57,6 +57,7 @@ public class SearchIdentityParams {
 	private AuthProviders authProviders;
 	private Date createdAfter;
 	private Date createdBefore;
+	private Date modifiedSince;
 	private Date userLoginAfter;
 	private Date userLoginBefore;
 	private PeriodWithUnit expireAfter;
@@ -333,6 +334,18 @@ public class SearchIdentityParams {
 	
 	public void setCreatedBefore(Date createdBefore) {
 		this.createdBefore = createdBefore;
+	}
+	
+	/**
+	 * @return Only users with a last modified date (profile or status
+	 * 		changes) after or equal to this date
+	 */
+	public Date getModifiedSince() {
+		return modifiedSince;
+	}
+
+	public void setModifiedSince(Date modifiedSince) {
+		this.modifiedSince = modifiedSince;
 	}
 	
 	public Date getUserLoginAfter() {

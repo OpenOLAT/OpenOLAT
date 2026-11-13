@@ -92,7 +92,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select distinct ident from ").append(IdentityImpl.class.getName()).append(" as ident ")
 		  .append(" inner join fetch ident.user as user ");
-		TypedQuery<Identity> dbq = createIdentitiesByPowerQuery(params, null, sb, Identity.class);
+		// A stable order for synchronisation of modified users
+		SortKey orderBy = params.getModifiedSince() == null ? null : new SortKey("key", true);
+		TypedQuery<Identity> dbq = createIdentitiesByPowerQuery(params, orderBy, sb, Identity.class);
 		if(firstResult >= 0) {
 			dbq.setFirstResult(firstResult);
 		}
@@ -267,6 +269,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return params.getLogin() != null || params.getSearchString() != null
 				|| params.hasUserProperties() || params.hasIdentityKeys() || params.hasExcludedIdentityKeys()
 				|| params.getCreatedAfter() != null	|| params.getCreatedBefore() != null
+				|| params.getModifiedSince() != null
 				|| params.getUserLoginAfter() != null || params.getUserLoginBefore() != null
 				|| params.hasAuthProviders() || params.getManaged() != null
 				|| params.getStatus() != null || (params.getExactStatusList() != null && !params.getExactStatusList().isEmpty())
@@ -614,6 +617,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" ident.creationDate <= :createdBefore ");
 		}
+		if (params.getModifiedSince() != null) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" user.lastModified >= :modifiedSince ");
+		}
 		if(params.getUserLoginAfter() != null){
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" ident.lastLogin >= :lastloginAfter ");
@@ -789,6 +796,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		}
 		if (params.getCreatedBefore() != null) {
 			dbq.setParameter("createdBefore", params.getCreatedBefore(), TemporalType.TIMESTAMP);
+		}
+		if (params.getModifiedSince() != null) {
+			dbq.setParameter("modifiedSince", params.getModifiedSince(), TemporalType.TIMESTAMP);
 		}
 		if(params.getUserLoginAfter() != null){
 			dbq.setParameter("lastloginAfter", params.getUserLoginAfter(), TemporalType.TIMESTAMP);

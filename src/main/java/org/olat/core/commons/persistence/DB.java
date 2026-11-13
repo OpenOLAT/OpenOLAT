@@ -29,6 +29,7 @@ package org.olat.core.commons.persistence;
 import jakarta.persistence.EntityManager;
 
 import org.hibernate.event.spi.PostUpdateEventListener;
+import org.hibernate.event.spi.PreUpdateEventListener;
 import org.hibernate.stat.Statistics;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -124,4 +125,6 @@ public interface DB {
 	public EntityManager getCurrentEntityManager();
 	
 	public void appendPostUpdateEventListener(PostUpdateEventListener listener);
+	
+	public void appendPreUpdateEventListener(PreUpdateEventListener listener);
 }

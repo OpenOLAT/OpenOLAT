@@ -26,6 +26,7 @@
 
 package org.olat.core.id;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
@@ -43,6 +44,11 @@ import java.util.Map;
  */
 public interface User extends CreateInfo, Persistable {
 	
+	/**
+	 * @return The date of the last change of a user property or of the
+	 * 		status of the identity (may be null for not persisted users)
+	 */
+	public Date getLastModified();
 	
 	public String getFirstName();
 	

@@ -98,6 +98,7 @@ public class UserVOFactory {
 		userVO.setFirstName(user.getProperty(UserConstants.FIRSTNAME, null));
 		userVO.setLastName(user.getProperty(UserConstants.LASTNAME, null));
 		userVO.setEmail(user.getProperty(UserConstants.EMAIL, null));
+		userVO.setLastModified(user.getLastModified());
 		
 		if(withPortrait) {
 			VFSLeaf portraitImage = CoreSpringFactory.getImpl(UserPortraitService.class).getPortraitImage(identity, PortraitSize.xsmall);

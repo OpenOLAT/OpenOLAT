@@ -170,6 +170,11 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	@Override
+	public Date getLastModified() {
+		return null;
+	}
+
+	@Override
 	public Date getLastLogin() {
 		return new Date();
 	}

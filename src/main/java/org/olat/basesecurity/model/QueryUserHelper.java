@@ -51,6 +51,11 @@ public class QueryUserHelper implements User {
 	}
 
 	@Override
+	public Date getLastModified() {
+		return null;
+	}
+
+	@Override
 	public Long getKey() {
 		return null;
 	}

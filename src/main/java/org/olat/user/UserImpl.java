@@ -37,6 +37,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -98,6 +99,9 @@ public class UserImpl implements User {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
+	private Date lastModified;
 	
 	@OneToOne(targetEntity=IdentityImpl.class, optional=true, fetch=FetchType.LAZY)
 	@JoinColumn (name="fk_identity")
@@ -314,6 +318,30 @@ public class UserImpl implements User {
 	
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	/**
+	 * The date of the last change of a user property (with a property handler)
+	 * or of the status of the identity. Maintained by the UserLastModifiedListener
+	 * and the BaseSecurityManager.
+	 */
+	@Override
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
+	
+	@PrePersist
+	public void onPrePersist() {
+		if(creationDate == null) {
+			creationDate = new Date();
+		}
+		if(lastModified == null) {
+			lastModified = creationDate;
+		}
 	}
 	
 	public Identity getIdentity() {

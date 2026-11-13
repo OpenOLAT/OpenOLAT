@@ -59,6 +59,11 @@ public class TransientIdentity implements Identity, User {
 	}
 
 	@Override
+	public Date getLastModified() {
+		return null;
+	}
+
+	@Override
 	public Long getKey() {
 		return key;
 	}

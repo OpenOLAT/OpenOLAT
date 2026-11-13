@@ -62,3 +62,9 @@ create table o_tb_topic_date (
 
 create index idx_tbtopicdate_to_topic_idx on o_tb_topic_date (fk_topic);
 alter table o_tb_topic_date add constraint tbtopicdate_topic_idx foreign key (fk_topic) references o_tb_topic (id);
+
+-- User last modified
+alter table o_user add lastmodified date;
+update o_user set lastmodified = coalesce(creationdate, sysdate) where lastmodified is null;
+alter table o_user modify lastmodified not null;
+create index idx_user_lastmod_idx on o_user (lastmodified);

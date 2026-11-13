@@ -87,7 +87,7 @@ public class UserChangesListener implements PostUpdateEventListener {
 			int[] props = event.getDirtyProperties();
 			for(int prop:props) {
 				String propertyName = propertyNames[prop];
-				if(observeProperty(propertyName)) {
+				if(observeProperty(propertyName, userPropertiesConfig)) {
 					Object oldState = oldStates[prop];
 					Object state = states[prop];
 					if((oldState == null || oldState instanceof String) && (state == null || state instanceof String)) {
@@ -101,7 +101,15 @@ public class UserChangesListener implements PostUpdateEventListener {
 		}
 	}
 	
-	private boolean observeProperty(String propertyName) {
+	/**
+	 * A property is observed if it's backed by a user property handler and
+	 * isn't a technical field of the user.
+	 * 
+	 * @param propertyName The name of the property of the persister
+	 * @param userPropertiesConfig The configuration of the user properties
+	 * @return true if changes of the property are relevant
+	 */
+	public static boolean observeProperty(String propertyName, UserPropertiesConfig userPropertiesConfig) {
 		return !"version".equals(propertyName) && !"preferences".equals(propertyName) && !"identity".equals(propertyName)
 				&& !"creationDate".equals(propertyName) && !"lastModified".equals(propertyName)
 				&& userPropertiesConfig.getPropertyHandler(propertyName) != null;

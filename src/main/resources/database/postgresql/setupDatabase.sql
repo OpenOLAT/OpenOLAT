@@ -363,6 +363,7 @@ create table o_user (
    user_id int8 not null,
    version int4 not null,
    creationdate timestamp,
+   lastmodified timestamp not null,
    language varchar(30),
    fontsize varchar(10),
    notification_interval varchar(16),
@@ -6369,6 +6370,7 @@ create index idx_user_instname_idx on o_user (u_institutionalname);
 create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
 create index idx_user_instemail_idx on o_user (u_institutionalemail);
 create index idx_user_creationdate_idx on o_user (creationdate);
+create index idx_user_lastmod_idx on o_user (lastmodified);
 
 create index xx_idx_email_low_text on o_user(lower(u_email) text_pattern_ops);
 create index xx_idx_institutionalemail_low_text on o_user(lower(u_institutionalemail) text_pattern_ops);

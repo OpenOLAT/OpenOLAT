@@ -395,6 +395,7 @@ CREATE TABLE o_user (
   user_id number(20) NOT NULL,
   version number(20) NOT NULL,
   creationdate date,
+  lastmodified date NOT NULL,
   language varchar2(30 char),
   fontsize varchar2(10 char),
   notification_interval varchar2(16 char),
@@ -6428,6 +6429,7 @@ create index idx_user_instname_idx on o_user (u_institutionalname);
 create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
 create index idx_user_instemail_idx on o_user (u_institutionalemail);
 create index idx_user_creationdate_idx on o_user (creationdate);
+create index idx_user_lastmod_idx on o_user (lastmodified);
 
 alter table o_user add constraint iuni_user_nickname_idx unique (u_nickname);
 

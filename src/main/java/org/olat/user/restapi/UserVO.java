@@ -20,6 +20,7 @@
 package org.olat.user.restapi;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -53,6 +54,8 @@ public class UserVO {
 	private String lastName;
 	private String email;
 	private String portrait;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "Date of the last change of a user property or of the status of the user (changes of the login or the external ID are not tracked)")
+	private Date lastModified;
 
 	@XmlElementWrapper(name="properties")
 	@XmlElement(name="property")
@@ -76,6 +79,14 @@ public class UserVO {
 
 	public void setStatus(Integer status) {
 		this.status = status;
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
 	}
 
 	public String getLogin() {

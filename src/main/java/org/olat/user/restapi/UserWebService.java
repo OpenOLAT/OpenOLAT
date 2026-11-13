@@ -31,6 +31,8 @@ import static org.olat.user.restapi.UserVOFactory.parseUserProperty;
 import static org.olat.user.restapi.UserVOFactory.post;
 
 import java.io.File;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -92,6 +94,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.restapi.group.MyGroupWebService;
 import org.olat.restapi.support.MultipartReader;
+import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.PortraitSize;
 import org.olat.user.UserLifecycleManager;
@@ -102,6 +105,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -178,6 +182,7 @@ public class UserWebService {
 	 * @param login The login (search with like)
 	 * @param authProvider An authentication provider (optional)
 	 * @param authUsername An specific username from the authentication provider
+	 * @param modifiedSince Only users modified after or at this date (ISO 8601)
 	 * @param uriInfo The URI infos
 	 * @param httpRequest The HTTP request
 	 * @return An array of users
@@ -194,15 +199,19 @@ public class UserWebService {
 			" You can make a search with the user properties like this:<br>\n" + 
 			" users?telMobile=39847592&login=test\n" + 
 			" <br> The lookup is possible for authors, usermanagers and system administrators. Normal\n" + 
-			" users are not allowed to use the lookup service.")
+			" users are not allowed to use the lookup service.<br>\n" + 
+			" With the parameter modifiedSince, only the users with a changed user property or status\n" + 
+			" since this date are returned, with all their properties, ordered by key.")
 	@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
+	@ApiResponse(responseCode = "400", description = "The modifiedSince date cannot be parsed")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getUserListQuery(@QueryParam("login") String login, @QueryParam("externalId") String externalId,
 			@QueryParam("authProvider") String authProvider, @QueryParam("authUsername") String authUsername,
 			@QueryParam("statusVisibleLimit") String statusVisibleLimit, @QueryParam("status") Integer status,
+			@QueryParam("modifiedSince") @Parameter(description = "Return only the users changed since this date, ISO 8601 with offset (2026-11-12T04:50:00Z) or as local server time (2026-11-12T05:50:00)") String modifiedSince,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
 
 		// User lookup allowed for authors, usermanagers and admins. For
@@ -213,7 +222,16 @@ public class UserWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		boolean allProperties = StringHelper.containsNonWhitespace(externalId) || StringHelper.containsNonWhitespace(login);
+		Date modifiedSinceDate = null;
+		if(StringHelper.containsNonWhitespace(modifiedSince)) {
+			modifiedSinceDate = parseModifiedSince(modifiedSince);
+			if(modifiedSinceDate == null) {
+				return Response.serverError().status(Status.BAD_REQUEST).build();
+			}
+		}
+
+		boolean allProperties = StringHelper.containsNonWhitespace(externalId) || StringHelper.containsNonWhitespace(login)
+				|| modifiedSinceDate != null;
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		MultivaluedMap<String,String> params = uriInfo.getQueryParameters();
 		List<Identity> identities;
@@ -269,6 +287,7 @@ public class UserWebService {
 			if(StringHelper.containsNonWhitespace(externalId)) {
 				searchParams.setExternalId(externalId);
 			}
+			searchParams.setModifiedSince(modifiedSinceDate);
 			identities = securityManager.getIdentitiesByPowerSearch(searchParams, 0, -1);
 		}
 		
@@ -279,6 +298,22 @@ public class UserWebService {
 			userVOs[count++] = get(identity, allProperties, isAdministrativeUser);
 		}
 		return Response.ok(userVOs).build();
+	}
+	
+	/**
+	 * Parse a date in ISO 8601 with an offset or a zone (2026-11-12T04:50:00Z),
+	 * or the standard REST format without offset (local time of the server).
+	 * 
+	 * @param date The date to parse
+	 * @return The date or null if the string cannot be parsed
+	 */
+	private Date parseModifiedSince(String date) {
+		try {
+			return Date.from(OffsetDateTime.parse(date.trim()).toInstant());
+		} catch (DateTimeParseException e) {
+			log.debug("Not an ISO 8601 date with offset: {}", date);
+		}
+		return ObjectFactory.parseDate(date.trim());
 	}
 	
 	@GET

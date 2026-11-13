@@ -80,6 +80,7 @@ import org.olat.properties.PropertyManager;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.manager.UserChangesListener;
 import org.olat.user.manager.UserChangesListener.ChangedEvent;
+import org.olat.user.manager.UserLastModifiedListener;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -139,6 +140,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 				.getCache(UserChangesListener.class.getSimpleName(), "listener");
 		listener = new UserChangesListener(getUserPropertiesConfig(), userChangesCache);
 		dbInstance.appendPostUpdateEventListener(listener);
+		dbInstance.appendPreUpdateEventListener(new UserLastModifiedListener(getUserPropertiesConfig()));
 	}
 
 	@Override

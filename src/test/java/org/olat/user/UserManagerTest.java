@@ -21,9 +21,11 @@ package org.olat.user;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -34,6 +36,8 @@ import org.olat.core.commons.services.notifications.manager.NotificationsManager
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.DateUtils;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -175,6 +179,151 @@ public class UserManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void updateUserProperty() {
+		//Create a user
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		Date lastModifiedDate = id.getUser().getLastModified();
+		Assert.assertNotNull(lastModifiedDate);
+
+		User user = id.getUser();
+		user.setProperty(UserConstants.FIRSTNAME, "New first name");
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assert.assertEquals("New first name", reloadedUser.getFirstName());
+		Assert.assertNotEquals(lastModifiedDate, reloadedUser.getLastModified());
+	}
+	
+	@Test
+	public void lastModifiedAtCreation() {
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		
+		User reloadedUser = userManager.loadUserByKey(id.getUser().getKey());
+		Assert.assertNotNull(reloadedUser.getLastModified());
+		Assert.assertEquals(reloadedUser.getCreationDate().getTime(), reloadedUser.getLastModified().getTime());
+	}
+	
+	@Test
+	public void updateUserWithoutChanges() {
+		Identity id = createUserWithOldLastModified();
+		int version = ((UserImpl)id.getUser()).getVersion();
+
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+
+		UserImpl reloadedUser = (UserImpl)userManager.loadUserByKey(id.getUser().getKey());
+		Assertions.assertThat(reloadedUser.getLastModified()).isBefore(oneDayAgo());
+		Assert.assertEquals(version, reloadedUser.getVersion());
+	}
+	
+	@Test
+	public void updateUserWithSameValue() {
+		Identity id = createUserWithOldLastModified();
+		
+		User user = id.getUser();
+		user.setProperty(UserConstants.FIRSTNAME, user.getFirstName());
+		user.setProperty(UserConstants.LASTNAME, user.getLastName());
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assertions.assertThat(reloadedUser.getLastModified()).isBefore(oneDayAgo());
+	}
+	
+	@Test
+	public void updateUserEmptyStringForNull() {
+		Identity id = createUserWithOldLastModified();
+		Assert.assertNull(id.getUser().getProperty(UserConstants.TELMOBILE));
+		
+		// Set directly, without the normalization of the property handler
+		UserImpl user = (UserImpl)id.getUser();
+		user.setUserProperty(UserConstants.TELMOBILE, "");
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assertions.assertThat(reloadedUser.getLastModified()).isBefore(oneDayAgo());
+	}
+	
+	@Test
+	public void updateUserPreferences() {
+		Identity id = createUserWithOldLastModified();
+		
+		User user = id.getUser();
+		String language = "fr".equals(user.getPreferences().getLanguage()) ? "de" : "fr";
+		user.getPreferences().setLanguage(language);
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assert.assertEquals(language, reloadedUser.getPreferences().getLanguage());
+		Assertions.assertThat(reloadedUser.getLastModified()).isBefore(oneDayAgo());
+	}
+	
+	@Test
+	public void updateUserTechnicalFields() {
+		Identity id = createUserWithOldLastModified();
+		
+		UserImpl user = (UserImpl)id.getUser();
+		user.setPortraitPath("portrait.png");
+		user.setLogoPath("logo.png");
+		user.setInitialsCssClass("o_user_initials_light_blue");
+		user.setUserProperty("emchangeKey", UUID.randomUUID().toString());
+		user.setUserProperty("emailDisabled", "true");
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assert.assertEquals("portrait.png", reloadedUser.getPortraitPath());
+		Assertions.assertThat(reloadedUser.getLastModified()).isBefore(oneDayAgo());
+	}
+	
+	@Test
+	public void updateUserPropertyMovesLastModified() {
+		Identity id = createUserWithOldLastModified();
+		
+		User user = id.getUser();
+		user.setProperty(UserConstants.LASTNAME, "New last name");
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assert.assertEquals("New last name", reloadedUser.getLastName());
+		Assertions.assertThat(reloadedUser.getLastModified()).isAfter(oneDayAgo());
+	}
+	
+	@Test
+	public void updateManagedUserAtCommit() {
+		Identity id = createUserWithOldLastModified();
+		
+		// Change the managed user without calling updateUser
+		User user = userManager.loadUserByKey(id.getUser().getKey());
+		user.setProperty(UserConstants.FIRSTNAME, "Managed first name");
+		dbInstance.commitAndCloseSession();
+
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assert.assertEquals("Managed first name", reloadedUser.getFirstName());
+		Assertions.assertThat(reloadedUser.getLastModified()).isAfter(oneDayAgo());
+	}
+	
+	@Test
+	public void updateUserCannotMoveLastModifiedBack() {
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		
+		UserImpl user = (UserImpl)userManager.loadUserByKey(id.getUser().getKey());
+		user.setLastModified(DateUtils.addDays(new Date(), -10));
+		user.setInitialsCssClass("o_user_initials_light_blue");
+		dbInstance.commitAndCloseSession();
+
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assertions.assertThat(reloadedUser.getLastModified()).isAfter(oneDayAgo());
+	}
+	
+	@Test
 	public void getUserDisplayNameByIdentity() {
 		//create a user
 		String uuid = UUID.randomUUID().toString();
@@ -198,6 +347,23 @@ public class UserManagerTest extends OlatTestCase {
 		
 		String fullname = userManager.getUserDisplayName(lazyId);
 		Assert.assertTrue(fullname.contains("firstcreateid-" +uuid));
+	}
+	
+	/**
+	 * @return A user with a last modified date 2 days ago, detached
+	 */
+	private Identity createUserWithOldLastModified() {
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+		JunitTestHelper.setUserLastModified(id, DateUtils.addDays(new Date(), -2));
+		Identity reloadedId = securityManager.loadIdentityByKey(id.getKey());
+		dbInstance.commitAndCloseSession();
+		Assertions.assertThat(reloadedId.getUser().getLastModified()).isBefore(oneDayAgo());
+		return reloadedId;
+	}
+	
+	private Date oneDayAgo() {
+		return DateUtils.addDays(new Date(), -1);
 	}
 	
 	private Identity createUser(String uuid) {

@@ -221,6 +221,11 @@ public class UpdateIdentity implements Identity {
 		}
 
 		@Override
+		public Date getLastModified() {
+			return user.getLastModified();
+		}
+
+		@Override
 		public String getPortraitPath() {
 			return null;
 		}
