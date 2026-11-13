@@ -130,10 +130,11 @@ public class CoachingServiceImpl implements CoachingService {
 		boolean owner = coachingDao.isMember(identity, GroupRoles.owner, RepositoryEntryStatusEnum.preparationToClosed());
 		boolean teacher = lectureModule.isEnabled() && coachingDao.isTeacher(identity);
 		boolean masterCoach =  curriculumModule.isEnabled() && coachingDao.isMasterCoach(identity);
+		boolean coursePlannerMember =  curriculumModule.isEnabled() && coachingDao.isCurriculumMember(identity);
 		boolean isUserRelationSource = identityToIdentityRelationDao.hasRelationsAsSource(identity);
 		boolean lineManager = organisationModule.isEnabled() && roles.isLineManager();
 		boolean educationManager = organisationModule.isEnabled() && roles.isEducationManager();
-		return new CoachingSecurity(masterCoach, owner, coach, teacher, isUserRelationSource, lineManager, educationManager);
+		return new CoachingSecurity(masterCoach, owner, coach, teacher, isUserRelationSource, lineManager, educationManager, coursePlannerMember);
 	}
 
 	@Override

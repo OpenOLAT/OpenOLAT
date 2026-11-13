@@ -128,6 +128,25 @@ public class CoachingDAO {
 		return !firstKey.isEmpty();
 	}
 	
+	public boolean isCurriculumMember(IdentityRef identity) {
+		String sb = """
+				select membership.key from curriculumelement el
+				inner join el.group baseGroup
+				inner join baseGroup.members membership
+				where membership.identity.key=:identityKey and membership.role in (:roles)""";
+
+		List<String> roles = List.of(CurriculumRoles.coach.name(), CurriculumRoles.owner.name(), CurriculumRoles.mastercoach.name());
+		List<Long> firstKey = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", roles)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return !firstKey.isEmpty();
+	}
+	
 	public boolean isTeacher(IdentityRef coach) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select block.key from lectureblock block")

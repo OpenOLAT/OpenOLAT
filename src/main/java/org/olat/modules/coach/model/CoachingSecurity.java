@@ -31,7 +31,7 @@ import org.olat.modules.coach.CoachingRoles;
  *
  */
 public record CoachingSecurity(boolean masterCoach, boolean owner, boolean coach, boolean teacher, boolean userRelationSource, 
-		boolean lineManager, boolean educationManager) {
+		boolean lineManager, boolean educationManager, boolean coursePlannerMember) {
 
 	public boolean isMasterCoach() {
 		return masterCoach;

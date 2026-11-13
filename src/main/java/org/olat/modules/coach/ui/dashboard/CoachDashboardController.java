@@ -65,7 +65,7 @@ public class CoachDashboardController extends BasicController {
 			hasWidgets = true;
 		}
 		
-		if (lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoach())) {
+		if (lectureModule.isEnabled() && coachingSec.isTeacher() && (coachingSec.coach() || coachingSec.owner() || coachingSec.isMasterCoach())) {
 			lectureBlocksCtrl = new CoachLectureBlocksWidgetController(ureq, wControl);
 			listenTo(lectureBlocksCtrl);
 			lectureBlocksCtrl.reload();
