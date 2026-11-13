@@ -121,10 +121,10 @@ public class RepositoryEntryTeamsMeetingWebService {
 		}
 		
 		TeamsMeeting meeting = teamsService.getMeetingByKey(meetingKey);
-		if(meeting == null) {
+		if(meeting == null || !entry.equals(meeting.getEntry())) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		if(!entry.equals(meeting.getEntry()) || StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
+		if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 		return Response.ok(TeamsMeetingVO.valueOf(meeting)).build();
@@ -181,13 +181,17 @@ public class RepositoryEntryTeamsMeetingWebService {
 		TeamsMeeting meeting;
 		if(meetingVo.getKey() != null) {
 			meeting = teamsService.getMeetingByKey(meetingVo.getKey());
-			if(entry.equals(meeting.getEntry())) {
-				return Response.serverError().status(Status.CONFLICT).build();
+			if(meeting == null || !entry.equals(meeting.getEntry())) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 		} else {
 			Identity doer = getIdentity(request);
 			meeting = teamsService.createMeeting(meetingVo.getSubject(), meetingVo.getStartDate(), meetingVo.getEndDate(), entry, null, null, doer);
 		}
+		if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+		
 		TeamsMeetingVO.transfer(meetingVo, meeting);
 		meeting = teamsService.updateMeeting(meeting, false);
 		TeamsMeetingVO persistedMeeting = TeamsMeetingVO.valueOf(meeting);
@@ -217,7 +221,10 @@ public class RepositoryEntryTeamsMeetingWebService {
 		if(meeting == null) {
 			return Response.serverError().status(Status.NOT_MODIFIED).build();
 		}
-		if(!entry.equals(meeting.getEntry()) || StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
+		if(!entry.equals(meeting.getEntry())) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 		
