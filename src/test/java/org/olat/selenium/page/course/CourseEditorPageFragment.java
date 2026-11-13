@@ -424,8 +424,8 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseScorm(String resourceTitle) {
-		By chooseBy = By.cssSelector(".o_re_reference .btn.btn-primary");
-		return chooseResourceModern(chooseBy, resourceTitle);
+		By chooseBy = By.cssSelector(".o_sel_scorm_config .o_re_reference .btn.btn-primary");
+		return chooseResourceModernV2(chooseBy, resourceTitle);
 	}
 	
 	/**

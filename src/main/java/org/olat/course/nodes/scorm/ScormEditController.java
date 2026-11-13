@@ -84,6 +84,7 @@ import org.olat.modules.scorm.ScormWrapperController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -853,6 +854,35 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		public Confirm confirmCanReplace(UserRequest ureq) {
 			// Replace is unconditional for SCORM, matching the previous behaviour.
 			return new Confirm(true, null);
+		}
+
+		@Override
+		public boolean useNewSelectionDialog() {
+			return true;
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.scorms");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-SCORMCP_icon",
+					translate("select.no.scorm.yet"),
+					translate("select.no.scorm.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-SCORMCP_icon",
+					translate("select.no.scorms.in.view"),
+					translate("select.no.scorms.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term");
 		}
 	}
 
