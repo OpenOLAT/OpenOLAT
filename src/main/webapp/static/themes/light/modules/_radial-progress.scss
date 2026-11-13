@@ -284,6 +284,22 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 		color: var(--o-radial-progress-percentage-warning);
 	}
 }
+.radial-progress-passed {
+	.radial-bar {
+	  stroke: var(--o-course-state-passed);
+	}
+	&:not(.radial-progress-pie) .percentage .number {
+		color: var(--o-course-state-passed);
+	}
+}
+.radial-progress-failed {
+	.radial-bar {
+	  stroke: var(--o-course-state-failed);
+	}
+	&:not(.radial-progress-pie) .percentage .number {
+		color: var(--o-course-state-failed);
+	}
+}
 
 /* toolbar variant */
 $o-radial-progress-circle-size-toolbar				: $o-toolbar-height-md + 8px !default;

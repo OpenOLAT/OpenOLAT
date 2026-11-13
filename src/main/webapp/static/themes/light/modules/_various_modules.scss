@@ -1618,7 +1618,6 @@ ul.o_assessment_docs>li:last-child {
 		display: inline-block;
 		vertical-align: top;
 		width: 100%;
-		text-shadow: 1px 1px 2px var(--o-shadow-color);
 		font-size: $font-size-small;
 		line-height: $line-height-computed;
 		color: var(--o-progress-bar-fg);
@@ -1628,6 +1627,7 @@ ul.o_assessment_docs>li:last-child {
 			top: 0;
 			left: 0;
 			padding-left: 0.4em;
+			text-shadow: 1px 1px 2px var(--o-shadow-color);
 			text-overflow: ellipsis;
 			overflow: hidden;
 			white-space: nowrap; 

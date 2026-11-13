@@ -420,6 +420,8 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			case warning -> "radial-progress-warning";
 			case danger -> "radial-progress-danger";
 			case neutral -> "radial-progress-neutral";
+			case passed -> "radial-progress-passed";
+			case failed -> "radial-progress-failed";
 			default -> null;
 		};
 	}
