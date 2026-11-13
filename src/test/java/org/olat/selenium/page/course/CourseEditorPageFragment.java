@@ -399,6 +399,16 @@ public class CourseEditorPageFragment {
 	
 	/**
 	 * @see chooseResource
+	 * @param resourceTitle The title of the blog
+	 * @return Itself
+	 */
+	public CourseEditorPageFragment chooseBlog(String resourceTitle) {
+		By chooseBy = By.cssSelector(".o_sel_feed .o_re_reference .btn.btn-primary");
+		return chooseResourceModernV2(chooseBy, resourceTitle);
+	}
+
+	/**
+	 * @see chooseResource
 	 * @param resourceTitle The title of the survey
 	 * @return Itself
 	 */

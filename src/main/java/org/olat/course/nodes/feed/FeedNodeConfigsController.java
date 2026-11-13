@@ -54,6 +54,7 @@ import org.olat.modules.webFeed.ui.FeedMetadataConfigController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,8 +121,38 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 		String selectionTitle = translate("button.create.feed");
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
+		String emptyStateIconCss = isBlog ? "o_FileResource-BLOG_icon" : "o_FileResource-PODCAST_icon";
 		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
-				List.of(resourceTypeName), defaultOrganisations, emptyStateConfig, selectionTitle, this);
+				List.of(resourceTypeName), defaultOrganisations, emptyStateConfig, selectionTitle, this) {
+			@Override
+			public boolean useNewSelectionDialog() {
+				return true;
+			}
+
+			@Override
+			public String getMyTabLabel() {
+				return translate("my.feeds");
+			}
+
+			@Override
+			public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+				return new EmptyScreenData(emptyStateIconCss,
+						translate("select.no.feed.yet"),
+						translate("select.no.feed.yet.hint"));
+			}
+
+			@Override
+			public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+				return new EmptyScreenData(emptyStateIconCss,
+						translate("select.no.feeds.in.view"),
+						translate("select.no.feeds.in.view.hint"));
+			}
+
+			@Override
+			public String getEnterSearchTermMessage() {
+				return translate("select.enter.search.term");
+			}
+		};
 		referenceCtrl = new RepositoryEntryReferenceController(ureq, getWindowControl(), refRepoEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		mainVC.put("reference", referenceCtrl.getInitialComponent());
