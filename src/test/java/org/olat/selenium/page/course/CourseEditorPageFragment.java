@@ -394,12 +394,10 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseSurvey(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_survey_config_form .o_re_reference .btn.btn-primary");
-		return chooseResourceModern(chooseBy, resourceTitle);
+		return chooseResourceModernV2(chooseBy, resourceTitle);
 	}
 	
 	/**
-	 * OO-7574: the Form course element uses the redesigned selection dialog now -
-	 * see FormConfigController's FormCourseNodeReferenceProvider#useNewSelectionDialog().
 	 * @see chooseResource
 	 * @param resourceTitle The title of the survey
 	 * @return Itself
