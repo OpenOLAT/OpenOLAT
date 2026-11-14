@@ -75,11 +75,11 @@
 		}
 		#o_main_right {
 			position: relative;
-			background: $o-main-right-bg;
+			background: $o-main-right-bg; // o-color-keep(client-value)
 		}
 		#o_main_center {
 			position: relative;
-			background: $o-main-center-bg;
+			background: $o-main-center-bg; // o-color-keep(client-value)
 			
 			h2:first-child {
 				margin-top: 0;

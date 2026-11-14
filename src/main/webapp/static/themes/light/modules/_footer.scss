@@ -15,7 +15,7 @@
 	
 	a { 
 		color: var(--o-footer-link);
-		&:hover { color: $o-footer-default-link-hover-color;}
+		&:hover { color: $o-footer-default-link-hover-color;} // o-color-keep(client-value)
 	}
 	// the focus ring reads footer-focus: 3:1 on the footer, also on a dark or
 	// coloured footer (OO-10043, D24)
@@ -112,7 +112,7 @@
 		@extend %o_undecorated;
 	}
 	a:hover {
-		color: $o-footer-default-link-hover-color;
+		color: $o-footer-default-link-hover-color; // o-color-keep(client-value)
 	}
 	a:focus {
 		outline-offset: 2px;

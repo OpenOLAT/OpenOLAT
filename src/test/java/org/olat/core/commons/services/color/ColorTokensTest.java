@@ -767,6 +767,10 @@ public class ColorTokensTest {
 		Assert.assertTrue(message, message.contains("$o-palette, $o-states or $o-tokens"));
 		Assert.assertTrue(message, message.contains("themes.README"));
 		Assert.assertTrue(message, message.contains("$o-legacy-color-warning: false;"));
+		// no exception since OO-10043 slice 26: the login link reads the token navbar-login
+		Assert.assertFalse(message, message.contains("exception"));
+		Assert.assertFalse("$o-navbar-login-color reads $brand-warning",
+				Pattern.compile("\\$o-navbar-login-color\\s*:\\s*\\$brand-warning").matcher(config).find());
 		// email.css does not import _tokens.scss: no warning there
 		Assert.assertFalse(read(ThemeColorRatchetTest.LIGHT_MODULES.getParent().resolve("email.scss")).contains("tokens"));
 	}
@@ -1442,6 +1446,9 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_dashboard_table_widget .o_dashboard_widget_table", "background-color:var(--o-dashboard-widget-table-bg)");
 		// navbar and offcanvas menu
 		assertRuleReads(css, ".o_navbar #o_navbar_tools_personal .o_logout", "color:var(--o-navbar-logout)");
+		// the login link (OO-10043 slice 26): own token, the palette step nearest to $brand-warning
+		assertRuleReads(css, ".o_navbar #o_navbar_tools_permanent #o_navbar_login a", "color:var(--o-navbar-login)");
+		Assert.assertEquals("var(--o-orange-400)", tokens.get("navbar-login"));
 		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-right .dropdown-menu", "background-color:var(--o-offcanvas-dropdown-bg)");
 		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-nav .active a", "color:var(--o-offcanvas-link-active)");
 		// table and tree

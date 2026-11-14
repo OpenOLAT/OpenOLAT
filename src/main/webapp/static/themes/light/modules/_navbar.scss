@@ -1,6 +1,6 @@
 #o_navbar_wrapper {
 	z-index: $o-navbar-z-index;
-	border-top: 1px solid $o-navbar-border-color;
+	border-top: 1px solid $o-navbar-border-color; // o-color-keep(client-value)
 	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
 
 	#o_navbar_container {
@@ -16,7 +16,7 @@ a.o_disabled.navbar-text {
 	position: relative;
 	min-height: $o-navbar-height; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
 	margin-bottom: $o-navbar-margin-bottom;
-	border: 1px solid $o-navbar-border-color;	
+	border: 1px solid $o-navbar-border-color; // o-color-keep(client-value)
 	background-color: var(--o-navbar-bg);
 	
 	// Prevent floats from breaking the navbar
@@ -101,7 +101,7 @@ a.o_disabled.navbar-text {
 			}
 		}
 		#o_navbar_login a {
-			color: $o-navbar-login-color;
+			color: var(--o-navbar-login);
 		}	
 	}
 	
@@ -492,8 +492,8 @@ body.o_dmz {
   	margin-left: -$o-navbar-padding-horizontal;
   	margin-right: -$o-navbar-padding-horizontal;
   	padding: 10px $o-navbar-padding-horizontal;
-  	border-top: 1px solid $o-navbar-border-color;
-  	border-bottom: 1px solid $o-navbar-border-color;
+  	border-top: 1px solid $o-navbar-border-color; // o-color-keep(client-value)
+  	border-bottom: 1px solid $o-navbar-border-color; // o-color-keep(client-value)
   	$shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent), 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
   	@include box-shadow($shadow);
 

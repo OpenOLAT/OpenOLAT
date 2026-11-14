@@ -669,6 +669,9 @@ $o-token-layer-framework: (
 	"navbar-highlight":                           (o-neutral(0), ()),
 	// the logout link of the personal menu
 	"navbar-logout":                               ($o-navbar-logout-color, ("state-danger-text",)),
+	// the login link of the navbar (OO-10043 slice 26). No contrast pair:
+	// the default has 1.99:1 on the white navbar
+	"navbar-login":                                ($o-navbar-login-color, ()),
 	// Offcanvas menu: the logout link and its hover, the link under the
 	// pointer ($o-offcanvas-link-hover-color) and the line under a category
 	// title (D29)
@@ -2536,7 +2539,7 @@ $o-token-state-fills: (
 		}
 	}
 	@if list.length($names) > 0 {
-		@warn "OpenOLAT theme: your config sets #{$names}. These variables do not change the rules of theme.css and content.css any more (one exception: the login link of the navigation bar, $o-navbar-login-color). They still feed email.css and the own rules of your theme. Change the colours with $o-palette, $o-states or $o-tokens, see themes.README. To hide this warning, set $o-legacy-color-warning: false; in your config.";
+		@warn "OpenOLAT theme: your config sets #{$names}. These variables do not change the rules of theme.css and content.css any more. They still feed email.css and the own rules of your theme. Change the colours with $o-palette, $o-states or $o-tokens, see themes.README. To hide this warning, set $o-legacy-color-warning: false; in your config.";
 	}
 }
 @if meta.global-variable-exists("o-legacy-color-values") {

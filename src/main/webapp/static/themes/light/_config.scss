@@ -393,7 +393,9 @@ $o-navbar-tab-close-color			: o-state-color("danger", "text") !default;
 // darker on hover; on a dark navbar the close colour itself when the darker colour has less than 3:1 (OO-10043)
 $o-navbar-tab-close-hover-color		: o-contrast-hover(o-scale-snap($o-navbar-tab-close-color, darken($o-navbar-tab-close-color, 10%)), $o-navbar-tab-close-color, $o-navbar-bg) !default;
 $o-navbar-tools-permanent-color		: o-a11y-color($navbar-default-color, $o-navbar-bg) !default;
-$o-navbar-login-color 				: $brand-warning !default;
+// the login link (token navbar-login): the palette step nearest to the
+// colour of before, $brand-warning #F2AF40 (OO-10043 slice 26)
+$o-navbar-login-color 				: o-palette("orange", 400) !default;
 $o-navbar-logout-color				: o-state-color("danger", "text") !default;
 $o-navbar-brand-font-size			: $font-size-large !default;
 $o-navbar-brand-height				: $navbar-height !default;

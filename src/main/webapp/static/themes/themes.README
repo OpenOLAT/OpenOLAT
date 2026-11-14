@@ -220,8 +220,10 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     (.btn-success, .btn-info, .btn-warning, alerts, labels, progress bars, form validation)
     and the message boxes. They do not read $brand-success, $brand-info, $brand-warning,
     $brand-danger or $state-{success,info,warning,danger}-{text,bg,border} any more. Your
-    values of these Bootstrap variables reach only email.css, the own rules of your theme and
-    the login link of the navigation bar ($o-navbar-login-color, default $brand-warning).
+    values of these Bootstrap variables reach only email.css and the own rules of your theme.
+    The login link of the navigation bar reads the token navbar-login ($o-navbar-login-color,
+    default orange-400). It does not follow $brand-warning any more: to keep your colour, set
+    $o-navbar-login-color or $o-tokens: ("navbar-login": ...).
     When your config sets one of them to a value other than the default of the light theme,
     the compile prints one warning for theme.css and one for content.css:
       WARNING: OpenOLAT theme: your config sets $brand-danger, ... These variables do not
