@@ -10,6 +10,8 @@
 @use "sass:math";
 @use "sass:map";
 @use "sass:list";
+@use "sass:meta";
+@use "sass:string";
 
 /* Contrast check of the theme colours (palette, theme colours, $o-tokens).
  * "error": a colour pair below its contrast ratio stops the compile.
@@ -328,4 +330,345 @@ $o-contrast-check: "error" !default;
 	}
 	$failed: o-contrast-failed("o-on-color: no candidate of (#{$candidates}) reaches #{$ratio}:1 on #{$bg}, best #{$best} with #{o-contrast-rounded($best, $bg)}:1");
 	@return $best;
+}
+
+/* The three colour scales of the theme (OO-10043 slice 25). The application
+ * reads colours only from these scales: the 12 chromatic hues of $o-palette
+ * (not slate and gray), the neutral scale $o-neutral (0 is white) and the
+ * brand ramp theme{n} (_palette_theme.scss). The functions below read the
+ * scales at the time of the call: in _config.scss after the import of
+ * _palette_neutral.scss, the brand ramp after $brand-primary.
+ */
+$o-scale-grey-hues: ("slate", "gray");
+// Below this OKLab chroma a colour has no visible hue: it maps to the
+// neutral scale only
+$o-scale-grey-chroma: 0.012;
+// A fixed colour maps to the brand ramp only below this distance to a brand
+// step (OKLab x 100): it is the brand colour itself
+$o-scale-brand-distance: 0.5;
+
+/* The colours of one family of the scales: "neutral", "palette" or "brand".
+ *
+ * @param {String} $family - "neutral", "palette" or "brand"
+ * @return {Map} name ("neutral-150", "orange-500", "theme1-600") -> colour
+ */
+@function o-scale-family($family) {
+	$colors: ();
+	@if $family == "neutral" {
+		@if meta.global-variable-exists("o-neutral") {
+			@each $step, $color in $o-neutral {
+				$colors: map.merge($colors, ("neutral-#{$step}": $color));
+			}
+		}
+		@return $colors;
+	}
+	@each $hue, $steps in $o-palette {
+		$brand: string.index($hue, "theme") == 1;
+		@if ($family == "brand" and $brand) or ($family == "palette" and not $brand and not list.index($o-scale-grey-hues, $hue)) {
+			@each $step, $color in $steps {
+				$colors: map.merge($colors, ("#{$hue}-#{$step}": $color));
+			}
+		}
+	}
+	@return $colors;
+}
+
+/* The distance of two colours in OKLab, times 100: 2 is about the smallest
+ * difference the eye sees between two fields side by side.
+ *
+ * @param {Color} $c1 - A colour
+ * @param {Color} $c2 - A colour
+ * @return {Number}
+ */
+@function o-scale-distance($c1, $c2) {
+	$a: color.to-space($c1, oklab);
+	$b: color.to-space($c2, oklab);
+	$dl: math.div(color.channel($a, "lightness", $space: oklab) - color.channel($b, "lightness", $space: oklab), 100%);
+	$da: color.channel($a, "a", $space: oklab) - color.channel($b, "a", $space: oklab);
+	$db: color.channel($a, "b", $space: oklab) - color.channel($b, "b", $space: oklab);
+	@return 100 * math.sqrt($dl * $dl + $da * $da + $db * $db);
+}
+
+/* The nearest colour of one family: (distance, name, colour)
+ */
+@function o-scale-best($color, $family) {
+	$best: null;
+	@each $name, $value in o-scale-family($family) {
+		$d: o-scale-distance($color, $value);
+		@if $best == null or $d < list.nth($best, 1) {
+			$best: ($d, $name, $value);
+		}
+	}
+	@return $best;
+}
+
+/* true when the brand ramp is a target of o-scale-nearest(): the theme
+ * config does not set an own $brand-primary. The ramp of an own brand colour
+ * is the colour of the client: a palette or neutral colour does not move
+ * into it.
+ */
+@function o-scale-brand-target() {
+	@return not (meta.global-variable-exists("o-brand-primary-from-theme") and $o-brand-primary-from-theme);
+}
+
+/* The scale colour that replaces a colour (rule of the OO-10043 colour
+ * inventory, propose() in build_unmapped_colors.py): a colour without a
+ * visible hue (OKLab chroma below $o-scale-grey-chroma) takes the nearest
+ * neutral step. A fixed colour does not follow the client brand: it takes the
+ * brand ramp only when it is the brand colour itself (distance below
+ * $o-scale-brand-distance to a brand step), else the nearest colour of the
+ * neutral scale and the palette. A colour that derives from the brand colour
+ * ($brand-source: true) takes the nearest step of the brand ramp.
+ *
+ * @param {Color} $color - The colour
+ * @param {Boolean} $brand-source - true: the colour derives from the brand ramp
+ * @return {List} (name, colour), e.g. ("neutral-500", #657286)
+ */
+@function o-scale-nearest($color, $brand-source: false) {
+	$ramp: null;
+	@if o-scale-brand-target() {
+		$ramp: o-scale-best($color, "brand");
+		@if $brand-source and $ramp != null {
+			@return (list.nth($ramp, 2), list.nth($ramp, 3));
+		}
+	}
+	$lab: color.to-space($color, oklab);
+	$a: color.channel($lab, "a", $space: oklab);
+	$b: color.channel($lab, "b", $space: oklab);
+	$neutral: o-scale-best($color, "neutral");
+	@if math.sqrt($a * $a + $b * $b) < $o-scale-grey-chroma {
+		@return (list.nth($neutral, 2), list.nth($neutral, 3));
+	}
+	@if $ramp != null and list.nth($ramp, 1) < $o-scale-brand-distance {
+		@return (list.nth($ramp, 2), list.nth($ramp, 3));
+	}
+	$found: $neutral;
+	$palette: o-scale-best($color, "palette");
+	@if $palette != null and list.nth($palette, 1) < list.nth($neutral, 1) {
+		$found: $palette;
+	}
+	@return (list.nth($found, 2), list.nth($found, 3));
+}
+
+/* true when a colour is a step of the brand ramp and the ramp is a target
+ * (o-scale-brand-target())
+ */
+@function o-scale-is-brand($color) {
+	@if not o-scale-brand-target() or meta.type-of($color) != "color" {
+		@return false;
+	}
+	@each $name, $value in o-scale-family("brand") {
+		@if $value == $color {
+			@return true;
+		}
+	}
+	@return false;
+}
+
+/* The steps of the scale of the nearest colour (o-scale-nearest()), nearest
+ * first: the candidates of a shade token that must keep a contrast pair.
+ *
+ * @param {Color} $color - The colour
+ * @param {Boolean} $brand-source - true: the colour derives from the brand ramp
+ * @return {List} the colours of the family, sorted by the distance to $color
+ */
+@function o-scale-candidates($color, $brand-source: false) {
+	$hue: list.nth(o-scale-split(list.nth(o-scale-nearest($color, $brand-source), 1)), 1);
+	$steps: $o-neutral;
+	@if $hue != "neutral" {
+		$steps: map.get($o-palette, $hue);
+	}
+	$rest: map.values($steps);
+	$sorted: ();
+	@while list.length($rest) > 0 {
+		$best: 1;
+		@for $i from 1 through list.length($rest) {
+			@if o-scale-distance($color, list.nth($rest, $i)) < o-scale-distance($color, list.nth($rest, $best)) {
+				$best: $i;
+			}
+		}
+		$sorted: list.append($sorted, list.nth($rest, $best), $separator: comma);
+		$left: ();
+		@for $i from 1 through list.length($rest) {
+			@if $i != $best {
+				$left: list.append($left, list.nth($rest, $i), $separator: comma);
+			}
+		}
+		$rest: $left;
+	}
+	@return $sorted;
+}
+
+/* The steps of the scale of a scale colour (its palette hue, the neutral
+ * scale or its brand ramp), sorted by the distance to $target: the
+ * candidates of a shade token, which never leaves the scale of its source
+ * (OO-10043 slice 25). An empty list for a colour that is no scale step.
+ *
+ * @param {Color} $source - The scale colour the shade starts from
+ * @param {Color} $target - The computed shade
+ * @return {List}
+ */
+@function o-scale-source-candidates($source, $target) {
+	$steps: null;
+	@each $step, $value in $o-neutral {
+		@if $value == $source {
+			$steps: $o-neutral;
+		}
+	}
+	@if $steps == null {
+		@each $hue, $hue-steps in $o-palette {
+			@if $steps == null and (o-scale-brand-target() or string.index($hue, "theme") != 1) {
+				@each $step, $value in $hue-steps {
+					@if $value == $source {
+						$steps: $hue-steps;
+					}
+				}
+			}
+		}
+	}
+	@if $steps == null {
+		@return ();
+	}
+	$rest: map.values($steps);
+	$sorted: ();
+	@while list.length($rest) > 0 {
+		$best: 1;
+		@for $i from 1 through list.length($rest) {
+			@if o-scale-distance($target, list.nth($rest, $i)) < o-scale-distance($target, list.nth($rest, $best)) {
+				$best: $i;
+			}
+		}
+		$sorted: list.append($sorted, list.nth($rest, $best), $separator: comma);
+		$left: ();
+		@for $i from 1 through list.length($rest) {
+			@if $i != $best {
+				$left: list.append($left, list.nth($rest, $i), $separator: comma);
+			}
+		}
+		$rest: $left;
+	}
+	@return $sorted;
+}
+
+/* A step name split into hue and step: "neutral-500" -> ("neutral", "500")
+ */
+@function o-scale-split($name) {
+	$dash: null;
+	@for $i from string.length($name) through 1 {
+		@if $dash == null and string.slice($name, $i, $i) == "-" {
+			$dash: $i;
+		}
+	}
+	@return (string.slice($name, 1, $dash - 1), string.slice($name, $dash + 1));
+}
+
+/* true when a colour is the colour of a default: a colour of $o-palette
+ * (all 14 hues), of the neutral scale or of the brand ramp. The brand ramp
+ * counts only when the theme config does not set $brand-primary: the ramp
+ * of an own brand colour is the colour of the client
+ * ($o-brand-primary-from-theme in _config.scss).
+ *
+ * @param {Color} $color - The colour
+ * @return {Boolean}
+ */
+@function o-scale-has($color) {
+	@if meta.type-of($color) != "color" or color.channel($color, "alpha") < 1 {
+		@return false;
+	}
+	@if meta.global-variable-exists("o-neutral") {
+		@each $step, $value in $o-neutral {
+			@if $value == $color {
+				@return true;
+			}
+		}
+	}
+	@each $hue, $steps in $o-palette {
+		@if o-scale-brand-target() or string.index($hue, "theme") != 1 {
+			@each $step, $value in $steps {
+				@if $value == $color {
+					@return true;
+				}
+			}
+		}
+	}
+	@return false;
+}
+
+/* The colour of a colour maths default (darken(), lighten(), mix()) whose
+ * source is a colour of a default (o-scale-has()): the nearest step of the
+ * scale of the result (o-scale-candidates(), OO-10043 slice 25). The step
+ * differs from the source, so that a hover colour stays visible; a border
+ * of a fill passes $distinct: false and may get the colour of the fill.
+ * A source of the brand ramp gives a step of the brand ramp.
+ * With $fg, the step keeps $ratio for that text when the result keeps it;
+ * else the next nearest step of the same scale. A source that is the own
+ * colour of a client theme, or a scale without such a step, keeps the
+ * computed result.
+ *
+ * @param {Color} $source - The colour the maths starts from
+ * @param {Color} $result - The result of the maths
+ * @param {Boolean} $distinct - false: the result may be the source
+ * @param {Color} $fg - The text on the result, or null
+ * @param {Number} $ratio - The contrast ratio of $fg, default 4.5
+ * @return {Color}
+ */
+@function o-scale-snap($source, $result, $distinct: true, $fg: null, $ratio: 4.5) {
+	@if not o-scale-has($source) {
+		@return $result;
+	}
+	@each $candidate in o-scale-candidates($result, o-scale-is-brand($source)) {
+		$ok: not ($distinct and $candidate == $source and o-color-round($result) != o-color-round($source));
+		@if $ok and $fg != null {
+			@if contrast($fg, $candidate) < $ratio and contrast($fg, $result) >= $ratio {
+				$ok: false;
+			}
+		}
+		@if $ok {
+			@return $candidate;
+		}
+	}
+	@return $result;
+}
+
+/* A scale colour as text or mark on a fill (OO-10043 slice 25): the colour
+ * when it reaches the contrast ratio on the fill, else the nearest step of
+ * its scale that reaches it (o-scale-candidates()). A colour that is not a
+ * colour of a default (the own colour of a client theme), or a scale
+ * without such a step, keeps the colour.
+ *
+ * @param {Color} $color - The text or mark colour, a scale step
+ * @param {Color} $bg - The fill
+ * @param {Number} $ratio - The minimum contrast ratio, default 4.5
+ * @return {Color}
+ */
+@function o-scale-on-color($color, $bg, $ratio: 4.5) {
+	@if contrast($color, $bg) >= $ratio or not o-scale-has($color) {
+		@return $color;
+	}
+	@each $candidate in o-scale-candidates($color, o-scale-is-brand($color)) {
+		@if contrast($candidate, $bg) >= $ratio {
+			@return $candidate;
+		}
+	}
+	@return $color;
+}
+
+/* A text colour adjusted for its background (OO-10043 slice 25): for a scale
+ * colour the nearest step of its scale with the ratio (o-scale-on-color();
+ * a brand step stays in the brand ramp), for any other colour (the own
+ * colour of a client theme) or when no step passes o-a11y-color().
+ *
+ * @param {Color} $color - The text colour
+ * @param {Color} $bg - The background
+ * @param {Number} $ratio - The minimum contrast ratio, default 4.5
+ * @return {Color}
+ */
+@function o-scale-a11y-color($color, $bg, $ratio: 4.5) {
+	@if o-scale-has($color) {
+		$step: o-scale-on-color($color, $bg, $ratio);
+		@if contrast($step, $bg) >= $ratio {
+			@return $step;
+		}
+	}
+	@return o-a11y-color($color, $bg, $ratio);
 }

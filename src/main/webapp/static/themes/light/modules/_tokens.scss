@@ -20,13 +20,19 @@
  *   component   the elements of one feature module: course, tests, forum,
  *               chat, ... ($o-token-layer-component)
  *
- * Literal colours exist only in the palette and in the shade tokens. Every
- * other token is a var() reference: to a semantic token, to a palette step,
- * to another token or to its base colour.
+ * The tokens read colours only from three scales (OO-10043 slice 25): the
+ * palette (12 chromatic hues), the neutral scale with white and the brand
+ * ramp theme{n}. Every token is a var() reference: to a semantic token, to
+ * a scale step, to another token or to its base colour. A literal value
+ * remains only for the own colour of a client theme and for a calculated
+ * text colour on a fill (o-a11y-color(), o-on-color()).
  *
- * The base colours carry the colour inputs of the theme 1:1 ($text-color,
- * $brand-primary, $link-color, $o-navbar-bg, ...). A client theme keeps
- * setting them in its config as before.
+ * The base colours carry the colour inputs of the theme ($text-color,
+ * $brand-primary, $link-color, $o-navbar-bg, ...). The defaults of
+ * _config.scss read the scales (o-neutral(150), o-palette("orange", 500),
+ * o-palette("theme1", 600)), a colour maths default reads the nearest scale
+ * step of its result (o-scale-snap(), _functions.scss). A client theme
+ * keeps setting the Sass variables in its config as before.
  *
  * An element token (global element, framework or component) has one of two
  * defaults:
@@ -34,9 +40,10 @@
  *   ($sass-variable, (tokens))
  *       The Sass variable of the theme config. A client theme keeps setting
  *       it as before. The token reads the first token of the list whose
- *       default has the same colour, else the palette step with the same
- *       colour, else its base colour --o-base-{name}. The Sass variable
- *       holds a colour: "none" or "!important" stops the compile.
+ *       default has the same colour, else the scale step with the same
+ *       colour (palette, brand ramp, neutral scale), else its base colour
+ *       --o-base-{name}. The Sass variable holds a colour: "none" or
+ *       "!important" stops the compile.
  *       The default can also be a Sass expression: the text colour that
  *       o-a11y-color() adjusts for the background of one rule, e.g.
  *       o-a11y-color($link-color, $panel-default-heading-bg) for
@@ -80,7 +87,10 @@
  * semantic token, e.g. --o-btn-primary-bg-hover. The compile computes it
  * from the colour of its token with darken(), lighten() or a turn of the hue
  * ($o-token-shades):
- * there is no colour maths in the browser. A shade token follows an
+ * there is no colour maths in the browser. When the colour of its token is
+ * a scale step, the shade reads the nearest step of the same scale that
+ * differs from the token and keeps the contrast pairs of the shade
+ * (o-token-shade-scale()); else it keeps the computed colour. A shade token follows an
  * override of its token, and $o-tokens overrides it like every other token.
  * A stylesheet that redefines a token at run time (dark mode) redefines its
  * shade tokens too. The mixin button-variant reads the shade tokens of the
@@ -146,8 +156,8 @@ $o-token-base: (
 	"border-subtle": $hr-border,
 	"border-strong": $input-border,
 	"primary": $brand-primary,
-	"primary-fg": o-a11y-color(#fff, $brand-primary),
-	"primary-hover": color.adjust($brand-primary, $lightness: -10%, $space: hsl),
+	"primary-fg": o-a11y-color(o-neutral(0), $brand-primary),
+	"primary-hover": o-scale-snap($brand-primary, color.adjust($brand-primary, $lightness: -10%, $space: hsl)),
 	"primary-text": $o-brand-text,
 	"link": $link-color,
 	"link-hover": $link-hover-color,
@@ -156,16 +166,27 @@ $o-token-base: (
 	// transparency: color-mix(in srgb, var(--o-backdrop) 50%, transparent).
 	// shadow-color: the Bootstrap shadows, rgba(0, 0, 0, a), and the shadows
 	// of panels, dropdowns, cards and the login box (decision D3 of OO-10043)
-	"shadow-color": #000000,
+	"shadow-color": o-neutral(1000),
 	// backdrop: the layer behind a modal dialog ($modal-backdrop-bg)
 	"backdrop": $modal-backdrop-bg,
 	// scrim: the light veil over content, an image or a video below a text
 	// or a progress indicator, rgba(255, 255, 255, a)
-	"scrim": #FFFFFF
+	"scrim": o-neutral(0)
 );
 
 // The swatch roles of the state tokens --o-state-{state}-{role}
 $o-token-state-roles: ("text", "bg", "fg", "border", "soft-bg", "soft-fg", "soft-border");
+
+// The background of the peekview of a styled course element for the
+// contrast of its link: the translucent $o-cn-style-peekview-bg on top of the
+// background of the course element. A color-mix() value (the default, the
+// token shadow-color with 2%) gives the background of the course element.
+@function o-token-peekview-bg() {
+	@if meta.type-of($o-cn-style-peekview-bg) == "color" {
+		@return color.mix(color.change($o-cn-style-peekview-bg, $alpha: 1), $o-cn-style-bg, color.channel($o-cn-style-peekview-bg, "alpha") * 100%);
+	}
+	@return $o-cn-style-bg;
+}
 
 // Element tokens --o-{name} of the three layers, see the file header:
 // ($sass-variable, (tokens)) or "token-name" as default.
@@ -369,13 +390,13 @@ $o-token-layer-framework: (
 	// style are $o-{name}-border-width and $o-{name}-border-style (D31). The
 	// fact sheet follows the information page of a learning resource.
 	"fact-icon-bg":                                ($o-fact-icon-bg-color, ()),
-	"card-border":                                 (#E4E7EC, ()),
+	"card-border":                                 (o-neutral(150), ()),
 	// the fill of a certificate thumbnail ($o-card-bg-color)
 	"card-bg":                                     ($o-card-bg-color, ()),
-	"widget-border":                               (#E4E7EC, ()),
+	"widget-border":                               (o-neutral(150), ()),
 	"fact-sheet-border":                           "repo-info-border",
 	"fact-sheet-separator-border":                 "repo-info-separator-border",
-	"dashboard-widget-border":                     (#E4E7EC, ()),
+	"dashboard-widget-border":                     (o-neutral(150), ()),
 	// Context help
 	"chelp-bg":                                   ($o-chelp-bg, ("btn-primary-bg",)),
 	"chelp-border":                               ($o-chelp-border, ("btn-primary-border",)),
@@ -421,17 +442,17 @@ $o-token-layer-framework: (
 	// of the icon (color-mix() of primary by default, D31); the icon panel: the
 	// border (width and style $o-icon-panel-border-width, -style, D31), the
 	// fill of the icon column and of the content column
-	"empty-border":                                (#E4E7EC, ()),
+	"empty-border":                                (o-neutral(150), ()),
 	"empty-indicator":                             ($o-empty-indicator-color, ()),
 	"empty-icon":                                  ($o-empty-icon-color, ()),
 	"empty-panel-icon-bg":                         ($o-empty-panel-icon-bg-color, ()),
-	"icon-panel-border":                           (#E4E7EC, ()),
+	"icon-panel-border":                           (o-neutral(150), ()),
 	"icon-panel-icon-bg":                          ($o-icon-panel-icon-bg-color, ()),
 	"icon-panel-content-bg":                       ($o-icon-panel-content-bg-color, ("panel-bg",)),
 	// the not available visual ($o-not-available-bg): the dark and the light
 	// stops of its gradients, each mixed with transparent
-	"not-available-dark":                         (#000000, ()),
-	"not-available-light":                        (#FFFFFF, ()),
+	"not-available-dark":                         (o-neutral(1000), ()),
+	"not-available-light":                        (o-neutral(0), ()),
 	"indicator-label":                            "text-muted",
 	// the line between the indicators (width and style
 	// $o-indicator-separator-border-width, -style, D31)
@@ -527,9 +548,9 @@ $o-token-layer-framework: (
 	// the radio card under the pointer and the checked radio card
 	"radio-card-hover-border":                    ($o-radio-card-border-color-hover, ()),
 	"radio-card-hover-bg":                        ($o-radio-card-bg-hover, ()),
-	"radio-card-checked-border":                  ($o-radio-card-border-color-checked, ()),
+	"radio-card-checked-border":                  ($o-radio-card-border-color-checked, ("primary",)),
 	"radio-card-checked-bg":                      ($o-radio-card-bg-checked, ()),
-	"radio-card-checked-label":                   ($o-radio-card-label-color-checked, ()),
+	"radio-card-checked-label":                   ($o-radio-card-label-color-checked, ("primary-text",)),
 	// the fill of a radio card; the text of the selected item of the colour
 	// picker and of the icon selector ($o-bright-text-and-border)
 	"radio-card-bg":                               ($o-radio-card-bg, ("input-bg",)),
@@ -547,7 +568,7 @@ $o-token-layer-framework: (
 	"toggle-on-border":                           "primary",
 	// the text of the toggle in the off position: the muted text, adjusted to
 	// 4.5:1 on the track (decision D9 of OO-10043)
-	"toggle-text":                                (o-a11y-color($text-muted, $o-toggle-bg), ("text-muted",)),
+	"toggle-text":                                (o-scale-a11y-color($text-muted, $o-toggle-bg), ("text-muted",)),
 	// the toggle switch (.o_button_toggle): border, track, handle, and the
 	// handle and the text of the switch in the on position
 	"toggle-border":                              ($o-toggle-border-color, ()),
@@ -560,11 +581,11 @@ $o-token-layer-framework: (
 	// Labels without a status class (.o_labeled, .o_labeled_light): text, fill
 	// and border, fixed colours of the palette (the status labels read the
 	// state tokens, _states.scss)
-	"labeled-fg":                                 (#FFFFFF, ()),
+	"labeled-fg":                                 (o-neutral(0), ()),
 	"labeled-bg":                                 (o-palette("gray", 600), ()),
 	"labeled-border":                             (o-palette("gray", 700), ()),
 	"labeled-light-fg":                           (o-palette("gray", 600), ()),
-	"labeled-light-bg":                           (#FFFFFF, ()),
+	"labeled-light-bg":                           (o-neutral(0), ()),
 	"labeled-light-border":                       (o-palette("gray", 600), ()),
 	// Login page
 	"login-header":                             ($o-login-header-color, ("primary-text", "primary")),
@@ -585,9 +606,9 @@ $o-token-layer-framework: (
 	// the one-time code field (registration, mail validation, password
 	// change): the fill of a code cell and of the active cell, the caret;
 	// fixed colours (decision D29 of OO-10043)
-	"otp-cell-bg":                                (#EEEEEE, ()),
-	"otp-cell-active-bg":                         (#BBBBBB, ()),
-	"otp-caret":                                  (#222222, ()),
+	"otp-cell-bg":                                (o-neutral(100), ()),
+	"otp-cell-active-bg":                         (o-neutral(400), ()),
+	"otp-caret":                                  (o-palette("gray", 900), ()),
 	// Menu tree
 	"tree-link":                                  ($o-tree-link-color, ("nav-link",)),
 	"tree-link-hover":                            ($o-tree-link-hover-color, ("nav-link-hover",)),
@@ -598,7 +619,7 @@ $o-token-layer-framework: (
 	"tree-link-active-parent":                    ($o-tree-link-active-parent-color, ("tree-link",)),
 	"tree-link-active-parent-hover":              ($o-tree-link-active-parent-hover-color, ("tree-link-hover",)),
 	// the drop target while an item is dragged: a fixed yellow (D29)
-	"tree-dnd-over-bg":                           (#FFFF60, ()),
+	"tree-dnd-over-bg":                           (o-palette("yellow", 300), ()),
 	// the border of the tree, of its items and of the drag proxy
 	"tree-border":                                 ($o-tree-border-color, ()),
 	// the move dialog of a tree: a disabled control, the item to move
@@ -645,7 +666,7 @@ $o-token-layer-framework: (
 	"navbar-focus":                               (o-a11y-color(o-contrast-hover($o-focus-color, $o-navbar-link-color, $o-navbar-bg, 3), $o-navbar-bg, 3), ("focus", "navbar-link")),
 	// the white highlight line at the top of the navbar (box-shadow inset),
 	// mixed with transparent
-	"navbar-highlight":                           (#FFFFFF, ()),
+	"navbar-highlight":                           (o-neutral(0), ()),
 	// the logout link of the personal menu
 	"navbar-logout":                               ($o-navbar-logout-color, ("state-danger-text",)),
 	// Offcanvas menu: the logout link and its hover, the link under the
@@ -654,7 +675,7 @@ $o-token-layer-framework: (
 	"offcanvas-logout":                           ($o-offcanvas-logout-color, ()),
 	"offcanvas-logout-hover":                     ($o-offcanvas-logout-hover-color, ()),
 	"offcanvas-link-hover":                       ($o-offcanvas-link-hover-color, ()),
-	"offcanvas-category-border":                  (#888888, ()),
+	"offcanvas-category-border":                  (o-neutral(450), ()),
 	// the links of the offcanvas menu, the fill under the pointer, the fill
 	// of a dropdown, the active link and its fill
 	"offcanvas-link":                              ($o-offcanvas-link-color, ()),
@@ -708,11 +729,11 @@ $o-token-layer-framework: (
 	"table-filter-collapse-border":                ($o-table-filter-collapse-color, ()),
 	// the border of the box in a details row (width and style
 	// $o-table-details-container-border-width, -style, D31)
-	"table-details-container-border":              (#E4E7EC, ()),
+	"table-details-container-border":              (o-neutral(150), ()),
 	// the fill of a sticky column of a scrolled table, in a row and in a
 	// striped row: a fixed shade that shows the sticky state (D29)
-	"table-sticky-col-bg":                        (#FAFAFA, ()),
-	"table-sticky-col-striped-bg":                (#F5F5F5, ()),
+	"table-sticky-col-bg":                        (o-neutral(25), ()),
+	"table-sticky-col-striped-bg":                (o-neutral(50), ()),
 	// the filter buttons above a table (.o_table_filter), the active and the
 	// open filter: the border colour of the primary button by default
 	"table-filter-fg":                            ($o-table-filter-color, ("btn-primary-border", "text")),
@@ -838,7 +859,7 @@ $o-token-layer-component: (
 	"cal-desc-bg":                                 ($o-cal-desc-background-color, ()),
 	// Badges
 	"badge-row-expanded-link":                    (o-a11y-color($link-color, $o-table-details-bg), ("link",)),
-	"badge-row-expanded-link-hover":              (o-a11y-color($link-color, darken($o-table-details-bg, 10%)), ("badge-row-expanded-link", "link")),
+	"badge-row-expanded-link-hover":              (o-scale-a11y-color($link-color, darken($o-table-details-bg, 10%)), ("badge-row-expanded-link", "link")),
 	// the text of a badge status: the text of the state, adjusted for the toolbar background
 	"badge-status-info":                          (o-a11y-color(o-state-color("neutral", "text"), $o-toolbar-bg-color), ("state-neutral-text",)),
 	"badge-status-success":                       (o-a11y-color(o-state-color("success", "text"), $o-toolbar-bg-color), ("state-success-text",)),
@@ -846,7 +867,7 @@ $o-token-layer-component: (
 	"badge-status-danger":                        (o-a11y-color(o-state-color("danger", "text"), $o-toolbar-bg-color), ("state-danger-text",)),
 	// the pressed and the selected template card of the badge wizard: a
 	// fixed grey, darker than the hover fill bg-hover (D29)
-	"badge-template-selected-bg":                 (#DDDDDD, ()),
+	"badge-template-selected-bg":                 (o-palette("gray", 200), ()),
 	// the meta line of a badge or certificate row ($o-export-area-meta-color)
 	"export-area-meta":                            ($o-export-area-meta-color, ()),
 	// Credit points: the amount of a debit and of a credit; course quota: the
@@ -899,10 +920,10 @@ $o-token-layer-component: (
 	// the text of a selected competence on the white competence fill: the text
 	// of the selected tag, adjusted to 4.5:1 on the pressed fill
 	// (competence-bg-active) when it is too light (decision D8 of OO-10043)
-	"competence-selected":                        (o-a11y-color($o-button-dirty-color, darken(#FFFFFF, 15%)), ("tag-selected-fg",)),
+	"competence-selected":                        (o-a11y-color($o-button-dirty-color, darken(o-neutral(0), 15%)), ("tag-selected-fg",)),
 	"competence-selected-border":                 ($o-competences-selected-border-color, ("btn-dirty-border",)),
 	// the competence and taxonomy tag: fill (white) and border
-	"competence-bg":                              (#FFFFFF, ()),
+	"competence-bg":                              (o-neutral(0), ()),
 	"competence-border":                          ($o-competences-color, ()),
 	// the text of a competence ($o-competences-font-color)
 	"competence-fg":                               ($o-competences-font-color, ("competence-border",)),
@@ -915,7 +936,7 @@ $o-token-layer-component: (
 	"editor-media-unavailable":                   ($gray-lighter, ()),
 	// the links of the toolbar of a page part in the editor (white on the
 	// toolbar; a disabled link mixes it at 50% with transparent)
-	"editor-part-toolbar-link":                   (#FFFFFF, ()),
+	"editor-part-toolbar-link":                   (o-neutral(0), ()),
 	// the border of an image with the style shadow: the rule mixes it at 15%
 	// with transparent ($gray)
 	"editor-image-shadow-border":                 ($gray, ()),
@@ -937,7 +958,7 @@ $o-token-layer-component: (
 	"editor-edit-bg":                              ($o-editor-edit-background-color, ()),
 	"editor-alert-box-active-border":              ($o-color-light-gray, ()),
 	// the code box of a page: 5% of the light grey of the colour chooser on white
-	"page-code-box-bg":                           (color.mix($o-color-light-gray, #FFFFFF, 5%), ()),
+	"page-code-box-bg":                           (o-scale-snap($o-color-light-gray, color.mix($o-color-light-gray, o-neutral(0), 5%)), ()),
 	// the border of a table of a page: the rule mixes it at 10% with
 	// transparent ($gray-base)
 	"page-table-border":                          ($gray-base, ()),
@@ -952,12 +973,13 @@ $o-token-layer-component: (
 	// and of the details button of a table: the colour of the old shorthand
 	// $o-cn-style-border (decision D19 of OO-10043); width and style are
 	// $o-cn-style-border-line-width and $o-cn-style-border-line-style
-	"course-style-border":                        (#E4E7EC, ("border",)),
+	"course-style-border":                        (o-neutral(150), ("border",)),
 	"course-style-image-bg":                      ($o-cn-style-image-bg, ("primary",)),
 	"course-style-link":                          "link-subtle",
 	// The peekview background is translucent: the link is adjusted for the
 	// peekview background on top of the background of the course element
-	"course-style-peekview-link":                 (o-a11y-color($link-color, color.mix(color.change($o-cn-style-peekview-bg, $alpha: 1), $o-cn-style-bg, color.channel($o-cn-style-peekview-bg, "alpha") * 100%)), ("link",)),
+	// (o-token-peekview-bg())
+	"course-style-peekview-link":                 (o-a11y-color($link-color, o-token-peekview-bg()), ("link",)),
 	"course-assessment-part-bg":                  "bg-subtle",
 	// the list of the assessment modes: the line and the fill of a mode of
 	// today and of a mode that ends soon; the line of the inspection code
@@ -966,7 +988,7 @@ $o-token-layer-component: (
 	"assessment-mode-today-bg":                    ($o-assessment-mode-today-bg, ("state-success-soft-bg",)),
 	"assessment-mode-end-soon-border":             ($o-assessment-mode-end-soon-border-color, ("state-danger-text",)),
 	"assessment-mode-end-soon-bg":                 ($o-assessment-mode-end-soon-bg, ("state-danger-soft-bg",)),
-	"assessment-inspection-border":                (#D0D5DD, ()),
+	"assessment-inspection-border":                (o-neutral(250), ()),
 	"course-state-failed":                        "state-danger-text",
 	"course-state-passed":                        ($o-course-state-passed-color, ("state-success-text",)),
 	"course-state-unknown":                       "state-warning-text",
@@ -1022,7 +1044,7 @@ $o-token-layer-component: (
 	// $o-step-border-line-width, -style, D31 Q1), the fill of its header, the
 	// line of a step, the dashed line of an active, of a not available and of
 	// an expired step, the icon of a not available step
-	"step-border":                                 (#E4E7EC, ()),
+	"step-border":                                 (o-neutral(150), ()),
 	"step-border-header-bg":                       ($o-step-border-header-bg-color, ()),
 	"step-marker":                                 ($o-step-color, ()),
 	"step-active-marker":                          ($o-step-active-marker-color, ("step-marker",)),
@@ -1069,13 +1091,13 @@ $o-token-layer-component: (
 	// separator: the colour of the old shorthand variables; width and style
 	// $o-repo-info-border-width, -style, $o-repo-info-separator-border-width,
 	// -style (D31)
-	"repo-info-border":                            (#D4D4D4, ()),
-	"repo-info-separator-border":                  (#D4D4D4, ()),
+	"repo-info-border":                            (o-neutral(250), ()),
+	"repo-info-separator-border":                  (o-neutral(250), ()),
 	// the billing address: the fill, the border (width and style
 	// $o-ac-ba-border-width, -style, D31 Q1) and the fill of a temporary
 	// address
 	"ac-billing-address-bg":                       ($o-ac-ba-bg-color, ()),
-	"ac-billing-address-border":                   (#D0D5DD, ()),
+	"ac-billing-address-border":                   (o-neutral(250), ()),
 	"ac-billing-address-temporary-bg":             ($o-ac-ba-no-ident-bg-color, ()),
 	// Curriculum
 	"curriculum-avatar-bg":                       "primary",
@@ -1088,8 +1110,8 @@ $o-token-layer-component: (
 	// ignored
 	"curriculum-element-inactive":                 ($o-curriculum-element-inactive-color, ()),
 	"curriculum-avatar-fg":                        ($o-curriculum-avatar-color, ()),
-	"curriculum-widget-card-border":               (#D0D5DD, ()),
-	"curriculum-widget-border":                    (#E4E7EC, ()),
+	"curriculum-widget-card-border":               (o-neutral(250), ()),
+	"curriculum-widget-border":                    (o-neutral(150), ()),
 	"curriculum-widget-bg":                        ($o-curriculum-widget-bg-color, ("panel-bg",)),
 	"curriculum-widget-template-label-bg":         ($o-curriculum-widget-template-label-bg, ()),
 	"curriculum-import-error-bg":                  ($o-curriculum-import-bg-error, ()),
@@ -1125,7 +1147,7 @@ $o-token-layer-component: (
 	// the outline of an image thumbnail of a folder row (width and style
 	// $o-folder-row-thumbnail-image-border-width, -style, D31 Q1), the icon of
 	// a file card
-	"folder-row-thumbnail-image-border":           (#E4E7EC, ()),
+	"folder-row-thumbnail-image-border":           (o-neutral(150), ()),
 	"folder-card-thumbnail-icon":                  ($o-folder-card-thumbnail-icon-color, ()),
 	// Forum
 	"forum-message-footer-bg":                    "forum-message-header-bg",
@@ -1163,7 +1185,7 @@ $o-token-layer-component: (
 	// the border of the podium (width and style $o-hs-podium-border-width,
 	// -style, D31), the rank numbers on the podium, the text and the axes of
 	// the histogram, the bar of the other participants and of an empty class
-	"highscore-podium-border":                     (#D9D9D9, ()),
+	"highscore-podium-border":                     (o-neutral(200), ()),
 	"highscore-rank-first":                        ($o-hs-rank-first-color, ()),
 	"highscore-rank-second":                       ($o-hs-rank-second-color, ()),
 	"highscore-rank-third":                        ($o-hs-rank-third-color, ()),
@@ -1198,7 +1220,7 @@ $o-token-layer-component: (
 	"practice-play-main-border":                  "primary",
 	"practice-rank-me":                           "primary",
 	// the large decorative icon of a mode card and of the statistics box
-	"practice-icon":                              (#CCCCCC, ()),
+	"practice-icon":                              (o-neutral(300), ()),
 	// the colour of a level of the practice progress: bar, legend icon, pie
 	// chart; the boxes of the play page and the fill of the start link (the
 	// main box: color-mix() of primary by default, D31)
@@ -1226,15 +1248,15 @@ $o-token-layer-component: (
 	// the inactive state, as today). Authentication: the border of the panel
 	// (width and style $o-panel-authentication-border-width, -style, D31), the
 	// colours of the levels 1 to 3
-	"user-info-portrait-border":                   (#FFFFFF, ()),
+	"user-info-portrait-border":                   (o-neutral(0), ()),
 	"user-initials-fg":                            ($o-user-initials-color, ()),
 	"user-initials-base-bg":                       ($o-user-initials-base-bg-color, ()),
-	"user-info-profile-border":                    (#CCCCCC, ()),
+	"user-info-profile-border":                    (o-neutral(300), ()),
 	"user-status-inactive-border":                 (o-state-color("inactive", "border", "tint"), ()),
 	"user-status-deleted-border":                  (o-state-color("inactive", "border", "dark"), ()),
-	"user-info-border":                            (#D4D4D4, ()),
+	"user-info-border":                            (o-neutral(250), ()),
 	"user-info-divider-border":                    "user-info-border",
-	"panel-authentication-border":                 (#E4E7EC, ()),
+	"panel-authentication-border":                 (o-neutral(150), ()),
 	"authentication-level1":                       ($o-authentication-color-level1, ()),
 	"authentication-level2":                       ($o-authentication-color-level2, ()),
 	"authentication-level3":                       ($o-authentication-color-level3, ()),
@@ -1254,14 +1276,14 @@ $o-token-layer-component: (
 	// fill. The text keeps 4.5:1 on the fill, the hover and the pressed fill
 	// (decision D9 of OO-10043): B has a dark text, adjusted for its pressed
 	// fill; C has a red fill, darkened until the white text passes.
-	"selectus-rating-a-bg":                       (green, ()),
-	"selectus-rating-a-fg":                       (white, ()),
-	"selectus-rating-b-bg":                       (#FFCD00, ()),
-	"selectus-rating-b-fg":                       (o-a11y-color(white, darken(#FFCD00, 17%)), ()),
-	"selectus-rating-c-bg":                       (o-a11y-color(red, white), ()),
-	"selectus-rating-c-fg":                       (white, ()),
-	"selectus-rating-abstain-bg":                 (#555566, ()),
-	"selectus-rating-abstain-fg":                 (white, ()),
+	"selectus-rating-a-bg":                       (o-palette("green", 500), ()),
+	"selectus-rating-a-fg":                       (o-neutral(0), ()),
+	"selectus-rating-b-bg":                       (o-palette("yellow", 400), ()),
+	"selectus-rating-b-fg":                       (o-scale-on-color(o-neutral(900), darken(o-palette("yellow", 400), 17%)), ()),
+	"selectus-rating-c-bg":                       (o-palette("red", 500), ()),
+	"selectus-rating-c-fg":                       (o-neutral(0), ()),
+	"selectus-rating-abstain-bg":                 (o-neutral(600), ()),
+	"selectus-rating-abstain-fg":                 (o-neutral(0), ()),
 	// the yellow of rating B as text and as mark on the background: the letter
 	// in the explanation of the rating policy (4.5:1) and the mark of the
 	// overview and of the own rating (3:1, non-text); the marks A and C and
@@ -1269,9 +1291,9 @@ $o-token-layer-component: (
 	// The letters B and C and the mark B keep their contrast on a white, a
 	// striped and a hovered table row: adjusted against the darkest of the
 	// three (decision D26).
-	"selectus-rating-b-text":                     (o-a11y-color(#FFCD00, o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)), ()),
-	"selectus-rating-b-marker":                   (o-a11y-color(#FFCD00, o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover), 3), ()),
-	"selectus-rating-c-text":                     (o-a11y-color(o-a11y-color(red, white), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)), ()),
+	"selectus-rating-b-text":                     (o-a11y-color(o-palette("yellow", 500), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)), ()),
+	"selectus-rating-b-marker":                   (o-a11y-color(o-palette("yellow", 500), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover), 3), ()),
+	"selectus-rating-c-text":                     (o-a11y-color(o-palette("red", 500), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)), ()),
 	// the decision cells A, B, C of the table and their hover
 	"selectus-decision-a-bg":                     ($o-selectus-table-a-decision-bg, ()),
 	"selectus-decision-b-bg":                     ($o-selectus-table-b-decision-bg, ()),
@@ -1281,14 +1303,14 @@ $o-token-layer-component: (
 	"selectus-decision-c-hover-bg":               ($o-selectus-table-c-decision-bg-hover, ()),
 	// the status icons of the positions and the references: fixed colours
 	// (decision D29 of OO-10043; a mapping to the states needs a UX review)
-	"selectus-status-preparation":                (#949494, ()),
-	"selectus-status-published":                  (#006E0D, ()),
-	"selectus-status-published-screening":        (#17882E, ()),
-	"selectus-status-screening":                  (#E7C33F, ()),
-	"selectus-status-closed-screening":           (#DE5A3E, ()),
-	"selectus-status-closed":                     (#BD1F10, ()),
-	"selectus-status-reporting":                  (#303030, ()),
-	"selectus-status-deactivated":                (#CCCCCC, ()),
+	"selectus-status-preparation":                (o-neutral(450), ()),
+	"selectus-status-published":                  (o-palette("green", 600), ()),
+	"selectus-status-published-screening":        (o-palette("green", 500), ()),
+	"selectus-status-screening":                  (o-palette("yellow", 400), ()),
+	"selectus-status-closed-screening":           (o-scale-on-color(o-palette("red", 400), $body-bg, 3), ()),
+	"selectus-status-closed":                     (o-palette("red", 600), ()),
+	"selectus-status-reporting":                  (o-neutral(800), ()),
+	"selectus-status-deactivated":                (o-neutral(300), ()),
 	// Tests and question pool (QTI 2.1)
 	"drawing-border":                             "primary",
 	"drawing-select-border":                      "primary",
@@ -1316,7 +1338,7 @@ $o-token-layer-component: (
 	"qti-gap-selected-border":                    "primary",
 	// the dashed border of a gap in a text (gap match): black, the only
 	// mark of the gap (D29)
-	"qti-text-gap-border":                        (#000000, ()),
+	"qti-text-gap-border":                        (o-neutral(1000), ()),
 	// the alternatives of a gap text ($gray-lighter, $gray)
 	"qti-gaptext-alternative-bg":                 ($gray-lighter, ()),
 	"qti-gaptext-alternative-fg":                 ($gray, ()),
@@ -1413,7 +1435,7 @@ $o-token-layer-component: (
 	// topic, of a placeholder topic, the line below the details, the lines of
 	// the weighting grid
 	"topicbroker-title-abbr-border":               ($btn-primary-color, ("btn-primary-fg",)),
-	"topicbroker-placeholder-title-abbr-border":   (#FFFFFF, ()),
+	"topicbroker-placeholder-title-abbr-border":   (o-neutral(0), ()),
 	"topicbroker-details-separator-border":        ($panel-default-border, ("panel-default-border",)),
 	"topicbroker-weighting-grid-border":           ($panel-default-border, ("panel-default-border",)),
 	// User authentication
@@ -1434,17 +1456,17 @@ $o-token-layer-component: (
 	// the audio and video recorder: the outline and the recording fill of a
 	// button decoration, the record button and the symbols (stop, play)
 	// with their hover and pressed colours; fixed colours (D29)
-	"recorder-decoration":                        (#000000, ()),
-	"recorder-recording":                         (#FF9999, ()),
-	"recorder-record":                            (#FF0000, ()),
-	"recorder-record-hover":                      (#FF4040, ()),
-	"recorder-record-active":                     (#FF6060, ()),
-	"recorder-symbol":                            (#000000, ()),
-	"recorder-symbol-hover":                      (#202020, ()),
-	"recorder-symbol-active":                     (#404040, ()),
+	"recorder-decoration":                        (o-neutral(1000), ()),
+	"recorder-recording":                         (o-palette("red", 300), ()),
+	"recorder-record":                            (o-palette("red", 500), ()),
+	"recorder-record-hover":                      (o-palette("red", 600), ()),
+	"recorder-record-active":                     (o-palette("red", 700), ()),
+	"recorder-symbol":                            (o-neutral(1000), ()),
+	"recorder-symbol-hover":                      (o-neutral(900), ()),
+	"recorder-symbol-active":                     (o-neutral(750), ()),
 	// the pressed item of the segment category list of the video editor:
 	// a fixed grey, darker than the hover fill bg-hover (D29)
-	"video-category-active-bg":                   (#DDDDDD, ()),
+	"video-category-active-bg":                   (o-palette("gray", 200), ()),
 	// Video task
 	"video-startbox-main-border":                 "primary",
 	// the video task: the fill of the start box (color-mix() of primary by
@@ -1479,7 +1501,7 @@ $o-token-elements: map.merge(map.merge($o-token-layer-base, $o-token-layer-frame
 
 // The darker share of the active fill of the warning button, the dirty button
 // and the book button: 16% for a bright fill with dark text, so that the dark
-// text of the warning state keeps 4.5:1 on the active fill (17% gave 4.34:1);
+// text of the warning state keeps 4.5:1 on the active fill (17% gives 4.40:1);
 // 17% (Bootstrap) for a fill with light text, whose contrast would go down.
 @function o-token-active-percent($fg, $bg) {
 	@return if(luminance($fg) < luminance($bg), 16%, 17%);
@@ -1698,6 +1720,165 @@ $o-token-shades: (
 	@return darken($color, list.nth($def, 2));
 }
 
+// The contrast pairs of a token: list of (other token or colour, ratio)
+@function o-token-pairs-of($name) {
+	$pairs: ();
+	@each $pair in $o-token-contrast-pairs {
+		@if list.nth($pair, 1) == $name {
+			$pairs: list.append($pairs, (list.nth($pair, 2), list.nth($pair, 3)), $separator: comma);
+		} @else if list.nth($pair, 2) == $name {
+			$pairs: list.append($pairs, (list.nth($pair, 1), list.nth($pair, 3)), $separator: comma);
+		}
+	}
+	@return $pairs;
+}
+
+// true when a scale step can be the colour of a shade token (OO-10043 slice
+// 25): it differs from the colour of its token, lies on the side of the
+// computed colour (darker or lighter; not for a turn of the hue), beyond
+// $beyond when given (the hover of a pressed state), and it keeps each
+// contrast pair of the shade that the computed colour keeps
+@function o-token-shade-ok($name, $color, $def, $values, $computed, $candidate, $beyond: null) {
+	@if $candidate == $color or $candidate == $beyond {
+		@return false;
+	}
+	$darker: luminance($computed) < luminance($color);
+	@if list.index($def, "hue") == null {
+		@if (luminance($candidate) < luminance($color)) != $darker {
+			@return false;
+		}
+		@if $beyond != null and (luminance($candidate) < luminance($beyond)) != $darker {
+			@return false;
+		}
+	}
+	@each $pair in o-token-pairs-of($name) {
+		$other: list.nth($pair, 1);
+		$ratio: list.nth($pair, 2);
+		@if meta.type-of($other) == "string" {
+			$other: map.get($values, $other);
+		}
+		@if meta.type-of($other) == "color" and color.channel($other, "alpha") == 1 {
+			@if contrast($candidate, $other) < $ratio and contrast($computed, $other) >= $ratio {
+				@return false;
+			}
+		}
+	}
+	@return true;
+}
+
+// The colour of a shade token (OO-10043 slice 25). When the colour of its
+// token is a colour of a default (a step of the palette, of the neutral
+// scale or of the brand ramp, o-scale-has()), the shade reads the nearest
+// step of the scale of its token (the same palette hue, the neutral scale or
+// the brand ramp, o-scale-source-candidates()) that o-token-shade-ok()
+// accepts; else the next nearest step of that scale.
+// Without such a step, and for the own colour of a client theme, the shade
+// keeps the computed colour.
+@function o-token-shade-scale($name, $color, $def, $values) {
+	$computed: o-token-shade($color, $def);
+	@if not o-scale-has($color) or o-color-round($computed) == o-color-round($color) {
+		@return $computed;
+	}
+	@each $candidate in o-scale-source-candidates($color, $computed) {
+		@if o-token-shade-ok($name, $color, $def, $values, $computed, $candidate) {
+			@return $candidate;
+		}
+	}
+	$lighter: o-token-shade-lighter($name, $color, $def, $values);
+	@if $lighter != null {
+		@return $lighter;
+	}
+	@return $computed;
+}
+
+// The hover and the pressed fill of a bright fill (step 400 of a hue of
+// $o-palette-bright, dark text) when no darker step of the hue keeps the
+// contrast of the text (OO-10043 slice 25): the state goes lighter inside
+// the hue, the hover one step (300), the pressed fill two steps (200). The
+// step keeps every contrast pair of the shade. null for any other shade.
+@function o-token-shade-lighter($name, $color, $def, $values) {
+	@if list.length($def) > 2 and list.nth($def, 3) != "state" {
+		@return null;
+	}
+	$n: null;
+	@if string.length($name) > 6 and string.slice($name, -6) == "-hover" {
+		$n: 1;
+	} @else if string.length($name) > 7 and string.slice($name, -7) == "-active" {
+		$n: 2;
+	}
+	@if $n == null {
+		@return null;
+	}
+	@each $hue in $o-palette-bright {
+		$steps: map.get($o-palette, $hue);
+		@if $steps != null and map.get($steps, 400) == $color {
+			$keys: map.keys($steps);
+			$candidate: map.get($steps, list.nth($keys, list.index($keys, 400) - $n));
+			@each $pair in o-token-pairs-of($name) {
+				$other: list.nth($pair, 1);
+				@if meta.type-of($other) == "string" {
+					$other: map.get($values, $other);
+				}
+				@if meta.type-of($other) == "color" and color.channel($other, "alpha") == 1 and contrast($candidate, $other) < list.nth($pair, 2) {
+					@return null;
+				}
+			}
+			@return $candidate;
+		}
+	}
+	@return null;
+}
+
+// The hover and the pressed fill of one element (shade tokens "-hover" and
+// "-active" of the same token) as two different scale steps (OO-10043 slice
+// 25): the token, the hover and the pressed fill have three colours. The
+// first hover candidate with a pressed candidate beyond it; null when no pair
+// exists.
+@function o-token-shade-trio($hover, $active, $values) {
+	$hdef: map.get($o-token-shades, $hover);
+	$adef: map.get($o-token-shades, $active);
+	$color: map.get($values, list.nth($hdef, 1));
+	@if not o-scale-has($color) {
+		@return null;
+	}
+	$hcomputed: o-token-shade($color, $hdef);
+	$acomputed: o-token-shade($color, $adef);
+	@each $h in o-scale-source-candidates($color, $hcomputed) {
+		@if o-token-shade-ok($hover, $color, $hdef, $values, $hcomputed, $h) {
+			@each $a in o-scale-source-candidates($color, $acomputed) {
+				@if o-token-shade-ok($active, $color, $adef, $values, $acomputed, $a, $h) {
+					@return ($h, $a);
+				}
+			}
+		}
+	}
+	@return null;
+}
+
+// Three different colours for a token and its hover and pressed fill: when
+// the pressed fill has the colour of the hover or no scale step, the two
+// shades take the first pair of steps of o-token-shade-trio(). A shade that
+// $o-tokens sets keeps its value.
+@function o-token-shade-trios($values) {
+	@each $name, $def in $o-token-shades {
+		@if string.length($name) > 7 and string.slice($name, -7) == "-active" {
+			$hover: string.slice($name, 1, -8) + "-hover";
+			@if map.has-key($o-token-shades, $hover) and list.nth(map.get($o-token-shades, $hover), 1) == list.nth($def, 1)
+					and not map.has-key($o-tokens, $name) and not map.has-key($o-tokens, $hover) {
+				$h: map.get($values, $hover);
+				$a: map.get($values, $name);
+				@if o-scale-has(map.get($values, list.nth($def, 1))) and ($h == $a or not o-scale-has($a) or not o-scale-has($h)) {
+					$trio: o-token-shade-trio($hover, $name, $values);
+					@if $trio != null {
+						$values: map.merge($values, ($hover: list.nth($trio, 1), $name: list.nth($trio, 2)));
+					}
+				}
+			}
+		}
+	}
+	@return $values;
+}
+
 // An element token with a reference to another token as default
 @function o-token-is-reference-default($def) {
 	@return meta.type-of($def) == "string";
@@ -1751,6 +1932,7 @@ $o-token-contrast-pairs: (
 	// the toggle switch: text and handle on the track
 	("toggle-text", "toggle-bg", 4.5),
 	("toggle-on-text", "toggle-on-bg", 4.5),
+	("radio-card-checked-label", "radio-card-checked-bg", 4.5),
 	("toggle-handle", "toggle-bg", 3),
 	("toggle-on-handle", "toggle-on-bg", 3),
 	// the scope toggle
@@ -2154,8 +2336,9 @@ $o-token-progress: true;
 	}
 }
 @each $name, $def in $o-token-shades {
-	$o-token-defaults: map.merge($o-token-defaults, ($name: o-token-shade(map.get($o-token-defaults, list.nth($def, 1)), $def)));
+	$o-token-defaults: map.merge($o-token-defaults, ($name: o-token-shade-scale($name, map.get($o-token-defaults, list.nth($def, 1)), $def, $o-token-defaults)));
 }
+$o-token-defaults: o-token-shade-trios($o-token-defaults);
 // The shade tokens that the mixin button-variant and the state mixins
 // (_state_variant.scss) read before this file
 @if meta.global-variable-exists("o-button-variant-tokens") {
@@ -2178,7 +2361,7 @@ $o-token-progress: true;
 	}
 	@if meta.type-of($value) == "string" {
 		@if $value == "white" {
-			@return #FFFFFF;
+			@return o-neutral(0);
 		}
 		$dash: null;
 		@for $i from string.length($value) through 1 {
@@ -2265,7 +2448,7 @@ $o-token-progress: true;
 		@if not map.has-key($o-token-pending, $target) {
 			$o-token-value: map.get($o-token-values, $target);
 			@if map.has-key($o-token-shade-follows, $name) {
-				$o-token-value: o-token-shade($o-token-value, map.get($o-token-shades, $name));
+				$o-token-value: o-token-shade-scale($name, $o-token-value, map.get($o-token-shades, $name), $o-token-values);
 			}
 			$o-token-values: map.merge($o-token-values, ($name: $o-token-value));
 			$o-token-pending: map.remove($o-token-pending, $name);
@@ -2276,6 +2459,7 @@ $o-token-progress: true;
 @if list.length($o-token-pending) > 0 {
 	@error "$o-tokens: the references form a loop (a token without an override follows its default):#{o-token-pairs-text($o-token-pending)}";
 }
+$o-token-values: o-token-shade-trios($o-token-values);
 
 // Contrast check of the pairs with a colour that differs from its default.
 // A pair that fails already with the default colours fails only when its
@@ -2422,11 +2606,11 @@ $o-token-removed-shorthands-renamed: (
 	@return o-hex($color);
 }
 
-// A colour as token value: var(--o-{hue}-{step}) for a palette step,
-// var(--o-white) for white, else the literal value. $hue is searched first.
-// With $neutral true, a colour of the neutral scale gives
-// var(--o-neutral-{step}): only for the colour of an override, so that the
-// default value of a token does not change.
+// A colour as token value: var(--o-{hue}-{step}) for a palette step or a
+// step of the brand ramp, var(--o-white) for white, var(--o-neutral-{step})
+// for a step of the neutral scale, else the literal value. $hue is searched
+// first. With $neutral false, the neutral scale is not searched (the state
+// tokens read the palette steps of their hue).
 @function o-token-ref($color, $hue: null, $neutral: false) {
 	@if meta.type-of($color) != "color" {
 		@return $color;
@@ -2442,7 +2626,7 @@ $o-token-removed-shorthands-renamed: (
 			}
 		}
 	}
-	@if $color == #FFFFFF {
+	@if $color == o-neutral(0) {
 		@return var(--o-white);
 	}
 	@if $neutral {
@@ -2457,9 +2641,11 @@ $o-token-removed-shorthands-renamed: (
 
 :root {
 	// palette layer: white and the base colours of the theme
-	--o-white: #FFFFFF;
+	--o-white: #{o-hex(o-neutral(0))};
+	// a base colour reads the scale step of its colour (OO-10043 slice 25),
+	// the colour of a client theme stays a literal value
 	@each $name, $value in $o-token-base {
-		--o-base-#{$name}: #{o-token-literal($value)};
+		--o-base-#{$name}: #{o-token-ref($value, $neutral: true)};
 	}
 
 	// semantic tokens
@@ -2486,8 +2672,8 @@ $o-token-removed-shorthands-renamed: (
 	}
 
 	// element tokens of the base, framework and component layers: the
-	// reference of $o-tokens, the token it follows, the palette step, else the
-	// base colour --o-base-{name}
+	// reference of $o-tokens, the token it follows, the scale step (palette,
+	// brand ramp, neutral scale), else the base colour --o-base-{name}
 	@each $name, $def in $o-token-elements {
 		$value: map.get($o-token-values, $name);
 		$ref: null;
@@ -2496,7 +2682,7 @@ $o-token-removed-shorthands-renamed: (
 		} @else if map.has-key($o-token-follows, $name) {
 			$ref: var(--o-#{map.get($o-token-follows, $name)});
 		} @else {
-			$ref: o-token-ref($value, $neutral: map.has-key($o-token-overrides, $name));
+			$ref: o-token-ref($value, $neutral: true);
 			@if "#{$ref}" == "#{o-token-literal($value)}" {
 				--o-base-#{$name}: #{$ref};
 				$ref: var(--o-base-#{$name});
@@ -2506,14 +2692,15 @@ $o-token-removed-shorthands-renamed: (
 	}
 
 	// shade tokens: the reference or the colour of $o-tokens, else the
-	// darker or lighter colour of its token, computed at compile time
+	// darker or lighter colour of its token: the scale step
+	// (o-token-shade-scale()) or the colour computed at compile time
 	@each $name, $def in $o-token-shades {
 		@if map.has-key($o-token-references, $name) {
 			--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
 		} @else if map.has-key($o-token-overrides, $name) {
 			--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name), $neutral: true)};
 		} @else {
-			--o-#{$name}: #{o-token-literal(map.get($o-token-values, $name))};
+			--o-#{$name}: #{o-token-ref(map.get($o-token-values, $name), $neutral: true)};
 		}
 	}
 }

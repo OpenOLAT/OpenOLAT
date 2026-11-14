@@ -29,7 +29,7 @@
  * solid fill, Java reads the fill step from it.
  *
  * Needs Dart Sass 1.79.0 or later (colour spaces, OO-10000).
- * Imported after _config.scss, $brand-primary is not set before.
+ * Imported by _config.scss after $brand-primary.
  * =================================================
  */
 @use "sass:color";

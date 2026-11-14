@@ -121,7 +121,17 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
                  --o-qti-menu-link, --o-selectus-review-glow
     The modules read the tokens with var(--o-*). The base colours come from your Sass variables
     ($text-color, $headings-color, $brand-primary, $link-color, ...), so keep setting them as
-    before. An element token (base, framework or component) has one of two defaults:
+    before. The light defaults read three colour scales only: the palette (12 chromatic hues),
+    the neutral scale with white and the brand ramp theme1 (OO-10043 slice 25), e.g.
+    $panel-default-border: o-neutral(150), $o-base-orange-color: o-palette("orange", 500),
+    $o-base-blue-color: o-palette("blue", 600). A default with colour maths on another
+    variable keeps its source and gives the nearest scale step of its result
+    (o-scale-snap()); when you set the source to your own colour, the result stays the
+    computed colour as before. Your own colours stay literal values. Only the brand colour
+    itself and the defaults that derive from $brand-primary (button, link, primary tokens, the
+    checked radio card) read the brand ramp and follow your $brand-primary; a fixed blue reads
+    the palette (blue).
+    An element token (base, framework or component) has one of two defaults:
       - a Sass variable of the theme config ($o-navbar-bg, $btn-default-color, $o-bookmark-color,
         ...): keep setting the variable as before, it gives the default of the token. For a link
         or status text on a coloured background (e.g. --o-link-subtle, --o-badge-status-info)
@@ -137,7 +147,11 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     you override a button background with $o-tokens, override its border token too. Other
     elements have shade tokens too: the compile computes them with the darken() or lighten()
     percentage of the module from the element token, so your Sass variable gives the same
-    colour as before. The name is the token name and a suffix:
+    colour as before. When the token colour is a scale step (a light default), the shade
+    token reads the nearest step of the same hue (neutral scale, brand ramp) that differs
+    from the token and keeps the contrast of its text, e.g. --o-btn-primary-bg-hover:
+    var(--o-theme1-600). A bright fill at step 400 with dark text (the warning and success
+    fills, the dirty button) goes lighter: hover step 300, pressed step 200 of its hue. The name is the token name and a suffix:
       -hover, -active, -focus   the colour of a state, e.g. --o-tag-bg-hover, --o-chelp-bg-hover
       -edge                     a darker edge around a fill, e.g. --o-focus-edge
       -tint                     a lighter tint as a surface, e.g. --o-immunity-proof-none-bg-tint
@@ -251,7 +265,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     fills read the semantic tokens (text, text-muted, border, border-strong, bg-subtle, bg-hover,
     ...), status icons the state tokens, decorative colours palette steps. Your values of
     $text-color, $panel-default-border, $input-border, ... now reach these rules too. Elements
-    without a fitting role have own tokens with the colour of before: the one-time code field
+    without a fitting role have own tokens with a scale step: the one-time code field
     (otp-cell-bg, otp-cell-active-bg, otp-caret), the off-canvas menu (offcanvas-link-hover,
     which reads $o-offcanvas-link-hover-color, offcanvas-category-border), the status icons of
     selectus (selectus-status-*), the audio and video recorder (recorder-*), the sticky table

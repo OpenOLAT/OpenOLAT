@@ -86,7 +86,11 @@ public class ColorTokensTest {
 	private static final Pattern VAR_REFERENCE = Pattern.compile("var\\(--o-([a-z0-9-]+)\\)");
 	private static final Pattern ANY_VAR_REFERENCE = Pattern.compile("var\\(--o-([a-z0-9-]+)");
 	private static final Pattern PALETTE_REFERENCE = Pattern.compile("var\\(--o-(white|[a-z]+\\d*-\\d+)\\)");
+	// A step of the three colour scales: white, the neutral scale, the brand ramp or a chromatic hue of the palette
+	private static final Pattern SCALE_REFERENCE = Pattern.compile(
+			"var\\(--o-(white|neutral-\\d+|theme\\d+-\\d+|(?:red|orange|yellow|lime|green|teal|cyan|blue|violet|magenta|pink|brown)-\\d+)\\)");
 	private static final Pattern HEX = Pattern.compile("#[0-9A-F]{6}");
+	private static final Pattern HEX_LITERAL = Pattern.compile("#[0-9A-Fa-f]{3,8}\\b");
 	private static final Pattern COLOR = Pattern.compile("#[0-9A-Fa-f]{3,8}|rgba?\\([^)]*\\)|transparent");
 	// A translucent token colour (decision M3): the token mixed with transparent
 	private static final Pattern COLOR_MIX = Pattern.compile("color-mix\\(in srgb, var\\(--o-([a-z0-9-]+)\\) [0-9.]+%, transparent\\)");
@@ -202,31 +206,41 @@ public class ColorTokensTest {
 			"badge-row-expanded-link-hover", "badge-status-info", "badge-status-success", "badge-status-warning",
 			"badge-status-danger", "course-style-link", "course-style-peekview-link", "forum-message-header-author",
 			"forum-message-header-modified", "forum-message-footer-attachment");
+	// A custom property of the scales: palette step, neutral step, brand ramp, swatch role or white
+	private static final Pattern SCALE_PROPERTY = Pattern.compile("(white|[a-z]+\\d*-\\d+|sw-[a-z-]+|theme\\d+)");
+	// The bright fills of light at step 400 with dark text and their hue: the hover and the pressed fill
+	// go lighter inside the hue (step 300 and 200, OO-10043 slice 25)
+	private static final Map<String, String> BRIGHT_FILLS = Map.of("btn-dirty-bg", "yellow", "coursesite-book-bg", "yellow",
+			"tag-selected-bg", "yellow", "state-warning-bg", "yellow", "selectus-rating-b-bg", "yellow",
+			"state-success-bg", "green");
 	// The element tokens of the links that a rule of the compiled theme reads
 	private static final List<String> LINK_RULE_TOKENS = List.of("toolbar-link", "toolbar-link-hover",
 			"toolbar-link-active", "toolbar-nav-link", "toolbar-nav-link-hover", "tree-link-active-parent",
 			"tree-link-active-parent-hover", "segments-tab-link", "selectus-review-comment-link");
-	// The tokens of the Bootstrap colour variables and greys that the modules read, with the light value
+	// The tokens of the Bootstrap colour variables and greys that the modules read, with the light value. The
+	// greys read the neutral scale (OO-10043 slice 25): #EEEEEE neutral-100, #F5F5F5 neutral-50, #333333
+	// neutral-800, #262626 neutral-900, #E5E5E5 neutral-150, #555555 neutral-600, #999999 neutral-450,
+	// #777777 neutral-500; the translucent black reads shadow-color
 	private static final Map<String, String> BOOTSTRAP_COMPONENT_TOKENS = Map.ofEntries(
-			Map.entry("blockquote-border", "#EEEEEE"), Map.entry("code-block-bg", "#F5F5F5"),
-			Map.entry("code-block-fg", "#333333"), Map.entry("code-block-border", "rgba(0, 0, 0, 0.1)"),
-			Map.entry("dropdown-link", "#333333"), Map.entry("dropdown-link-hover", "#262626"),
-			Map.entry("dropdown-link-hover-bg", "#F5F5F5"), Map.entry("dropdown-divider", "#E5E5E5"),
-			Map.entry("input-bg", "#FFFFFF"), Map.entry("input-fg", "#555555"),
-			Map.entry("input-disabled-bg", "#F9FAFB"), Map.entry("input-placeholder", "#999999"),
-			Map.entry("legend", "#333333"), Map.entry("legend-border", "#E5E5E5"),
-			Map.entry("modal-content-border", "#E4E7EC"), Map.entry("modal-header-border", "#E5E5E5"),
-			Map.entry("popover-bg", "#FFFFFF"), Map.entry("popover-border", "rgba(0, 0, 0, 0.2)"),
+			Map.entry("blockquote-border", "#EAECF0"), Map.entry("code-block-bg", "#F6F7FA"),
+			Map.entry("code-block-fg", "#2A3649"), Map.entry("code-block-border", "color-mix(in srgb, var(--o-shadow-color) 10%, transparent)"),
+			Map.entry("dropdown-link", "#2A3649"), Map.entry("dropdown-link-hover", "#182233"),
+			Map.entry("dropdown-link-hover-bg", "#F6F7FA"), Map.entry("dropdown-divider", "#E4E7EC"),
+			Map.entry("input-bg", "#FFFFFF"), Map.entry("input-fg", "#4E596D"),
+			Map.entry("input-disabled-bg", "#F9FAFB"), Map.entry("input-placeholder", "#8B95A7"),
+			Map.entry("legend", "#2A3649"), Map.entry("legend-border", "#E4E7EC"),
+			Map.entry("modal-content-border", "#E4E7EC"), Map.entry("modal-header-border", "#E4E7EC"),
+			Map.entry("popover-bg", "#FFFFFF"), Map.entry("popover-border", "color-mix(in srgb, var(--o-shadow-color) 20%, transparent)"),
 			Map.entry("panel-bg", "#FFFFFF"), Map.entry("progress-bar-fg", "#FFFFFF"),
 			Map.entry("thumbnail-border", "#DDDDDD"), Map.entry("table-border", "#DDDDDD"),
-			Map.entry("table-striped-bg", "#F9FAFB"), Map.entry("table-hover-bg", "#F5F5F5"),
-			Map.entry("alert-close", "#777777"), Map.entry("alert-close-hover", "#555555"),
-			Map.entry("message-table-border", "#333333"), Map.entry("chart-help-line", "#777777"),
-			Map.entry("content-table-header-bg", "#EEEEEE"), Map.entry("editor-media-unavailable", "#EEEEEE"),
-			Map.entry("room-status-inactive", "#777777"), Map.entry("selectus-review-comments-bg", "#FFFFFF"),
-			Map.entry("selectus-review-comments-border", "#EAECF0"), Map.entry("qti-gaptext-alternative-bg", "#EEEEEE"),
-			Map.entry("qti-gaptext-alternative-fg", "#555555"), Map.entry("qti-help", "#777777"),
-			Map.entry("video-slider-bg", "#555555"), Map.entry("videotask-marker-assign-bg", "#333333"));
+			Map.entry("table-striped-bg", "#F9FAFB"), Map.entry("table-hover-bg", "#F6F7FA"),
+			Map.entry("alert-close", "#657286"), Map.entry("alert-close-hover", "#4E596D"),
+			Map.entry("message-table-border", "#2A3649"), Map.entry("chart-help-line", "#657286"),
+			Map.entry("content-table-header-bg", "#EAECF0"), Map.entry("editor-media-unavailable", "#EAECF0"),
+			Map.entry("room-status-inactive", "#657286"), Map.entry("selectus-review-comments-bg", "#FFFFFF"),
+			Map.entry("selectus-review-comments-border", "#EAECF0"), Map.entry("qti-gaptext-alternative-bg", "#EAECF0"),
+			Map.entry("qti-gaptext-alternative-fg", "#4E596D"), Map.entry("qti-help", "#657286"),
+			Map.entry("video-slider-bg", "#4E596D"), Map.entry("videotask-marker-assign-bg", "#2A3649"));
 	private static final Pattern RULE = Pattern.compile("([^{}]+)\\{([^{}]*)\\}");
 	// The compiled themes that emit the tokens (not email.css)
 	private static final List<String> TOKEN_FILES = List.of("light/theme.css", "light/content.css", "light/oo-docs.css",
@@ -234,13 +248,19 @@ public class ColorTokensTest {
 
 	private final Map<String, String> tokens = loadTokens();
 
+	/**
+	 * Each semantic token reads its base colour, and the base colour of the
+	 * light theme reads a step of the three scales: the neutral scale, the
+	 * brand ramp or white (OO-10043 slice 25).
+	 */
 	@Test
 	public void semanticTokensReadBaseColors() {
 		for (String name : SEMANTIC) {
 			Assert.assertEquals(name, "var(--o-base-" + name + ")", tokens.get(name));
 			String base = tokens.get("base-" + name);
 			Assert.assertNotNull("base-" + name, base);
-			Assert.assertTrue("base-" + name + ": " + base, HEX.matcher(base).matches());
+			Assert.assertTrue("base-" + name + ": " + base, SCALE_REFERENCE.matcher(base).matches());
+			Assert.assertTrue("base-" + name + ": " + base, HEX.matcher(resolve("base-" + name)).matches());
 		}
 	}
 
@@ -446,11 +466,13 @@ public class ColorTokensTest {
 	 */
 	@Test
 	public void newSemanticTokenDefaults() {
-		Assert.assertEquals("#F5F5F5", resolve("bg-hover"));
-		Assert.assertEquals("#F5F5F5", resolve("bg-selected"));
+		// the Bootstrap greys read the neutral scale (OO-10043 slice 25):
+		// #F5F5F5 neutral-50, #EEEEEE neutral-100, #777777 neutral-500
+		Assert.assertEquals("#F6F7FA", resolve("bg-hover"));
+		Assert.assertEquals("#F6F7FA", resolve("bg-selected"));
 		Assert.assertEquals("#FFFFFF", resolve("bg-raised"));
-		Assert.assertEquals("#EEEEEE", resolve("border-subtle"));
-		Assert.assertEquals("#777777", resolve("text-disabled"));
+		Assert.assertEquals("#EAECF0", resolve("border-subtle"));
+		Assert.assertEquals("#657286", resolve("text-disabled"));
 		Assert.assertEquals("#000000", resolve("shadow-color"));
 		Assert.assertEquals("#000000", resolve("backdrop"));
 		Assert.assertEquals("#FFFFFF", resolve("scrim"));
@@ -693,8 +715,10 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_catalog2 .o_catalog_header .o_catalog_header_item:not(.o_header_bg_image)",
 				"background:linear-gradient(190deg, var(--o-catalog-header-noimage-stop-1) 10%, var(--o-primary) 100%),"
 				+ "linear-gradient(40deg, var(--o-catalog-header-noimage-stop-3) 0%, var(--o-catalog-header-noimage-stop-4) 60%)");
+		// the turn of the hue of the primary colour: a step of the brand ramp in light (OO-10043 slice 25)
 		Assert.assertTrue("catalog-header-noimage-stop-4: " + tokens.get("catalog-header-noimage-stop-4"),
-				HEX.matcher(tokens.get("catalog-header-noimage-stop-4")).matches());
+				HEX.matcher(tokens.get("catalog-header-noimage-stop-4")).matches()
+				|| SCALE_REFERENCE.matcher(tokens.get("catalog-header-noimage-stop-4")).matches());
 		// translucent colours
 		assertRuleReads(css, ".milkdown table th", "background:color-mix(in srgb, var(--o-milkdown-table-header-bg) 10%, transparent)");
 		// since slice 18 the translucent defaults of $o-cn-style-cover-text-bg and
@@ -985,11 +1009,13 @@ public class ColorTokensTest {
 		// D8
 		Assert.assertEquals("var(--o-tag-selected-fg)", tokens.get("competence-selected"));
 		assertRuleReads(css, ".o_tag.o_competence.o_tag_selected", "color:var(--o-competence-selected)");
-		// D9: the toggle text is the muted text adjusted for the track, the rating C fill is a darker red
-		Assert.assertEquals("var(--o-base-toggle-text)", tokens.get("toggle-text"));
+		// D9: the toggle text is the muted text adjusted for the track, the rating C fill is the red of the
+		// palette (#EB0000 before OO-10043 slice 25)
+		// the muted text read on the track: the nearest neutral step with 4.5:1 (OO-10043 slice 25)
+		Assert.assertEquals("var(--o-neutral-600)", tokens.get("toggle-text"));
 		assertRuleReads(css, ".o_button_toggle span", "color:var(--o-toggle-text)");
 		Assert.assertEquals("var(--o-white)", tokens.get("selectus-rating-c-fg"));
-		Assert.assertTrue("selectus-rating-c-bg: " + resolve("selectus-rating-c-bg"), resolve("selectus-rating-c-bg").startsWith("#E"));
+		Assert.assertEquals("var(--o-red-500)", tokens.get("selectus-rating-c-bg"));
 		// D10
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("navbar-tab-close"));
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("dropdown-tab-close"));
@@ -1059,13 +1085,14 @@ public class ColorTokensTest {
 		assertRuleReads(css, filter + ".o_filter_active:hover", "color:var(--o-table-filter-active-fg-hover)");
 		assertRuleReads(css, filter + ".o_filter_open:active:hover", "color:var(--o-table-filter-active-fg-active)");
 		assertRuleReads(css, ".o_scope_toggle.o_toggle_on:hover", "color:var(--o-scope-toggle-on-hover-fg)");
-		// D13: the fills of light do not change, every fill is visible
-		Assert.assertEquals("#EDEDED", resolve("btn-primary-light-bg-hover"));
-		Assert.assertEquals("#EDEDED", resolve("btn-primary-light-bg-active"));
-		Assert.assertEquals("#F7F7F7", resolve("btn-danger-light-bg-hover"));
-		Assert.assertEquals("#F7F7F7", resolve("btn-danger-light-bg-active"));
-		Assert.assertEquals("#DBDBDB", resolve("table-filter-bg-active"));
-		Assert.assertEquals("#3374CE", resolve("scope-toggle-on-hover-bg"));
+		// D13: every fill is visible; the fills of light read the neutral scale (OO-10043 slice 25)
+		Assert.assertEquals("#F9FAFB", resolve("btn-primary-light-bg-hover"));
+		Assert.assertEquals("#F6F7FA", resolve("btn-primary-light-bg-active"));
+		Assert.assertEquals("#F9FAFB", resolve("btn-danger-light-bg-hover"));
+		Assert.assertEquals("#F6F7FA", resolve("btn-danger-light-bg-active"));
+		Assert.assertEquals("#D0D5DD", resolve("table-filter-bg-active"));
+		// the nearest brand step with 4.5:1 for the white text that differs from the fill (OO-10043 slice 25)
+		Assert.assertEquals(resolve("theme1-600"), resolve("scope-toggle-on-hover-bg"));
 		for (String button : CONTRAST_SHADE_BUTTONS) {
 			for (String state : List.of("-hover", "-active")) {
 				Assert.assertNotEquals(button + "-bg" + state + " has the colour of the normal state",
@@ -1077,7 +1104,8 @@ public class ColorTokensTest {
 		// white has no visible amount, the state keeps 10% and 17%
 		Assert.assertEquals(10, contrastShadeAmount("#DE323C", "#FFFFFF", 10));
 		Assert.assertEquals(17, contrastShadeAmount("#DE323C", "#FFFFFF", 17));
-		Assert.assertEquals(MIN_SHADE_AMOUNT, contrastShadeAmount(resolve("btn-danger-light-fg"), "#FFFFFF", 10));
+		// the light danger button: red-500 of the tuned palette (OO-10043 slice 25) keeps 4.5:1 up to 4%
+		Assert.assertEquals(4, contrastShadeAmount(resolve("btn-danger-light-fg"), "#FFFFFF", 10));
 		// D15 (bar A has no rule, decision D25)
 		for (String rating : List.of("B", "C")) {
 			String token = "selectus-rating-" + rating.toLowerCase() + "-bg";
@@ -1086,7 +1114,7 @@ public class ColorTokensTest {
 		}
 		// the fill of a styled course element (ratchet pattern of slice 10)
 		assertRuleReads(css, ".o_cn_styled", "background-color:var(--o-course-style-bg)");
-		Assert.assertEquals("var(--o-base-course-style-bg)", tokens.get("course-style-bg"));
+		Assert.assertEquals("var(--o-neutral-25)", tokens.get("course-style-bg"));
 	}
 
 	/**
@@ -1140,11 +1168,12 @@ public class ColorTokensTest {
 		}
 		Assert.assertEquals("#1A1A1A", stateShade("#000000", 10));
 		Assert.assertEquals("#2B2B2B", stateShade("#000000", 17));
-		Assert.assertEquals(resolve("table-filter-active-bg-hover"), stateShade(resolve("table-filter-active-bg"),
-				contrastShadeAmount(resolve("table-filter-active-fg"), resolve("table-filter-active-bg"), 10)));
+		// the computed fill, or a scale step on the side of the computed fill (OO-10043 slice 25)
+		assertShade("table-filter-active-bg-hover", "table-filter-active-bg",
+				contrastShadeAmount(resolve("table-filter-active-fg"), resolve("table-filter-active-bg"), 10));
 		// D23
-		Assert.assertEquals("#747474", resolve("navbar-text"));
-		Assert.assertEquals("#747474", resolve("navbar-tools"));
+		Assert.assertEquals("#657286", resolve("navbar-text"));
+		Assert.assertEquals("#657286", resolve("navbar-tools"));
 	}
 
 	/**
@@ -1186,9 +1215,9 @@ public class ColorTokensTest {
 		// C and abstention and the letter A with the fill of the button
 		assertRuleReads(css, "span.o_rating_expl[title=C]", "color:var(--o-selectus-rating-c-text)");
 		assertRuleReads(css, "div.f_rating_2", "background-color:var(--o-selectus-rating-b-marker)");
-		Assert.assertEquals("#A88700", resolve("selectus-rating-b-marker"));
-		Assert.assertEquals("#856B00", resolve("selectus-rating-b-text"));
-		Assert.assertEquals("#E00000", resolve("selectus-rating-c-text"));
+		Assert.assertEquals("#9D6500", resolve("selectus-rating-b-marker"));
+		Assert.assertEquals("#9D6500", resolve("selectus-rating-b-text"));
+		Assert.assertEquals("#E2002D", resolve("selectus-rating-c-text"));
 		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
 			assertContrast("selectus-rating-b-marker", row, 3.0);
 			assertContrast("selectus-rating-c-bg", row, 3.0);
@@ -1221,7 +1250,7 @@ public class ColorTokensTest {
 			assertRuleReads(css, selector, "background-color:var(--o-selectus-rating-abstain-bg)");
 			assertRuleReads(css, selector, "color:var(--o-selectus-rating-abstain-bg)");
 		}
-		Assert.assertEquals("#555566", resolve("selectus-rating-abstain-bg"));
+		Assert.assertEquals("#4E596D", resolve("selectus-rating-abstain-bg"));
 	}
 
 	/**
@@ -1310,7 +1339,7 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-right a:hover", "color:var(--o-offcanvas-link-hover)");
 		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-right h2.o_navbar_category",
 				"border-bottom:1px solid var(--o-offcanvas-category-border)");
-		Assert.assertEquals("#939393", resolve("offcanvas-link-hover"));
+		Assert.assertEquals("#8B95A7", resolve("offcanvas-link-hover"));
 		// B4-12 and B4-14 own tokens of selectus and the recorder
 		assertRuleReads(css, ".o_position_status_filter.o_published", "color:var(--o-selectus-status-published)");
 		assertRuleReads(css, ".o_reference_status_filter.o_deactivated", "color:var(--o-selectus-status-deactivated)");
@@ -1326,17 +1355,17 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_group_colors .white .o_icon:before", "color:var(--o-white)");
 		assertRuleReads(css, ".o_tree ul li .o_dnd_item.o_dnd_over", "background-color:var(--o-tree-dnd-over-bg)");
 		// the own tokens keep the colours of today
-		String[] own = { "practice-icon", "#CCCCCC", "qti-text-gap-border", "#000000", "badge-template-selected-bg", "#DDDDDD",
-				"video-category-active-bg", "#DDDDDD", "table-sticky-col-bg", "#FAFAFA", "table-sticky-col-striped-bg", "#F5F5F5",
-				"otp-cell-bg", "#EEEEEE", "otp-cell-active-bg", "#BBBBBB", "otp-caret", "#222222",
-				"offcanvas-category-border", "#888888", "tree-dnd-over-bg", "#FFFF60",
-				"selectus-status-preparation", "#949494", "selectus-status-published", "#006E0D",
-				"selectus-status-published-screening", "#17882E", "selectus-status-screening", "#E7C33F",
-				"selectus-status-closed-screening", "#DE5A3E", "selectus-status-closed", "#BD1F10",
-				"selectus-status-reporting", "#303030", "selectus-status-deactivated", "#CCCCCC",
-				"recorder-decoration", "#000000", "recorder-recording", "#FF9999", "recorder-record", "#FF0000",
-				"recorder-record-hover", "#FF4040", "recorder-record-active", "#FF6060", "recorder-symbol", "#000000",
-				"recorder-symbol-hover", "#202020", "recorder-symbol-active", "#404040" };
+		String[] own = { "practice-icon", "#C6CCD6", "qti-text-gap-border", "#000000", "badge-template-selected-bg", "#DDDDDD",
+				"video-category-active-bg", "#DDDDDD", "table-sticky-col-bg", "#F9FAFB", "table-sticky-col-striped-bg", "#F6F7FA",
+				"otp-cell-bg", "#EAECF0", "otp-cell-active-bg", "#B1B8C5", "otp-caret", "#222222",
+				"offcanvas-category-border", "#8B95A7", "tree-dnd-over-bg", "#FFD556",
+				"selectus-status-preparation", "#8B95A7", "selectus-status-published", "#016807",
+				"selectus-status-published-screening", "#1F8320", "selectus-status-screening", "#F9C900",
+				"selectus-status-closed-screening", "#E2002D", "selectus-status-closed", "#B50022",
+				"selectus-status-reporting", "#2A3649", "selectus-status-deactivated", "#C6CCD6",
+				"recorder-decoration", "#000000", "recorder-recording", "#FF9E90", "recorder-record", "#E2002D",
+				"recorder-record-hover", "#B50022", "recorder-record-active", "#8E0D1C", "recorder-symbol", "#000000",
+				"recorder-symbol-hover", "#182233", "recorder-symbol-active", "#344054" };
 		for (int i = 0; i < own.length; i += 2) {
 			Assert.assertEquals(own[i], own[i + 1], resolve(own[i]));
 		}
@@ -1434,11 +1463,11 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("table-row-selected-bg"));
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("navbar-logout"));
 		// the colours of today
-		String[] values = { "box-note-border", "#666666", "box-tip-border", "#345566", "box-important-border", "#41BBDB",
-				"message-line-warning-bg", "#FFBD96", "message-line-error-fg", "#4A0606", "popover-fallback-border", "#CCCCCC",
-				"dialog-header-bg", "#F9FAFB", "login-help-bg", "#E4E7EC", "widget-subtitle", "#777777",
-				"offcanvas-link", "#ACACAC", "table-edit-bg", "#FEFBF6", "tree-border", "#DDDDDD",
-				"tree-insertion-source-bg", "#FFCF91", "icon-mandatory", "#D17A00", "lecture-rollcall-pending", "#637286" };
+		String[] values = { "box-note-border", "#657286", "box-tip-border", "#4E596D", "box-important-border", "#1FC6FE",
+				"message-line-warning-bg", "#FFBE80", "message-line-error-fg", "#470A0E", "popover-fallback-border", "#C6CCD6",
+				"dialog-header-bg", "#F9FAFB", "login-help-bg", "#E4E7EC", "widget-subtitle", "#657286",
+				"offcanvas-link", "#B1B8C5", "table-edit-bg", "#F9FAFB", "tree-border", "#DDDDDD",
+				"tree-insertion-source-bg", "#FFBE80", "icon-mandatory", "#C24A00", "lecture-rollcall-pending", "#637286" };
 		for (int i = 0; i < values.length; i += 2) {
 			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
 		}
@@ -1518,9 +1547,10 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_navbar .o_navbar-nav>li>a:focus:focus-visible", "outline-offset:-2px");
 		assertRuleReads(css, "#o_footer_wrapper a:focus:focus-visible", "outline-color:var(--o-footer-focus)");
 		assertRuleReads(css, ".o_checkbox_button_group>div:has(input:focus-visible)", "outline-offset:-2px");
-		// the radio cards keep the colours of $input-border-focus (#66AFE9)
-		int[] checkedBg = darken("#66AFE9", -30);
-		Assert.assertEquals(String.format("#%02X%02X%02X", checkedBg[0], checkedBg[1], checkedBg[2]), resolve("radio-card-checked-bg"));
+		// the checked radio card is a selection in the brand colour: the border reads the primary
+		// colour, the fill step 50 of the brand ramp (OO-10043 slice 25)
+		Assert.assertEquals("var(--o-primary)", tokens.get("radio-card-checked-border"));
+		Assert.assertEquals(resolve("theme1-50"), resolve("radio-card-checked-bg"));
 		// the existence of $input-border-focus is read before the Bootstrap defaults
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
 		String config = read(light.resolve("_config.scss"));
@@ -1667,9 +1697,10 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-text)", tokens.get("coursesite-meta-author"));
 		Assert.assertEquals("var(--o-box-note-border)", tokens.get("box-note-text"));
 		// the colours of today
-		String[] values = { "card-border", "#E4E7EC", "repo-info-border", "#D4D4D4", "qti-item-max-score-border", "#000000",
-				"qti-choice-tablelayout-bg", "#E7E7E7", "editor-hover-border", "#EF00EF", "editor-alert-box-active-border", "#464646",
-				"practice-progress-l1-bg", "#1FC6FE", "video-border", "#FCFCFC", "video-controls-bg", "rgba(50, 50, 50, 0.95)" };
+		String[] values = { "card-border", "#E4E7EC", "repo-info-border", "#D0D5DD", "qti-item-max-score-border", "#000000",
+				"qti-choice-tablelayout-bg", "#E4E7EC", "editor-hover-border", "#BA37B4", "editor-alert-box-active-border", "#464646",
+				"practice-progress-l1-bg", "#1FC6FE", "video-border", "#F9FAFB", "video-controls-bg",
+				"color-mix(in srgb, var(--o-shadow-color) 95%, transparent)" };
 		for (int i = 0; i < values.length; i += 2) {
 			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
 		}
@@ -1748,9 +1779,9 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-panel-bg)", tokens.get("curriculum-widget-bg"));
 		Assert.assertEquals("var(--o-state-warning-bg)", tokens.get("selectus-review-comment-glow"));
 		// the colours of today
-		String[] values = { "empty-border", "#E4E7EC", "highscore-podium-border", "#D9D9D9", "user-info-profile-border", "#CCCCCC",
-				"lp-pagination-done-border", "#2E5C2E", "curriculum-element-inactive", "#777777", "selectus-onhold", "#9E9E9E",
-				"authentication-level1", "#793E02", "user-status-inactive-border", "#637286" };
+		String[] values = { "empty-border", "#E4E7EC", "highscore-podium-border", "#D9DDE3", "user-info-profile-border", "#C6CCD6",
+				"lp-pagination-done-border", "#436202", "curriculum-element-inactive", "#657286", "selectus-onhold", "#8B95A7",
+				"authentication-level1", "#7A2F07", "user-status-inactive-border", "#637286" };
 		for (int i = 0; i < values.length; i += 2) {
 			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
 		}
@@ -1839,9 +1870,9 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-panel-default-border)", tokens.get("topicbroker-details-separator-border"));
 		Assert.assertEquals("var(--o-quality-heatmap-base-bg)", tokens.get("quality-unrated"));
 		// the colours of today
-		String[] values = { "step-border", "#E4E7EC", "ac-billing-address-border", "#D0D5DD", "toolbar-edit-stripe", "#FFF0D9",
-				"gloss-tooltip-border", "#AAAAAA", "step-notavailable", "#999999", "folder-card-thumbnail-icon", "#CCCCCC",
-				"qti-status-not-answered", "#B55604" };
+		String[] values = { "step-border", "#E4E7EC", "ac-billing-address-border", "#D0D5DD", "toolbar-edit-stripe", "#FAEECE",
+				"gloss-tooltip-border", "#B1B8C5", "step-notavailable", "#8B95A7", "folder-card-thumbnail-icon", "#C6CCD6",
+				"qti-status-not-answered", "#C24A00" };
 		for (int i = 0; i < values.length; i += 2) {
 			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
 		}
@@ -1857,6 +1888,64 @@ public class ColorTokensTest {
 		assertContrast("course-quota-intern", "bg", 4.5);
 		assertContrast("qti-status-not-presented", "bg", 3.0);
 		assertContrast("qpool-arrow-draft-border", "qpool-arrow-bg", 3.0);
+	}
+
+	/**
+	 * The element tokens, the shade tokens and the base colours of the light
+	 * theme read the three colour scales: the palette, the neutral scale with
+	 * white and the brand ramp (OO-10043 slice 25). In the compiled light
+	 * theme.css only the scales themselves hold a literal colour: no base
+	 * colour --o-base-{name} and no shade token. _tokens.scss holds no hex
+	 * colour outside the comments and the white background of a contrast
+	 * pair: a default reads o-neutral(), o-palette() or a token.
+	 */
+	@Test
+	public void tokenDefaultsReadScales() {
+		Matcher property = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS));
+		List<String> literals = new ArrayList<>();
+		while (property.find()) {
+			String name = property.group(1);
+			String value = property.group(2).trim();
+			if (COLOR.matcher(value).matches() && !"transparent".equals(value) && !SCALE_PROPERTY.matcher(name).matches()) {
+				literals.add(name + ": " + value);
+			}
+		}
+		Assert.assertTrue("Tokens with a literal colour: " + literals, literals.isEmpty());
+		String scss = ThemeColorRatchetTest.withoutComments(read(ThemeColorRatchetTest.LIGHT_MODULES.resolve("_tokens.scss")));
+		Pattern pairBackground = Pattern.compile("^\\s*\\(\"[a-z0-9#{}$-]+\", #FFFFFF, [0-9.]+\\),?\\s*\\)?\\)?;?\\s*$");
+		List<String> hex = new ArrayList<>();
+		for (String line : scss.split("\n")) {
+			if (HEX_LITERAL.matcher(line).find() && !pairBackground.matcher(line).matches()) {
+				hex.add(line.trim());
+			}
+		}
+		Assert.assertTrue("Hex colours in _tokens.scss: " + hex, hex.isEmpty());
+	}
+
+	/**
+	 * A bright fill of light (step 400 of a hue of $o-palette-bright, dark
+	 * text) has no darker step of its hue that keeps the text: its hover reads
+	 * step 300 and its pressed fill step 200 of the same hue (OO-10043 slice
+	 * 25, o-token-shade-lighter()). Fill, hover and pressed fill are three
+	 * colours, the text keeps 4.5:1 on each.
+	 */
+	@Test
+	public void brightFillStatesGoLighter() {
+		for (Map.Entry<String, String> fill : BRIGHT_FILLS.entrySet()) {
+			String hue = fill.getValue();
+			Assert.assertEquals(fill.getKey(), resolve(hue + "-400"), resolve(fill.getKey()));
+			Assert.assertEquals(fill.getKey() + "-hover", "var(--o-" + hue + "-300)", tokens.get(fill.getKey() + "-hover"));
+			Assert.assertEquals(fill.getKey() + "-active", "var(--o-" + hue + "-200)", tokens.get(fill.getKey() + "-active"));
+		}
+		for (String state : List.of("", "-hover", "-active")) {
+			assertContrast("btn-dirty-fg", "btn-dirty-bg" + state, 4.5);
+			assertContrast("coursesite-book-fg", "coursesite-book-bg" + state, 4.5);
+			assertContrast("tag-selected-fg", "tag-selected-bg" + state, 4.5);
+			assertContrast("state-warning-fg", "state-warning-bg" + state, 4.5);
+			assertContrast("state-success-fg", "state-success-bg" + state, 4.5);
+			assertContrast("selectus-rating-b-fg", "selectus-rating-b-bg" + state, 4.5);
+		}
+		assertSourceHas(ThemeColorRatchetTest.LIGHT_MODULES.resolve("_tokens.scss"), "@function o-token-shade-lighter(");
 	}
 
 	/**
@@ -1937,18 +2026,39 @@ public class ColorTokensTest {
 	private void assertShade(String shade, String source, int percent) {
 		String shadeValue = tokens.get(shade);
 		Assert.assertNotNull(shade, shadeValue);
-		Assert.assertTrue(shade + ": " + shadeValue, HEX.matcher(shadeValue).matches());
 		String sourceHex = resolve(source);
 		Assert.assertTrue(source + ": " + sourceHex, HEX.matcher(sourceHex).matches());
 		int[] expected = darken(sourceHex, percent);
 		String function = percent < 0 ? "lightened by " + (-percent) : "darkened by " + percent;
+		String shadeHex = resolve(shade);
+		Assert.assertTrue(shade + ": " + shadeHex, HEX.matcher(shadeHex).matches());
+		boolean computed = true;
 		// The token value is a rounded colour: 2 of 255 per channel
 		for (int i = 0; i < 3; i++) {
-			int channel = Integer.parseInt(shadeValue.substring(1 + 2 * i, 3 + 2 * i), 16);
-			Assert.assertTrue(shade + " " + shadeValue + " is not " + source + " " + sourceHex + " " + function
-					+ "%: rgb(" + expected[0] + ", " + expected[1] + ", " + expected[2] + ")",
-					Math.abs(channel - expected[i]) <= 2);
+			int channel = Integer.parseInt(shadeHex.substring(1 + 2 * i, 3 + 2 * i), 16);
+			computed &= Math.abs(channel - expected[i]) <= 2;
 		}
+		if (computed) {
+			return;
+		}
+		if (BRIGHT_FILLS.containsKey(source) && percent > 0 && (shade.endsWith("-hover") || shade.endsWith("-active"))) {
+			// a bright fill goes lighter inside its hue: hover step 300, pressed step 200
+			// (o-token-shade-lighter() in _tokens.scss, OO-10043 slice 25)
+			String step = shade.endsWith("-hover") ? "-300)" : "-200)";
+			Assert.assertEquals(shade, "var(--o-" + BRIGHT_FILLS.get(source) + step, shadeValue);
+			return;
+		}
+		// the source is a scale step: the shade reads a step of the scale of its
+		// source (a palette hue such as gray, the neutral scale or the brand ramp)
+		// that differs from the source, on the side of darken() or lighten()
+		// (o-token-shade-scale() in _tokens.scss, OO-10043 slice 25)
+		Assert.assertTrue(shade + " " + shadeValue + " is not " + source + " " + sourceHex + " " + function
+				+ "%: rgb(" + expected[0] + ", " + expected[1] + ", " + expected[2] + "), and no scale step",
+				PALETTE_REFERENCE.matcher(shadeValue).matches());
+		Assert.assertNotEquals(shade + " " + shadeValue + " has the colour of " + source, sourceHex, shadeHex);
+		boolean darker = ColorContrast.relativeLuminance(shadeHex) < ColorContrast.relativeLuminance(sourceHex);
+		Assert.assertEquals(shade + " " + shadeValue + " " + shadeHex + " is on the wrong side of " + source + " " + sourceHex,
+				percent > 0, darker);
 	}
 
 	/**

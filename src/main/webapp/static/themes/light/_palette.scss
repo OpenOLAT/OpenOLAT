@@ -8,16 +8,21 @@
  *
  * Construction rule (palette v2):
  * 1. Each step has one relative luminance for all hues: 50=0.93, 100=0.84,
- *    200=0.72, 300=0.60, 400=0.48, 500=0.165, 600=0.10, 700=0.062, 800=0.036, 900=0.016
- * 2. Steps 50-400 are tints with the hue's step 900 as text (>= 8.0:1)
+ *    200=0.72, 300=0.60, 400=0.48, 500=0.165, 600=0.10, 700=0.062, 800=0.036, 900=0.016.
+ *    Two exceptions (OO-10043, palette tuning of 2026-11-13): red steps 200 to
+ *    400 are darker (0.66, 0.48, 0.32), yellow steps 100 to 400 are lighter
+ *    (0.86, 0.78, 0.70, 0.62)
+ * 2. Steps 50-400 are tints with the hue's step 900 as text (>= 8.0:1; the
+ *    text of step 900 on red 400 has 5.6:1, at least 4.5:1)
  * 3. Steps 500-900 are shades with white text (>= 4.85:1); 500 is also text on white
  * 4. Between 400 and 500 the scale skips the dead zone where no text reaches 4.5:1
  * 5. Bright hues use step 400 as solid fill, deep hues step 500
  *
  * Generated from fxWorkspace/projects/OO-colors/scripts/palette_v2.json,
  * teal, slate (blue-gray), green (hue 143) and blue (hue 255) from
- * gen_palette_v3_additions.py,
- * do not edit values by hand.
+ * gen_palette_v3_additions.py. Red, orange and yellow are tuned by hand
+ * (generator scripts/build_palette_tuning.py, palette_v4_tuning.json): the
+ * hue turns along the ramp. Do not edit values by hand.
  *
  * modules/_palette_vars.scss emits the map as custom properties
  * --o-{hue}-{step} in theme.css. Java reads the same values from the custom
@@ -33,9 +38,9 @@
 @use "sass:string";
 
 $o-palette: (
-	"red": (50: #FEF5F5, 100: #FEE7E6, 200: #FFD2D0, 300: #FFBBB8, 400: #FF9E9A, 500: #D2343C, 600: #AE1B26, 700: #900B17, 800: #70070D, 900: #4A0606),
-	"orange": (50: #FEF5F0, 100: #FFE8DA, 200: #FFD4BB, 300: #FFBD96, 400: #FFA268, 500: #B55604, 600: #914303, 700: #753400, 800: #5B2601, 900: #3D1701),
-	"yellow": (50: #FAF7EC, 100: #F4ECD1, 200: #EFDBA5, 300: #EAC874, 400: #E4B132, 500: #926A06, 600: #765300, 700: #5F4102, 800: #4B3000, 900: #321E00),
+	"red": (50: #FBF6F4, 100: #FAE8E6, 200: #F9C9C2, 300: #FF9E90, 400: #FF6857, 500: #E2002D, 600: #B50022, 700: #8E0D1C, 800: #6C0F16, 900: #470A0E),
+	"orange": (50: #FBF6F2, 100: #FAE9DB, 200: #FAD6B6, 300: #FFBE80, 400: #FFA33D, 500: #C24A00, 600: #9B3A00, 700: #7A2F07, 800: #5C2409, 900: #3C1706),
+	"yellow": (50: #FBF7EA, 100: #FAEECE, 200: #FBE3A0, 300: #FFD556, 400: #F9C900, 500: #9D6500, 600: #7D4F00, 700: #623F07, 800: #4A3009, 900: #301E06),
 	"lime": (50: #F3F9EB, 100: #E1F2CF, 200: #C7E7A0, 300: #ACDA6A, 400: #8ECA05, 500: #567C05, 600: #436202, 700: #354E02, 800: #273B01, 900: #182600),
 	"green": (50: #F1F9F0, 100: #DDF2DB, 200: #BEE8BB, 300: #9CDB98, 400: #76CC71, 500: #1F8320, 600: #016807, 700: #025305, 800: #013F03, 900: #012902),
 	"teal": (50: #EFF9F8, 100: #D7F2EF, 200: #B0E7E3, 300: #84DAD4, 400: #4ACBC4, 500: #027F7A, 600: #026460, 700: #00504C, 800: #003D3A, 900: #012725),
