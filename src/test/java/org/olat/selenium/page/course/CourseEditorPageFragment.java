@@ -490,19 +490,20 @@ public class CourseEditorPageFragment {
 		browser.findElement(chooseButton).click();
 		OOGraphene.waitModalDialog(browser);
 	
-		By entriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab");
+		By entriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_all.btn");
 		OOGraphene.waitElement(entriesBy, browser);
 		// Use the "All" tab, not "My <resource>": a freshly created/imported resource
 		// is in Preparation status, which the "My ..." tab of this dialog excludes.
-		By allEntriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_all.btn");
-		if(!browser.findElements(allEntriesBy).isEmpty()) {
-			browser.findElement(By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_all")).click();
+		By allEntriesBy = By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_all.btn.btn-primary");
+		if(browser.findElements(allEntriesBy).isEmpty()) {
+			browser.findElement(By.cssSelector(".o_sel_author_env .o_table_tabs > ul.o_segments_tab > li > a.o_sel_author_all.btn")).click();
 			OOGraphene.waitElement(allEntriesBy, browser);
 		}
 
 		//find the row
 		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + resourceTitle + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
-		OOGraphene.waitElement(selectRowBy, browser).click();
+		OOGraphene.waitElement(selectRowBy, browser);
+		OOGraphene.click(selectRowBy, browser);
 		
 		By selectBy = By.cssSelector(".o_modal_selection .modal-footer .o_button_group a.btn-primary.o_sel_re_selection_select");
 		OOGraphene.waitElement(selectBy, browser).click();
