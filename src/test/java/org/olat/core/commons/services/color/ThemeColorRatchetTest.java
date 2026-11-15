@@ -49,7 +49,7 @@ import org.junit.Test;
  * script color_inventory.py.
  * <p>
  * A reference that stays by design has a marker, a silent Sass comment
- * (OO-10043, decision D34): <code>// o-color-keep(reason)</code> at the end
+ * (OO-10043): <code>// o-color-keep(reason)</code> at the end
  * of a line, or <code>// o-color-keep-start(reason)</code> and
  * <code>// o-color-keep-end</code> on own lines around a block. The module
  * count does not include a marked reference. The baseline has the total of
@@ -84,14 +84,14 @@ public class ThemeColorRatchetTest {
 	 * only at the end ($o-qti-match-source-border-style: dashed,
 	 * $o-hs-podium-bg-gradientstyle: true). "style" is also the namespace of
 	 * the course element styles: $o-cn-style-border and $o-cn-style-bg count.
-	 * No colour either at the end of a name (OO-10043 slice 17): a gradient
+	 * No colour either at the end of a name: a gradient
 	 * direction ($o-login-bg-gradient-to), a gradient stop list
 	 * ($o-login-form-bg-gradient-steps), an image path ($o-login-form-bg-img)
 	 * and a background position ($o-login-form-bg-position-left, -top).
-	 * OO-10043 slice 18 (same kind, decision D31 Q4): a ratio or a break point
+	 * Of the same kind: a ratio or a break point
 	 * of a size ($o-proj-header-background-ratio, -break) and a blend mode
 	 * ($o-cat2-header-noimage-bg-blend-mode).
-	 * OO-10043 slice 19 (decision D32 E1): the name classes accept upper-case
+	 * the name classes accept upper-case
 	 * letters ($o-qti-textEntryInteraction-bg, $o-qti-badResponse-color).
 	 */
 	private static final List<Pattern> OLD_COLOR_REFERENCES = List.of(
@@ -104,7 +104,7 @@ public class ThemeColorRatchetTest {
 			// ($dropdown-link-hover-bg, $hr-border, $modal-content-border-color), not $modal-lg or $popover-arrow-width
 			Pattern.compile("\\$(?![a-zA-Z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-zA-Z0-9-]*(?:style|gradient-to|gradient-steps|-img|-position-left|-position-top|-ratio|-break|-blend-mode)(?![\\w-]))(?:dropdown|popover|modal|pre|hr|legend|blockquote|thumbnail|progress|tooltip|code|kbd|badge|pagination|pager|breadcrumb|list-group|well|jumbotron(?=-bg)|close|nav|carousel|component-active|headings-small|abbr|page-header)-[a-zA-Z-]*?(?:color|bg|border)(?![\\w-])"),
 			Pattern.compile("\\$(?![a-zA-Z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-zA-Z0-9-]*(?:style|gradient-to|gradient-steps|-img|-position-left|-position-top|-ratio|-break|-blend-mode)(?![\\w-]))o-[a-zA-Z0-9-]*(?:color|bg|border|background)[a-zA-Z0-9-]*"),
-			// color-mix( is the decided form of a translucent token colour (M3): only a Sass mix( or color.mix( counts
+			// color-mix( is the decided form of a translucent token colour: only a Sass mix( or color.mix( counts
 			Pattern.compile("\\b(?:darken|lighten|rgba|fade-in|fade-out|adjust-color|scale-color|transparentize|opacify)\\(|(?<![\\w-])mix\\("),
 			Pattern.compile("\\b(?:rgb|hsla?)\\("),
 			Pattern.compile("\\bo-(?:a11y-color|state-color|palette|swatch-color)\\("));
@@ -114,17 +114,17 @@ public class ThemeColorRatchetTest {
 	private static final Pattern SASS_NAME = Pattern.compile("\\$[\\w-]+");
 
 	/**
-	 * The reasons of the marker o-color-keep (decision D34 of OO-10043): the
+	 * The reasons of the marker o-color-keep: the
 	 * literal colour or the colour variable is correct and stays.
 	 */
 	static final Map<String, String> KEEP_REASONS = Map.ofEntries(
-			Map.entry("hotspot", "hotspot styles of the QTI editor, copy of hotspotInteraction.html (B4-15)"),
+			Map.entry("hotspot", "hotspot styles of the QTI editor, copy of hotspotInteraction.html"),
 			Map.entry("print", "print sheet, black and white on paper"),
 			Map.entry("brand", "brand colour of another product"),
 			Map.entry("devtool", "developer tools, debug mode only"),
-			Map.entry("stored-content", "style that stored content uses (B4-16)"),
-			Map.entry("gradient", "gradient variable whose stops read tokens (D11)"),
-			Map.entry("mask", "mask image, only the alpha counts (D29)"),
+			Map.entry("stored-content", "style that stored content uses"),
+			Map.entry("gradient", "gradient variable whose stops read tokens"),
+			Map.entry("mask", "mask image, only the alpha counts"),
 			Map.entry("email", "mixin that email.css reads, no tokens there"),
 			Map.entry("mixin-argument", "colour maths for a colour argument of a mixin"),
 			Map.entry("vendor-copy", "copy of a third-party stylesheet"),
@@ -349,7 +349,7 @@ public class ThemeColorRatchetTest {
 				.k { border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border); }
 				""";
 		// $o-cn-style-border, $o-cn-style-bg, $o-cn-style-cover-text-bg; not the width and the
-		// style of the course style border (decision D19 of OO-10043)
+		// style of the course style border
 		Assert.assertEquals(3, countOldColorReferences(scss));
 	}
 
@@ -366,7 +366,7 @@ public class ThemeColorRatchetTest {
 
 	/**
 	 * Sass treats "_" and "-" in a name as equal: $o-o_speedometer-danger-border-color
-	 * is $o-o-speedometer-danger-border-color (OO-10043 slice 19, follow-up).
+	 * is $o-o-speedometer-danger-border-color.
 	 * The variable names get "-" before the count.
 	 */
 	static String sassNames(String code) {

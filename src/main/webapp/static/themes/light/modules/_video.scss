@@ -555,6 +555,8 @@
 		&.o_selection_correct {
 			background-color: var(--o-video-timeline-correct-bg);
 		}
+		// the marker line of a selection: the blank content has the colour of
+		// its own fill, a fill token as text colour for a hidden text
 		&.o_selection_correct:before {
 			top: 30px;
 			color: var(--o-video-timeline-correct-bg);
@@ -745,7 +747,7 @@
 		cursor: pointer;
 
 		.o_video_play_head_marker_icon {
-			color: var(--o-primary);
+			color: var(--o-primary-text);
 		}
 	}
 
@@ -830,7 +832,7 @@
 	top: 0;
 	bottom: 60px;
 	right: 0;
-	// the dark layer behind the comments (decision D12 of OO-10043)
+	// the dark layer behind the comments
 	background-color: color-mix(in srgb, var(--o-backdrop) 50%, transparent);
 	z-index: 1;
 }

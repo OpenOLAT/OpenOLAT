@@ -710,7 +710,7 @@ a.o_orderby, a.o_orderby:hover {
 
 	&.o_orderby_asc:after, &.o_orderby_desc:after {
 		@include o-make-icon();
-		color: var(--o-primary);
+		color: var(--o-primary-text);
 		margin-left: 5px;
 	}
 	
@@ -774,7 +774,7 @@ a.o_orderby, a.o_orderby:hover {
 		vertical-align: baseline !important;
 	}
 	
-	// the buttons of the field take the border of the focus, no glow (OO-10043, D24)
+	// the buttons of the field take the border of the focus, no glow (OO-10043)
 	input[type='text']:focus ~ a.btn	 {
 		outline: 0;
 		border-color: var(--o-focus);
@@ -1046,7 +1046,7 @@ a.o_orderby, a.o_orderby:hover {
 	width: 100%;
 	align-items: center;
 	// the link is the full row: the rows touch, a scrolling table body cuts
-	// the ring (OO-10043, D24)
+	// the ring (OO-10043)
 	&:focus:focus-visible {
 		@include o-focus-ring-inset;
 	}

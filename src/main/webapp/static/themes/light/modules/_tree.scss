@@ -282,6 +282,24 @@
 		}
 	}
 }
+/* The focus ring of a tree entry: inside the row of the entry (li > div, the
+ * full width of the tree, with the opener, the learning path step and the
+ * badges), not around the text of the link. The ring keeps its place when the
+ * fill of the row changes (hover, active). The opener keeps a ring of its own
+ * outside its icon; both read tree-focus (3:1 on the row backgrounds). A
+ * browser without :has() keeps the ring of the link. */
+@supports selector(:has(a)) {
+	.o_tree li > div:has(> .o_tree_link > a:focus-visible) {
+		@include o-focus-ring-inset(var(--o-tree-focus));
+	}
+	.o_tree li > div > .o_tree_link > a:focus-visible {
+		outline: 0;
+	}
+}
+.o_tree li > div > a.o_tree_open_close:focus-visible {
+	@include o-focus-ring($color: var(--o-tree-focus));
+}
+
 /* ---- Transitions for modern behavior ---- */
 @media (prefers-reduced-motion: no-preference) {
 	.o_tree {

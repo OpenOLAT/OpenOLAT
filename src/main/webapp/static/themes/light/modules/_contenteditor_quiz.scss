@@ -182,7 +182,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 
 				.o_qti_item_choice_option_flow {
 					i:before {
-						color: var(--o-primary);
+						color: var(--o-primary-text);
 					}
 
 					border-color: var(--o-primary);
@@ -191,7 +191,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 
 					&.o_selected {
 						background-color: $brand-primary-bg;
-						color: var(--o-primary);
+						color: var(--o-primary-text);
 					}
 
 					&.o_correct {
@@ -321,7 +321,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 						border-right-style: solid;
 
 						width: 100%;
-						color: var(--o-primary);
+						color: var(--o-primary-text);
 
 						p {
 							margin: 0;
@@ -339,7 +339,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 				&.o_selected td {
 					&.control, &.choiceInteraction {
 						background-color: $brand-primary-bg;
-						color: var(--o-primary);
+						color: var(--o-primary-text);
 					}
 				}
 
@@ -368,7 +368,7 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 				}
 
 				td i:before {
-					color: var(--o-primary);
+					color: var(--o-primary-text);
 				}
 			}
 

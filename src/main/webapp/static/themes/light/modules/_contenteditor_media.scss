@@ -268,8 +268,8 @@
 			.o_visual {
 				box-sizing: content-box;
 				border-radius: ($o-card-border-radius - 1px) ($o-card-border-radius - 1px) 0px 0px;
-				// invalid today (two widths and two styles): the browser drops the
-				// declaration; fix or remove with B4-18 (OO-10043)
+				// invalid (two widths and two styles): the browser drops the
+				// declaration
 				border-bottom: 1px solid $o-card-border-width $o-card-border-style var(--o-card-border);
 				display: flex;
 				align-items: center;

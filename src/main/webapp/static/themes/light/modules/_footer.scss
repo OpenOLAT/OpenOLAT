@@ -18,7 +18,7 @@
 		&:hover { color: $o-footer-default-link-hover-color;} // o-color-keep(client-value)
 	}
 	// the focus ring reads footer-focus: 3:1 on the footer, also on a dark or
-	// coloured footer (OO-10043, D24)
+	// coloured footer (OO-10043)
 	a, button {
 		&:focus:focus-visible {
 			outline-color: var(--o-footer-focus);

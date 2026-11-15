@@ -410,7 +410,7 @@ form .o_form, form.o_form {
 				margin: auto;
 				left: 10px;
 				top: calc(50% - 6px);
-				// Focus ring (OO-10043, D30): the card shows the ring, not the
+				// Focus ring (OO-10043): the card shows the ring, not the
 				// radio or checkbox inside it.
 				&:focus-visible {
 					outline: 0;
@@ -723,7 +723,7 @@ form .o_form, form.o_form {
 		@include opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
 		
 		/* the focus of the invisible chooser on the visible field: border of
-		   the field and the focus ring (mixin form-control-focus, OO-10043, D24) */
+		   the field and the focus ring (mixin form-control-focus, OO-10043) */
 		&:focus +.o_fakechooser {	
 			input {
 				border-color: var(--o-focus);
@@ -780,7 +780,7 @@ form .o_form, form.o_form {
 				}
 			}
 			/* the focus of the invisible chooser on the button: border and
-			   the focus ring (mixin form-control-focus, OO-10043, D24) */
+			   the focus ring (mixin form-control-focus, OO-10043) */
 			&:focus+script+.o_dnd .btn,
 			&:focus+.o_dnd .btn  {
 				border-color: var(--o-focus);
@@ -793,7 +793,7 @@ form .o_form, form.o_form {
 	}
 	&.panel-placeholder:hover {
 		border-color: var(--o-panel-placeholder-border-hover);
-		// the hover of the area: the border of the focus, no glow (OO-10043, D24)
+		// the hover of the area: the border of the focus, no glow (OO-10043)
 		.o_dnd .btn {
 			border-color: var(--o-focus);
 		}
@@ -1005,7 +1005,7 @@ form.o_dnd_over {
 		}
 
 		// the radio of the item is invisible: the item shows the focus ring,
-		// inset, the items touch (OO-10043, D24)
+		// inset, the items touch (OO-10043)
 		&:has(input:focus-visible) {
 			z-index: 3;
 			@include o-focus-ring(-2px);
@@ -1172,7 +1172,7 @@ legend.control-label {
 	
 	&.o_toggle_off {
 		border-color: var(--o-primary);
-		color: var(--o-primary);
+		color: var(--o-primary-text);
 	}
 
 	&:is(.o_table_flexi *) {

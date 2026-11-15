@@ -124,7 +124,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     The modules read the tokens with var(--o-*). The base colours come from your Sass variables
     ($text-color, $headings-color, $brand-primary, $link-color, ...), so keep setting them as
     before. The light defaults read three colour scales only: the palette (12 chromatic hues),
-    the neutral scale with white and the brand ramp theme1 (OO-10043 slice 25), e.g.
+    the neutral scale with white and the brand ramp theme1, e.g.
     $panel-default-border: o-neutral(150), $o-base-orange-color: o-palette("orange", 500),
     $o-base-blue-color: o-palette("blue", 600). A default with colour maths on another
     variable keeps its source and gives the nearest scale step of its result
@@ -155,7 +155,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     var(--o-theme1-600). A bright fill at step 400 with dark text (the warning and success
     fills, the dirty button) goes lighter: hover and pressed fill step 300 of its hue. The name is the token name and a suffix:
       -hover, -active, -focus   the colour of a state, e.g. --o-tag-bg-hover, --o-chelp-bg-hover
-      -edge                     a darker edge around a fill, e.g. --o-focus-edge
+      -edge                     a darker edge around a fill, e.g. --o-focus-edge, the text
+                                stroke around a rating star --o-rating-star-edge
       -tint                     a lighter tint as a surface, e.g. --o-immunity-proof-none-bg-tint
       -stop-{n}                 the stop n of a gradient, e.g. --o-highscore-podium-first-bg-stop-1
     A gradient stop can also turn the hue of its token (adjust-hue()), e.g.
@@ -189,6 +190,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     The Bootstrap colour variables that the modules read are framework tokens. Keep setting the
     Bootstrap variable, it gives the default of the token:
       --o-input-fg, --o-input-placeholder       $input-color, $input-color-placeholder
+                                                (light: neutral-750 = --o-text, neutral-500)
       --o-input-bg, --o-input-disabled-bg       reference "bg", "bg-subtle" (set with $o-tokens)
       --o-table-border, --o-table-striped-bg    $table-border-color, $table-bg-accent
       --o-table-hover-bg                        reference "bg-hover"
@@ -223,9 +225,6 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     and the message boxes. They do not read $brand-success, $brand-info, $brand-warning,
     $brand-danger or $state-{success,info,warning,danger}-{text,bg,border} any more. Your
     values of these Bootstrap variables reach only email.css and the own rules of your theme.
-    The login link of the navigation bar reads the token navbar-login ($o-navbar-login-color,
-    default orange-400). It does not follow $brand-warning any more: to keep your colour, set
-    $o-navbar-login-color or $o-tokens: ("navbar-login": ...).
     When your config sets one of them to a value other than the default of the light theme,
     the compile prints one warning for theme.css and one for content.css:
       WARNING: OpenOLAT theme: your config sets $brand-danger, ... These variables do not
@@ -239,6 +238,16 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
       3. When you keep them on purpose, set
            $o-legacy-color-warning: false;
          in your config to hide the warning.
+    The login link of the navigation bar for guests is a primary button
+    (li#o_navbar_login.o_navbar_button), like the login button of the navigation bar of the
+    login page. It reads the btn-primary tokens. The variable $o-navbar-login-color and the
+    token navbar-login are removed. When your config still sets one of them, delete the
+    setting: $o-tokens: ("navbar-login": ...) stops the compile with "unknown token";
+    $o-navbar-login-color has no effect, and the compile gives no warning for it. Do not add
+    own rules for the login link. Rules of your theme on
+    "#o_navbar_tools_permanent > li > a" or "#o_navbar_tools_permanent a" reach the button
+    too (an id selector wins over the button rules): exclude the login item, e.g.
+    "> li:not(#o_navbar_login) > a".
     The danger button has own tokens with the danger state as default: btn-danger-bg,
     btn-danger-fg, btn-danger-border (one step darker). To change the danger button alone:
       $o-tokens: ("btn-danger-bg": "red-600", "btn-danger-border": "red-700");
@@ -246,8 +255,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     fill of the warning state and a dark text. When you set their Sass variable, the text is
     the adjusted white as before.
     The border of a styled course element is $o-cn-style-border-line-width (1px),
-    $o-cn-style-border-line-style (solid) and the token course-style-border (#E4E7EC, follows
-    "border"). The shorthand $o-cn-style-border is removed: when your config sets it, the
+    $o-cn-style-border-line-style (solid) and the token course-style-border (neutral-150,
+    follows "border"). The shorthand $o-cn-style-border is removed: when your config sets it, the
     compile prints one warning per stylesheet and the value has no effect. Set e.g.
       $o-cn-style-border-line-width: 2px;
       $o-tokens: ("course-style-border": "neutral-300");
@@ -265,7 +274,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
       $o-tokens: ("navbar-focus": "white");
     Do not add own outline rules for :focus to your theme; the mixins of light/modules/_focus.scss
     give a control the inset ring (o-focus-ring-inset) when it touches its neighbours.
-    The fixed greys and colours of the modules read tokens (decision D29): texts, borders and
+    The fixed greys and colours of the modules read tokens: texts, borders and
     fills read the semantic tokens (text, text-muted, border, border-strong, bg-subtle, bg-hover,
     ...), status icons the state tokens, decorative colours palette steps. Your values of
     $text-color, $panel-default-border, $input-border, ... now reach these rules too. Elements
@@ -322,8 +331,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     and $o-users-portrait-img-border ($o-user-info-portrait-border-width, -style, token
     user-info-portrait-border). The compile prints one warning per stylesheet when your
     config sets one of them.
-    The other modules read element tokens fed by their Sass variables too (OO-10043 slice
-    19), e.g. $o-tag-font-color gives --o-tag-fg, $o-competences-font-color gives
+    The other modules read element tokens fed by their Sass variables too, e.g. $o-tag-font-color gives --o-tag-fg, $o-competences-font-color gives
     --o-competence-fg, $o-toolbar-nav-bg-color gives --o-toolbar-nav-bg,
     $o-qti-textEntryInteraction-bg gives --o-qti-text-entry-bg. Eight more shorthand
     borders are removed: $o-folder-row-thumbnail-image-border and $o-swiper-button-border

@@ -325,7 +325,7 @@ body.o_dmz {
 		}
 		
 		.btn-default.o_sel_auth_adfs i {
-			color: var(--o-primary)
+			color: var(--o-primary-text)
 		}
 		
 		.o_sel_auth_azureAdfs i {
@@ -334,7 +334,7 @@ body.o_dmz {
 		// o-color-keep-end
 		
 		.btn-default.o_sel_auth_OpenIDConnect i {
-			color: var(--o-primary);
+			color: var(--o-primary-text);
 		}		
 	}
 }
@@ -371,6 +371,8 @@ body.o_dmz {
 			position: relative;
 			
 			.o_background {
+				// the border of the cells: the border of a form field
+				--otp-border-color: var(--o-border-strong);
 				position: absolute;
 				margin-left: -1px;
 				margin-right: -1px;

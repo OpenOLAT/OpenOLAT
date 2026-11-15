@@ -458,9 +458,9 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 }
 .o_progress_failed .percentage {
 	@include o-add-icon('times');
-	color: var(--o-state-danger-soft-bg);
+	color: var(--o-radial-progress-failed-glyph);
 }
 .o_progress_passed .percentage {
 	@include o-add-icon('check');
-	color: var(--o-state-success-soft-bg);
+	color: var(--o-radial-progress-passed-glyph);
 }

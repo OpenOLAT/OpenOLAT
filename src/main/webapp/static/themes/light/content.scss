@@ -29,7 +29,7 @@
 @import "modules/button_variant";
 // the state mixins (.text-*, .bg-*, ...) that read the colour tokens (OO-10043)
 @import "modules/state_variant";
-// the focus ring: tab-focus and form-control-focus replace the Bootstrap mixins (OO-10043, D24)
+// the focus ring: tab-focus and form-control-focus replace the Bootstrap mixins (OO-10043)
 @import "modules/focus";
 @import "../../bootstrap/stylesheets/bootstrap/normalize";
 @import "../../bootstrap/stylesheets/bootstrap/print";

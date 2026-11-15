@@ -20,7 +20,7 @@
  *   component   the elements of one feature module: course, tests, forum,
  *               chat, ... ($o-token-layer-component)
  *
- * The tokens read colours only from three scales (OO-10043 slice 25): the
+ * The tokens read colours only from three scales: the
  * palette (12 chromatic hues), the neutral scale with white and the brand
  * ramp theme{n}. Every token is a var() reference: to a semantic token, to
  * a scale step, to another token or to its base colour. A literal value
@@ -165,7 +165,7 @@ $o-token-base: (
 	// Opaque colours of the shadows and veils. The rule sets the
 	// transparency: color-mix(in srgb, var(--o-backdrop) 50%, transparent).
 	// shadow-color: the Bootstrap shadows, rgba(0, 0, 0, a), and the shadows
-	// of panels, dropdowns, cards and the login box (decision D3 of OO-10043)
+	// of panels, dropdowns, cards and the login box
 	"shadow-color": o-neutral(1000),
 	// backdrop: the layer behind a modal dialog ($modal-backdrop-bg)
 	"backdrop": $modal-backdrop-bg,
@@ -231,7 +231,7 @@ $o-token-layer-base: (
 	// the text of the light buttons on the fill of the mixin states: the hover,
 	// focus and active fill (-bg-hover) and the pressed fill (-bg-active). The
 	// text of the button when it keeps 4.5:1 there, else the text adjusted for
-	// the fill (o-contrast-shade-text(), decision D13 of OO-10043)
+	// the fill (o-contrast-shade-text())
 	"btn-primary-light-fg-hover":                 (o-contrast-shade-text($o-button-primary-light-color, $o-button-primary-light-bg, 10%), ("btn-primary-light-fg",)),
 	"btn-primary-light-fg-active":                (o-contrast-shade-text($o-button-primary-light-color, $o-button-primary-light-bg, 17%), ("btn-primary-light-fg",)),
 	"btn-danger-light-fg-hover":                  (o-contrast-shade-text($o-button-danger-light-color, $o-button-danger-light-bg, 10%), ("btn-danger-light-fg",)),
@@ -258,7 +258,7 @@ $o-token-layer-base: (
 	// the line of hr in the content ($o-content-hr-color), the legend of a
 	// fieldset ($o-content-fieldset-legend-color), the border of a b_border_box,
 	// the cell border of the content tables and the border of an image with
-	// border (OO-10043 slice 19)
+	// border
 	"content-hr":                                  ($o-content-hr-color, ()),
 	"content-fieldset-legend":                     ($o-content-fieldset-legend-color, ("text",)),
 	"content-border-box-border":                   ($o-content-border-box-border, ()),
@@ -285,34 +285,34 @@ $o-token-layer-framework: (
 	"dropdown-link-hover-bg":                     ($dropdown-link-hover-bg, ("bg-hover",)),
 	"dropdown-divider":                           ($dropdown-divider-bg, ()),
 	// the text and the fill of the active item of a dropdown menu with a
-	// label (Bootstrap variables, M7 a)
+	// label (Bootstrap variables)
 	"dropdown-link-active":                        ($dropdown-link-active-color, ()),
 	"dropdown-link-active-bg":                     ($dropdown-link-active-bg, ("primary",)),
 	// Form elements: input fields and legends
 	"input-bg":                                   "bg",
-	"input-fg":                                   ($input-color, ()),
+	"input-fg":                                   ($input-color, ("text",)),
 	"input-disabled-bg":                          "bg-subtle",
 	"input-placeholder":                          ($input-color-placeholder, ()),
 	"legend":                                     ($legend-color, ()),
 	"legend-border":                              ($legend-border-color, ()),
-	// the border of the error message under a form field (form .o_error): red
-	// 300, one step stronger than the soft border of the error box. A theme
-	// that sets $o-box-error-color (or $o-color-error) gets its colour. No
-	// contrast pair: 1.86:1 on box-error-bg, 1.99:1 on white.
-	"form-error-border":                          (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-palette("red", 300)), ()),
+	// the border of the error message under a form field (form .o_error): the
+	// text of the danger state, the colour of the border of the field with the
+	// error. A theme that sets $o-box-error-color (or $o-color-error) gets its
+	// colour.
+	"form-error-border":                          (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-state-color("danger", "text")), ("state-danger-text",)),
 	// Modal dialogs and popovers
 	"modal-content-border":                       ($modal-content-border-color, ("border",)),
 	"modal-header-border":                        ($modal-header-border-color, ()),
 	"popover-bg":                                 "bg-raised",
 	"popover-border":                             ($popover-border-color, ()),
 	// the fallback border of a popover before the border with transparency
-	// ($popover-fallback-border-color, OO-10043 slice 16)
+	// ($popover-fallback-border-color)
 	"popover-fallback-border":                     ($popover-fallback-border-color, ()),
 	// the title of a popover: the source of the line under the title
 	"popover-title-bg":                           ($popover-title-bg, ()),
 	// Panels, progress bars and thumbnails
 	"panel-bg":                                   ($panel-bg, ("bg",)),
-	// the line between two bodies of a panel ($panel-default-border, M7 a)
+	// the line between two bodies of a panel ($panel-default-border)
 	"panel-default-border":                        ($panel-default-border, ()),
 	"progress-bar-fg":                            ($progress-bar-color, ()),
 	"progress-bar-bg":                            ($progress-bar-bg, ("primary",)),
@@ -329,11 +329,14 @@ $o-token-layer-framework: (
 	"message-table-border":                       ($gray-dark, ()),
 	// Message boxes of a state (.o_info, .o_note, .o_success, .o_warning,
 	// .o_error): the border is the soft border of the state, the icon the soft
-	// text of the state, a coloured text the text of the state. A theme that
-	// sets $o-box-*-color (or $o-color-*) gets its colour for all three.
-	"box-info-border":                            ($o-box-info-color, ("state-neutral-soft-border",)),
-	"box-info-text":                              (o-own-or($o-box-info-color, o-state-color("neutral", "soft-border"), o-state-color("neutral", "text")), ("state-neutral-text",)),
-	"box-info-icon":                              (o-own-or($o-box-info-color, o-state-color("neutral", "soft-border"), o-state-color("neutral", "soft-fg")), ("state-neutral-soft-fg",)),
+	// text of the state, a coloured text the text of the state. The info box
+	// and the info message at the top of the page have the fill of the
+	// neutral state as border, and the text of the neutral state as icon and
+	// coloured text. A theme that sets $o-box-*-color (or $o-color-*) gets its
+	// colour for all three.
+	"box-info-border":                            ($o-box-info-color, ("state-neutral-bg",)),
+	"box-info-text":                              (o-own-or($o-box-info-color, o-state-color("neutral", "bg"), o-state-color("neutral", "text")), ("state-neutral-text",)),
+	"box-info-icon":                              (o-own-or($o-box-info-color, o-state-color("neutral", "bg"), o-state-color("neutral", "text")), ("state-neutral-text",)),
 	"box-note-icon":                              (o-own-or($o-box-note-color, o-state-color("inactive", "soft-border"), o-state-color("inactive", "soft-fg")), ("state-inactive-soft-fg",)),
 	"box-success-border":                         ($o-box-success-color, ("state-success-soft-border",)),
 	"box-success-text":                           (o-own-or($o-box-success-color, o-state-color("success", "soft-border"), o-state-color("success", "text")), ("state-success-text",)),
@@ -345,9 +348,10 @@ $o-token-layer-framework: (
 	"box-error-text":                             (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-state-color("danger", "text")), ("state-danger-text",)),
 	"box-error-icon":                             (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-state-color("danger", "soft-fg")), ("state-danger-soft-fg",)),
 	// the fill of the message boxes ($o-box-*-bg): the soft fill of the state,
-	// cyan 50 for tip and important; the coloured tables in a box have shade
-	// tokens of it (border, stripe and header)
-	"box-info-bg":                                ($o-box-info-bg, ("state-neutral-soft-bg",)),
+	// neutral 25 (near white) for info, cyan 50 for tip and important; the
+	// coloured tables in a box have shade tokens of it (border, stripe and
+	// header)
+	"box-info-bg":                                ($o-box-info-bg, ()),
 	"box-note-bg":                                ($o-box-note-bg, ("state-inactive-soft-bg",)),
 	"box-success-bg":                             ($o-box-success-bg, ("state-success-soft-bg",)),
 	"box-warning-bg":                             ($o-box-warning-bg, ("state-warning-soft-bg",)),
@@ -371,7 +375,7 @@ $o-token-layer-framework: (
 	// the box of the brand colour (rating and comments, notifications): border
 	"brand-box-border":                           ($o-brand-box-border, ()),
 	// the fill of the circle of an empty state (color-mix() of primary by
-	// default, OO-10043 slice 18, D31 Q2)
+	// default)
 	"brand-box-bg":                                ($o-brand-box-bg, ()),
 	// Charts: the help line of a function or grading chart ($gray-light), the
 	// light and the dark bar of the default bar chart
@@ -381,7 +385,7 @@ $o-token-layer-framework: (
 	// Bookmarks
 	"bookmark":                                   ($o-bookmark-color, ()),
 	// Comments: the glow around a highlighted comment, the fill of the
-	// warning state mixed with transparent (decision D29 of OO-10043)
+	// warning state mixed with transparent
 	"comment-highlight-glow":                     "state-warning-bg",
 	// Cards and fact sheet
 	"card-hover":                                 "primary",
@@ -396,10 +400,10 @@ $o-token-layer-framework: (
 	"dashboard-widget-bg":                         ($o-dashboard-widget-bg-color, ("panel-bg",)),
 	"dashboard-widget-header-footer-bg":           ($o-dashboard-widget-header-footer-bg-color, ()),
 	"dashboard-widget-table-bg":                   ($o-dashboard-widget-table-bg-color, ()),
-	// the fill of the icon of a fact (color-mix() of primary by default, D31)
+	// the fill of the icon of a fact (color-mix() of primary by default)
 	// and the borders of a card, a widget, a fact sheet, its separator and a
 	// dashboard widget: the colour of the old shorthand variables; width and
-	// style are $o-{name}-border-width and $o-{name}-border-style (D31). The
+	// style are $o-{name}-border-width and $o-{name}-border-style. The
 	// fact sheet follows the information page of a learning resource.
 	"fact-icon-bg":                                ($o-fact-icon-bg-color, ()),
 	"card-border":                                 (o-neutral(150), ()),
@@ -413,7 +417,7 @@ $o-token-layer-framework: (
 	"chelp-bg":                                   ($o-chelp-bg, ("btn-primary-bg",)),
 	"chelp-border":                               ($o-chelp-border, ("btn-primary-border",)),
 	"chelp-fg":                                   "btn-primary-fg",
-	// the help icon next to a label and the help tooltip: muted text (M9 of OO-10043)
+	// the help icon next to a label and the help tooltip: muted text
 	"chelp-tooltip":                              ($o-chelp-tooltip-color, ("text-muted",)),
 	// the border and the arrow of the tooltip of a glossary term; its fill
 	// reads bg
@@ -450,9 +454,9 @@ $o-token-layer-framework: (
 	"empty-msg":                                  ($o-empty-msg-color, ("text",)),
 	"empty-panel-icon":                           "primary",
 	// the empty state: the border (width and style $o-empty-border-width,
-	// -style, D31), the indicator and the large icon; the empty panel: the fill
-	// of the icon (color-mix() of primary by default, D31); the icon panel: the
-	// border (width and style $o-icon-panel-border-width, -style, D31), the
+	// -style), the indicator and the large icon; the empty panel: the fill
+	// of the icon (color-mix() of primary by default); the icon panel: the
+	// border (width and style $o-icon-panel-border-width, -style), the
 	// fill of the icon column and of the content column
 	"empty-border":                                (o-neutral(150), ()),
 	"empty-indicator":                             ($o-empty-indicator-color, ()),
@@ -467,11 +471,11 @@ $o-token-layer-framework: (
 	"not-available-light":                        (o-neutral(0), ()),
 	"indicator-label":                            "text-muted",
 	// the line between the indicators (width and style
-	// $o-indicator-separator-border-width, -style, D31)
+	// $o-indicator-separator-border-width, -style)
 	"indicator-separator-border":                  ($o-dialog-cn-box-border-color, ("border",)),
 	// the speedometer: the track, the indicator of the default state and the
 	// value of a state, one border token and one text token per state (T5;
-	// the Sass names hold "_": $o-o_speedometer-*-border-color, slice 19)
+	// the Sass names hold "_": $o-o_speedometer-*-border-color)
 	"speedometer-not-border":                      ($o-o_speedometer-not-border-color, ()),
 	"speedometer-default-border":                  ($o-o_speedometer-default-border-color, ("state-neutral-border",)),
 	"speedometer-success-border":                  ($o-o_speedometer-success-border-color, ("state-success-border",)),
@@ -499,12 +503,16 @@ $o-token-layer-framework: (
 	"radial-progress-percentage-danger":           ($o-radial-progress-percentage-danger-color, ("state-danger-text",)),
 	"radial-progress-circle-warning":              ($o-radial-progress-circle-warning-color, ("state-warning-bg",)),
 	"radial-progress-percentage-warning":          ($o-radial-progress-percentage-warning-color, ("state-warning-text",)),
+	// the large check and cross behind the number of a passed and of a failed
+	// radial progress: a pale picture in the soft fill of the state
+	"radial-progress-passed-glyph":                "state-success-soft-bg",
+	"radial-progress-failed-glyph":                "state-danger-soft-bg",
 	// Figure cards
 	"figure-card-chevron":                        "text-muted",
 	"figure-card-figure":                         "primary",
 	"figure-card-icon":                           ($o-figure-card-icon-color, ("primary",)),
 	// the fill of a figure card and of its icon (color-mix() of primary by
-	// default, D31); the icon colours of a figure card: the text and the fill
+	// default); the icon colours of a figure card: the text and the fill
 	// of the tint swatch of a palette hue
 	"figure-card-bg":                              ($o-figure-card-bg-color, ()),
 	"figure-card-icon-bg":                         ($o-figure-card-icon-bg-color, ()),
@@ -525,7 +533,7 @@ $o-token-layer-framework: (
 	"footer-inner-bg":                            ($o-footer-inner-bg, ()),
 	"footer-text":                                ($o-footer-default-color, ("text-muted",)),
 	"footer-link":                                ($o-footer-default-link-color, ("text-muted",)),
-	// the focus ring in the footer (decision D24 of OO-10043), as navbar-focus:
+	// the focus ring in the footer, as navbar-focus:
 	// the focus colour, else the footer link colour, adjusted to 3:1 on the
 	// footer
 	"footer-focus":                               (o-a11y-color(o-contrast-hover($o-focus-color, $o-footer-default-link-color, $o-footer-inner-bg, 3), $o-footer-inner-bg, 3), ("focus", "footer-link")),
@@ -548,8 +556,8 @@ $o-token-layer-framework: (
 	// the fill of the drop zone while a file is dragged over it
 	"panel-placeholder-bg-active":                 ($o-panel-placeholder-bg-active, ()),
 	// the translucent fill below a text on an image (color-mix() of scrim by
-	// default, D31), the border of the activity log entries: added, modified,
-	// removed (width and style $o-activity-*-border-width, -style, D31)
+	// default), the border of the activity log entries: added, modified,
+	// removed (width and style $o-activity-*-border-width, -style)
 	"imagebg-text-bg":                             ($o-imagebg-text-background, ()),
 	"activity-add-border":                         (o-state-color("success", "bg"), ("state-success-bg",)),
 	"activity-modify-border":                      (o-state-color("warning", "bg"), ("state-warning-bg",)),
@@ -579,7 +587,7 @@ $o-token-layer-framework: (
 	"toggle-on-bg":                               "primary",
 	"toggle-on-border":                           "primary",
 	// the text of the toggle in the off position: the muted text, adjusted to
-	// 4.5:1 on the track (decision D9 of OO-10043)
+	// 4.5:1 on the track
 	"toggle-text":                                (o-scale-a11y-color($text-muted, $o-toggle-bg), ("text-muted",)),
 	// the toggle switch (.o_button_toggle): border, track, handle, and the
 	// handle and the text of the switch in the on position
@@ -612,12 +620,11 @@ $o-token-layer-framework: (
 	"login-border":                                ($o-login-border-color, ()),
 	// the translucent fill of the login box and of the message box of the login
 	// page: the colour of the Sass variable, a color-mix() of a token by default
-	// (OO-10043 slice 17, D31)
 	"login-bg":                                    ($o-login-bg-color, ()),
 	"login-infomessage-bg":                        ($o-login-infomessage-bg, ()),
 	// the one-time code field (registration, mail validation, password
 	// change): the fill of a code cell and of the active cell, the caret;
-	// fixed colours (decision D29 of OO-10043)
+	// fixed colours
 	"otp-cell-bg":                                (o-neutral(100), ()),
 	"otp-cell-active-bg":                         (o-neutral(400), ()),
 	"otp-caret":                                  (o-palette("gray", 900), ()),
@@ -630,7 +637,13 @@ $o-token-layer-framework: (
 	"tree-link-active-hover-bg":                  ($o-tree-link-active-hover-bg, ()),
 	"tree-link-active-parent":                    ($o-tree-link-active-parent-color, ("tree-link",)),
 	"tree-link-active-parent-hover":              ($o-tree-link-active-parent-hover-color, ("tree-link-hover",)),
-	// the drop target while an item is dragged: a fixed yellow (D29)
+	// the focus ring inside the row of a tree entry and around the opener: the
+	// focus colour adjusted to 3:1 on the darkest opaque row background (page,
+	// tree, link, hover and active hover fill). Follows focus when it has its
+	// colour. The fill of the active row ($o-tree-link-active-bg) is left out:
+	// on a dark active row of a theme the ring can have less than 3:1
+	"tree-focus":                                 (o-a11y-color($o-focus-color, o-darkest-color(o-opaque-colors($body-bg, $o-tree-bg, $o-tree-link-bg, $o-tree-link-hover-bg, $o-tree-link-active-hover-bg)...), 3), ("focus",)),
+	// the drop target while an item is dragged: a fixed yellow
 	"tree-dnd-over-bg":                           (o-palette("yellow", 300), ()),
 	// the border of the tree, of its items and of the drag proxy
 	"tree-border":                                 ($o-tree-border-color, ()),
@@ -641,7 +654,7 @@ $o-token-layer-framework: (
 	"tree-insertion-source-fg":                    ($o-tree-insertion-source-color, ()),
 	// Main layout: the fill of the main wrapper, of the main container and
 	// of the left column. The fill of the right and of the centre column is
-	// "inherit" and stays Sass (D31 Q6)
+	// "inherit" and stays Sass
 	"main-outer-bg":                               ($o-main-outer-bg, ()),
 	"main-inner-bg":                               ($o-main-inner-bg, ()),
 	"main-left-bg":                                ($o-main-left-bg, ()),
@@ -664,14 +677,14 @@ $o-token-layer-framework: (
 	"navbar-brand-hover-bg":                      ($o-navbar-brand-hover-bg, ()),
 	// the close icon of a tab: the danger text; the hover is darker, on a dark
 	// navbar the close colour itself (o-contrast-hover() in _config.scss). The
-	// compile adjusts both to 3:1 on the navbar (decision D10 of OO-10043).
+	// compile adjusts both to 3:1 on the navbar.
 	"navbar-tab-close":                           (o-a11y-color($o-navbar-tab-close-color, $o-navbar-bg, 3), ("state-danger-text",)),
 	"navbar-tab-close-hover":                     (o-a11y-color($o-navbar-tab-close-hover-color, $o-navbar-bg, 3), ("state-danger-text-hover", "state-danger-text")),
 	// the close icon of a tab in the "More" dropdown: on the raised surface of
 	// the dropdown, not on the navbar, without the adjustment
 	"dropdown-tab-close":                         ($o-navbar-tab-close-color, ("state-danger-text",)),
 	"dropdown-tab-close-hover":                   ($o-navbar-tab-close-hover-color, ("state-danger-text-hover", "state-danger-text")),
-	// the focus ring in the navbar (decision D24 of OO-10043): the focus colour
+	// the focus ring in the navbar: the focus colour
 	// when it has 3:1 on the navbar, else the link colour of the navbar when it
 	// has more contrast (o-contrast-hover()); then adjusted to 3:1 on the
 	// navbar. Follows focus or navbar-link when it has their colour.
@@ -681,12 +694,9 @@ $o-token-layer-framework: (
 	"navbar-highlight":                           (o-neutral(0), ()),
 	// the logout link of the personal menu
 	"navbar-logout":                               ($o-navbar-logout-color, ("state-danger-text",)),
-	// the login link of the navbar (OO-10043 slice 26). No contrast pair:
-	// the default has 1.99:1 on the white navbar
-	"navbar-login":                                ($o-navbar-login-color, ()),
 	// Offcanvas menu: the logout link and its hover, the link under the
 	// pointer ($o-offcanvas-link-hover-color) and the line under a category
-	// title (D29)
+	// title
 	"offcanvas-logout":                           ($o-offcanvas-logout-color, ()),
 	"offcanvas-logout-hover":                     ($o-offcanvas-logout-hover-color, ()),
 	"offcanvas-link-hover":                       ($o-offcanvas-link-hover-color, ()),
@@ -726,7 +736,7 @@ $o-token-layer-framework: (
 	"scope-toggle-on-hover-bg":                   ($o-scope-toggle-on-bg-hover-color, ()),
 	// the text of the selected scope toggle under the pointer: the text of the
 	// selected toggle, adjusted when the hover fill is 10% lighter because no
-	// visible lighter fill keeps 4.5:1 (decision D13 of OO-10043). A hover
+	// visible lighter fill keeps 4.5:1. A hover
 	// fill of the theme ($o-scope-toggle-on-bg-hover-color) keeps the text.
 	"scope-toggle-on-hover-fg":                   (o-contrast-shade-text($o-scope-toggle-on-color, $o-scope-toggle-on-bg-color, 10%, "lighten", $state-bg: $o-scope-toggle-on-bg-hover-color), ("scope-toggle-on-fg",)),
 	// Table
@@ -743,10 +753,10 @@ $o-token-layer-framework: (
 	"table-row-selected-bg":                       ($o-table-row-selected-color, ("state-neutral-soft-bg",)),
 	"table-filter-collapse-border":                ($o-table-filter-collapse-color, ()),
 	// the border of the box in a details row (width and style
-	// $o-table-details-container-border-width, -style, D31)
+	// $o-table-details-container-border-width, -style)
 	"table-details-container-border":              (o-neutral(150), ()),
 	// the fill of a sticky column of a scrolled table, in a row and in a
-	// striped row: a fixed shade that shows the sticky state (D29)
+	// striped row: a fixed shade that shows the sticky state
 	"table-sticky-col-bg":                        (o-neutral(25), ()),
 	"table-sticky-col-striped-bg":                (o-neutral(50), ()),
 	// the filter buttons above a table (.o_table_filter), the active and the
@@ -758,7 +768,7 @@ $o-token-layer-framework: (
 	"table-filter-active-bg":                     ($o-table-filter-active-bg, ("btn-primary-border",)),
 	"table-filter-active-border":                 ($o-table-filter-active-border, ("btn-primary-border",)),
 	// the text of the filter buttons on the hover and the pressed fill (see
-	// btn-primary-light-fg-hover, decision D13 of OO-10043)
+	// btn-primary-light-fg-hover)
 	"table-filter-fg-hover":                      (o-contrast-shade-text($o-table-filter-color, $o-table-filter-bg, 10%), ("table-filter-fg",)),
 	"table-filter-fg-active":                     (o-contrast-shade-text($o-table-filter-color, $o-table-filter-bg, 17%), ("table-filter-fg",)),
 	"table-filter-active-fg-hover":               (o-contrast-shade-text($o-table-filter-active-color, $o-table-filter-active-bg, 10%), ("table-filter-active-fg",)),
@@ -787,7 +797,7 @@ $o-token-layer-framework: (
 	"swiper-button-hover":                        "primary",
 	// the theme colour of the swiper (bullets, arrows: --swiper-theme-color);
 	// the border of a swiper button (width and style
-	// $o-swiper-button-border-width, -style, D31 Q1)
+	// $o-swiper-button-border-width, -style)
 	"swiper-theme":                                ($o-swiper-color, ("btn-primary-bg",)),
 	"swiper-button-border":                        ($btn-default-border, ("btn-default-border",)),
 	"timeline-path":                              "border",
@@ -804,7 +814,7 @@ $o-token-layer-framework: (
 	"toolbar-link-active":                        ($o-toolbar-link-active-color, ("link",)),
 	"toolbar-nav-link":                           "toolbar-link",
 	"toolbar-nav-link-hover":                     "toolbar-link-hover",
-	// a disabled link: the disabled text (M9 of OO-10043)
+	// a disabled link: the disabled text
 	"toolbar-link-disabled":                      ($o-toolbar-link-disabled-color, ("text-disabled",)),
 	"toolbar-nav-link-disabled":                  ($o-toolbar-nav-link-disabled-color, ("toolbar-link-disabled",)),
 	"toolbar-nav-border":                         "border-strong",
@@ -816,7 +826,7 @@ $o-token-layer-framework: (
 	"toolbar-bg":                                  ($o-toolbar-bg-color, ()),
 	// the fill of an active link and of an active dropdown item of the
 	// toolbar, the fill of the next and previous buttons, the two stripes of
-	// the toolbar and of the breadcrumb in the edit mode (D32 E3)
+	// the toolbar and of the breadcrumb in the edit mode
 	"toolbar-link-active-bg":                      ($o-toolbar-link-active-bg, ()),
 	"toolbar-dropdown-active-bg":                  ($o-toolbar-dropdown-active-bg, ()),
 	"toolbar-nav-bg":                              ($o-toolbar-nav-bg-color, ()),
@@ -860,7 +870,7 @@ $o-token-layer-component: (
 	"lecture-excluded":                            ($o-lm-excluded-color, ("state-danger-text",)),
 	"lecture-timeline-row-bg":                     ($o-lm-timeline-row-bg, ()),
 	// AI feedback of an essay: the marks of a correct, an ambiguous and a
-	// wrong passage, the fill of the state mixed with transparent (D29)
+	// wrong passage, the fill of the state mixed with transparent
 	"ai-mark-correct":                            "state-success-bg",
 	"ai-mark-ambiguous":                          "state-warning-bg",
 	"ai-mark-wrong":                              "state-danger-bg",
@@ -881,7 +891,7 @@ $o-token-layer-component: (
 	"badge-status-warning":                       (o-a11y-color(o-state-color("warning", "text"), $o-toolbar-bg-color), ("state-warning-text",)),
 	"badge-status-danger":                        (o-a11y-color(o-state-color("danger", "text"), $o-toolbar-bg-color), ("state-danger-text",)),
 	// the pressed and the selected template card of the badge wizard: a
-	// fixed grey, darker than the hover fill bg-hover (D29)
+	// fixed grey, darker than the hover fill bg-hover
 	"badge-template-selected-bg":                 (o-palette("gray", 200), ()),
 	// the meta line of a badge or certificate row ($o-export-area-meta-color)
 	"export-area-meta":                            ($o-export-area-meta-color, ()),
@@ -898,7 +908,14 @@ $o-token-layer-component: (
 	"course-quota-intern-quota-bg":                ($o-course-quota-progress-iq-bg-color, ()),
 	"course-quota-intern-bg":                      ($o-course-quota-progress-i-bg-color, ()),
 	"course-quota-extern-bg":                      ($o-course-quota-progress-ex-bg-color, ()),
+	// the confirmation of a contact tracing registration: the fill, the dark
+	// text and icon on the bright fills (step 900 of the hue of the fill) of
+	// the confirmation and of a validated and a claimed immunity proof; the
+	// box of a missing immunity proof keeps white text on its red fill
 	"contact-tracing-confirmation-bg":             ($o-ct-confirmation-bg-color, ()),
+	"contact-tracing-confirmation-fg":             (o-palette("lime", 900), ()),
+	"contact-tracing-validated-fg":                (o-palette("lime", 900), ()),
+	"contact-tracing-claimed-fg":                  (o-palette("orange", 900), ()),
 	"dialog-cn-label-new-border":                  ($o-dialog-cn-label-new-border-color, ()),
 	"dialog-cn-label-new":                         ($o-dialog-cn-label-new-color, ()),
 	"todo-overdue":                                ($o-todo-overdue-color, ("state-danger-text",)),
@@ -906,7 +923,8 @@ $o-token-layer-component: (
 	"im-summary-bg":                              ($o-im-summary-bg, ()),
 	"im-buddies-link":                            "link",
 	"im-buddies-link-hover":                      "link-hover",
-	"im-chat-date":                               "text-muted",
+	// the time of a message: the colour of the name of the sender
+	"im-chat-date":                               "im-chat-from",
 	"im-groupchat-user":                          "text",
 	// the name of the sender of a message, the fill of the buddy list
 	"im-chat-from":                               ($o-im-chat-from-color, ()),
@@ -934,7 +952,7 @@ $o-token-layer-component: (
 	// Competences
 	// the text of a selected competence on the white competence fill: the text
 	// of the selected tag, adjusted to 4.5:1 on the pressed fill
-	// (competence-bg-active) when it is too light (decision D8 of OO-10043)
+	// (competence-bg-active) when it is too light
 	"competence-selected":                        (o-a11y-color($o-button-dirty-color, darken(o-neutral(0), 15%)), ("tag-selected-fg",)),
 	"competence-selected-border":                 ($o-competences-selected-border-color, ("btn-dirty-border",)),
 	// the competence and taxonomy tag: fill (white) and border
@@ -947,22 +965,23 @@ $o-token-layer-component: (
 	"editor-layout-pseudo-icon-bg-active":        "primary",
 	"editor-selected-border":                     ($o-editor-selected-border-color, ("primary",)),
 	"editor-selected-bg":                            "primary",
-	// icon of a media without preview ($gray-lighter)
-	"editor-media-unavailable":                   ($gray-lighter, ()),
+	// the icon of a media without preview: the only cue for the media type on
+	// the card, neutral 450 (3:1). A theme that sets $gray-lighter keeps its
+	// colour.
+	"editor-media-unavailable":                   (o-own-or($gray-lighter, o-neutral(100), o-neutral(450)), ()),
 	// the links of the toolbar of a page part in the editor (white on the
 	// toolbar; a disabled link mixes it at 50% with transparent)
 	"editor-part-toolbar-link":                   (o-neutral(0), ()),
 	// the border of an image with the style shadow: the rule mixes it at 15%
 	// with transparent ($gray)
 	"editor-image-shadow-border":                 ($gray, ()),
-	// the editor of a page: the border of a container, its toolbar, the text
-	// that names a slot, the inspector, the inner lines of a layout (dashed
+	// the editor of a page: the border of a container, its toolbar, the
+	// inspector, the inner lines of a layout (dashed
 	// horizontal, solid vertical; width and style
-	// $o-editor-layout-inner-{h,v}-border-width, -style, D31), the layout icons
+	// $o-editor-layout-inner-{h,v}-border-width, -style), the layout icons
 	// of the inspector, a slot, a slot under the pointer, the fill of the edit
 	// mode, the border of an active message box
 	"editor-border":                               ($o-editor-border-color, ()),
-	"editor-hover-text":                           ($o-editor-border-color, ("editor-border",)),
 	"editor-inspector-border":                     ($o-editor-inspector-border-color, ("editor-border",)),
 	"editor-layout-inner-h-border":                ($o-editor-border-color, ("editor-border",)),
 	"editor-layout-inner-v-border":                ($o-editor-border-color, ("editor-border",)),
@@ -986,7 +1005,7 @@ $o-token-layer-component: (
 	"course-style-bg":                            ($o-cn-style-bg, ()),
 	// the border of a styled course element, of the selection course element
 	// and of the details button of a table: the colour of the old shorthand
-	// $o-cn-style-border (decision D19 of OO-10043); width and style are
+	// $o-cn-style-border; width and style are
 	// $o-cn-style-border-line-width and $o-cn-style-border-line-style
 	"course-style-border":                        (o-neutral(150), ("border",)),
 	"course-style-image-bg":                      ($o-cn-style-image-bg, ("primary",)),
@@ -998,7 +1017,7 @@ $o-token-layer-component: (
 	"course-assessment-part-bg":                  "bg-subtle",
 	// the list of the assessment modes: the line and the fill of a mode of
 	// today and of a mode that ends soon; the line of the inspection code
-	// (width and style $o-assessment-inspection-border-width, -style, D31)
+	// (width and style $o-assessment-inspection-border-width, -style)
 	"assessment-mode-today-border":                ($o-assessment-mode-today-border-color, ("state-success-text",)),
 	"assessment-mode-today-bg":                    ($o-assessment-mode-today-bg, ("state-success-soft-bg",)),
 	"assessment-mode-end-soon-border":             ($o-assessment-mode-end-soon-border-color, ("state-danger-text",)),
@@ -1011,7 +1030,7 @@ $o-token-layer-component: (
 	// text of a deleted course element in the editor overview
 	"course-node-deleted":                        ($o-course-node-deleted, ("text-disabled",)),
 	// the translucent fill behind the text of a cover image (color-mix() of
-	// scrim by default, D31 Q2); the outline label of the educational type of a
+	// scrim by default); the outline label of the educational type of a
 	// course, one per type (border and text)
 	"course-style-cover-text-bg":                  ($o-cn-style-cover-text-bg, ()),
 	"edu-type-standard-course":                    ($o-edu-type-standard-course-color, ()),
@@ -1029,8 +1048,8 @@ $o-token-layer-component: (
 	"lp-pagination-in-progress-icon":             "state-neutral-text",
 	"lp-pagination-in-progress-icon-hover":       "state-neutral-text",
 	// the learning path menu: the border (width and style $o-lp-border-width,
-	// -style, D31), the translucent fill of an open level (color-mix() of
-	// backdrop by default, D31), the fill of a step icon; the confirmation
+	// -style), the translucent fill of an open level (color-mix() of
+	// backdrop by default), the fill of a step icon; the confirmation
 	// button of the pagination: fill, border and text when done, the
 	// translucent fill (color-mix() of lp-in-progress) and the icon fill in
 	// progress
@@ -1056,7 +1075,7 @@ $o-token-layer-component: (
 	"step-status-extended":                       "state-neutral-text",
 	"step-status-late":                           "state-critical-text",
 	// the process steps: the border of a step block (width and style
-	// $o-step-border-line-width, -style, D31 Q1), the fill of its header, the
+	// $o-step-border-line-width, -style), the fill of its header, the
 	// line of a step, the dashed line of an active, of a not available and of
 	// an expired step, the icon of a not available step
 	"step-border":                                 (o-neutral(150), ()),
@@ -1092,10 +1111,10 @@ $o-token-layer-component: (
 	"coursesite-row-hover":                       ($gray-light, ()),
 	// the fill of a row of the course list and of a taxonomy launcher, its
 	// translucent fill under the pointer (color-mix() of coursesite-row-hover
-	// by default, D31), the progress icon of a row (the colour of the neutral
+	// by default), the progress icon of a row (the colour of the neutral
 	// progress bar), the outline label of a benefit (certificate, credit
 	// points): border and text; the translucent fill of a box on the header
-	// image of the catalog (color-mix() of scrim by default, D31)
+	// image of the catalog (color-mix() of scrim by default)
 	"coursesite-row-bg":                           ($o-coursesite-rowelem-bg, ()),
 	"coursesite-row-hover-bg":                     ($o-coursesite-rowelem-hover-bg, ()),
 	"coursesite-progress-icon":                    ($progress-bar-neutral-bg, ("progress-bar-neutral-bg",)),
@@ -1105,11 +1124,11 @@ $o-token-layer-component: (
 	// the border of the information page of a learning resource and of its
 	// separator: the colour of the old shorthand variables; width and style
 	// $o-repo-info-border-width, -style, $o-repo-info-separator-border-width,
-	// -style (D31)
+	// -style
 	"repo-info-border":                            (o-neutral(250), ()),
 	"repo-info-separator-border":                  (o-neutral(250), ()),
 	// the billing address: the fill, the border (width and style
-	// $o-ac-ba-border-width, -style, D31 Q1) and the fill of a temporary
+	// $o-ac-ba-border-width, -style) and the fill of a temporary
 	// address
 	"ac-billing-address-bg":                       ($o-ac-ba-bg-color, ()),
 	"ac-billing-address-border":                   (o-neutral(250), ()),
@@ -1120,7 +1139,7 @@ $o-token-layer-component: (
 	// the text of an inactive or a deleted element, the text of an avatar, the
 	// borders of a card and of a widget (width and style
 	// $o-curriculum-widget-card-border-width, -style,
-	// $o-curriculum-widget-border-width, -style, D31), the fill of a widget and
+	// $o-curriculum-widget-border-width, -style), the fill of a widget and
 	// of the template label, the fill of an import row: error, new, changed,
 	// ignored
 	"curriculum-element-inactive":                 ($o-curriculum-element-inactive-color, ()),
@@ -1160,7 +1179,7 @@ $o-token-layer-component: (
 	"folder-muted":                               "text-muted",
 	"folder-row-thumbnail-folder-icon":           "primary",
 	// the outline of an image thumbnail of a folder row (width and style
-	// $o-folder-row-thumbnail-image-border-width, -style, D31 Q1), the icon of
+	// $o-folder-row-thumbnail-image-border-width, -style), the icon of
 	// a file card
 	"folder-row-thumbnail-image-border":           (o-neutral(150), ()),
 	"folder-card-thumbnail-icon":                  ($o-folder-card-thumbnail-icon-color, ()),
@@ -1177,7 +1196,7 @@ $o-token-layer-component: (
 	"forum-quote":                                 ($o-forum-quote-color, ()),
 	"citation-quote":                              ($o-cit-quote-color, ()),
 	// the glow around a new and a highlighted message: the fill of the
-	// state mixed with transparent (D29)
+	// state mixed with transparent
 	"forum-message-new-glow":                     "state-success-bg",
 	"forum-message-highlight-glow":               "state-warning-bg",
 	// Immunity proof: the fill of the status, one per state
@@ -1191,20 +1210,20 @@ $o-token-layer-component: (
 	"highscore-podium-first-bg":                  ($o-hs-podium-first-bg, ()),
 	// the colour of the position title when the gradient is off
 	// ($o-hs-position-title-gradient: false; a colour of the old variable
-	// $o-hs-position-title-color, else the text colour; D32 E2)
+	// $o-hs-position-title-color, else the text colour)
 	"highscore-position-title":                    (o-hs-position-title-color(), ("text",)),
 	"highscore-podium-second-bg":                 ($o-hs-podium-second-bg, ()),
 	"highscore-podium-third-bg":                  ($o-hs-podium-third-bg, ()),
 	"highscore-bar-myself-hover":                 ($o-hs-histogram-bar-myself-hover-color, ()),
 	"highscore-bar-other-hover":                  ($o-hs-histogram-bar-other-hover-color, ()),
 	// the border of the podium (width and style $o-hs-podium-border-width,
-	// -style, D31), the rank numbers on the podium, the text and the axes of
+	// -style), the rank numbers on the podium, the text and the axes of
 	// the histogram, the bar of the other participants and of an empty class
 	"highscore-podium-border":                     (o-neutral(200), ()),
 	"highscore-rank-first":                        ($o-hs-rank-first-color, ()),
 	"highscore-rank-second":                       ($o-hs-rank-second-color, ()),
 	"highscore-rank-third":                        ($o-hs-rank-third-color, ()),
-	"highscore-histogram-text":                    ($o-hs-histogram-text-color, ()),
+	"highscore-histogram-text":                    ($o-hs-histogram-text-color, ("text-muted",)),
 	"highscore-histogram-axis":                    ($o-hs-histogram-axis-color, ()),
 	"highscore-bar-other":                         ($o-hs-histogram-bar-other-color, ()),
 	"highscore-bar-empty":                         ($o-hs-histogram-bar-empty-color, ()),
@@ -1238,7 +1257,7 @@ $o-token-layer-component: (
 	"practice-icon":                              (o-neutral(300), ()),
 	// the colour of a level of the practice progress: bar, legend icon, pie
 	// chart; the boxes of the play page and the fill of the start link (the
-	// main box: color-mix() of primary by default, D31)
+	// main box: color-mix() of primary by default)
 	"practice-progress-not-bg":                    ($o-practice-progress-not-bg-color, ()),
 	"practice-progress-l1-bg":                     ($o-practice-progress-l1-bg-color, ()),
 	"practice-progress-l2-bg":                     ($o-practice-progress-l2-bg-color, ()),
@@ -1250,18 +1269,18 @@ $o-token-layer-component: (
 	"practice-play-main-bg":                       ($o-practice-play-main-bg-color, ()),
 	"practice-play-start-link-bg":                 ($o-practice-play-start-link-bg-color, ()),
 	// Rating: the filled and the empty star, a fixed colour (palette step
-	// yellow-400, decision D1 of OO-10043)
+	// yellow-400); the edge of the stars is the shade token rating-star-edge
 	"rating-star":                                (o-palette("yellow", 400), ()),
 	// Room management: the status of an inactive room ($gray-light)
 	"room-status-inactive":                       ($gray-light, ()),
 	// Users: the ring of a portrait in the user info (width and style
-	// $o-user-info-portrait-border-width, -style, D31), the text of the
+	// $o-user-info-portrait-border-width, -style), the text of the
 	// initials and the fill of the grey initials, the borders of the user info,
 	// of its profile and of its divider (width and style
-	// $o-user-info-*-border-width, -style, D31), the ring of an inactive and of
+	// $o-user-info-*-border-width, -style), the ring of an inactive and of
 	// a deleted user (the border colour of the tint and of the dark style of
 	// the inactive state, as today). Authentication: the border of the panel
-	// (width and style $o-panel-authentication-border-width, -style, D31), the
+	// (width and style $o-panel-authentication-border-width, -style), the
 	// colours of the levels 1 to 3
 	"user-info-portrait-border":                   (o-neutral(0), ()),
 	"user-initials-fg":                            ($o-user-initials-color, ()),
@@ -1283,13 +1302,13 @@ $o-token-layer-component: (
 	"selectus-review-comments-border":            ($navbar-default-border, ()),
 	// the text of a row on hold and of a row with the mail disabled, the glow
 	// of a new comment, the date of a comment
-	"selectus-onhold":                             ($o-selectus-onhold-color, ()),
+	"selectus-onhold":                             ($o-selectus-onhold-color, ("text-muted",)),
 	"selectus-review-comment-glow":                ($o-selectus-review-comment-glowing-color, ("state-warning-bg",)),
 	"selectus-review-comment-date":                ($o-selectus-review-comment-date-color, ()),
-	"selectus-mail-disabled":                      ($o-selectus-mail-disabled-color, ()),
+	"selectus-mail-disabled":                      ($o-selectus-mail-disabled-color, ("text-muted",)),
 	// the rating buttons A, B, C and abstain: fixed colours, the text on the
-	// fill. The text keeps 4.5:1 on the fill, the hover and the pressed fill
-	// (decision D9 of OO-10043): B has a dark text, adjusted for its pressed
+	// fill. The text keeps 4.5:1 on the fill, the hover and the pressed fill:
+	// B has a dark text, adjusted for its pressed
 	// fill; C has a red fill, darkened until the white text passes.
 	"selectus-rating-a-bg":                       (o-palette("green", 500), ()),
 	"selectus-rating-a-fg":                       (o-neutral(0), ()),
@@ -1299,16 +1318,22 @@ $o-token-layer-component: (
 	"selectus-rating-c-fg":                       (o-neutral(0), ()),
 	"selectus-rating-abstain-bg":                 (o-neutral(600), ()),
 	"selectus-rating-abstain-fg":                 (o-neutral(0), ()),
-	// the yellow of rating B as text and as mark on the background: the letter
-	// in the explanation of the rating policy (4.5:1) and the mark of the
-	// overview and of the own rating (3:1, non-text); the marks A and C and
-	// the letter A read the fill of the button (decision D18 of OO-10043).
-	// The letters B and C and the mark B keep their contrast on a white, a
-	// striped and a hovered table row: adjusted against the darkest of the
-	// three (decision D26).
+	// the colours of the ratings as text on the background: the letters in
+	// the explanation of the rating policy (4.5:1). The letter A has the
+	// colour of the fill of the button (selectus-rating-a-text). The yellow
+	// of B has too little contrast: the letters B and C keep their contrast
+	// on a white, a striped and a hovered table row, adjusted against the
+	// darkest of the three.
+	"selectus-rating-a-text":                     "selectus-rating-a-bg",
 	"selectus-rating-b-text":                     (o-a11y-color(o-palette("yellow", 500), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)), ()),
-	"selectus-rating-b-marker":                   (o-a11y-color(o-palette("yellow", 500), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover), 3), ()),
 	"selectus-rating-c-text":                     (o-a11y-color(o-palette("red", 500), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)), ()),
+	// the marks of the ratings A, B, C in the overview and of the own rating:
+	// the solid fill of the state success, warning and danger, so that the
+	// three hues are told apart. The border of the mark (btn-default-border)
+	// shows its shape with 3:1 on the rows, the fill has no pair.
+	"selectus-rating-a-mark":                     "state-success-bg",
+	"selectus-rating-b-mark":                     "state-warning-bg",
+	"selectus-rating-c-mark":                     "state-danger-bg",
 	// the decision cells A, B, C of the table and their hover
 	"selectus-decision-a-bg":                     ($o-selectus-table-a-decision-bg, ()),
 	"selectus-decision-b-bg":                     ($o-selectus-table-b-decision-bg, ()),
@@ -1332,7 +1357,7 @@ $o-token-layer-component: (
 	"drawing-border":                             "primary",
 	"drawing-select-border":                      "primary",
 	// the fill of a selected hotspot in the editor (color-mix() of primary by
-	// default, D31)
+	// default)
 	"drawing-select-bg":                           ($o-drawing-select-bg, ()),
 	"qpool-arrow-selected-bg":                    "navbar-link-active-bg",
 	"qpool-arrow-selected-fg":                    "navbar-link-active",
@@ -1343,7 +1368,7 @@ $o-token-layer-component: (
 	"qti-attempts":                               "text-muted",
 	"qti-gap-border":                             ($o-qti-gap-border-color, ("border-strong",)),
 	// the text entry field: border, fill and text, and with a value: text,
-	// fill, border ($o-qti-textEntryInteraction-*, D32 E1; the test run reads
+	// fill, border ($o-qti-textEntryInteraction-*; the test run reads
 	// input-disabled-bg for the fill with a value)
 	"qti-text-entry-border":                       ($o-qti-textEntryInteraction-border-color, ("qti-gap-border",)),
 	"qti-text-entry-bg":                           ($o-qti-textEntryInteraction-bg, ()),
@@ -1354,7 +1379,7 @@ $o-token-layer-component: (
 	"qti-gap-drag-border":                        "primary",
 	"qti-gap-selected-border":                    "primary",
 	// the dashed border of a gap in a text (gap match): black, the only
-	// mark of the gap (D29)
+	// mark of the gap
 	"qti-text-gap-border":                        (o-neutral(1000), ()),
 	// the alternatives of a gap text ($gray-lighter, $gray)
 	"qti-gaptext-alternative-bg":                 ($gray-lighter, ()),
@@ -1382,13 +1407,12 @@ $o-token-layer-component: (
 	// the icons of an ended and of an invalid test session
 	"qti-status-ended":                            ($o-qti-status-ended-color, ("state-finished-text",)),
 	"qti-status-invalid":                          ($o-qti-status-invalid-color, ("state-danger-text",)),
-	// the icons of a question not seen and not answered (D32 E1)
+	// the icons of a question not seen and not answered
 	"qti-status-not-presented":                    ($o-qti-status-notPresented-color, ()),
 	"qti-status-not-answered":                     ($o-qti-status-notAnswered-color, ("state-critical-text",)),
 	// the text of a bad response with a warning
 	"qti-bad-response-warning":                   ($o-qti-badResponse-warning-color, ("state-warning-text",)),
-	// the text and the input border of a bad response ($o-qti-badResponse-color,
-	// D32 E1)
+	// the text and the input border of a bad response ($o-qti-badResponse-color)
 	"qti-bad-response":                            ($o-qti-badResponse-color, ("state-danger-text",)),
 	// the result boxes of the maths input: the fill of the state, the text
 	// on the danger fill
@@ -1448,7 +1472,7 @@ $o-token-layer-component: (
 	"topicbroker-waiting":                        "state-warning-text",
 	"topicbroker-title-abbr-bg":                  "btn-primary-bg",
 	"topicbroker-title-abbr-fg":                  "btn-primary-fg",
-	// the borders (width and style variables, D31 Q1): the abbreviation of a
+	// the borders (width and style variables): the abbreviation of a
 	// topic, of a placeholder topic, the line below the details, the lines of
 	// the weighting grid
 	"topicbroker-title-abbr-border":               ($btn-primary-color, ("btn-primary-fg",)),
@@ -1472,7 +1496,7 @@ $o-token-layer-component: (
 	"video-timeline-incorrect-bg":                 ($o-video-timeline-incorrect-bg, ("state-danger-bg",)),
 	// the audio and video recorder: the outline and the recording fill of a
 	// button decoration, the record button and the symbols (stop, play)
-	// with their hover and pressed colours; fixed colours (D29). The record
+	// with their hover and pressed colours; fixed colours. The record
 	// symbol is a shape on white: the fill step 450, hover and pressed darker
 	"recorder-decoration":                        (o-neutral(1000), ()),
 	"recorder-recording":                         (o-palette("red", 300), ()),
@@ -1483,18 +1507,18 @@ $o-token-layer-component: (
 	"recorder-symbol-hover":                      (o-neutral(900), ()),
 	"recorder-symbol-active":                     (o-neutral(750), ()),
 	// the pressed item of the segment category list of the video editor:
-	// a fixed grey, darker than the hover fill bg-hover (D29)
+	// a fixed grey, darker than the hover fill bg-hover
 	"video-category-active-bg":                   (o-palette("gray", 200), ()),
 	// Video task
 	"video-startbox-main-border":                 "primary",
 	// the video task: the fill of the start box (color-mix() of primary by
-	// default, D31), the grey marker area of the practice, the texts of the
+	// default), the grey marker area of the practice, the texts of the
 	// correct and of the not correct segments
 	"video-startbox-main-bg":                      ($o-video-startbox-main-bg-color, ()),
 	"video-practice":                              ($o-video-color-practice, ()),
 	// the info box "start recording" of the video recorder: fill and text
 	// ($o-color-note-text-bg, $o-color-note; written $o_color_note-text-bg,
-	// $o_color_note in the module, slice 19)
+	// $o_color_note in the module)
 	"video-recording-info-bg":                     ($o-color-note-text-bg, ()),
 	"video-recording-info-fg":                     ($o-color-note, ()),
 	"video-correct-segments":                      ($o-video-correct-segments-color, ("state-success-text",)),
@@ -1553,11 +1577,11 @@ $o-token-shades: (
 	// The light buttons, the filter buttons of the table and the rating
 	// buttons of selectus (mixin button-variant). The pressed fill of the light
 	// buttons and of the filters is darker by the amount of Bootstrap at most:
-	// the text keeps 4.5:1 (o-contrast-shade-amount(), decision D9 of OO-10043).
+	// the text keeps 4.5:1 (o-contrast-shade-amount()).
 	// It is 3% darker at least: when no amount from 3% keeps 4.5:1, the fill
 	// keeps the amount of Bootstrap and the text tokens -fg-hover and
-	// -fg-active get the adjusted text (decision D13). A black fill cannot
-	// get darker: it gets lighter by the same amount ("state", decision D20).
+	// -fg-active get the adjusted text. A black fill cannot
+	// get darker: it gets lighter by the same amount ("state").
 	"btn-primary-light-bg-hover":                 ("btn-primary-light-bg", o-contrast-shade-amount($o-button-primary-light-color, $o-button-primary-light-bg, 10%), "state"),
 	"btn-primary-light-bg-active":                ("btn-primary-light-bg", o-contrast-shade-amount($o-button-primary-light-color, $o-button-primary-light-bg, 17%), "state"),
 	"btn-primary-light-border-hover":             ("btn-primary-light-border", 12%),
@@ -1658,6 +1682,8 @@ $o-token-shades: (
 	"popover-title-bg-edge":                      ("popover-title-bg", 5%),
 	// Chat: the name of the sender under the pointer
 	"im-chat-from-hover":                         ("im-chat-from", 10%),
+	// Rating: the darker edge of a star (text stroke around the glyph)
+	"rating-star-edge":                           ("rating-star", 20%),
 	// Form: the border of a drop place under the pointer
 	"panel-placeholder-border-hover":             ("panel-placeholder-border", 10%),
 	// High score: the stops 1, 2 and 4 of the glossy gradient of a podium
@@ -1724,7 +1750,7 @@ $o-token-shades: (
 // a state fill ("state": darker, lighter when it cannot get darker)
 @function o-token-shade($color, $def) {
 	@if list.length($def) > 2 and list.nth($def, 3) == "state" {
-		// a state fill: darker, lighter when darken() keeps the colour (D20)
+		// a state fill: darker, lighter when darken() keeps the colour
 		@return o-contrast-shade($color, list.nth($def, 2));
 	}
 	@if list.length($def) > 2 and list.nth($def, 3) == "lighten" {
@@ -1784,7 +1810,7 @@ $o-token-shades: (
 	@return true;
 }
 
-// The colour of a shade token (OO-10043 slice 25). When the colour of its
+// The colour of a shade token. When the colour of its
 // token is a colour of a default (a step of the palette, of the neutral
 // scale or of the brand ramp, o-scale-has()), the shade reads the nearest
 // step of the scale of its token (the same palette hue, the neutral scale or
@@ -1931,8 +1957,7 @@ $o-token-contrast-pairs: (
 	("btn-danger-fg", "btn-danger-bg-hover", 4.5),
 	("btn-danger-fg", "btn-danger-bg-active", 4.5),
 	// the ghost button and the light buttons of _helpers.scss, the text of the
-	// state on the hover and the pressed fill too (decisions D9 and D13 of
-	// OO-10043)
+	// state on the hover and the pressed fill too
 	("btn-ghost-fg", "bg", 4.5),
 	("btn-ghost-hover-fg", "bg", 4.5),
 	("btn-primary-light-fg", "btn-primary-light-bg", 4.5),
@@ -1966,7 +1991,7 @@ $o-token-contrast-pairs: (
 	("tag-selected-fg", "tag-selected-bg-hover", 4.5),
 	("tag-selected-fg", "tag-selected-bg-active", 4.5),
 	// the text of a selected competence on its fill, under the pointer and
-	// pressed (decision D8 of OO-10043)
+	// pressed
 	("competence-selected", "competence-bg", 4.5),
 	("competence-selected", "competence-bg-hover", 4.5),
 	("competence-selected", "competence-bg-active", 4.5),
@@ -1977,7 +2002,7 @@ $o-token-contrast-pairs: (
 	("dropdown-tab-close-hover", "bg-raised", 3),
 	("im-newmessage", "navbar-bg", 3),
 	("im-newmessage-hover", "navbar-bg", 3),
-	// the focus ring of the navbar items (decision D24 of OO-10043)
+	// the focus ring of the navbar items
 	("navbar-focus", "navbar-bg", 3),
 	// the labels without a status class and as a link under the pointer, the
 	// help icon next to a label (the text of the checked radio card on its
@@ -2006,47 +2031,41 @@ $o-token-contrast-pairs: (
 	("selectus-rating-c-fg", "selectus-rating-c-bg-active", 4.5),
 	("selectus-rating-abstain-fg", "selectus-rating-abstain-bg-active", 4.5),
 	// the marks and the letters of the ratings on a white, a striped and a
-	// hovered table row: the marks A, C and abstention and the letter A read
-	// the fill of the button, the letters B and C and the mark B their own
-	// tokens (decisions D18, D26, D28); the mark of no rating has the fill of
-	// the default button and no pair (its border shows it)
-	("selectus-rating-a-bg", "bg", 4.5),
-	("selectus-rating-a-bg", "table-striped-bg", 4.5),
-	("selectus-rating-a-bg", "table-hover-bg", 4.5),
+	// hovered table row: the letters read their text tokens (4.5:1); the
+	// border of a mark (3:1) shows the marks A, B, C (solid state fills
+	// without a pair) and the mark of no rating (fill of the default
+	// button); the mark of the abstention reads the fill of the button (3:1)
+	("selectus-rating-a-text", "bg", 4.5),
+	("selectus-rating-a-text", "table-striped-bg", 4.5),
+	("selectus-rating-a-text", "table-hover-bg", 4.5),
 	("selectus-rating-b-text", "bg", 4.5),
 	("selectus-rating-b-text", "table-striped-bg", 4.5),
 	("selectus-rating-b-text", "table-hover-bg", 4.5),
 	("selectus-rating-c-text", "bg", 4.5),
 	("selectus-rating-c-text", "table-striped-bg", 4.5),
 	("selectus-rating-c-text", "table-hover-bg", 4.5),
-	("selectus-rating-b-marker", "bg", 3),
-	("selectus-rating-b-marker", "table-striped-bg", 3),
-	("selectus-rating-b-marker", "table-hover-bg", 3),
-	("selectus-rating-c-bg", "bg", 3),
-	("selectus-rating-c-bg", "table-striped-bg", 3),
-	("selectus-rating-c-bg", "table-hover-bg", 3),
+	("btn-default-border", "bg", 3),
+	("btn-default-border", "table-striped-bg", 3),
+	("btn-default-border", "table-hover-bg", 3),
 	("selectus-rating-abstain-bg", "bg", 3),
 	("selectus-rating-abstain-bg", "table-striped-bg", 3),
 	("selectus-rating-abstain-bg", "table-hover-bg", 3),
-	// the marks of the ratings on the decision rows A, B, C and their hover
-	("selectus-rating-a-bg", "selectus-decision-a-bg", 3),
-	("selectus-rating-a-bg", "selectus-decision-a-hover-bg", 3),
-	("selectus-rating-a-bg", "selectus-decision-b-bg", 3),
-	("selectus-rating-a-bg", "selectus-decision-b-hover-bg", 3),
-	("selectus-rating-a-bg", "selectus-decision-c-bg", 3),
-	("selectus-rating-a-bg", "selectus-decision-c-hover-bg", 3),
-	("selectus-rating-b-marker", "selectus-decision-a-bg", 3),
-	("selectus-rating-b-marker", "selectus-decision-a-hover-bg", 3),
-	("selectus-rating-b-marker", "selectus-decision-b-bg", 3),
-	("selectus-rating-b-marker", "selectus-decision-b-hover-bg", 3),
-	("selectus-rating-b-marker", "selectus-decision-c-bg", 3),
-	("selectus-rating-b-marker", "selectus-decision-c-hover-bg", 3),
-	("selectus-rating-c-bg", "selectus-decision-a-bg", 3),
-	("selectus-rating-c-bg", "selectus-decision-a-hover-bg", 3),
-	("selectus-rating-c-bg", "selectus-decision-b-bg", 3),
-	("selectus-rating-c-bg", "selectus-decision-b-hover-bg", 3),
-	("selectus-rating-c-bg", "selectus-decision-c-bg", 3),
-	("selectus-rating-c-bg", "selectus-decision-c-hover-bg", 3),
+	// the links on the decision rows A, B, C and their hover (text colour,
+	// underlined)
+	("text", "selectus-decision-a-bg", 4.5),
+	("text", "selectus-decision-a-hover-bg", 4.5),
+	("text", "selectus-decision-b-bg", 4.5),
+	("text", "selectus-decision-b-hover-bg", 4.5),
+	("text", "selectus-decision-c-bg", 4.5),
+	("text", "selectus-decision-c-hover-bg", 4.5),
+	// the marks of the ratings on the decision rows A, B, C and their hover:
+	// the border of the marks, the fill of the abstention mark
+	("btn-default-border", "selectus-decision-a-bg", 3),
+	("btn-default-border", "selectus-decision-a-hover-bg", 3),
+	("btn-default-border", "selectus-decision-b-bg", 3),
+	("btn-default-border", "selectus-decision-b-hover-bg", 3),
+	("btn-default-border", "selectus-decision-c-bg", 3),
+	("btn-default-border", "selectus-decision-c-hover-bg", 3),
 	("selectus-rating-abstain-bg", "selectus-decision-a-bg", 3),
 	("selectus-rating-abstain-bg", "selectus-decision-a-hover-bg", 3),
 	("selectus-rating-abstain-bg", "selectus-decision-b-bg", 3),
@@ -2086,6 +2105,12 @@ $o-token-contrast-pairs: (
 	("box-success-icon", "box-success-bg", 3),
 	("box-warning-icon", "box-warning-bg", 3),
 	("box-error-icon", "box-error-bg", 3),
+	// the border of the info box, the border and the icon of the important box
+	("box-info-border", "box-info-bg", 3),
+	("box-important-border", "box-important-bg", 3),
+	// the border of the error message under a form field
+	("form-error-border", "box-error-bg", 3),
+	("form-error-border", "bg", 3),
 	("text", "box-info-table-header-bg", 4.5),
 	("text", "box-note-table-header-bg", 4.5),
 	("text", "box-success-table-header-bg", 4.5),
@@ -2143,7 +2168,7 @@ $o-token-contrast-pairs: (
 	("forum-message-header-author", "forum-message-header-bg", 4.5),
 	("forum-message-header-modified", "forum-message-header-bg", 4.5),
 	("forum-message-footer-attachment", "forum-message-footer-bg", 4.5),
-	// decision D29 of OO-10043: the caret of the one-time code field, the
+	// the caret of the one-time code field, the
 	// link under the pointer in the off-canvas menu, the dashed border of a
 	// QTI text gap (the only mark of the gap), the status icons of selectus
 	// and the icons of the recorder that pass today. Not listed, it fails
@@ -2166,10 +2191,10 @@ $o-token-contrast-pairs: (
 	("recorder-symbol", "bg", 3),
 	("recorder-symbol-hover", "bg", 3),
 	("recorder-symbol-active", "bg", 3),
-	// OO-10043 slice 16, the framework modules: the icons and texts of the
+	// the framework modules: the icons and texts of the
 	// new tokens that pass today. Not listed, they fail today:
-	// box-important-border on box-important-bg (1.85:1), the soft borders of
-	// the boxes of a state box-{info,note,success,warning,error}-border on
+	// the soft borders of
+	// the boxes of a state box-{note,success,warning,error}-border on
 	// their fill (1.18:1 to 1.38:1), widget-subtitle and
 	// widget-text-additional on white (4.48:1); tree-insertion-disabled is the
 	// text of a disabled control.
@@ -2198,9 +2223,9 @@ $o-token-contrast-pairs: (
 	("qti-status-ended", "bg", 3),
 	("qti-status-invalid", "bg", 3),
 	("lecture-rollcall-pending", "bg", 3),
-	// OO-10043 slice 17, assessment and content modules: the texts and
+	// assessment and content modules: the texts and
 	// icons of the new tokens that pass today. Not listed, they fail today:
-	// editor-hover-text on bg (1.47:1), the legend icons
+	// the legend icons
 	// practice-progress-not-bg, -l1-bg, -l3-bg, -l4-bg, -l5-bg on bg
 	// (below 3:1).
 	("box-note-text", "box-note-bg", 4.5),
@@ -2210,16 +2235,18 @@ $o-token-contrast-pairs: (
 	("video-correct-segments", "bg", 4.5),
 	("video-notcorrect-segments", "bg", 4.5),
 	("practice-progress-l2-bg", "bg", 3),
-	// OO-10043 slice 18, course, user and various modules: the texts and
+	// course, user and various modules: the texts and
 	// icons of the new tokens that pass today. Not listed, they fail today:
 	// empty-icon on bg (1.66:1, 3:1), export-area-meta,
 	// curriculum-element-inactive and selectus-review-comment-date on bg
-	// (4.48:1), selectus-onhold and selectus-mail-disabled on bg (2.68:1),
-	// highscore-histogram-text on bg (3.54:1).
+	// (4.48:1).
 	("datecomp-month-fg", "datecomp-month-bg", 4.5),
 	("day-nav-day-selected-fg", "day-nav-day-selected-bg", 4.5),
 	("empty-indicator", "bg", 3),
 	("radial-progress-number", "radial-progress-inset-bg", 4.5),
+	// the number on the pale glyph of a passed and of a failed radial progress
+	("radial-progress-number", "radial-progress-passed-glyph", 4.5),
+	("radial-progress-number", "radial-progress-failed-glyph", 4.5),
 	("radial-progress-percentage-success", "radial-progress-inset-bg", 4.5),
 	("radial-progress-percentage-neutral", "radial-progress-inset-bg", 4.5),
 	("radial-progress-percentage-info", "radial-progress-inset-bg", 4.5),
@@ -2270,12 +2297,10 @@ $o-token-contrast-pairs: (
 	("authentication-level1", "bg", 4.5),
 	("authentication-level2", "bg", 4.5),
 	("authentication-level3", "bg", 4.5),
-	// OO-10043 slice 19, the other modules: the texts and icons of the new
-	// tokens that pass today. Not listed, they fail today: step-notavailable
-	// on bg (2.85:1, icon 3:1), folder-card-thumbnail-icon on bg (1.61:1,
-	// 3:1), dialog-cn-label-new on state-warning-soft-bg (4.28:1), the white
-	// text on contact-tracing-confirmation-bg (2.12:1), competence-fg on the
-	// pressed fill competence-bg-active (4.49:1 in light).
+	// the other modules: the texts and icons of the new
+	// tokens that pass today. Not listed, they fail today:
+	// folder-card-thumbnail-icon on bg (1.61:1, icon 3:1),
+	// competence-fg on the pressed fill competence-bg-active (4.49:1 in light).
 	("content-fieldset-legend", "bg", 4.5),
 	("dropdown-link-active", "dropdown-link-active-bg", 4.5),
 	("autocomplete-fg", "autocomplete-bg", 4.5),
@@ -2303,13 +2328,156 @@ $o-token-contrast-pairs: (
 	("qti-status-not-answered", "bg", 3),
 	("qti-text-entry-fg", "qti-text-entry-bg", 4.5),
 	("qti-text-entry-filled-fg", "qti-text-entry-filled-bg", 4.5),
-	// slice 19, names with "_": the value of the speedometer (48px, large
+	// names with "_": the value of the speedometer (48px, large
 	// text 3:1) and the recording info of the video recorder
 	("speedometer-default-text", "bg", 3),
 	("speedometer-success-text", "bg", 3),
 	("speedometer-warning-text", "bg", 3),
 	("speedometer-danger-text", "bg", 3),
-	("video-recording-info-fg", "video-recording-info-bg", 4.5)
+	("video-recording-info-fg", "video-recording-info-bg", 4.5),
+	// the focus ring inside the row of a tree entry, on the hover and the
+	// active hover fill of the row (the page and the tree have the focus pair)
+	("tree-focus", "tree-link-hover-bg", 3),
+	("tree-focus", "tree-link-active-hover-bg", 3),
+	// the other text tokens of the three layers: a text 4.5:1, an icon 3:1 on
+	// the background it renders on. Not listed, they fail with the defaults:
+	// the decorative icons folder-card-thumbnail-icon, practice-icon,
+	// empty-icon on bg (1.61:1 at most), the fill of a rating star
+	// rating-star on bg (1.57:1; the edge rating-star-edge has the pair).
+	// Not listed by design: disabled texts, texts on a client value (the
+	// tree background, the fill of the active tree row), on a background with
+	// a color-mix() value or on the swatch colour of a user choice
+	("content-dimmed", "bg", 4.5),
+	("content-h1", "bg", 4.5),
+	("content-h2", "bg", 4.5),
+	("content-h3", "bg", 4.5),
+	("content-h4", "bg", 4.5),
+	("content-h5", "bg", 4.5),
+	("content-text", "bg", 4.5),
+	("badge-row-expanded-link", "table-details-bg", 4.5),
+	("badge-status-danger", "toolbar-bg", 4.5),
+	("badge-status-info", "toolbar-bg", 4.5),
+	("badge-status-success", "toolbar-bg", 4.5),
+	("badge-status-warning", "toolbar-bg", 4.5),
+	("course-state-failed", "bg", 4.5),
+	("course-state-passed", "bg", 4.5),
+	("course-state-unknown", "bg", 4.5),
+	("course-style-link", "course-style-bg", 4.5),
+	("coursesite-meta-lifecycle", "coursesite-row-bg", 4.5),
+	("curriculum-element-inactive", "bg", 4.5),
+	("dialog-cn-label-new", "state-warning-soft-bg", 4.5),
+	("editor-inspector-title", "bg", 4.5),
+	("export-area-meta", "bg", 4.5),
+	("folder-card-thumbnail-folder-icon", "bg", 3),
+	("folder-muted", "bg", 4.5),
+	("folder-row-thumbnail-folder-icon", "bg", 3),
+	("forum-quote-author", "bg", 4.5),
+	("im-buddies-link", "bg", 4.5),
+	("im-buddies-link-hover", "bg", 4.5),
+	("im-chat-date", "im-chat-message-bg", 4.5),
+	("im-chat-date", "im-chat-message-status-bg", 4.5),
+	("im-chat-date", "im-chat-message-error-bg", 4.5),
+	("im-chat-from", "im-chat-message-bg", 4.5),
+	("im-chat-from", "im-chat-message-status-bg", 4.5),
+	("im-chat-from", "im-chat-message-error-bg", 4.5),
+	("im-groupchat-user", "bg", 4.5),
+	("lp-pagination-in-progress-icon", "lp-pagination-in-progress-icon-bg", 3),
+	("lp-pagination-in-progress-icon-hover", "lp-pagination-in-progress-icon-bg", 3),
+	("practice-level-disc", "bg", 3),
+	("qpool-arrow-selected-fg", "qpool-arrow-selected-bg", 4.5),
+	("qti-attempts", "bg-subtle", 4.5),
+	("qti-gaptext-alternative-fg", "qti-gaptext-alternative-bg", 4.5),
+	("qti-help", "bg", 4.5),
+	("qti-hottext", "qti-hottext-bg", 4.5),
+	("qti-hottext-checked", "qti-hottext-checked-bg", 4.5),
+	("qti-menu-link", "qti-menu-bg", 4.5),
+	("qti-menu-link-active", "qti-menu-bg", 4.5),
+	("qti-menu-link-active-hover", "qti-menu-link-active-hover-bg", 4.5),
+	("qti-menu-link-hover", "qti-menu-bg", 4.5),
+	("qti-status-correct", "bg", 3),
+	("qti-status-incorrect", "bg", 3),
+	("qti-status-review", "bg", 3),
+	("room-status-inactive", "bg", 4.5),
+	("selectus-review-comment-date", "selectus-review-comments-bg", 4.5),
+	("step-active", "bg", 3),
+	("step-done", "bg", 3),
+	("step-expired", "bg", 3),
+	("step-notavailable", "bg", 3),
+	("step-status-expired", "bg", 4.5),
+	("step-status-extended", "bg", 4.5),
+	("step-status-late", "bg", 4.5),
+	("topicbroker-enrolled", "bg", 3),
+	("topicbroker-fillin", "bg", 4.5),
+	("topicbroker-waiting", "bg", 3),
+	("alert-close", "box-info-bg", 3),
+	("alert-close-hover", "box-info-bg", 3),
+	("bookmark", "bg", 3),
+	("card-hover", "card-bg", 4.5),
+	("card-title", "card-bg", 4.5),
+	("code-block-fg", "code-block-bg", 4.5),
+	("datepicker-today", "bg-raised", 4.5),
+	("dropdown-link", "bg-raised", 4.5),
+	("dropdown-link-hover", "dropdown-link-hover-bg", 4.5),
+	("empty-msg", "bg", 4.5),
+	("figure-card-chevron", "figure-card-bg", 3),
+	("figure-card-figure", "figure-card-bg", 4.5),
+	("indicator-label", "bg", 4.5),
+	("input-fg", "input-bg", 4.5),
+	("legend", "bg", 4.5),
+	("navbar-brand", "navbar-bg", 4.5),
+	("navbar-brand-hover", "navbar-bg", 4.5),
+	("navbar-link-active", "navbar-link-active-bg", 4.5),
+	("navbar-link-hover", "navbar-bg", 4.5),
+	("navbar-toggle-icon", "navbar-bg", 3),
+	("offcanvas-logout", "offcanvas-bg", 4.5),
+	("offcanvas-logout-hover", "offcanvas-bg", 4.5),
+	("panel-placeholder-border-active", "panel-placeholder-bg-active", 3),
+	("progress-bar-fg", "progress-bar-bg", 4.5),
+	("radial-progress-addon", "radial-progress-inset-bg", 4.5),
+	("radio-card-label-hover", "radio-card-hover-bg", 4.5),
+	("swiper-button-hover", "swiper-button-bg", 3),
+	("table-header", "bg", 4.5),
+	("table-link", "bg", 4.5),
+	("table-striped-link", "table-striped-bg", 4.5),
+	("toolbar-close", "toolbar-bg", 3),
+	("toolbar-close", "toolbar-breadcrumb-bg", 3),
+	("toolbar-dropdown-active", "toolbar-bg", 4.5),
+	("toolbar-link", "toolbar-bg", 4.5),
+	("toolbar-link-active", "toolbar-bg", 4.5),
+	("toolbar-link-hover", "toolbar-bg", 4.5),
+	("toolbar-nav-link", "toolbar-nav-bg", 4.5),
+	("toolbar-nav-link-hover", "toolbar-nav-bg", 4.5),
+	("tree-link-active-hover", "tree-link-active-hover-bg", 4.5),
+	("tree-link-active-parent-hover", "tree-link-hover-bg", 4.5),
+	("tree-link-hover", "tree-link-hover-bg", 4.5),
+	("widget-subtitle", "bg", 4.5),
+	("widget-text-additional", "bg", 4.5),
+	("wizard-step-sub-active", "bg", 4.5),
+	// the labels of the high score histogram, the rows of selectus on hold
+	// and with the mail disabled (white, striped and hovered row)
+	("highscore-histogram-text", "bg", 4.5),
+	("selectus-onhold", "bg", 4.5),
+	("selectus-onhold", "table-striped-bg", 4.5),
+	("selectus-onhold", "table-hover-bg", 4.5),
+	("selectus-mail-disabled", "bg", 4.5),
+	("selectus-mail-disabled", "table-striped-bg", 4.5),
+	("selectus-mail-disabled", "table-hover-bg", 4.5),
+	// the placeholder of a field, also of a disabled field
+	("input-placeholder", "input-bg", 4.5),
+	("input-placeholder", "input-disabled-bg", 4.5),
+	// the name and the time of a chat message on the own message
+	("im-chat-date", "im-chat-message-me-bg", 4.5),
+	("im-chat-from", "im-chat-message-me-bg", 4.5),
+	// the dark text of the contact tracing confirmation on the bright fills
+	("contact-tracing-confirmation-fg", "contact-tracing-confirmation-bg", 4.5),
+	("contact-tracing-validated-fg", "immunity-proof-validated-bg", 4.5),
+	("contact-tracing-claimed-fg", "immunity-proof-claimed-bg", 4.5),
+	// the edge of a rating star: the shape of the star (a control) 3:1
+	("rating-star-edge", "bg", 3),
+	("rating-star-edge", "table-striped-bg", 3),
+	// the icon of a media without preview on the media card (page, dialog)
+	("editor-media-unavailable", "bg", 3),
+	("editor-media-unavailable", "bg-raised", 3)
 );
 @each $state, $hue in $o-states {
 	$o-token-contrast-pairs: list.join($o-token-contrast-pairs, (
@@ -2391,7 +2559,7 @@ $o-token-progress: true;
 }
 // A translucent default of a named Sass variable: a color-mix() of a token
 // with transparent, e.g. color-mix(in srgb, var(--o-scrim) 95%, transparent)
-// for $o-login-bg-color (decision D31 Q2 of OO-10043). The token emits the
+// for $o-login-bg-color. The token emits the
 // value as it is; it has no contrast pair and no shade token.
 @function o-token-is-mix($value) {
 	@return meta.type-of($value) == "string" and string.index("#{$value}", "color-mix(") == 1;
@@ -2583,9 +2751,9 @@ $o-token-values: o-token-shade-trios($o-token-values);
 @include o-token-contrast-check();
 
 // The hover and pressed fills of the light buttons and of the table filters
-// differ from the fill of the normal state, so that the state is visible
-// (decision D13 of OO-10043): (fill of the state, fill of the normal state).
-// A black fill gets lighter (decision D20, o-contrast-shade()). The hover
+// differ from the fill of the normal state, so that the state is visible:
+// (fill of the state, fill of the normal state).
+// A black fill gets lighter (o-contrast-shade()). The hover
 // fill of the scope toggle is not listed: a theme may set
 // $o-scope-toggle-on-bg-hover-color to the fill of the selected toggle.
 $o-token-state-fills: (
@@ -2604,7 +2772,7 @@ $o-token-state-fills: (
 		$state: map.get($o-token-values, list.nth($pair, 1));
 		$normal: map.get($o-token-values, list.nth($pair, 2));
 		@if color.channel($normal, "alpha") == 1 and o-hex($state) == o-hex($normal) {
-			$failed: o-contrast-failed("'#{list.nth($pair, 1)}' has the colour #{o-hex($state)} of '#{list.nth($pair, 2)}': the state is not visible (decision D13 of OO-10043)");
+			$failed: o-contrast-failed("'#{list.nth($pair, 1)}' has the colour #{o-hex($state)} of '#{list.nth($pair, 2)}': the state is not visible");
 		}
 	}
 }
@@ -2633,14 +2801,14 @@ $o-token-state-fills: (
 }
 
 // One warning per stylesheet when the client config sets the removed
-// shorthand $o-cn-style-border (decision D19 of OO-10043): the value has no
+// shorthand $o-cn-style-border: the value has no
 // effect any more. It never stops the compile.
 @if meta.global-variable-exists("o-cn-style-border") {
 	@warn "OpenOLAT theme: your config sets $o-cn-style-border. The variable has no effect any more. Set $o-cn-style-border-line-width, $o-cn-style-border-line-style and the colour with $o-tokens: (\"course-style-border\": ...), see themes.README.";
 }
 
 // One warning per stylesheet and removed shorthand border variable that the
-// client config sets (decision D31 Q1 of OO-10043): the value has no effect
+// client config sets: the value has no effect
 // any more. The rules read $o-{name}-width, $o-{name}-style and the colour
 // token {name} without "o-". It never stops the compile.
 $o-token-removed-shorthands: ("o-card-border", "o-widget-border", "o-fact-sheet-border", "o-fact-sheet-separator-border", "o-dashboard-widget-border", "o-table-details-container-border", "o-activity-add-border", "o-activity-modify-border", "o-activity-remove-border", "o-repo-info-border", "o-repo-info-separator-border", "o-editor-layout-inner-h-border", "o-editor-layout-inner-v-border", "o-icon-panel-border", "o-indicator-separator-border", "o-curriculum-widget-border", "o-curriculum-widget-card-border", "o-lp-border", "o-user-info-border", "o-user-info-divider-border", "o-user-info-profile-border", "o-user-info-portrait-border", "o-panel-authentication-border", "o-folder-row-thumbnail-image-border", "o-swiper-button-border");
@@ -2649,7 +2817,7 @@ $o-token-removed-shorthands: ("o-card-border", "o-widget-border", "o-fact-sheet-
 		@warn "OpenOLAT theme: your config sets $#{$name}. The variable has no effect any more. Set $#{$name}-width, $#{$name}-style and the colour with $o-tokens: (\"#{string.slice($name, 3)}\": ...), see themes.README.";
 	}
 }
-// The removed shorthands with other names (OO-10043 slice 18): name, the
+// The removed shorthands with other names: name, the
 // base of the width and style variables, the colour token
 $o-token-removed-shorthands-renamed: (
 	"o-empty-border-color": ("o-empty-border", "empty-border"),
@@ -2668,14 +2836,14 @@ $o-token-removed-shorthands-renamed: (
 		@warn "OpenOLAT theme: your config sets $#{$name}. The variable has no effect any more. Set $#{list.nth($new, 1)}-width, $#{list.nth($new, 1)}-style and the colour with $o-tokens: (\"#{list.nth($new, 2)}\": ...), see themes.README.";
 	}
 }
-// $o-hs-position-title-color stays valid (decision D32 E2 of OO-10043):
+// $o-hs-position-title-color stays valid:
 // "gradient" switches the gradient on, a colour switches it off and is
 // the default of the token highscore-position-title (o-hs-position-title-gradient()
 // and o-hs-position-title-color() in _config.scss)
 @if $o-hs-position-title-color != null {
 	@warn "OpenOLAT theme: your config sets $o-hs-position-title-color. The high score uses the value as it is. Set $o-hs-position-title-gradient: false and the colour with $o-tokens: (\"highscore-position-title\": ...) instead, see themes.README.";
 }
-// $o-login-border stays valid (D31 Q1): the rules of the login box use the
+// $o-login-border stays valid: the rules of the login box use the
 // value of the config as it is (o-login-border() in _config.scss)
 @if $o-login-border != null {
 	@warn "OpenOLAT theme: your config sets $o-login-border. The login box uses the value as it is. Set $o-login-border-width, $o-login-border-style and the colour with $o-login-border-color or $o-tokens: (\"login-border\": ...) instead, see themes.README.";
@@ -2729,7 +2897,7 @@ $o-token-removed-shorthands-renamed: (
 :root {
 	// palette layer: white and the base colours of the theme
 	--o-white: #{o-hex(o-neutral(0))};
-	// a base colour reads the scale step of its colour (OO-10043 slice 25),
+	// a base colour reads the scale step of its colour,
 	// the colour of a client theme stays a literal value
 	@each $name, $value in $o-token-base {
 		--o-base-#{$name}: #{o-token-ref($value, $neutral: true)};

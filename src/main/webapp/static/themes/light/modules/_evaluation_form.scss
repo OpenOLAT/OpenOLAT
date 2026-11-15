@@ -356,7 +356,8 @@
 			a:hover,
 			a:has(~ a:hover) {
 				@include o-add-icon('star');
-				color: var(--o-primary);
+				color: var(--o-primary-text);
+				-webkit-text-stroke-width: 0;
 			}
 		}
 	}

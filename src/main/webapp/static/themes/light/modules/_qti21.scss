@@ -161,8 +161,8 @@ ul.sessionControl {
 		border-color: var(--o-drawing-select-border) !important;
 	}
 
-	// The 5 hotspot styles of the editor keep literal colours (decision D29 of
-	// OO-10043): the QTI item stores the style, and the test run draws it with
+	// The 5 hotspot styles of the editor keep literal colours: the QTI item
+	// stores the style, and the test run draws it with
 	// the maphilight options of
 	// org/olat/ims/qti21/ui/components/_content/hotspotInteraction.html.
 	// Change both together, no tokens: the editor shows the colours of the test.
@@ -562,7 +562,7 @@ span.o_qti_gaptext_score_alternative {
 
 /* Drawing */
 // the base of the hotspot styles of the editor, a literal colour (decision
-// D29 of OO-10043, see .o_qti_hotspot-standard)
+// see .o_qti_hotspot-standard)
 .o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {
 	background-color: rgba(229, 255, 204, 0.6); // o-color-keep(hotspot)
 }

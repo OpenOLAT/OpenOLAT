@@ -69,7 +69,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Alert Boxes (Plain)</h3>
-      <p>Styled message boxes for different semantic levels. Used via <code>&lt;div class="o_info"&gt;</code> etc. These are OpenOlat-specific alert styles, not Bootstrap alerts. The border of <code>o_info</code>, <code>o_success</code>, <code>o_warning</code> and <code>o_error</code> reads <code>--o-box-{info,success,warning,error}-border</code> (default: the fill of the state), the icon reads <code>--o-box-*-text</code> (default: the text of the state). The fill is the Sass value <code>$o-box-*-bg</code>. The note, tip and important boxes read Sass colours.</p>
+      <p>Styled message boxes for different semantic levels. Used via <code>&lt;div class="o_info"&gt;</code> etc. These are OpenOlat-specific alert styles, not Bootstrap alerts. The boxes <code>o_info</code>, <code>o_note</code>, <code>o_success</code>, <code>o_warning</code> and <code>o_error</code> show the states neutral, inactive, success, warning and danger. The fill reads <code>--o-box-{info,note,success,warning,error}-bg</code> (default: the soft fill of the state), the border <code>--o-box-*-border</code> (the soft border of the state), the icon <code>--o-box-*-icon</code> (the soft text of the state, 3:1 on the fill) and a coloured text <code>--o-box-*-text</code> (the text of the state). The info box is different: the fill is near white (neutral 25), the border is the fill of the neutral state (blue 500, 4.65:1 on the fill), the icon and a coloured text are the text of the neutral state. The info message at the top of the page (<code>.o_alert_info</code>, <code>showInfoBox()</code>) reads the same fill and border. The tip and the important box have the fill cyan 50 (<code>--o-box-tip-bg</code>, <code>--o-box-important-bg</code>). The border of the tip box is <code>$o-color-tip</code> (neutral 600), the border and the icon of the important box are <code>$o-color-important</code> (cyan 500, 3:1 on the fill). A theme that sets <code>$o-box-*</code> or <code>$o-color-*</code> keeps its colours. The error message under a form field has the border <code>--o-form-error-border</code> (default: the text of the danger state).</p>
       <div class="cl-classes">
         <code>o_info</code> <code>o_note</code> <code>o_tip</code> <code>o_important</code>
         <code>o_success</code> <code>o_warning</code> <code>o_error</code>
@@ -392,7 +392,7 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Star Rating</h3>
-      <p>Star rating component with filled/empty stars. Shows current rating and optional average. The filled and the empty star read the token <code>--o-rating-star</code> (default: the palette step <code>yellow-400</code>).</p>
+      <p>Star rating component with filled/empty stars. Shows current rating and optional average. The filled star reads the token <code>--o-rating-star</code> (default: the palette step <code>yellow-400</code>) with a 1px text stroke in the shade token <code>--o-rating-star-edge</code> (<code>yellow-500</code>, 3:1 on the page and on a striped table row). The empty star has no stroke and the colour <code>--o-rating-star-edge</code>.</p>
       <div class="cl-classes">
         <code>o_rating</code> <code>o_rating_items</code> <code>o_icon_rating_on</code> <code>o_icon_rating_off</code>
       </div>

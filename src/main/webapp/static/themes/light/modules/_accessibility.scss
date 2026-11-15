@@ -18,7 +18,7 @@
 }
 
 /* The focus ring of every other element that gets the focus with the
-   keyboard (OO-10043, D24): instead of the ring of the browser. The
+   keyboard (OO-10043): instead of the ring of the browser. The
    specificity of :where() is 0, so every rule that sets an outline of an
    element wins, as over the ring of the browser. Links, buttons, form
    fields: modules/_focus.scss. */
@@ -26,7 +26,7 @@
 	@include o-focus-ring;
 }
 
-/* Inset focus ring (OO-10043, D24) for the Bootstrap controls that touch
+/* Inset focus ring (OO-10043) for the Bootstrap controls that touch
    their neighbours: a ring with the 2px gap would cover the neighbour. The
    ring lies on the edge of the control. A rule with :focus:focus-visible
    is stronger than the ring of tab-focus (.btn:focus:focus-visible). */

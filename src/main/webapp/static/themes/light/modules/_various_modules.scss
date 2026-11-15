@@ -2194,7 +2194,7 @@ ul.o_list_narrow {
 /* Figure cards component */
 // the icon colours (name of the class): the tokens figure-card-icon-{name}
 // and figure-card-icon-{name}-bg, the text and the fill of the tint swatch
-// of a palette hue (_tokens.scss, OO-10043 slice 18)
+// of a palette hue (_tokens.scss)
 $o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
 
 @mixin o-figure-cards-two-line($n) {

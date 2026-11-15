@@ -82,6 +82,11 @@ a.o_disabled.navbar-text {
 			@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
 			&.btn-primary {
 				@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
+				// the navbar items have the inset ring in the focus colour; on the
+				// primary fill the ring has the text colour of the fill
+				&:focus:focus-visible {
+					@include o-focus-ring-on-fill;
+				}
 			}
 		}
 	}
@@ -100,9 +105,10 @@ a.o_disabled.navbar-text {
 				padding-right: 0;		
 			}
 		}
-		#o_navbar_login a {
-			color: var(--o-navbar-login);
-		}	
+		// the login button of the guest navbar: a gap to the tool before it
+		#o_navbar_login.o_navbar_button {
+			padding-left: floor($grid-gutter-width * 0.25);
+		}
 	}
 	
 	.o_navbar_tools li.o_portrait>a>span {
@@ -385,7 +391,7 @@ body.o_dmz {
 // The focus ring in the navbar reads navbar-focus: 3:1 on the navbar, also
 // on a dark or coloured navbar. The items of the navbar and the logo get an
 // inset ring: the navbar is at the top edge of the window, which cuts the
-// ring, and the items touch (OO-10043, D24). The dropdown menus of the
+// ring, and the items touch (OO-10043). The dropdown menus of the
 // navbar are on the raised surface: they keep the focus colour.
 .o_navbar {
 	a, button {

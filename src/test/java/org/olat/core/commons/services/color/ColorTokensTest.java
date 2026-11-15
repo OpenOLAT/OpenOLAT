@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -51,21 +52,21 @@ import org.junit.Test;
  * Bootstrap state rules, the message boxes and the evaluation form read the
  * state tokens and their shade tokens, the hover, pressed and off states keep
  * the contrast of the normal state, and the colours without a role read the
- * tokens backdrop, shadow-color or an own element token (decisions D8 to D11),
+ * tokens backdrop, shadow-color or an own element token,
  * the hover and pressed states read a text token of the state and stay
  * visible, and the selectus progress bars read the tokens of the rating
- * buttons (decisions D12, D13, D15), the selectus abstention bar, marks and
+ * buttons, the selectus abstention bar, marks and
  * explanation texts read the tokens of the rating buttons, the course style
  * border reads a token, a black state fill gets lighter and the navbar text
- * passes (decisions D16 to D20, D23), every control has the same focus
- * ring in the adjusted primary colour (decision D24), the selectus marks
+ * passes, every control has the same focus
+ * ring in the adjusted primary colour, the selectus marks
  * and letters keep their contrast on the table rows and read the tokens of
- * the rating buttons (decisions D25 to D28), and the literal colours of the
- * B4 review read semantic, state, palette or own element tokens, except the
- * kept literals and the rules without a reader (decision D29). The framework,
+ * the rating buttons, and the literal colours of the
+ * review read semantic, state, palette or own element tokens, except the
+ * kept literals and the rules without a reader. The framework,
  * assessment and content modules read element tokens fed by their Sass
  * variables, a translucent default included; the shorthand borders are width,
- * style and a colour token (slices 16 and 17, decision D31).
+ * style and a colour token.
  *
  * Initial date: 8 Nov 2026<br>
  * @author gnaegi, https://www.frentix.com
@@ -92,23 +93,23 @@ public class ColorTokensTest {
 	private static final Pattern HEX = Pattern.compile("#[0-9A-F]{6}");
 	private static final Pattern HEX_LITERAL = Pattern.compile("#[0-9A-Fa-f]{3,8}\\b");
 	private static final Pattern COLOR = Pattern.compile("#[0-9A-Fa-f]{3,8}|rgba?\\([^)]*\\)|transparent");
-	// A translucent token colour (decision M3): the token mixed with transparent
+	// A translucent token colour: the token mixed with transparent
 	private static final Pattern COLOR_MIX = Pattern.compile("color-mix\\(in srgb, var\\(--o-([a-z0-9-]+)\\) [0-9.]+%, transparent\\)");
 
 	private static final List<String> SHADE_BUTTONS = List.of("btn-primary", "btn-default", "btn-danger", "btn-dirty",
 			"coursesite-start", "coursesite-book", "btn-primary-light", "btn-danger-light", "table-filter",
 			"table-filter-active");
 	// The active fill of a bright fill with dark text is 16% darker, else 17%
-	// (o-token-active-percent() in _tokens.scss, decision D4 of OO-10043)
+	// (o-token-active-percent() in _tokens.scss)
 	private static final Map<String, Integer> ACTIVE_PERCENT = Map.of("btn-dirty", 16, "coursesite-book", 16,
 			"state-warning", 16);
 	// The buttons whose pressed fill is darker by the amount of Bootstrap at most:
-	// the text keeps 4.5:1 (o-contrast-shade-amount() in _functions.scss, decision D9)
+	// the text keeps 4.5:1 (o-contrast-shade-amount() in _functions.scss)
 	private static final List<String> CONTRAST_SHADE_BUTTONS = List.of("btn-primary-light", "btn-danger-light",
 			"table-filter", "table-filter-active");
 	// The smallest visible amount of a hover or pressed fill: below, the fill
 	// keeps the amount of Bootstrap and the text of the state is adjusted
-	// (o-contrast-shade-amount(), o-contrast-shade-text(), decision D13)
+	// (o-contrast-shade-amount(), o-contrast-shade-text())
 	private static final int MIN_SHADE_AMOUNT = 3;
 	// The rating buttons of selectus: fill hover and active (the border is btn-default-border)
 	private static final List<String> SELECTUS_RATINGS = List.of("a", "b", "c", "abstain");
@@ -150,7 +151,7 @@ public class ColorTokensTest {
 			new Shade("competence-selected-border-hover", "competence-selected-border", 10),
 			new Shade("competence-selected-border-active", "competence-selected-border", 15),
 			new Shade("tinymce-danger-bg-edge", "tinymce-danger-bg", 25),
-			// the remaining colour maths (OO-10043 slice 8)
+			// the remaining colour maths
 			new Shade("box-info-table-border", "box-info-bg", -5), new Shade("box-info-table-stripe-bg", "box-info-bg", -5),
 			new Shade("box-info-table-header-bg", "box-info-bg", 10),
 			new Shade("box-note-table-border", "box-note-bg", -5), new Shade("box-note-table-stripe-bg", "box-note-bg", -5),
@@ -193,7 +194,7 @@ public class ColorTokensTest {
 			+ "|btn-(?:success|info|warning|danger)-[a-z]+|label-(?:success|info|warning|danger)-bg"
 			+ "|progress-bar-(?:success|info|warning|danger)-bg|panel-(?:success|info|warning|danger)-[a-z-]+)(?![\\w-])");
 	// Module rules that keep a Bootstrap state colour: none since the Bootstrap
-	// rules read the state tokens (OO-10043 slice 6)
+	// rules read the state tokens
 	private static final List<String> BOOTSTRAP_STATE_KEPT = List.of();
 	// The shade tokens of the state tokens: the Bootstrap state buttons (the
 	// percentages of the buttons), the hover of the labels, of the contextual
@@ -218,7 +219,7 @@ public class ColorTokensTest {
 			"toolbar-link-active", "toolbar-nav-link", "toolbar-nav-link-hover", "tree-link-active-parent",
 			"tree-link-active-parent-hover", "segments-tab-link", "selectus-review-comment-link");
 	// The tokens of the Bootstrap colour variables and greys that the modules read, with the light value. The
-	// greys read the neutral scale (OO-10043 slice 25): #EEEEEE neutral-100, #F5F5F5 neutral-50, #333333
+	// greys read the neutral scale: #EEEEEE neutral-100, #F5F5F5 neutral-50, #333333
 	// neutral-800, #262626 neutral-900, #E5E5E5 neutral-150, #555555 neutral-600, #999999 neutral-450,
 	// #777777 neutral-500; the translucent black reads shadow-color
 	private static final Map<String, String> BOOTSTRAP_COMPONENT_TOKENS = Map.ofEntries(
@@ -226,8 +227,8 @@ public class ColorTokensTest {
 			Map.entry("code-block-fg", "#2A3649"), Map.entry("code-block-border", "color-mix(in srgb, var(--o-shadow-color) 10%, transparent)"),
 			Map.entry("dropdown-link", "#2A3649"), Map.entry("dropdown-link-hover", "#182233"),
 			Map.entry("dropdown-link-hover-bg", "#F6F7FA"), Map.entry("dropdown-divider", "#E4E7EC"),
-			Map.entry("input-bg", "#FFFFFF"), Map.entry("input-fg", "#4E596D"),
-			Map.entry("input-disabled-bg", "#F9FAFB"), Map.entry("input-placeholder", "#8B95A7"),
+			Map.entry("input-bg", "#FFFFFF"), Map.entry("input-fg", "#344054"),
+			Map.entry("input-disabled-bg", "#F9FAFB"), Map.entry("input-placeholder", "#657286"),
 			Map.entry("legend", "#2A3649"), Map.entry("legend-border", "#E4E7EC"),
 			Map.entry("modal-content-border", "#E4E7EC"), Map.entry("modal-header-border", "#E4E7EC"),
 			Map.entry("popover-bg", "#FFFFFF"), Map.entry("popover-border", "color-mix(in srgb, var(--o-shadow-color) 20%, transparent)"),
@@ -236,7 +237,7 @@ public class ColorTokensTest {
 			Map.entry("table-striped-bg", "#F9FAFB"), Map.entry("table-hover-bg", "#F6F7FA"),
 			Map.entry("alert-close", "#657286"), Map.entry("alert-close-hover", "#4E596D"),
 			Map.entry("message-table-border", "#2A3649"), Map.entry("chart-help-line", "#657286"),
-			Map.entry("content-table-header-bg", "#EAECF0"), Map.entry("editor-media-unavailable", "#EAECF0"),
+			Map.entry("content-table-header-bg", "#EAECF0"), Map.entry("editor-media-unavailable", "#8B95A7"),
 			Map.entry("room-status-inactive", "#657286"), Map.entry("selectus-review-comments-bg", "#FFFFFF"),
 			Map.entry("selectus-review-comments-border", "#EAECF0"), Map.entry("qti-gaptext-alternative-bg", "#EAECF0"),
 			Map.entry("qti-gaptext-alternative-fg", "#4E596D"), Map.entry("qti-help", "#657286"),
@@ -251,7 +252,7 @@ public class ColorTokensTest {
 	/**
 	 * Each semantic token reads its base colour, and the base colour of the
 	 * light theme reads a step of the three scales: the neutral scale, the
-	 * brand ramp or white (OO-10043 slice 25).
+	 * brand ramp or white.
 	 */
 	@Test
 	public void semanticTokensReadBaseColors() {
@@ -307,10 +308,10 @@ public class ColorTokensTest {
 
 	/**
 	 * The pairs of the element tokens (base, framework and component layers)
-	 * of the light theme. The navbar text and the navbar tools pass since
-	 * decision D23 (4.48:1 before). The hover, pressed and off states have the
-	 * contrast of the normal state (decision D9). The focus ring of the navbar
-	 * passes on the navbar (decision D24). No pair of the light theme fails.
+	 * of the light theme. The navbar text and the navbar tools pass
+	 * (adjusted to 4.5:1 on the navbar). The hover, pressed and off states have the
+	 * contrast of the normal state. The focus ring of the navbar
+	 * passes on the navbar. No pair of the light theme fails.
 	 */
 	@Test
 	public void elementContrast() {
@@ -369,11 +370,11 @@ public class ColorTokensTest {
 		}
 		assertContrast("state-neutral-fg", "state-neutral-bg-active", 4.5);
 		assertContrast("state-success-fg", "state-success-bg-active", 4.5);
-		// the text on the active fill of the bright buttons (16% darker, decision D4)
+		// the text on the active fill of the bright buttons (16% darker)
 		assertContrast("state-warning-fg", "state-warning-bg-active", 4.5);
 		assertContrast("btn-dirty-fg", "btn-dirty-bg-active", 4.5);
 		assertContrast("coursesite-book-fg", "coursesite-book-bg-active", 4.5);
-		// the contrast defects of decision D4: the selected tag, the QTI error
+		// the former contrast defects: the selected tag, the QTI error
 		// box, the chat and the tab close icons on the navbar (3:1, non-text)
 		for (String state : List.of("", "-hover", "-active")) {
 			assertContrast("tag-selected-fg", "tag-selected-bg" + state, 4.5);
@@ -382,7 +383,7 @@ public class ColorTokensTest {
 		for (String icon : List.of("im-newmessage", "im-newmessage-hover", "navbar-tab-close", "navbar-tab-close-hover")) {
 			assertContrast(icon, "navbar-bg", 3.0);
 		}
-		// the other buttons (OO-10043 slice 7)
+		// the other buttons
 		assertContrast("btn-ghost-fg", "bg", 4.5);
 		assertContrast("btn-ghost-hover-fg", "bg", 4.5);
 		for (String button : List.of("btn-primary-light", "btn-danger-light")) {
@@ -396,7 +397,6 @@ public class ColorTokensTest {
 		assertContrast("scope-toggle-on-fg", "scope-toggle-on-bg", 4.5);
 		assertContrast("toggle-on-text", "toggle-on-bg", 4.5);
 		// the hover, pressed and off states: the text of the state on its fill
-		// (decisions D9 and D13)
 		for (String button : CONTRAST_SHADE_BUTTONS) {
 			for (String state : List.of("-hover", "-active")) {
 				assertContrast(button + "-fg" + state, button + "-bg" + state, 4.5);
@@ -409,11 +409,11 @@ public class ColorTokensTest {
 				assertContrast("selectus-rating-" + rating + "-fg", "selectus-rating-" + rating + "-bg" + state, 4.5);
 			}
 		}
-		// the text of a selected competence on its fill, under the pointer and pressed (decision D8)
+		// the text of a selected competence on its fill, under the pointer and pressed
 		for (String state : List.of("", "-hover", "-active")) {
 			assertContrast("competence-selected", "competence-bg" + state, 4.5);
 		}
-		// the close icon of a tab in the More dropdown (decision D10)
+		// the close icon of a tab in the More dropdown
 		assertContrast("dropdown-tab-close", "bg-raised", 3.0);
 		assertContrast("dropdown-tab-close-hover", "bg-raised", 3.0);
 		assertContrast("toggle-handle", "toggle-bg", 3.0);
@@ -466,7 +466,7 @@ public class ColorTokensTest {
 	 */
 	@Test
 	public void newSemanticTokenDefaults() {
-		// the Bootstrap greys read the neutral scale (OO-10043 slice 25):
+		// the Bootstrap greys read the neutral scale:
 		// #F5F5F5 neutral-50, #EEEEEE neutral-100, #777777 neutral-500
 		Assert.assertEquals("#F6F7FA", resolve("bg-hover"));
 		Assert.assertEquals("#F6F7FA", resolve("bg-selected"));
@@ -496,7 +496,7 @@ public class ColorTokensTest {
 
 	/**
 	 * The tokens of the Bootstrap colour variables and of the Bootstrap greys
-	 * that the modules read (decision M7 a): each token has the exact light
+	 * that the modules read: each token has the exact light
 	 * value of its Sass variable, and at least one rule of the compiled theme
 	 * reads it. A token with a reference default reads the semantic token
 	 * whose base colour has the value of the Sass variable in every theme.
@@ -518,7 +518,7 @@ public class ColorTokensTest {
 	/**
 	 * The shadows, the dark modal layer and the light veils read the opaque
 	 * tokens shadow-color, backdrop and scrim. The rule keeps the alpha of
-	 * the old rgba() colour (decision M8 a).
+	 * the old rgba() colour.
 	 */
 	@Test
 	public void shadowAndVeilRulesReadTokens() {
@@ -587,7 +587,7 @@ public class ColorTokensTest {
 	 * colour as the Sass function darken() of the token it comes from. The
 	 * background is 10% and 17% darker, the border 12% and 25%. The light
 	 * buttons and the table filters darken the background by the largest
-	 * amount up to 10% and 17% at which the text keeps 4.5:1 (decision D9).
+	 * amount up to 10% and 17% at which the text keeps 4.5:1.
 	 */
 	@Test
 	public void buttonShadeTokens() {
@@ -632,6 +632,13 @@ public class ColorTokensTest {
 				Assert.assertTrue("No rule reads " + reference, css.contains(reference));
 			}
 		}
+		// The pressed primary button shows the inset shadow of .btn:active: the
+		// rule comes after the hover shadow, which has the same specificity
+		Matcher hoverShadow = Pattern.compile("[},]\\.btn-primary:hover\\{box-shadow:").matcher(css);
+		Matcher pressedShadow = Pattern.compile("[},]\\.btn-primary:active,\\.btn-primary\\.active\\{box-shadow:inset 0 3px 5px "
+				+ "color-mix\\(in srgb, ?var\\(--o-shadow-color\\) 12\\.5%, ?transparent\\)\\}").matcher(css);
+		Assert.assertTrue("No rule .btn-primary:active with the inset shadow of .btn:active after the hover shadow of .btn-primary",
+				hoverShadow.find() && pressedShadow.find(hoverShadow.end()));
 	}
 
 	/**
@@ -652,7 +659,7 @@ public class ColorTokensTest {
 	 * The rules of the module colour maths read the tokens: a rule reads each
 	 * shade token of MODULE_SHADES, the translucent colours mix the token
 	 * with transparent and keep the alpha, and the muted texts that lighten()
-	 * made read text-muted or text-disabled (decision M9). A rule that
+	 * made read text-muted or text-disabled. A rule that
 	 * computes the colour with Sass again compiles to a colour and fails here.
 	 */
 	@Test
@@ -689,16 +696,15 @@ public class ColorTokensTest {
 
 	/**
 	 * The remaining colour maths of the modules and of the defaults in
-	 * _config.scss read tokens (OO-10043 slice 8): the gradient stops and the
+	 * _config.scss read tokens: the gradient stops and the
 	 * labels read shade tokens, the named variables with an opaque default
 	 * read their own token, the translucent defaults mix a token with
-	 * transparent, and the two muted texts read text-muted and text-disabled
-	 * (decision M9).
+	 * transparent, and the two muted texts read text-muted and text-disabled.
 	 */
 	@Test
 	public void remainingColorMathRulesReadTokens() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		// muted texts (M9)
+		// muted texts
 		assertRuleReads(css, ".o_form_chelp", "color:var(--o-chelp-tooltip)");
 		Assert.assertEquals("var(--o-text-muted)", tokens.get("chelp-tooltip"));
 		assertRuleReads(css, ".o_toolbar .o_tools_container a.o_disabled", "color:var(--o-toolbar-link-disabled) !important");
@@ -715,14 +721,14 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_catalog2 .o_catalog_header .o_catalog_header_item:not(.o_header_bg_image)",
 				"background:linear-gradient(190deg, var(--o-catalog-header-noimage-stop-1) 10%, var(--o-primary) 100%),"
 				+ "linear-gradient(40deg, var(--o-catalog-header-noimage-stop-3) 0%, var(--o-catalog-header-noimage-stop-4) 60%)");
-		// the turn of the hue of the primary colour: a step of the brand ramp in light (OO-10043 slice 25)
+		// the turn of the hue of the primary colour: a step of the brand ramp in light
 		Assert.assertTrue("catalog-header-noimage-stop-4: " + tokens.get("catalog-header-noimage-stop-4"),
 				HEX.matcher(tokens.get("catalog-header-noimage-stop-4")).matches()
 				|| SCALE_REFERENCE.matcher(tokens.get("catalog-header-noimage-stop-4")).matches());
 		// translucent colours
 		assertRuleReads(css, ".milkdown table th", "background:color-mix(in srgb, var(--o-milkdown-table-header-bg) 10%, transparent)");
-		// since slice 18 the translucent defaults of $o-cn-style-cover-text-bg and
-		// $o-lp-pagination-in-progress-bgcolor feed element tokens (decision D31 Q2)
+		// the translucent defaults of $o-cn-style-cover-text-bg and
+		// $o-lp-pagination-in-progress-bgcolor feed element tokens
 		assertRuleReads(css, ".o_cn_styled.o_cover .o_top .o_text_block>div:nth-child(1)",
 				"background-color:var(--o-course-style-cover-text-bg)");
 		Assert.assertEquals("color-mix(in srgb, var(--o-scrim) 95%, transparent)", resolve("course-style-cover-text-bg"));
@@ -742,7 +748,7 @@ public class ColorTokensTest {
 	/**
 	 * A client config that sets an old state colour ($brand-danger,
 	 * $state-danger-text, ...) gets a compile warning; the switch
-	 * $o-legacy-color-warning silences it (OO-10043 slice 8). Static check of
+	 * $o-legacy-color-warning silences it. Static check of
 	 * the sources: the compile of the warning itself is proven by compiling
 	 * client themes.
 	 */
@@ -767,10 +773,7 @@ public class ColorTokensTest {
 		Assert.assertTrue(message, message.contains("$o-palette, $o-states or $o-tokens"));
 		Assert.assertTrue(message, message.contains("themes.README"));
 		Assert.assertTrue(message, message.contains("$o-legacy-color-warning: false;"));
-		// no exception since OO-10043 slice 26: the login link reads the token navbar-login
 		Assert.assertFalse(message, message.contains("exception"));
-		Assert.assertFalse("$o-navbar-login-color reads $brand-warning",
-				Pattern.compile("\\$o-navbar-login-color\\s*:\\s*\\$brand-warning").matcher(config).find());
 		// email.css does not import _tokens.scss: no warning there
 		Assert.assertFalse(read(ThemeColorRatchetTest.LIGHT_MODULES.getParent().resolve("email.scss")).contains("tokens"));
 	}
@@ -823,8 +826,8 @@ public class ColorTokensTest {
 	 * true/false tables have the soft fill of their state, not white (S4 a).
 	 */
 	/**
-	 * The Bootstrap state rules read the state tokens (OO-10043 slice 6,
-	 * decisions S1 a, S3 a): .btn-success|info|warning the fill, the text on
+	 * The Bootstrap state rules read the state tokens:
+	 * .btn-success|info|warning the fill, the text on
 	 * the fill (fg) and the border, labels and progress bars the fill and the
 	 * fg text, alerts the soft roles with the soft-fg text, panels, list
 	 * groups, form validation states, contextual table rows, .text-*, .bg-*
@@ -899,16 +902,17 @@ public class ColorTokensTest {
 	/**
 	 * The message boxes, the evaluation form, the portlet edit mode and the
 	 * QTI bad response warning read element tokens that follow the state
-	 * tokens: a message box of a state has the soft fill, the soft border and
-	 * the soft text of its state as icon, a coloured text the text of the
-	 * state; tip and important have the fill cyan 50. The evaluation form
+	 * tokens: a message box of a state other than info has the soft fill, the
+	 * soft border and the soft text of its state as icon, a coloured text the
+	 * text of the state; tip and important have the fill cyan 50. The info box
+	 * is checked in infoBoxHasNearWhiteFillAndBlueBorder(). The evaluation form
 	 * chart colour is the fill of the state, its icons and texts the text of
 	 * the state, the box plot box the light fill (palette step 200), the
 	 * portlet edit mode the soft roles of the warning state.
 	 */
 	@Test
 	public void messageBoxAndEvaluationTokens() {
-		Map<String, String> boxes = Map.of("info", "neutral", "note", "inactive", "success", "success", "warning", "warning", "error", "danger");
+		Map<String, String> boxes = Map.of("note", "inactive", "success", "success", "warning", "warning", "error", "danger");
 		for (Map.Entry<String, String> box : boxes.entrySet()) {
 			String state = "var(--o-state-" + box.getValue();
 			Assert.assertEquals(state + "-soft-bg)", tokens.get("box-" + box.getKey() + "-bg"));
@@ -952,6 +956,39 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_assessmentitem div.o_warning.badResponse", "color:var(--o-qti-bad-response-warning)");
 	}
 
+	/**
+	 * The info box has a near white fill (neutral 25) and a border in the fill
+	 * of the neutral state (blue 500); its icon and coloured text are the text
+	 * of the neutral state, the text and the headings the normal text. The
+	 * info message at the top of the page (.o_alert_info) reads the same fill
+	 * and border tokens with the normal text, so both look the same. The
+	 * text, the icon, the border and the close icon of the top message have
+	 * their contrast on the fill.
+	 */
+	@Test
+	public void infoBoxHasNearWhiteFillAndBlueBorder() {
+		Assert.assertEquals("var(--o-neutral-25)", tokens.get("box-info-bg"));
+		Assert.assertEquals("var(--o-state-neutral-bg)", tokens.get("box-info-border"));
+		Assert.assertEquals("var(--o-state-neutral-text)", tokens.get("box-info-text"));
+		Assert.assertEquals("var(--o-state-neutral-text)", tokens.get("box-info-icon"));
+		assertContrast("text", "box-info-bg", 4.5);
+		assertContrast("box-info-text", "box-info-bg", 4.5);
+		assertContrast("box-info-icon", "box-info-bg", 3.0);
+		assertContrast("box-info-border", "box-info-bg", 3.0);
+		assertContrast("alert-close", "box-info-bg", 3.0);
+		assertContrast("alert-close-hover", "box-info-bg", 3.0);
+		assertContrast("text", "box-info-table-header-bg", 4.5);
+
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		assertRuleReads(css, ".o_info", "background-color:var(--o-box-info-bg)");
+		assertRuleReads(css, ".o_info", "border:1px solid var(--o-box-info-border)");
+		assertRuleReads(css, ".o_info_with_icon", "border:1px solid var(--o-box-info-border)");
+		assertRuleReads(css, ".o_info_with_icon:before", "color:var(--o-box-info-icon)");
+		assertRuleReads(css, ".o_alert_info .alert", "background-color:var(--o-box-info-bg)");
+		assertRuleReads(css, ".o_alert_info .alert", "border-color:var(--o-box-info-border)");
+		assertRuleReads(css, ".o_alert_info .alert", "color:var(--o-text)");
+	}
+
 	@Test
 	public void stateButtonTokens() {
 		Assert.assertEquals("var(--o-state-danger-bg)", tokens.get("btn-danger-bg"));
@@ -972,17 +1009,17 @@ public class ColorTokensTest {
 			Assert.assertEquals("var(--o-state-" + role + "-text)", tokens.get("badge-status-" + state));
 		}
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("").toLowerCase();
-		// the selected row reads its token (OO-10043 slice 16), the soft fill of the neutral state
+		// the selected row reads its token, the soft fill of the neutral state
 		assertRuleReads(css, ".o_row_selected", "background:var(--o-table-row-selected-bg) !important");
 		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("table-row-selected-bg"));
-		// the right kprim cell reads its token (OO-10043 slice 17), the soft fill of the success state
+		// the right kprim cell reads its token, the soft fill of the success state
 		assertRuleReads(css, "table.o_qti_item_kprim td.o_qti_item_kprim_input_correct",
 				"background-color:var(--o-qti-match-kprim-correct-bg)");
 		Assert.assertEquals("var(--o-state-success-soft-bg)", tokens.get("qti-match-kprim-correct-bg"));
 	}
 
 	/**
-	 * Decisions D1, D3 and D4 of OO-10043: the rating stars read the token
+	 * The rating stars read the token
 	 * rating-star (palette step yellow-400), the shadows with the old colour
 	 * rgba(16, 24, 40, a) read shadow-color with their alpha, the selected
 	 * tag and the QTI error box have the text of their fill, the chat icon
@@ -1001,7 +1038,7 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_login .o_login_box", "box-shadow:0 8px 32px color-mix(in srgb, var(--o-shadow-color) 12%, transparent),"
 				+ "0 2px 8px color-mix(in srgb, var(--o-shadow-color) 6%, transparent)");
 		// no rule has the old colour: the background of the peekview of a course
-		// element reads its own token (decision D11)
+		// element reads its own token
 		Assert.assertEquals("Rules with the old shadow colour rgba(16,24,40,a)", 0, css.split("rgba\\(16,24,40", -1).length - 1);
 		assertRuleReads(css, ".dropdown-menu", "box-shadow:0 4px 16px color-mix(in srgb, var(--o-shadow-color) 10%, transparent),"
 				+ "0 1px 3px color-mix(in srgb, var(--o-shadow-color) 6%, transparent)");
@@ -1014,7 +1051,7 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * Decisions D8 to D11 of OO-10043: the text of a selected competence
+	 * The text of a selected competence
 	 * follows the text of the selected tag; the hover, pressed and off states
 	 * read tokens with the contrast of the normal state; the close icon of a
 	 * tab in the More dropdown reads its own tokens, the icon on the navbar is
@@ -1026,24 +1063,22 @@ public class ColorTokensTest {
 	@Test
 	public void decisionD8ToD11RulesReadTokens() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		// D8
 		Assert.assertEquals("var(--o-tag-selected-fg)", tokens.get("competence-selected"));
 		assertRuleReads(css, ".o_tag.o_competence.o_tag_selected", "color:var(--o-competence-selected)");
-		// D9: the toggle text is the muted text adjusted for the track, the rating C fill is the red of the
-		// palette (#EB0000 before OO-10043 slice 25)
-		// the muted text read on the track: the nearest neutral step with 4.5:1 (OO-10043 slice 25)
+		// the toggle text is the muted text adjusted for the track, the rating C fill is the red of the
+		// palette (#EB0000 before the scale rework)
+		// the muted text read on the track: the nearest neutral step with 4.5:1
 		Assert.assertEquals("var(--o-neutral-600)", tokens.get("toggle-text"));
 		assertRuleReads(css, ".o_button_toggle span", "color:var(--o-toggle-text)");
 		Assert.assertEquals("var(--o-white)", tokens.get("selectus-rating-c-fg"));
 		Assert.assertEquals("var(--o-red-500)", tokens.get("selectus-rating-c-bg"));
-		// D10
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("navbar-tab-close"));
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("dropdown-tab-close"));
 		Assert.assertEquals("var(--o-state-danger-text-hover)", tokens.get("dropdown-tab-close-hover"));
 		assertRuleReads(css, ".o_navbar .o_navbar_tabs .o_navbar_tab_close i:before", "color:var(--o-navbar-tab-close)");
 		assertRuleReads(css, ".o_dropdown_tab .o_navbar_tab_close", "color:var(--o-dropdown-tab-close)");
 		assertRuleReads(css, ".o_dropdown_tab .o_navbar_tab_close:hover", "color:var(--o-dropdown-tab-close-hover)");
-		// D11: dark tints
+		// dark tints
 		assertRuleReads(css, ".o_skeleton", "border-top:1px solid color-mix(in srgb, var(--o-backdrop) 6%, transparent)");
 		assertRuleReads(css, ".o_skeleton_bar", "background-color:color-mix(in srgb, var(--o-backdrop) 6%, transparent)");
 		assertRuleReads(css, ".o_ai_paragraph_feedback", "background:color-mix(in srgb, var(--o-backdrop) 4%, transparent)");
@@ -1052,12 +1087,12 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".twentytwenty-wrapper .twentytwenty-container .twentytwenty-handle",
 				"background-color:color-mix(in srgb, var(--o-backdrop) 33%, transparent)");
 		assertRuleReads(css, ".dropdown-menu", "border:1px solid color-mix(in srgb, var(--o-backdrop) 3%, transparent)");
-		// since slice 18 the translucent default of $o-lp-bg feeds the token lp-bg (D31 Q2)
+		// the translucent default of $o-lp-bg feeds the token lp-bg
 		assertRuleReads(css, ".o_lp_tree.o_tree li.children_visible", "background:var(--o-lp-bg)");
 		Assert.assertEquals("color-mix(in srgb, var(--o-backdrop) 2.5%, transparent)", resolve("lp-bg"));
 		assertRuleReads(css, ".o_tag_admin", "background:repeating-linear-gradient(135deg, transparent, transparent 3px, "
 				+ "color-mix(in srgb, var(--o-backdrop) 10%, transparent) 3px, color-mix(in srgb, var(--o-backdrop) 10%, transparent) 6px)");
-		// D11: shadows, highlight, peekview, not available visual
+		// shadows, highlight, peekview, not available visual
 		assertRuleReads(css, ".o_immunity_proof_status", "box-shadow:color-mix(in srgb, var(--o-shadow-color) 35%, transparent) 0px 0px 6px 0px inset");
 		assertRuleReads(css, "#o_navbar_wrapper", "box-shadow:inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent)");
 		Assert.assertEquals("var(--o-white)", tokens.get("navbar-highlight"));
@@ -1072,20 +1107,19 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * Decisions D12, D13 and D15 of OO-10043: the dark layer of the video
+	 * The dark layer of the video
 	 * comments reads backdrop; the hover and pressed states of the light
 	 * buttons, the table filters and the selected scope toggle read a text
 	 * token of the state, which follows the text of the button in light, and
-	 * their fills keep the values of D9 (the default themes do not change);
+	 * their fills keep their values (the default themes do not change);
 	 * a fill is 3% darker or lighter at least; the progress bars of the
 	 * selectus ratings read the tokens of the rating buttons.
 	 */
 	@Test
 	public void decisionD12D13D15RulesReadTokens() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		// D12
 		assertRuleReads(css, ".o_video_comment_container", "background-color:color-mix(in srgb, var(--o-backdrop) 50%, transparent)");
-		// D13: the text tokens of the states follow the text in light
+		// the text tokens of the states follow the text in light
 		for (String button : CONTRAST_SHADE_BUTTONS) {
 			for (String state : List.of("-hover", "-active")) {
 				Assert.assertEquals(button + "-fg" + state, "var(--o-" + button + "-fg)", tokens.get(button + "-fg" + state));
@@ -1105,13 +1139,13 @@ public class ColorTokensTest {
 		assertRuleReads(css, filter + ".o_filter_active:hover", "color:var(--o-table-filter-active-fg-hover)");
 		assertRuleReads(css, filter + ".o_filter_open:active:hover", "color:var(--o-table-filter-active-fg-active)");
 		assertRuleReads(css, ".o_scope_toggle.o_toggle_on:hover", "color:var(--o-scope-toggle-on-hover-fg)");
-		// D13: every fill is visible; the fills of light read the neutral scale (OO-10043 slice 25)
+		// every fill is visible; the fills of light read the neutral scale
 		Assert.assertEquals("#F9FAFB", resolve("btn-primary-light-bg-hover"));
 		Assert.assertEquals("#F6F7FA", resolve("btn-primary-light-bg-active"));
 		Assert.assertEquals("#F9FAFB", resolve("btn-danger-light-bg-hover"));
 		Assert.assertEquals("#F6F7FA", resolve("btn-danger-light-bg-active"));
 		Assert.assertEquals("#D0D5DD", resolve("table-filter-bg-active"));
-		// the nearest brand step with 4.5:1 for the white text that differs from the fill (OO-10043 slice 25)
+		// the nearest brand step with 4.5:1 for the white text that differs from the fill
 		Assert.assertEquals(resolve("theme1-600"), resolve("scope-toggle-on-hover-bg"));
 		for (String button : CONTRAST_SHADE_BUTTONS) {
 			for (String state : List.of("-hover", "-active")) {
@@ -1120,29 +1154,29 @@ public class ColorTokensTest {
 			}
 		}
 		Assert.assertNotEquals(resolve("scope-toggle-on-bg"), resolve("scope-toggle-on-hover-bg"));
-		// D13: the model of o-contrast-shade-amount(): a text with 4.54:1 on
+		// the model of o-contrast-shade-amount(): a text with 4.54:1 on
 		// white has no visible amount, the state keeps 10% and 17%
 		Assert.assertEquals(10, contrastShadeAmount("#DE323C", "#FFFFFF", 10));
 		Assert.assertEquals(17, contrastShadeAmount("#DE323C", "#FFFFFF", 17));
-		// the light danger button: red-500 of the tuned palette (OO-10043 slice 25) keeps 4.5:1 up to 4%
+		// the light danger button: red-500 of the tuned palette keeps 4.5:1 up to 4%
 		Assert.assertEquals(4, contrastShadeAmount(resolve("btn-danger-light-fg"), "#FFFFFF", 10));
-		// D15 (bar A has no rule, decision D25)
+		// the rating bars (bar A has no rule)
 		for (String rating : List.of("B", "C")) {
 			String token = "selectus-rating-" + rating.toLowerCase() + "-bg";
 			assertRuleReads(css, ".progress-bar.o_bar_rating_" + rating.toLowerCase(),
 					"background-image:linear-gradient(to bottom, var(--o-" + token + ") 0%, var(--o-" + token + "-hover) 100%)");
 		}
-		// the fill of a styled course element (ratchet pattern of slice 10)
+		// the fill of a styled course element (counted by the ratchet pattern)
 		assertRuleReads(css, ".o_cn_styled", "background-color:var(--o-course-style-bg)");
 		Assert.assertEquals("var(--o-neutral-25)", tokens.get("course-style-bg"));
 	}
 
 	/**
-	 * Decisions D16 to D20 and D23 of OO-10043: the abstention bar of the
+	 * The abstention bar of the
 	 * selectus statistics reads the tokens of the abstention button, the label
-	 * of bar B the text of button B; the marks and the explanation texts of
-	 * the ratings read the fill of the rating buttons, B its own tokens with
-	 * 3:1 (mark) and 4.5:1 (text) on the background; the border of a styled
+	 * of bar B the text of button B; the marks of the ratings read their mark
+	 * tokens, the explanation texts the fill of the rating buttons, B its own
+	 * text token with 4.5:1 on the background; the border of a styled
 	 * course element reads course-style-border (the shorthand
 	 * $o-cn-style-border is gone); the 8 state fills of the light buttons and
 	 * the table filters get lighter when they cannot get darker (a black
@@ -1151,25 +1185,22 @@ public class ColorTokensTest {
 	@Test
 	public void decisionD16ToD23RulesReadTokens() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		// D16, D17
 		String abstain = ".progress-bar.o_bar_rating_abstain";
 		assertRuleReads(css, abstain, "background-image:linear-gradient(to bottom, var(--o-selectus-rating-abstain-bg) 0%, var(--o-selectus-rating-abstain-bg-hover) 100%)");
 		assertRuleReads(css, abstain, "color:var(--o-selectus-rating-abstain-fg)");
 		assertRuleReads(css, ".progress-bar.o_bar_rating_b", "color:var(--o-selectus-rating-b-fg)");
-		// D18: marks 1 = C, 2 = B, 3 = A; the letter has the colour of the mark
-		Map<String, String> marks = Map.of("div.f_rating_1", "selectus-rating-c-bg", "div.f_rating_2",
-				"selectus-rating-b-marker", "div.f_rating_3", "selectus-rating-a-bg");
+		// marks 1 = C, 2 = B, 3 = A; the letter has the colour of the mark
+		Map<String, String> marks = Map.of("div.f_rating_1", "selectus-rating-c-mark", "div.f_rating_2",
+				"selectus-rating-b-mark", "div.f_rating_3", "selectus-rating-a-mark");
 		for (Map.Entry<String, String> mark : marks.entrySet()) {
 			assertRuleReads(css, mark.getKey(), "background-color:var(--o-" + mark.getValue() + ")");
 			assertRuleReads(css, mark.getKey(), "color:var(--o-" + mark.getValue() + ")");
 		}
-		// the letter C reads its own token since D26 (decisionD25ToD28Selectus)
-		assertRuleReads(css, "span.o_rating_expl[title=A]", "color:var(--o-selectus-rating-a-bg)");
+		// the letter C reads its own token (decisionD25ToD28Selectus)
+		assertRuleReads(css, "span.o_rating_expl[title=A]", "color:var(--o-selectus-rating-a-text)");
 		assertRuleReads(css, "span.o_rating_expl[title=B]", "color:var(--o-selectus-rating-b-text)");
 		assertContrast("selectus-rating-a-bg", "bg", 4.5);
 		assertContrast("selectus-rating-b-text", "bg", 4.5);
-		assertContrast("selectus-rating-b-marker", "bg", 3.0);
-		// D19
 		assertRuleReads(css, ".o_cn_styled", "border:1px solid var(--o-course-style-border)");
 		assertRuleReads(css, ".o_cns_details .o_cns_descriptions", "border-top:1px solid var(--o-course-style-border)");
 		Assert.assertEquals("var(--o-border)", tokens.get("course-style-border"));
@@ -1177,7 +1208,7 @@ public class ColorTokensTest {
 		String config = ThemeColorRatchetTest.withoutComments(read(light.resolve("_config.scss")));
 		Assert.assertFalse("_config.scss declares the removed shorthand $o-cn-style-border",
 				Pattern.compile("\\$o-cn-style-border\\s*:").matcher(config).find());
-		// D20: the state fills use the function "state" of o-token-shade(), the
+		// the state fills use the function "state" of o-token-shade(), the
 		// model of o-contrast-shade(): a black fill gets lighter by the amount
 		String shades = read(light.resolve("modules/_tokens.scss"));
 		for (String button : CONTRAST_SHADE_BUTTONS) {
@@ -1188,21 +1219,20 @@ public class ColorTokensTest {
 		}
 		Assert.assertEquals("#1A1A1A", stateShade("#000000", 10));
 		Assert.assertEquals("#2B2B2B", stateShade("#000000", 17));
-		// the computed fill, or a scale step on the side of the computed fill (OO-10043 slice 25)
+		// the computed fill, or a scale step on the side of the computed fill
 		assertShade("table-filter-active-bg-hover", "table-filter-active-bg",
 				contrastShadeAmount(resolve("table-filter-active-fg"), resolve("table-filter-active-bg"), 10));
-		// D23
 		Assert.assertEquals("#657286", resolve("navbar-text"));
 		Assert.assertEquals("#657286", resolve("navbar-tools"));
 	}
 
 	/**
-	 * Decisions D25 to D28 of OO-10043, selectus: the bar of rating A has no
+	 * Selectus: the bar of rating A has no
 	 * own rule (PositionApplicationsController renders it as a success
-	 * segment); the mark B and the letters B and C keep 3:1 and
-	 * 4.5:1 on a white, a striped and a hovered table row (adjusted against the
-	 * darkest of the three, o-darkest-color()); the 8 state fills are the only
-	 * shade tokens with the function "state" (D27, no code change); the mark of
+	 * segment); the letters B and C keep 4.5:1 on a white, a striped and a
+	 * hovered table row (adjusted against the darkest of the three,
+	 * o-darkest-color()), the border of the marks 3:1; the 8 state fills are the only
+	 * shade tokens with the function "state"; the mark of
 	 * no rating reads the fill of the default button, the mark of the
 	 * abstention the fill of the abstention button.
 	 */
@@ -1210,7 +1240,7 @@ public class ColorTokensTest {
 	public void decisionD25ToD28Selectus() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
-		// D25: no rule for bar A, and the Java code renders bar A as a success
+		// no rule for bar A, and the Java code renders bar A as a success
 		// segment without a class of its own (OO-10053: segments of the progress bar)
 		Assert.assertFalse("The compiled theme has a rule for bar A", Pattern.compile("o_bar_rating_a(?![a-z])").matcher(css).find());
 		Assert.assertFalse("The compiled theme has a rule of the old bar selector", css.contains("o_bar_rating_on"));
@@ -1231,16 +1261,13 @@ public class ColorTokensTest {
 		Assert.assertEquals("Bars A, B and C of the statistics", 3, bars);
 		Assert.assertTrue("The abstention bar has the class o_bar_rating_abstain",
 				read(controller).contains("BarColor.primary, \"o_bar_rating_abstain\""));
-		// D26: the mark B and the letters B and C on the three rows, the marks A,
-		// C and abstention and the letter A with the fill of the button
+		// the letters B and C on the three rows, the letter A and the mark of
+		// the abstention with the fill of the button, the border of the marks
 		assertRuleReads(css, "span.o_rating_expl[title=C]", "color:var(--o-selectus-rating-c-text)");
-		assertRuleReads(css, "div.f_rating_2", "background-color:var(--o-selectus-rating-b-marker)");
-		Assert.assertEquals("#9D6500", resolve("selectus-rating-b-marker"));
 		Assert.assertEquals("#9D6500", resolve("selectus-rating-b-text"));
 		Assert.assertEquals("#E2002D", resolve("selectus-rating-c-text"));
 		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
-			assertContrast("selectus-rating-b-marker", row, 3.0);
-			assertContrast("selectus-rating-c-bg", row, 3.0);
+			assertContrast("btn-default-border", row, 3.0);
 			assertContrast("selectus-rating-abstain-bg", row, 3.0);
 			assertContrast("selectus-rating-a-bg", row, 4.5);
 			assertContrast("selectus-rating-b-text", row, 4.5);
@@ -1249,19 +1276,19 @@ public class ColorTokensTest {
 		// the adjusted tokens read the darkest row of the theme config, no hex value
 		String scss = read(light.resolve("modules/_tokens.scss"));
 		String darkest = "o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)";
-		for (String token : List.of("selectus-rating-b-text", "selectus-rating-b-marker", "selectus-rating-c-text")) {
+		for (String token : List.of("selectus-rating-b-text", "selectus-rating-c-text")) {
 			Matcher m = Pattern.compile("\"" + token + "\":\\s*\\(([^\\n]*)\\),\\s*\\n").matcher(scss);
 			Assert.assertTrue(token + " not in _tokens.scss", m.find());
 			Assert.assertTrue(token + " is not adjusted against the darkest row: " + m.group(1), m.group(1).contains(darkest));
 		}
-		// D27: the rule of D20 stays with the 8 state fills
+		// the lighter black fill stays with the 8 state fills
 		Matcher state = Pattern.compile("\"([a-z0-9-]+)\":[^\\n]*, \"state\"\\),").matcher(scss);
 		List<String> stateFills = new ArrayList<>();
 		while (state.find()) {
 			stateFills.add(state.group(1));
 		}
 		Assert.assertEquals(stateFills.toString(), 2 * CONTRAST_SHADE_BUTTONS.size(), stateFills.size());
-		// D28: the marks of no rating and of the abstention read the fill of the buttons
+		// the marks of no rating and of the abstention read the fill of the buttons
 		for (String selector : List.of("div.f_rating_0", "span.f_rating_0")) {
 			assertRuleReads(css, selector, "background-color:var(--o-btn-default-bg)");
 			assertRuleReads(css, selector, "color:var(--o-btn-default-bg)");
@@ -1274,20 +1301,20 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * Decision D29 of OO-10043, the literal colours of the B4 review: each
+	 * The literal colours of the review: each
 	 * block reads the tokens of its recommended option. Texts and icons read
-	 * text, heading, text-muted, input-placeholder (B4-1); borders and lines
-	 * border, border-strong, text, bg, bg-raised (B4-2); fills bg-subtle,
-	 * bg-hover, bg-raised, bg (B4-3); the hover of the file upload button the
-	 * default button (B4-5); scroll shades, rank shadows and layers on media
-	 * shadow-color, scrim and backdrop with the alpha of today (B4-6, B4-10,
-	 * B4-13); AI marks and glows element tokens with a reference to a state
-	 * fill (B4-7, B4-8); icons and texts with a status the state tokens
-	 * (B4-9); decorative colours palette steps (B4-13). The own tokens have
-	 * the values of today (B4-4, B4-11, B4-14); the selectus status icons
-	 * (B4-12) read the text role of a state. The hotspot styles, the
+	 * text, heading, text-muted, input-placeholder; borders and lines
+	 * border, border-strong, text, bg, bg-raised; fills bg-subtle,
+	 * bg-hover, bg-raised, bg; the hover of the file upload button the
+	 * default button; scroll shades, rank shadows and layers on media
+	 * shadow-color, scrim and backdrop with the alpha of today; AI marks and
+	 * glows element tokens with a reference to a state
+	 * fill; icons and texts with a status the state tokens;
+	 * decorative colours palette steps. The own tokens have
+	 * the values of today; the selectus status icons
+	 * read the text role of a state. The hotspot styles, the
 	 * styles stored in content, brand colours, developer tools and print
-	 * sheets keep their literals (B4-15 to B4-17). B4-18 (slice 23): the
+	 * sheets keep their literals. The
 	 * rules without a reader and the invalid declarations are removed; the
 	 * styles that stored content can use (.o_blue, .o_icon_rss_unsubscribe,
 	 * .itemPrompt, table.inputHelp) keep their literals with a marker.
@@ -1295,31 +1322,31 @@ public class ColorTokensTest {
 	@Test
 	public void decisionD29LiteralsReadTokens() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		// B4-1 texts and icons
+		// texts and icons
 		assertRuleReads(css, ".o_cit .publicationTitle", "color:var(--o-text)");
 		assertRuleReads(css, ".o_cit .notes", "color:var(--o-text-muted)");
 		assertRuleReads(css, ".ProseMirror[data-placeholder]::before", "color:var(--o-input-placeholder)");
 		assertRuleReads(css, ".o_vertical_timeline .o_vertical_timeline_rows .o_vertical_timeline_row .o_vertical_timeline_year h5",
 				"color:var(--o-heading)");
 		assertRuleReads(css, ".o_practice_statistics span>i", "color:var(--o-practice-icon)");
-		// B4-2 borders and lines
+		// borders and lines
 		assertRuleReads(css, ".d3chart .axis path", "stroke:var(--o-text)");
 		assertRuleReads(css, ".o_course_run .o_course_pagination", "border-top:1px solid var(--o-border)");
 		assertRuleReads(css, ".o_empty_panel .o_empty_panel_icon", "border:2px solid var(--o-bg)");
 		assertRuleReads(css, ".ui-dialog .ui-widget-content", "border-color:var(--o-bg-raised)");
 		assertRuleReads(css, "div.f_rating_overview", "border:1px solid var(--o-btn-default-border)");
 		assertRuleReads(css, ".o_assessmentitem .gap", "border:1px dashed var(--o-qti-text-gap-border)");
-		// B4-3 fills
+		// fills
 		assertRuleReads(css, ".o_im_welcome_image", "background-color:var(--o-bg-subtle)");
 		assertRuleReads(css, ".o_page_content_editor .o_page_part.o_page_part_view:hover", "background-color:var(--o-bg-hover)");
 		assertRuleReads(css, ".o_badge_wiz_image_step .o_template_cards .o_template_card.o_selected",
 				"background-color:var(--o-badge-template-selected-bg)");
 		assertRuleReads(css, ".o_table_wrapper .o_scrollable_left .o_col_sticky_left", "background-color:var(--o-table-sticky-col-bg)");
-		// B4-4 one-time code field
+		// one-time code field
 		assertRuleReads(css, ".o_sel_registration_otp input.o_sel_registration_otp", "--otp-cell-bg-color:var(--o-otp-cell-bg)");
 		assertRuleReads(css, ".o_sel_registration_otp input.o_sel_registration_otp", "--otp-cell-bg-color-focus:var(--o-otp-cell-active-bg)");
 		assertRuleReads(css, ".o_sel_registration_otp input.o_sel_registration_otp", "caret-color:var(--otp-cc, var(--o-otp-caret))");
-		// B4-5 hover of the file upload button: long selector lists, each selector reads the default button
+		// hover of the file upload button: long selector lists, each selector reads the default button
 		for (String area : List.of(".o_folder .o_folder_navigation .o_folder_create_group .o_fileinput.o_area",
 				".o_proj_title .o_proj_title_cmds .o_fileinput.o_area", ".o_media_cmd .o_media_add_cmd>div>div.o_fileinput.o_area")) {
 			for (String state : List.of("hover", "focus")) {
@@ -1331,10 +1358,10 @@ public class ColorTokensTest {
 			}
 		}
 		assertRuleReads(css, ".o_folder .o_folder_navigation .o_folder_create_group .o_dnd .o_dnd_icon", "color:var(--o-text)");
-		// B4-6 scroll shades
+		// scroll shades
 		assertRuleReads(css, ".o_object_selection .o_object_selection_main::before",
 				"background:linear-gradient(color-mix(in srgb, var(--o-shadow-color) 10%, transparent), transparent)");
-		// B4-7 and B4-8: element tokens with a reference to a state fill, the alpha of today
+		// element tokens with a reference to a state fill, the alpha of today
 		assertRuleReads(css, ".o_ai_mark_wrong", "background:color-mix(in srgb, var(--o-ai-mark-wrong) 18%, transparent)");
 		assertRuleReads(css, ".o_ai_mark_wrong", "text-decoration-color:color-mix(in srgb, var(--o-ai-mark-wrong) 55%, transparent)");
 		assertRuleReads(css, ".o_forum .o_forum_message_new", "box-shadow:0 1px 10px color-mix(in srgb, var(--o-forum-message-new-glow) 30%, transparent)");
@@ -1345,28 +1372,28 @@ public class ColorTokensTest {
 		for (Map.Entry<String, String> reference : references.entrySet()) {
 			Assert.assertEquals(reference.getKey(), "var(--o-" + reference.getValue() + ")", tokens.get(reference.getKey()));
 		}
-		// B4-9 status meaning
+		// status meaning
 		assertRuleReads(css, ".o_icon_delete", "color:var(--o-state-danger-text)");
 		assertRuleReads(css, ".o_icon_member_skipped", "color:var(--o-state-inactive-text)");
 		assertRuleReads(css, ".o_ochre", "color:var(--o-state-warning-text)");
 		assertRuleReads(css, ".o_dialog_card_label_new", "background:var(--o-state-warning-soft-bg)");
 		assertRuleReads(css, "div.o_wiki_wrapper a.edit", "color:var(--o-state-danger-text)");
-		// B4-10 layers on images and video
+		// layers on images and video
 		assertRuleReads(css, ".o_video_listing .o_timecode", "background:color-mix(in srgb, var(--o-backdrop) 80%, transparent)");
 		assertRuleReads(css, ".o_video_recorder .o_av_container", "background-color:var(--o-backdrop)");
 		assertRuleReads(css, ".o_forum .o_icon_enlarge",
 				"text-shadow:1px 1px 2px var(--o-scrim),-1px 1px 2px var(--o-scrim),1px -1px 2px var(--o-scrim),-1px -1px 2px var(--o-scrim)");
-		// B4-11 off-canvas menu: the hover reads its Sass variable through the token
+		// off-canvas menu: the hover reads its Sass variable through the token
 		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-right a:hover", "color:var(--o-offcanvas-link-hover)");
 		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-right h2.o_navbar_category",
 				"border-bottom:1px solid var(--o-offcanvas-category-border)");
 		Assert.assertEquals("#8B95A7", resolve("offcanvas-link-hover"));
-		// B4-12 and B4-14 own tokens of selectus and the recorder
+		// own tokens of selectus and the recorder
 		assertRuleReads(css, ".o_position_status_filter.o_published", "color:var(--o-selectus-status-published)");
 		assertRuleReads(css, ".o_reference_status_filter.o_deactivated", "color:var(--o-selectus-status-deactivated)");
 		assertRuleReads(css, ".o_video_recorder .strong-symbol:hover", "fill:var(--o-recorder-record-hover)");
 		assertRuleReads(css, ".o_video_recorder .symbol:active", "fill:var(--o-recorder-symbol-active)");
-		// B4-13 decorative colours: palette steps, rank shadows, white pen, drop target
+		// decorative colours: palette steps, rank shadows, white pen, drop target
 		assertRuleReads(css, ".o_highscore .o_rank",
 				"text-shadow:color-mix(in srgb, var(--o-shadow-color) 50%, transparent) 0 -1px 0,color-mix(in srgb, var(--o-scrim) 60%, transparent) 0 2px 1px");
 		assertRuleReads(css, ".o_icon_provider_guest", "color:var(--o-orange-500)");
@@ -1395,7 +1422,7 @@ public class ColorTokensTest {
 			assertContrast(token, "bg", 3.0);
 		}
 		Path modules = PaletteTest.LIGHT_THEME_CSS.getParent().resolve("modules");
-		// B4-15 to B4-17: the kept literals are still there, the hotspot styles name the template
+		// the kept literals are still there, the hotspot styles name the template
 		assertSourceHas(modules.resolve("_qti21.scss"), "background-color: rgba(255, 255, 255, 0.5);", "border-color: #6E6E6E;",
 				"background-color: rgba(234, 168, 255, 0.5);", "border-color: #ab47cb;", "background-color: rgba(229, 255, 204, 0.6);",
 				"border-color: black;", "border: 5px solid rgba(211,211,211,0.66);");
@@ -1408,7 +1435,7 @@ public class ColorTokensTest {
 		assertSourceHas(modules.resolve("_dmz.scss"), "color: #4568b2;", "color: rgb(0, 114, 198);");
 		assertSourceHas(modules.resolve("_icons.scss"), "color: #cfdc00;");
 		assertSourceHas(modules.resolve("_devel.scss"), "background: #f0ad4e;");
-		// B4-18 (slice 23): the styles that stored content can use stay, the rules
+		// the styles that stored content can use stay, the rules
 		// without a reader and the invalid declarations are removed
 		assertSourceHas(modules.resolve("_helpers.scss"), ".o_blue { color: #12223F; }");
 		assertSourceHas(modules.resolve("_icons.scss"), "color: #996633;");
@@ -1427,7 +1454,7 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * OO-10043 slice 16, the framework modules (dialog, login page, cards,
+	 * The framework modules (dialog, login page, cards,
 	 * navbar, table, tree, icons, helpers): the rules read element tokens fed
 	 * by the Sass variables of the theme config, no colour changes. The message
 	 * boxes read the existing fill tokens box-*-bg; note, tip and important
@@ -1459,9 +1486,10 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_dashboard_table_widget .o_dashboard_widget_table", "background-color:var(--o-dashboard-widget-table-bg)");
 		// navbar and offcanvas menu
 		assertRuleReads(css, ".o_navbar #o_navbar_tools_personal .o_logout", "color:var(--o-navbar-logout)");
-		// the login link (OO-10043 slice 26): own token, the palette step nearest to $brand-warning
-		assertRuleReads(css, ".o_navbar #o_navbar_tools_permanent #o_navbar_login a", "color:var(--o-navbar-login)");
-		Assert.assertEquals("var(--o-orange-400)", tokens.get("navbar-login"));
+		// the login link of the guest navbar is a primary button without an own colour rule
+		Assert.assertFalse("The login link has an own colour rule", css.contains("#o_navbar_login a{"));
+		assertRuleReads(css, ".o_navbar #o_navbar_tools_permanent #o_navbar_login.o_navbar_button", "padding-left:7px");
+		Assert.assertNull(tokens.get("navbar-login"));
 		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-right .dropdown-menu", "background-color:var(--o-offcanvas-dropdown-bg)");
 		assertRuleReads(css, ".o_navbar.o_navbar-offcanvas .o_navbar-nav .active a", "color:var(--o-offcanvas-link-active)");
 		// table and tree
@@ -1483,7 +1511,7 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("table-row-selected-bg"));
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("navbar-logout"));
 		// the colours of today
-		String[] values = { "box-tip-border", "#4E596D", "box-important-border", "#1FC6FE",
+		String[] values = { "box-tip-border", "#4E596D", "box-important-border", "#047A9F",
 				"message-line-warning-bg", "#FFBE80", "message-line-error-fg", "#470A0E", "popover-fallback-border", "#C6CCD6",
 				"dialog-header-bg", "#F9FAFB", "login-help-bg", "#E4E7EC", "widget-subtitle", "#657286",
 				"offcanvas-link", "#B1B8C5", "table-edit-bg", "#F9FAFB", "tree-border", "#DDDDDD",
@@ -1513,7 +1541,7 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * Decision D24 of OO-10043, the focus ring: the token focus is the primary
+	 * The focus ring: the token focus is the primary
 	 * colour adjusted to 3:1 on the page background ($o-focus-color, read
 	 * before the Bootstrap defaults define $input-border-focus); every control
 	 * has the ring outline 2px solid var(--o-focus) with the offset 2px on
@@ -1521,8 +1549,9 @@ public class ColorTokensTest {
 	 * halo or the glow of the form fields; the controls that touch their
 	 * neighbours or that a container cuts have the ring inside the edge, on a
 	 * fill in the colour of the ring in the text colour of the fill; the navbar
-	 * reads navbar-focus, the footer footer-focus; the radio cards keep the
-	 * colours of $input-border-focus; no theme module has the literal of the
+	 * reads navbar-focus, the footer footer-focus; a tree entry has the ring
+	 * inside its row in tree-focus; the radio card shows the ring, the checked
+	 * radio card has the brand colour; no theme module has the literal of the
 	 * old focus colour.
 	 */
 	@Test
@@ -1542,7 +1571,7 @@ public class ColorTokensTest {
 		}
 		assertRuleReads(css, "a:focus", "outline:0");
 		assertRuleReads(css, ".btn:focus", "outline:0");
-		// D30: a radio card shows the ring, the radio or checkbox inside it does not
+		// a radio card shows the ring, the radio or checkbox inside it does not
 		assertRuleReads(css, "form .o_form .o_radio_cards_wrapper .o_radio_cards label input:focus-visible~.o_radio_card", ring);
 		assertRuleReads(css, "form .o_form .o_radio_cards_wrapper .o_radio_cards label input:focus-visible~.o_radio_card", "outline-offset:2px");
 		assertRuleReads(css, "form .o_form .o_radio_cards_wrapper .o_radio_cards label input:focus-visible", "outline:0");
@@ -1567,7 +1596,7 @@ public class ColorTokensTest {
 		assertRuleReads(css, "#o_footer_wrapper a:focus:focus-visible", "outline-color:var(--o-footer-focus)");
 		assertRuleReads(css, ".o_checkbox_button_group>div:has(input:focus-visible)", "outline-offset:-2px");
 		// the checked radio card is a selection in the brand colour: the border reads the primary
-		// colour, the fill step 50 of the brand ramp (OO-10043 slice 25)
+		// colour, the fill step 50 of the brand ramp
 		Assert.assertEquals("var(--o-primary)", tokens.get("radio-card-checked-border"));
 		Assert.assertEquals(resolve("theme1-50"), resolve("radio-card-checked-bg"));
 		// the existence of $input-border-focus is read before the Bootstrap defaults
@@ -1587,7 +1616,7 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * The other button rules read tokens (OO-10043 slice 7): the disabled
+	 * The other button rules read tokens: the disabled
 	 * link button, the ghost, mega, light primary and light danger buttons,
 	 * the filter buttons of a table, the toggle switch, the scope toggle,
 	 * the confirm button of the appointments and the rating buttons of
@@ -1637,7 +1666,7 @@ public class ColorTokensTest {
 	 * --o-white) resolves to a colour. A keyword like "none" in a token
 	 * behaves differently from the same keyword in the rule. A translucent
 	 * default of a named Sass variable is a color-mix() of a token that
-	 * resolves to a colour (decision D31 Q2, OO-10043 slice 17).
+	 * resolves to a colour.
 	 */
 	@Test
 	public void tokensResolveToColors() {
@@ -1658,24 +1687,24 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * OO-10043 slice 17, the assessment and content modules (QTI, page
-	 * editor, practice, video, video task) and the follow-ups of slice 16
-	 * (decision D31): the rules read element tokens fed by the Sass variables
+	 * The assessment and content modules (QTI, page
+	 * editor, practice, video, video task) and the framework
+	 * modules that followed: the rules read element tokens fed by the Sass variables
 	 * of the theme config, no colour changes. A named variable with a
-	 * translucent default feeds a token with the color-mix() default (Q2). The
+	 * translucent default feeds a token with the color-mix() default. The
 	 * shorthand border variables are split into width, style and a colour
-	 * token (Q1); $o-login-border stays valid for a theme that sets it. The
+	 * token; $o-login-border stays valid for a theme that sets it. The
 	 * new texts and icons pass their contrast pairs in light.
 	 */
 	@Test
 	public void assessmentAndContentModulesReadTokens() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		// Q2: translucent defaults
+		// translucent defaults
 		assertRuleReads(css, ".o_login .o_login_box", "background-color:var(--o-login-bg)");
 		assertRuleReads(css, ".o_block_imagebg span", "background-color:var(--o-imagebg-text-bg)");
 		Assert.assertEquals("color-mix(in srgb, var(--o-scrim) 95%, transparent)", resolve("login-bg"));
 		Assert.assertEquals("color-mix(in srgb, var(--o-primary) 50%, transparent)", resolve("drawing-select-bg"));
-		// Q1: shorthand borders, width and style of the theme config and a colour token
+		// shorthand borders, width and style of the theme config and a colour token
 		assertRuleReads(css, ".o_card", "border:1px solid var(--o-card-border)");
 		assertRuleReads(css, ".o_fact_sheet", "border:solid 1px var(--o-fact-sheet-border)");
 		assertRuleReads(css, ".o_activity_add", "border:1px solid var(--o-activity-add-border)");
@@ -1698,7 +1727,9 @@ public class ColorTokensTest {
 		assertRuleReads(css, "#o_qti_run_infos #o_qti_scoreinfo .progress-bar",
 				"background-color:var(--o-qti-run-infos-score-progress-bg)");
 		assertRuleReads(css, ".hottextInteraction .hottext.o_disabled.o_checked", "background:var(--o-qti-hottext-checked-bg)");
-		assertRuleReads(css, ".o_page_container .o_hover_text_wrapper .o_hover_text", "color:var(--o-editor-hover-text)");
+		// the slot name of the page editor had no DOM: rule and token are removed
+		Assert.assertFalse(css.contains("o_hover_text"));
+		Assert.assertNull(tokens.get("editor-hover-text"));
 		assertRuleReads(css, ".o_ce_add .o_ce_tools .o_ce_tool a:hover", "border:1px solid var(--o-toolbar-border)");
 		assertRuleReads(css, ".progress-bar.o_practice_progress_l2", "background-color:var(--o-practice-progress-l2-bg)");
 		assertRuleReads(css, ".o_video_run .o_author", "color:var(--o-coursesite-meta-author)");
@@ -1734,12 +1765,12 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * OO-10043 slice 18, the course, curriculum, user, chat, high score,
+	 * The course, curriculum, user, chat, high score,
 	 * projects, radial progress, Selectus and various modules: the rules read
 	 * element tokens fed by the Sass variables of the theme config, no colour
 	 * changes. The shorthand border variables of these modules are split into
-	 * width, style and a colour token (decision D31 Q1), the translucent
-	 * defaults feed a token with the color-mix() default (Q2), the icon colours
+	 * width, style and a colour token, the translucent
+	 * defaults feed a token with the color-mix() default, the icon colours
 	 * of the figure cards are tokens of the tint swatch. The other modules read
 	 * the tokens of $o-toolbar-border-color, $o-slider-border,
 	 * $o-portfolio-media-content-background-color,
@@ -1749,7 +1780,7 @@ public class ColorTokensTest {
 	@Test
 	public void courseUserAndVariousModulesReadTokens() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		// Q1: shorthand borders, width and style of the theme config and a colour token
+		// shorthand borders, width and style of the theme config and a colour token
 		assertRuleReads(css, ".o_empty_state", "border:1px solid var(--o-empty-border)");
 		assertRuleReads(css, ".o_icon_panel", "border:1px solid var(--o-icon-panel-border)");
 		assertRuleReads(css, ".o_highscore .o_first", "border:1px solid var(--o-highscore-podium-border)");
@@ -1768,7 +1799,7 @@ public class ColorTokensTest {
 					Pattern.compile(Pattern.quote(shorthand) + "\\s*:").matcher(config).find());
 		}
 		assertSourceHas(light.resolve("modules/_tokens.scss"), "$o-token-removed-shorthands-renamed");
-		// Q2: translucent defaults
+		// translucent defaults
 		Assert.assertEquals("color-mix(in srgb, var(--o-scrim) 95%, transparent)", resolve("course-style-cover-text-bg"));
 		Assert.assertEquals("color-mix(in srgb, var(--o-primary) 10%, transparent)", resolve("brand-box-bg"));
 		// the icon colours of the figure cards: the tint swatch of the hue
@@ -1799,7 +1830,7 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-state-warning-bg)", tokens.get("selectus-review-comment-glow"));
 		// the colours of today
 		String[] values = { "empty-border", "#E4E7EC", "highscore-podium-border", "#D9DDE3", "user-info-profile-border", "#C6CCD6",
-				"lp-pagination-done-border", "#436202", "curriculum-element-inactive", "#657286", "selectus-onhold", "#8B95A7",
+				"lp-pagination-done-border", "#436202", "curriculum-element-inactive", "#657286", "selectus-onhold", "#657286",
 				"authentication-level1", "#7A2F07", "user-status-inactive-border", "#637286" };
 		for (int i = 0; i < values.length; i += 2) {
 			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
@@ -1821,20 +1852,20 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * OO-10043 slice 19: the other modules read element tokens fed by their
-	 * Sass variables, the toolbar reads tokens (decision D32 E3), the
-	 * variables with upper-case letters have tokens (E1) and the position
-	 * title of the high score has a switch and a token (E2).
+	 * The other modules read element tokens fed by their
+	 * Sass variables, the toolbar reads tokens, the
+	 * variables with upper-case letters have tokens and the position
+	 * title of the high score has a switch and a token.
 	 */
 	@Test
 	public void otherModulesReadTokens() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		// E3: the toolbar
+		// the toolbar
 		assertRuleReads(css, ".o_toolbar .o_tools_container", "background-color:var(--o-toolbar-bg)");
 		assertRuleReads(css, ".o_toolbar .o_tool_next", "background-color:var(--o-toolbar-nav-bg)");
 		assertRuleReads(css, ".o_edit_mode .o_toolbar .o_tools_container",
 				"background:repeating-linear-gradient(300deg, var(--o-toolbar-edit-stripe), var(--o-toolbar-edit-stripe) 10px, var(--o-toolbar-edit-bg) 10px, var(--o-toolbar-edit-bg) 20px)");
-		// E1: names with upper-case letters
+		// names with upper-case letters
 		assertRuleReads(css, ".o_assessmentitem div.badResponse", "color:var(--o-qti-bad-response)");
 		assertRuleReads(css, ".o_icon_qti_notPresented", "color:var(--o-qti-status-not-presented)");
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("qti-bad-response"));
@@ -1842,13 +1873,13 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-qti-gap-border)", tokens.get("qti-text-entry-border"));
 		Assert.assertEquals(1, ThemeColorRatchetTest.countOldColorReferences(".a { color: $o-qti-textEntryInteraction-color; }"));
 		Assert.assertEquals(0, ThemeColorRatchetTest.countOldColorReferences(".a { width: $o-qti-textEntryInteraction-width; }"));
-		// E2: the gradient by default, the token without it; the old variable stays valid
+		// the gradient by default, the token without it; the old variable stays valid
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
 		assertSourceHas(light.resolve("_config.scss"), "$o-hs-position-title-gradient", "@function o-hs-position-title-gradient()",
 				"@function o-hs-position-title-color()");
 		assertSourceHas(light.resolve("modules/_highscore.scss"), "@if o-hs-position-title-gradient()", "var(--o-highscore-position-title)");
 		Assert.assertEquals("var(--o-text)", tokens.get("highscore-position-title"));
-		// Q1: shorthand borders, width and style of the theme config and a colour token
+		// shorthand borders, width and style of the theme config and a colour token
 		assertRuleReads(css, ".o_process .o_step .o_step_block", "border:1px solid var(--o-step-border)");
 		assertRuleReads(css, ".o_ac_billing_address", "border:1px solid var(--o-ac-billing-address-border)");
 		assertRuleReads(css, "body .o_swiper_buttons .swiper-button-next", "border:1px solid var(--o-swiper-button-border)");
@@ -1912,7 +1943,7 @@ public class ColorTokensTest {
 	/**
 	 * The element tokens, the shade tokens and the base colours of the light
 	 * theme read the three colour scales: the palette, the neutral scale with
-	 * white and the brand ramp (OO-10043 slice 25). In the compiled light
+	 * white and the brand ramp. In the compiled light
 	 * theme.css only the scales themselves hold a literal colour: no base
 	 * colour --o-base-{name} and no shade token. _tokens.scss holds no hex
 	 * colour outside the comments and the white background of a contrast
@@ -1986,8 +2017,8 @@ public class ColorTokensTest {
 
 	/**
 	 * Selectus: the decision rows A, B and C have the hue of their rating
-	 * (green, yellow, red), the hover one step darker; each rating mark keeps
-	 * 3:1 on the six fills. The status icons read the text role of a state,
+	 * (green, yellow, red), the hover one step darker; the border of the
+	 * rating marks and the mark of the abstention keep 3:1 on the six fills. The status icons read the text role of a state,
 	 * the back circle of the screening icons the fill of the warning state.
 	 */
 	@Test
@@ -2001,7 +2032,7 @@ public class ColorTokensTest {
 			Assert.assertTrue("The hover of row " + row.getKey() + " is not darker than its fill",
 					ColorContrast.relativeLuminance(resolve("selectus-decision-" + row.getKey() + "-hover-bg"))
 							< ColorContrast.relativeLuminance(resolve("selectus-decision-" + row.getKey() + "-bg")));
-			for (String mark : List.of("selectus-rating-a-bg", "selectus-rating-b-marker", "selectus-rating-c-bg", "selectus-rating-abstain-bg")) {
+			for (String mark : List.of("btn-default-border", "selectus-rating-abstain-bg")) {
 				assertContrast(mark, "selectus-decision-" + row.getKey() + "-bg", 3.0);
 				assertContrast(mark, "selectus-decision-" + row.getKey() + "-hover-bg", 3.0);
 			}
@@ -2021,9 +2052,10 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * The cells of the one-time code of the registration in the error state
-	 * have the border of a form field with an error (3:1 on the cell fill and
-	 * on its focus fill), not the soft border of the error box.
+	 * The cells of the one-time code of the registration have the border of
+	 * a form field. In the error state they have the border of a form field
+	 * with an error (3:1 on the cell fill and on its focus fill), not the soft
+	 * border of the error box.
 	 */
 	@Test
 	public void otpErrorCellBorder() {
@@ -2031,25 +2063,117 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".has-error .form-control", "border-color:var(--o-state-danger-text)");
 		assertRuleReads(css, ".o_pw_otp_validation.o_validation_invalid .o_sel_registration_otp .o_background",
 				"--otp-border-color:var(--o-state-danger-text)");
+		// without an error the cells have the border of a form field
+		assertRuleReads(css, ".o_pw_otp_validation .o_sel_registration_otp.o_container .o_background",
+				"--otp-border-color:var(--o-border-strong)");
 		assertContrast("state-danger-text", "box-error-bg", 3.0);
 		assertContrast("state-danger-text", "registration-otp-error-bg-focus", 3.0);
 	}
 
 	/**
-	 * The error message under a form field has a stronger border than the
-	 * error box: red 300 instead of the soft border of the state danger (red
-	 * 200). The general error box and the error box with icon keep the soft
+	 * The error message under a form field has the border of the field with
+	 * the error: the text of the state danger, 3:1 on the fill of the box.
+	 * The general error box and the error box with icon keep the soft
 	 * border.
 	 */
 	@Test
 	public void formErrorBorder() {
-		Assert.assertEquals("var(--o-red-300)", tokens.get("form-error-border"));
+		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("form-error-border"));
+		assertContrast("form-error-border", "box-error-bg", 3.0);
 		Assert.assertEquals("var(--o-state-danger-soft-border)", tokens.get("box-error-border"));
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
 		assertRuleReads(css, "form .o_form .o_error", "border-color:var(--o-form-error-border)");
 		assertRuleReads(css, "form.o_form .o_error", "border-color:var(--o-form-error-border)");
 		assertRuleReads(css, ".o_error", "border:1px solid var(--o-box-error-border)");
 		assertRuleReads(css, ".o_error_with_icon", "border:1px solid var(--o-box-error-border)");
+	}
+
+	/**
+	 * Texts, links and shapes with too little contrast before: the labels of
+	 * the high score histogram and the selectus rows on hold or with the mail
+	 * disabled read the muted text; name and time of a chat message neutral
+	 * 600; placeholder neutral 500 and typed text of a field the body text;
+	 * dark text on the bright fills of the contact tracing confirmation; the
+	 * links on a selectus decision row in the text colour, underlined; the
+	 * rating star with a darker edge; the media icon without preview neutral
+	 * 450; the important box with border and icon
+	 * cyan 500; the declarations that read the brand colour as text or icon
+	 * read primary-text.
+	 */
+	@Test
+	public void contrastReviewColours() throws IOException {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		Assert.assertEquals("var(--o-text-muted)", tokens.get("highscore-histogram-text"));
+		Assert.assertEquals("var(--o-text-muted)", tokens.get("selectus-onhold"));
+		Assert.assertEquals("var(--o-text-muted)", tokens.get("selectus-mail-disabled"));
+		assertContrast("highscore-histogram-text", "bg", 4.5);
+		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
+			assertContrast("selectus-onhold", row, 4.5);
+			assertContrast("selectus-mail-disabled", row, 4.5);
+		}
+		// chat
+		Assert.assertEquals("var(--o-neutral-600)", tokens.get("im-chat-from"));
+		Assert.assertEquals("var(--o-im-chat-from)", tokens.get("im-chat-date"));
+		assertContrast("im-chat-from", "im-chat-message-me-bg", 4.5);
+		assertContrast("im-chat-date", "im-chat-message-me-bg", 4.5);
+		// fields: the Bootstrap rules compile the same colours as the tokens
+		Assert.assertEquals("#657286", resolve("input-placeholder"));
+		Assert.assertEquals("var(--o-text)", tokens.get("input-fg"));
+		Assert.assertTrue(css.contains(".form-control::-webkit-input-placeholder{color:#657286}"));
+		assertRuleReads(css, ".form-control", "color:#344054");
+		assertContrast("input-placeholder", "input-bg", 4.5);
+		assertContrast("input-placeholder", "input-disabled-bg", 4.5);
+		// contact tracing confirmation
+		assertRuleReads(css, ".o_ct_confirmation_wrapper", "color:var(--o-contact-tracing-confirmation-fg)");
+		assertRuleReads(css, ".o_ct_confirmation_wrapper.validated", "color:var(--o-contact-tracing-validated-fg)");
+		assertRuleReads(css, ".o_ct_confirmation_wrapper.claimed", "color:var(--o-contact-tracing-claimed-fg)");
+		assertRuleReads(css, ".o_ct_confirmation_wrapper.none", "color:var(--o-white)");
+		assertRuleReads(css, ".o_ct_confirmation_wrapper h1", "color:inherit");
+		Assert.assertEquals("var(--o-lime-900)", tokens.get("contact-tracing-confirmation-fg"));
+		Assert.assertEquals("var(--o-lime-900)", tokens.get("contact-tracing-validated-fg"));
+		Assert.assertEquals("var(--o-orange-900)", tokens.get("contact-tracing-claimed-fg"));
+		assertContrast("contact-tracing-confirmation-fg", "contact-tracing-confirmation-bg", 4.5);
+		assertContrast("contact-tracing-validated-fg", "immunity-proof-validated-bg", 4.5);
+		assertContrast("contact-tracing-claimed-fg", "immunity-proof-claimed-bg", 4.5);
+		// selectus decision rows
+		for (String row : List.of("a", "b", "c")) {
+			String link = ".o_table_wrapper table.table tbody tr.fx_r_" + row + "_decision>td a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a)";
+			assertRuleReads(css, link, "color:var(--o-text)");
+			assertRuleReads(css, link, "text-decoration:underline");
+			assertContrast("text", "selectus-decision-" + row + "-bg", 4.5);
+			assertContrast("text", "selectus-decision-" + row + "-hover-bg", 4.5);
+		}
+		// rating stars: the yellow fill with a darker edge, no edge on the
+		// personal rating, the yes and no icons and the stars under the pointer
+		// of the evaluation form
+		assertRuleReads(css, ".o_rating .o_rating_items .o_icon", "-webkit-text-stroke:1px var(--o-rating-star-edge)");
+		assertRuleReads(css, ".o_rating.o_rating_personal .o_rating_items .o_icon", "-webkit-text-stroke-width:0");
+		assertRuleReads(css, ".o_rating.o_rating_yesno .o_rating_items .o_icon", "-webkit-text-stroke-width:0");
+		// the empty star: the outline glyph in the edge colour without a stroke;
+		// under the pointer of an editable rating the filled star with the edge
+		assertRuleReads(css, ".o_rating .o_rating_items .o_icon_rating_off", "color:var(--o-rating-star-edge)");
+		assertRuleReads(css, ".o_rating .o_rating_items .o_icon_rating_off", "-webkit-text-stroke-width:0");
+		assertRuleReads(css, ".o_rating .o_rating_items.o_enabled .o_icon_rating_off:hover", "color:var(--o-rating-star)");
+		assertRuleReads(css, ".o_rating .o_rating_items.o_enabled .o_icon_rating_off:hover", "-webkit-text-stroke-width:1px");
+		assertRuleReads(css, ".o_rating.o_rating_personal .o_rating_items.o_enabled .o_icon_rating_off:hover", "color:var(--o-primary-text)");
+		Assert.assertEquals("var(--o-yellow-500)", tokens.get("rating-star-edge"));
+		assertContrast("rating-star-edge", "bg", 3.0);
+		// the icon of a media without preview: neutral 450, 3:1 on the card
+		Assert.assertEquals("var(--o-neutral-450)", tokens.get("editor-media-unavailable"));
+		assertContrast("editor-media-unavailable", "bg", 3.0);
+		assertContrast("editor-media-unavailable", "bg-raised", 3.0);
+		// important box
+		Assert.assertEquals("var(--o-cyan-500)", tokens.get("box-important-border"));
+		assertContrast("box-important-border", "box-important-bg", 3.0);
+		// the brand colour as text or icon colour reads primary-text
+		Pattern primaryAsColor = Pattern.compile("(?<![-\\w])color\\s*:\\s*var\\(--o-primary\\)");
+		try (Stream<Path> modules = Files.list(ThemeColorRatchetTest.LIGHT_MODULES)) {
+			for (Path module : modules.filter(p -> p.toString().endsWith(".scss")).toList()) {
+				Assert.assertFalse(module.getFileName() + " reads primary as text colour",
+						primaryAsColor.matcher(ThemeColorRatchetTest.withoutComments(read(module))).find());
+			}
+		}
+		assertRuleReads(css, ".o_rating.o_rating_personal .o_rating_items .o_icon", "color:var(--o-primary-text)");
 	}
 
 	/**
@@ -2147,6 +2271,205 @@ public class ColorTokensTest {
 	 * @param selector One selector of a selector list, without spaces around ">"
 	 * @param declaration The declaration without spaces after ":" and without ";"
 	 */
+	/**
+	 * The focus ring of a tree entry is inside the row of the entry (li > div,
+	 * the full width of the tree), not around the text of the link; the link
+	 * has no ring of its own then. A browser without :has() keeps the ring of
+	 * the link. The opener keeps its ring outside its icon. Both read
+	 * tree-focus: the focus colour, adjusted to 3:1 on the darkest row
+	 * background (in light the focus colour itself).
+	 */
+	@Test
+	public void treeFocusRingInsideRow() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		Assert.assertTrue("The row ring needs @supports selector(:has(a))",
+				css.contains("@supports selector(:has(a)){.o_tree li>div:has(>.o_tree_link>a:focus-visible)"));
+		assertRuleReads(css, ".o_tree li>div:has(>.o_tree_link>a:focus-visible)", "outline:2px solid var(--o-tree-focus)");
+		assertRuleReads(css, ".o_tree li>div:has(>.o_tree_link>a:focus-visible)", "outline-offset:-2px");
+		assertRuleReads(css, ".o_tree li>div>.o_tree_link>a:focus-visible", "outline:0");
+		assertRuleReads(css, ".o_tree li>div>a.o_tree_open_close:focus-visible", "outline:2px solid var(--o-tree-focus)");
+		assertRuleReads(css, ".o_tree li>div>a.o_tree_open_close:focus-visible", "outline-offset:2px");
+		Assert.assertEquals("var(--o-focus)", tokens.get("tree-focus"));
+		for (String bg : List.of("bg", "tree-link-hover-bg", "tree-link-active-hover-bg")) {
+			assertContrast("tree-focus", bg, 3.0);
+		}
+	}
+
+	/**
+	 * The primary button in the navbar (login button of the guest navbar and
+	 * of the navbar of the login page): the navbar items have the inset ring
+	 * in the focus colour, which has too little contrast on the primary fill.
+	 * The button has the ring in the text colour of the fill, inside the edge,
+	 * 3:1 on the fill, on its hover and on its pressed fill.
+	 */
+	@Test
+	public void navbarPrimaryButtonFocusRing() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		String button = ".o_navbar .o_navbar_button .btn.btn-primary:focus:focus-visible";
+		assertRuleReads(css, button, "outline:2px solid currentColor");
+		assertRuleReads(css, button, "outline-offset:-4px");
+		assertRuleReads(css, ".o_navbar .o_navbar_button .btn.btn-primary", "color:var(--o-btn-primary-fg)");
+		for (String fill : List.of("btn-primary-bg", "btn-primary-bg-hover", "btn-primary-bg-active")) {
+			assertContrast("btn-primary-fg", fill, 3.0);
+		}
+	}
+
+	/**
+	 * A primary button and the help button in the toolbar (the active segment
+	 * of the segmented view is a primary button) keep the text colour of their
+	 * fill at rest, under the pointer, with the focus, pressed and disabled.
+	 * The link rules of the toolbar have the same or a lower specificity and
+	 * come first; an active primary button keeps a primary fill.
+	 */
+	@Test
+	public void toolbarPrimaryButtonKeepsItsTextColour() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		String tools = ".o_toolbar .o_tools_container ";
+		for (String state : List.of("", ":hover", ":focus", ":active")) {
+			assertRuleReads(css, tools + "a.btn-primary" + state, "color:var(--o-btn-primary-fg)");
+			assertRuleReads(css, tools + "a.o_chelp" + state, "color:var(--o-chelp-fg)");
+		}
+		assertRuleReads(css, tools + "a.btn-primary.o_disabled", "color:var(--o-btn-primary-fg) !important");
+		assertRuleReads(css, tools + "a.btn-primary.o_disabled:hover", "color:var(--o-btn-primary-fg) !important");
+		assertRuleReads(css, tools + "a.btn-primary.active", "background-color:var(--o-btn-primary-bg-hover)");
+		assertRuleReads(css, tools + "a.btn-primary.active:hover", "background-color:var(--o-btn-primary-bg-active)");
+		// same specificity as the hover rule of the toolbar links: the order decides
+		int linkHover = css.indexOf(tools + "a:not(.o_labeled,.o_labeled_light):hover{");
+		int primaryHover = css.indexOf(tools + "a.btn-primary:hover");
+		Assert.assertTrue("No hover rule of the toolbar links", linkHover >= 0);
+		Assert.assertTrue("The primary button rule comes before the hover rule of the toolbar links", primaryHover > linkHover);
+		Assert.assertFalse("A toolbar rule reads white for the primary button", css.contains(tools + "a.btn-primary," + tools + "a.o_chelp{color:var(--o-white)}"));
+		for (String fill : List.of("btn-primary-bg", "btn-primary-bg-hover", "btn-primary-bg-active")) {
+			assertContrast("btn-primary-fg", fill, 4.5);
+		}
+		assertContrast("chelp-fg", "chelp-bg", 4.5);
+		assertContrast("chelp-fg", "chelp-bg-hover", 4.5);
+	}
+
+	/**
+	 * Selectus: the links of an on-hold row have the on-hold colour. The
+	 * rule has the selector chain of the table link rule plus the row class,
+	 * so it wins against the table link rule (all cells of the application
+	 * list are links), as the link rule of the decision rows does.
+	 */
+	@Test
+	public void selectusOnHoldRowLinksHaveTheOnHoldColour() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		String tableLink = null;
+		Matcher m = RULE.matcher(css);
+		while (m.find() && tableLink == null) {
+			for (String part : m.group(1).split(",")) {
+				if (part.trim().startsWith(".o_table_wrapper td a:not(.btn)") && m.group(2).contains("color:var(--o-table-link)")) {
+					tableLink = part.trim();
+				}
+			}
+		}
+		Assert.assertNotNull("No table link rule", tableLink);
+		String links = tableLink.substring(".o_table_wrapper td ".length());
+		for (String table : List.of("table.o_table", "table.table")) {
+			assertRuleReads(css, ".o_table_wrapper " + table + " tbody tr.fx_r_onhold>td " + links, "color:var(--o-selectus-onhold)");
+			assertRuleReads(css, ".o_table_wrapper " + table + " tbody tr.fx_r_a_decision>td " + links, "color:var(--o-text)");
+		}
+		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
+			assertContrast("selectus-onhold", row, 4.5);
+		}
+	}
+
+	/**
+	 * Selectus: the marks of the ratings A, B and C (overview and own rating)
+	 * read their mark tokens, references to the solid fill of the state
+	 * success, warning and danger; the hidden letter has the colour of the
+	 * fill. The fills have less than 3:1 on the rows: the border of the mark
+	 * keeps 3:1 on a white, a striped and a hovered row and on the six fills
+	 * of the decision rows. The rating buttons keep their own fills.
+	 */
+	@Test
+	public void selectusRatingMarksReadStateFills() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		Map<String, String> marks = Map.of("1", "c", "2", "b", "3", "a");
+		Map<String, String> states = Map.of("a", "success", "b", "warning", "c", "danger");
+		for (Map.Entry<String, String> mark : marks.entrySet()) {
+			String token = "selectus-rating-" + mark.getValue() + "-mark";
+			Assert.assertEquals(token, "var(--o-state-" + states.get(mark.getValue()) + "-bg)", tokens.get(token));
+			for (String element : List.of("div", "span")) {
+				String selector = element + ".f_rating_" + mark.getKey();
+				assertRuleReads(css, selector, "background-color:var(--o-" + token + ")");
+				assertRuleReads(css, selector, "color:var(--o-" + token + ")");
+			}
+		}
+		Assert.assertEquals("#76CC71", resolve("selectus-rating-a-mark"));
+		Assert.assertEquals("#F9C900", resolve("selectus-rating-b-mark"));
+		Assert.assertEquals("#E2002D", resolve("selectus-rating-c-mark"));
+		// the rating buttons keep their fills
+		Assert.assertEquals("var(--o-green-500)", tokens.get("selectus-rating-a-bg"));
+		Assert.assertEquals("var(--o-yellow-400)", tokens.get("selectus-rating-b-bg"));
+		// the border carries the shape
+		assertRuleReads(css, "div.f_rating_overview", "border:1px solid var(--o-btn-default-border)");
+		assertRuleReads(css, "span.f_rating_overview", "border:1px solid var(--o-btn-default-border)");
+		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg", "selectus-decision-a-bg", "selectus-decision-a-hover-bg",
+				"selectus-decision-b-bg", "selectus-decision-b-hover-bg", "selectus-decision-c-bg", "selectus-decision-c-hover-bg")) {
+			assertContrast("btn-default-border", row, 3.0);
+		}
+	}
+
+	/**
+	 * A fill token (-bg) is never the colour of a text or an icon. A glyph
+	 * with a status meaning reads the text role of its state, a letter reads
+	 * a text token. Allowed: a legend mark that is a sample of its chart fill
+	 * and a text that is hidden on purpose by the colour of its own fill
+	 * (each with a comment in the module). The pale success and failure glyph
+	 * behind the number of the radial progress reads its own glyph token.
+	 */
+	@Test
+	public void fillTokensAreNoTextColours() throws IOException {
+		Map<String, Integer> allowed = Map.of("_practice.scss", 6, "_selectus.scss", 2, "_video.scss", 2);
+		Pattern fillAsColor = Pattern.compile("(?<![-\\w])color\\s*:\\s*[^;{}]*var\\(--o-[a-z0-9-]*-bg(?:-hover|-active)?\\)");
+		Map<String, Integer> found = new TreeMap<>();
+		try (Stream<Path> modules = Files.list(ThemeColorRatchetTest.LIGHT_MODULES)) {
+			for (Path module : modules.filter(p -> p.toString().endsWith(".scss")).toList()) {
+				Matcher m = fillAsColor.matcher(ThemeColorRatchetTest.withoutComments(read(module)));
+				while (m.find()) {
+					found.merge(module.getFileName().toString(), 1, Integer::sum);
+				}
+			}
+		}
+		Assert.assertEquals("Rules that read a fill token as text colour", new TreeMap<>(allowed), found);
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		assertRuleReads(css, ".o_icon_progress_success", "color:var(--o-state-success-text)");
+		assertRuleReads(css, ".o_icon_progress_danger", "color:var(--o-state-danger-text)");
+		assertRuleReads(css, "span.o_rating_expl[title=A]", "color:var(--o-selectus-rating-a-text)");
+		Assert.assertEquals("var(--o-selectus-rating-a-bg)", tokens.get("selectus-rating-a-text"));
+		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
+			assertContrast("selectus-rating-a-text", row, 4.5);
+		}
+		// the glyph behind the number of the radial progress: own tokens with a
+		// reference to the soft fill of the state, also in the print sheet
+		assertRuleReads(css, ".o_progress_passed .percentage", "color:var(--o-radial-progress-passed-glyph)");
+		assertRuleReads(css, ".o_progress_failed .percentage", "color:var(--o-radial-progress-failed-glyph)");
+		Assert.assertEquals("var(--o-state-success-soft-bg)", tokens.get("radial-progress-passed-glyph"));
+		Assert.assertEquals("var(--o-state-danger-soft-bg)", tokens.get("radial-progress-failed-glyph"));
+		assertSourceHas(ThemeColorRatchetTest.LIGHT_MODULES.resolve("_print.scss"),
+				"color: var(--o-radial-progress-failed-glyph) !important;", "color: var(--o-radial-progress-passed-glyph) !important;");
+		assertContrast("radial-progress-number", "radial-progress-passed-glyph", 4.5);
+		assertContrast("radial-progress-number", "radial-progress-failed-glyph", 4.5);
+	}
+
+	/**
+	 * Every contrast pair of two tokens in _tokens.scss passes with the
+	 * defaults of the light theme, the pairs of the text tokens included.
+	 */
+	@Test
+	public void contrastPairsPassInLight() {
+		String scss = ThemeColorRatchetTest.withoutComments(read(ThemeColorRatchetTest.LIGHT_MODULES.resolve("_tokens.scss")));
+		Matcher m = Pattern.compile("\\(\"([a-z0-9-]+)\", \"([a-z0-9-]+)\", ([0-9.]+)\\)").matcher(scss);
+		int count = 0;
+		while (m.find()) {
+			assertContrast(m.group(1), m.group(2), Double.parseDouble(m.group(3)));
+			count++;
+		}
+		Assert.assertTrue("Too few pairs found: " + count, count > 400);
+	}
+
 	private static void assertRuleReads(String css, String selector, String declaration) {
 		Matcher m = RULE.matcher(css);
 		while (m.find()) {
@@ -2226,7 +2549,7 @@ public class ColorTokensTest {
 		// the source is a scale step: the shade reads a step of the scale of its
 		// source (a palette hue such as gray, the neutral scale or the brand ramp)
 		// that differs from the source, on the side of darken() or lighten()
-		// (o-token-shade-scale() in _tokens.scss, OO-10043 slice 25)
+		// (o-token-shade-scale() in _tokens.scss)
 		Assert.assertTrue(shade + " " + shadeValue + " is not " + source + " " + sourceHex + " " + function
 				+ "%: rgb(" + expected[0] + ", " + expected[1] + ", " + expected[2] + "), and no scale step",
 				PALETTE_REFERENCE.matcher(shadeValue).matches());
@@ -2240,7 +2563,7 @@ public class ColorTokensTest {
 	 * The amount of o-contrast-shade-amount() in _functions.scss: the largest
 	 * amount from 3% up to max at which the text keeps 4.5:1 on the darker
 	 * fill; max when the text fails on the fill itself, and max when no
-	 * amount from 3% passes (decision D13: the text of the state is adjusted).
+	 * amount from 3% passes (the text of the state is adjusted).
 	 */
 	private static int contrastShadeAmount(String fg, String bg, int max) {
 		if (ColorContrast.contrast(fg, bg) < 4.5) {
@@ -2258,7 +2581,7 @@ public class ColorTokensTest {
 	/**
 	 * The fill of a hover or pressed state of o-contrast-shade() in
 	 * _functions.scss: darker by the amount, lighter when darken() keeps the
-	 * colour (decision D20).
+	 * colour.
 	 */
 	private static String stateShade(String hex, int percent) {
 		int[] rgb = darken(hex, percent);

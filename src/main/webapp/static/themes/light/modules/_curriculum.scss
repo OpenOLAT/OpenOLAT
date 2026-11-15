@@ -482,7 +482,7 @@ a.o_validation_open_results {
 		div {
 			overflow: hidden;
 		}
-		// the row cuts its content: inset focus ring (OO-10043, D24)
+		// the row cuts its content: inset focus ring (OO-10043)
 		a, button {
 			&:focus:focus-visible {
 				@include o-focus-ring-inset;

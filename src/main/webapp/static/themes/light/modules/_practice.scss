@@ -36,6 +36,10 @@
 	}
 }
 
+// The legend of the level chart: each icon is a sample of the fill of its
+// chart segment, so it reads the fill token of the segment. The entry names
+// the level and gives its value as text: the colour of the mark carries no
+// information of its own, so the mark needs no contrast pair.
 .o_practice_statistics_legend i {
 	&.o_practice_progress_not {
 		color: var(--o-practice-progress-not-bg);

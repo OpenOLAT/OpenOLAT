@@ -9,14 +9,14 @@
  * Construction rule (palette v2):
  * 1. Each step has one relative luminance for all hues: 50=0.93, 100=0.84,
  *    200=0.72, 300=0.60, 400=0.48, 500=0.165, 600=0.10, 700=0.062, 800=0.036, 900=0.016.
- *    Two exceptions (OO-10043, palette tuning of 2026-11-13): red steps 200 to
+ *    Two exceptions: red steps 200 to
  *    400 are darker (0.66, 0.48, 0.32), yellow steps 100 to 400 are lighter
  *    (0.86, 0.78, 0.70, 0.62)
  * 2. Steps 50-400 are tints with the hue's step 900 as text (>= 8.0:1; the
  *    text of step 900 on red 400 has 5.6:1, at least 4.5:1)
  * 3. Steps 500-900 are shades with white text (>= 4.85:1); 500 is also text on white
- * 4. Step 450 sits in the zone between 400 and 500 (OO-10043, decision of
- *    2026-11-15): the midpoint of step 400 and step 500 in OKLab. It is a
+ * 4. Step 450 sits in the zone between 400 and 500 (OO-10043): the midpoint
+ *    of step 400 and step 500 in OKLab. It is a
  *    fill or shape colour only. White text on it, and the step as a mark on
  *    white, have 2.66:1 (yellow) to 3.71:1 (red); the text of step 900 on it
  *    has 4.28:1 (red) to 5.99:1 (yellow). No swatch role and no colour

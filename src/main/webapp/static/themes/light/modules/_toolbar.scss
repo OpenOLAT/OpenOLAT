@@ -104,8 +104,27 @@
 				background-color: var(--o-toolbar-link-active-bg);
 			}
 	    }
-	    a.btn-primary, a.o_chelp {
-	    	color: var(--o-white);
+	    // a primary button and the help button keep the text colour of their
+	    // fill in every state, also against the hover and disabled rules above
+	    a.btn-primary {
+	    	&, &:hover, &:focus, &:active {
+	    		color: var(--o-btn-primary-fg);
+	    	}
+	    	&.o_disabled, &.o_disabled:hover {
+	    		color: var(--o-btn-primary-fg) !important;
+	    	}
+	    	// the active rule above sets the fill of a link
+	    	&.active {
+	    		background-color: var(--o-btn-primary-bg-hover);
+	    		&:hover, &:focus {
+	    			background-color: var(--o-btn-primary-bg-active);
+	    		}
+	    	}
+	    }
+	    a.o_chelp {
+	    	&, &:hover, &:focus, &:active {
+	    		color: var(--o-chelp-fg);
+	    	}
 	    }
 	    
 	    .dropdown-menu {

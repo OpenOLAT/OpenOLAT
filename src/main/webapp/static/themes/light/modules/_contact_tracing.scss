@@ -8,27 +8,31 @@
   border: solid transparent;
   background-color: var(--o-contact-tracing-confirmation-bg);
   text-align: center;
-  color: var(--o-white);
+  // dark text and icon on the bright fills, white text on the red fill
+  color: var(--o-contact-tracing-confirmation-fg);
 
   &.validated {
     background-color: var(--o-immunity-proof-validated-bg);
+    color: var(--o-contact-tracing-validated-fg);
   }
 	
   &.claimed {
     background-color: var(--o-immunity-proof-claimed-bg);
+    color: var(--o-contact-tracing-claimed-fg);
   }
 	
   &.none {
 	background-color: var(--o-immunity-proof-none-bg);	
+	color: var(--o-white);
   }
   
   h1, h2 {
-    color: var(--o-white);
+    color: inherit;
     font-weight: bold;
   }
   
   h3 {
-    color: var(--o-white);
+    color: inherit;
   }
 }
 

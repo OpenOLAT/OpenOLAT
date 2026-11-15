@@ -25,8 +25,8 @@
  *
  *            A token without shade tokens stops the compile.
  *
- * Two optional arguments give the text of the states (decision D13 of
- * OO-10043): $color-hover for the states with the fill {bg}-hover (focus,
+ * Two optional arguments give the text of the states:
+ * $color-hover for the states with the fill {bg}-hover (focus,
  * hover, active), $color-active for the pressed state with hover or focus
  * (fill {bg}-active). Default: $color. The light buttons and the filter
  * buttons of a table pass their text tokens -fg-hover and -fg-active:

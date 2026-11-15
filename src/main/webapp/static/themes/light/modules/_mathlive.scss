@@ -12,7 +12,7 @@ math-field,
 }
 
 // a text field: the focus ring also after a click (the focus is in the
-// shadow tree of the field), no glow (OO-10043, D24)
+// shadow tree of the field), no glow (OO-10043)
 math-field:focus,
 math-field:focus-within,
 .tox .tox-form math-field:focus,

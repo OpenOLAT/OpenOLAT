@@ -941,27 +941,6 @@
 		/* bug in web-kit: does not work when draging from outside */
 		border: $o-editor-element-border-width dotted var(--o-editor-hover-border);
 	}
-	&:hover .o_page_container_tools > .o_hover_text_wrapper > .o_hover_text {
-		visibility:visible;
-	}
-	.o_hover_text_wrapper {
-		visibility:hidden;
-		position: relative;
-		.o_hover_text {
-			position: absolute;
-			top: -10px;
-			left: -10px;
-			color: var(--o-editor-hover-text);
-			// background-color: Window; // Does not work in Safari
-			background-color: var(--o-bg);
-			border-bottom: $o-editor-element-border-width dotted var(--o-editor-border);
-			div {
-				display: inline-block;
-				padding: 1px 5px;
-				border-right: $o-editor-element-border-width dotted var(--o-editor-border);
-			}
-		}
-	}
 }
 
 .o_page_add_in_container_grp {
@@ -1655,7 +1634,7 @@ table.o_ce_table {
 			border: none;
 			background-color: transparent;
 			margin: auto 10px;
-			color: var(--o-primary);
+			color: var(--o-primary-text);
 		}
 
 		.swiper-button-prev:hover, .swiper-button-next:hover {

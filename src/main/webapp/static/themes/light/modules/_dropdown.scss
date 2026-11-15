@@ -58,7 +58,7 @@
   }
 
 /* a11y: the focus ring for drop-down toggles: the Bootstrap rule
-   .dropdown-toggle:focus has outline 0 (OO-10043, D24) */
+   .dropdown-toggle:focus has outline 0 (OO-10043) */
 .dropdown-toggle:focus-visible {
 	@include o-focus-ring;
 }

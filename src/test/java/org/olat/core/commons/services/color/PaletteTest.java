@@ -207,7 +207,7 @@ public class PaletteTest {
 	@Test
 	public void knownValues() {
 		// Values of the report oo-colors-p1-scss, computed by the theme build
-		// yellow is tuned by hand since OO-10043 slice 25 (palette_v4_tuning.json)
+		// yellow is tuned by hand (palette_v4_tuning.json)
 		Assert.assertEquals("#F9C900", palette.bg(new Swatch("yellow", Swatch.SOLID)));
 		Assert.assertEquals("#301E06", palette.fg(new Swatch("yellow", Swatch.SOLID)));
 		Assert.assertEquals("#0470D8", palette.bg(new Swatch("blue", Swatch.SOLID)));

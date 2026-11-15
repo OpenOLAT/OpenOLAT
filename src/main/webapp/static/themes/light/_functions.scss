@@ -164,7 +164,7 @@ $o-contrast-check: "error" !default;
 /* Helper method to select the darkest of some background colours, the one
  * with the lowest luminance (OO-10043). A colour that must keep its contrast
  * on all of them is adjusted against this one, e.g. a mark on a white, a
- * striped and a hovered table row (decision D26).
+ * striped and a hovered table row.
  *
  * @param {Color} $colors - The background colours
  * @return {Color}
@@ -179,10 +179,27 @@ $o-contrast-check: "error" !default;
 	@return $darkest;
 }
 
+/* Helper method to keep the opaque colours of some values (OO-10043). A
+ * background that a theme sets to none, transparent or a translucent colour
+ * shows the colour behind it and is left out, e.g. before o-darkest-color().
+ *
+ * @param {List} $values - Colours or other values
+ * @return {List} the opaque colours
+ */
+@function o-opaque-colors($values...) {
+	$colors: ();
+	@each $value in $values {
+		@if meta.type-of($value) == "color" and color.channel($value, "alpha") == 1 {
+			$colors: list.append($colors, $value, $separator: comma);
+		}
+	}
+	@return $colors;
+}
+
 /* The fill of a hover or pressed state: the fill of the normal state darker
  * or lighter by the amount (OO-10043). A fill that cannot get darker
  * (darken() gives the same colour, a black fill) gets lighter by the same
- * amount, so that the state is visible (decision D20).
+ * amount, so that the state is visible.
  *
  * @param {Color} $bg - The fill of the normal state
  * @param {Number} $amount - The amount in percent
@@ -200,8 +217,8 @@ $o-contrast-check: "error" !default;
 	@return $shade;
 }
 
-/* Helper method for the amount of a hover or pressed fill (OO-10043,
- * decisions D9 and D13): the state must keep the contrast of the normal
+/* Helper method for the amount of a hover or pressed fill (OO-10043):
+ * the state must keep the contrast of the normal
  * state and must be visible. Returns the largest amount from $min up to
  * $max, in steps of 1%, at which the text colour keeps the contrast ratio on
  * the darker (or lighter) background. Returns $max when the text passes at
@@ -260,8 +277,8 @@ $o-contrast-check: "error" !default;
 	@return $value;
 }
 
-/* Helper method for the text colour of a hover or pressed state (OO-10043,
- * decision D13). Returns $fg when it passes on the fill of the state, and
+/* Helper method for the text colour of a hover or pressed state (OO-10043).
+ * Returns $fg when it passes on the fill of the state, and
  * when it fails on the fill of the normal state already (a state cannot
  * repair the normal state). Else returns $fg adjusted with o-a11y-color()
  * for the fill of the state. When o-a11y-color() cannot reach the ratio
@@ -299,7 +316,7 @@ $o-contrast-check: "error" !default;
 }
 
 /* Helper method for the text colour on the hover or pressed fill of
- * o-contrast-shade-amount() (OO-10043, decision D13): o-contrast-state-text()
+ * o-contrast-shade-amount() (OO-10043): o-contrast-state-text()
  * on the fill darker or lighter by that amount. $fg when the amount keeps the
  * contrast, the adjusted text when the state keeps its amount because no
  * visible amount passes.
@@ -348,7 +365,7 @@ $o-contrast-check: "error" !default;
 	@return $best;
 }
 
-/* The three colour scales of the theme (OO-10043 slice 25). The application
+/* The three colour scales of the theme. The application
  * reads colours only from these scales: the 12 chromatic hues of $o-palette
  * (not slate and gray), the neutral scale $o-neutral (0 is white) and the
  * brand ramp theme{n} (_palette_theme.scss). The functions below read the
@@ -540,8 +557,8 @@ $o-scale-brand-distance: 0.5;
 
 /* The steps of the scale of a scale colour (its palette hue, the neutral
  * scale or its brand ramp), sorted by the distance to $target: the
- * candidates of a shade token, which never leaves the scale of its source
- * (OO-10043 slice 25). A source at a fill step (450) is a scale colour, the
+ * candidates of a shade token, which never leaves the scale of its source.
+ * A source at a fill step (450) is a scale colour, the
  * candidates never hold a fill step of a palette hue or a brand ramp
  * (o-scale-auto-steps()). An empty list for a colour that is no scale step.
  *
@@ -637,7 +654,7 @@ $o-scale-brand-distance: 0.5;
 
 /* The colour of a colour maths default (darken(), lighten(), mix()) whose
  * source is a colour of a default (o-scale-has()): the nearest step of the
- * scale of the result (o-scale-candidates(), OO-10043 slice 25). The step
+ * scale of the result (o-scale-candidates()). The step
  * differs from the source, so that a hover colour stays visible; a border
  * of a fill passes $distinct: false and may get the colour of the fill.
  * A source of the brand ramp gives a step of the brand ramp.
@@ -673,7 +690,7 @@ $o-scale-brand-distance: 0.5;
 	@return $result;
 }
 
-/* A scale colour as text or mark on a fill (OO-10043 slice 25): the colour
+/* A scale colour as text or mark on a fill: the colour
  * when it reaches the contrast ratio on the fill, else the nearest step of
  * its scale that reaches it (o-scale-candidates()). A colour that is not a
  * colour of a default (the own colour of a client theme), or a scale
@@ -696,7 +713,7 @@ $o-scale-brand-distance: 0.5;
 	@return $color;
 }
 
-/* A text colour adjusted for its background (OO-10043 slice 25): for a scale
+/* A text colour adjusted for its background: for a scale
  * colour the nearest step of its scale with the ratio (o-scale-on-color();
  * a brand step stays in the brand ramp), for any other colour (the own
  * colour of a client theme) or when no step passes o-a11y-color().

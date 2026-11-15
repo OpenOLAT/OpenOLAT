@@ -41,7 +41,7 @@
 
 /* bootstrap override */
 // only theme.css and content.css include it (_dialog.scss), not email.css: the
-// text reads the token text (OO-10043 slice 19)
+// text reads the token text
 @mixin o-alert-variant($bgcolor, $color, $boxicon:false){
 	.modal-header {
 		h4 {
