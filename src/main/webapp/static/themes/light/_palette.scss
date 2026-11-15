@@ -1,7 +1,7 @@
 /*
  * =================================================
  *
- * OpenOLAT colour palette: 14 hues x 10 steps
+ * OpenOLAT colour palette: 14 hues x 11 steps (10 text steps, fill step 450)
  *
  * @author gnaegi,  www.frentix.com
  * @date October 2026
@@ -15,14 +15,21 @@
  * 2. Steps 50-400 are tints with the hue's step 900 as text (>= 8.0:1; the
  *    text of step 900 on red 400 has 5.6:1, at least 4.5:1)
  * 3. Steps 500-900 are shades with white text (>= 4.85:1); 500 is also text on white
- * 4. Between 400 and 500 the scale skips the dead zone where no text reaches 4.5:1
+ * 4. Step 450 sits in the zone between 400 and 500 (OO-10043, decision of
+ *    2026-11-15): the midpoint of step 400 and step 500 in OKLab. It is a
+ *    fill or shape colour only. White text on it, and the step as a mark on
+ *    white, have 2.66:1 (yellow) to 3.71:1 (red); the text of step 900 on it
+ *    has 4.28:1 (red) to 5.99:1 (yellow). No swatch role and no colour
+ *    chooser reads it, the automatic step choices skip it
+ *    ($o-palette-fill-steps); a token default reads it by name
  * 5. Bright hues use step 400 as solid fill, deep hues step 500
  *
  * Generated from fxWorkspace/projects/OO-colors/scripts/palette_v2.json,
  * teal, slate (blue-gray), green (hue 143) and blue (hue 255) from
  * gen_palette_v3_additions.py. Red, orange and yellow are tuned by hand
  * (generator scripts/build_palette_tuning.py, palette_v4_tuning.json): the
- * hue turns along the ramp. Do not edit values by hand.
+ * hue turns along the ramp. Step 450 from gen_palette_step450.py
+ * (palette_step450.json). Do not edit values by hand.
  *
  * modules/_palette_vars.scss emits the map as custom properties
  * --o-{hue}-{step} in theme.css. Java reads the same values from the custom
@@ -38,24 +45,85 @@
 @use "sass:string";
 
 $o-palette: (
-	"red": (50: #FBF6F4, 100: #FAE8E6, 200: #F9C9C2, 300: #FF9E90, 400: #FF6857, 500: #E2002D, 600: #B50022, 700: #8E0D1C, 800: #6C0F16, 900: #470A0E),
-	"orange": (50: #FBF6F2, 100: #FAE9DB, 200: #FAD6B6, 300: #FFBE80, 400: #FFA33D, 500: #C24A00, 600: #9B3A00, 700: #7A2F07, 800: #5C2409, 900: #3C1706),
-	"yellow": (50: #FBF7EA, 100: #FAEECE, 200: #FBE3A0, 300: #FFD556, 400: #F9C900, 500: #9D6500, 600: #7D4F00, 700: #623F07, 800: #4A3009, 900: #301E06),
-	"lime": (50: #F3F9EB, 100: #E1F2CF, 200: #C7E7A0, 300: #ACDA6A, 400: #8ECA05, 500: #567C05, 600: #436202, 700: #354E02, 800: #273B01, 900: #182600),
-	"green": (50: #F1F9F0, 100: #DDF2DB, 200: #BEE8BB, 300: #9CDB98, 400: #76CC71, 500: #1F8320, 600: #016807, 700: #025305, 800: #013F03, 900: #012902),
-	"teal": (50: #EFF9F8, 100: #D7F2EF, 200: #B0E7E3, 300: #84DAD4, 400: #4ACBC4, 500: #027F7A, 600: #026460, 700: #00504C, 800: #003D3A, 900: #012725),
-	"cyan": (50: #EDF9FF, 100: #D5F1FE, 200: #ADE5FF, 300: #7BD7FF, 400: #1FC6FE, 500: #047A9F, 600: #05617E, 700: #034D65, 800: #003A4E, 900: #012533),
-	"blue": (50: #F2F8FF, 100: #E0EEFF, 200: #C6DFFF, 300: #A9CEFE, 400: #87BBFF, 500: #0470D8, 600: #0058AD, 700: #00468B, 800: #01356C, 900: #002249),
-	"violet": (50: #F8F6FF, 100: #EFE9FE, 200: #E3D7FF, 300: #D4C3FE, 400: #C4ABFF, 500: #8A4EE5, 600: #6F37C1, 700: #5928A1, 800: #431D7E, 900: #2B1254),
-	"magenta": (50: #FEF4FD, 100: #FEE5FB, 200: #FECEF9, 300: #FFB3F7, 400: #FF91F6, 500: #BA37B4, 600: #9A1F95, 700: #7E0F7A, 800: #620A5E, 900: #41073E),
-	"pink": (50: #FEF5F8, 100: #FEE6EE, 200: #FED1E0, 300: #FEB8D1, 400: #FF9AC0, 500: #CE2E7D, 600: #AB1364, 700: #8C0150, 800: #6D003D, 900: #480327),
-	"brown": (50: #FBF6F3, 100: #F6EAE3, 200: #EFD8CA, 300: #E7C5B0, 400: #DBAF94, 500: #93674C, 600: #775038, 700: #603F2A, 800: #4A2F1F, 900: #301E13),
-	"slate": (50: #F6F7F9, 100: #E9EDF2, 200: #D5DDE8, 300: #C1CDDC, 400: #AABACE, 500: #637286, 600: #4C5A6C, 700: #3B4757, 800: #2D3642, 900: #1C232B),
-	"gray": (50: #F7F7F7, 100: #ECECEC, 200: #DDDDDD, 300: #CBCBCB, 400: #B8B8B8, 500: #717171, 600: #595959, 700: #464646, 800: #353535, 900: #222222),
+	"red": (50: #FBF6F4, 100: #FAE8E6, 200: #F9C9C2, 300: #FF9E90, 400: #FF6857, 450: #F14442, 500: #E2002D, 600: #B50022, 700: #8E0D1C, 800: #6C0F16, 900: #470A0E),
+	"orange": (50: #FBF6F2, 100: #FAE9DB, 200: #FAD6B6, 300: #FFBE80, 400: #FFA33D, 450: #E17723, 500: #C24A00, 600: #9B3A00, 700: #7A2F07, 800: #5C2409, 900: #3C1706),
+	"yellow": (50: #FBF7EA, 100: #FAEECE, 200: #FBE3A0, 300: #FFD556, 400: #F9C900, 450: #CA9600, 500: #9D6500, 600: #7D4F00, 700: #623F07, 800: #4A3009, 900: #301E06),
+	"lime": (50: #F3F9EB, 100: #E1F2CF, 200: #C7E7A0, 300: #ACDA6A, 400: #8ECA05, 450: #71A205, 500: #567C05, 600: #436202, 700: #354E02, 800: #273B01, 900: #182600),
+	"green": (50: #F1F9F0, 100: #DDF2DB, 200: #BEE8BB, 300: #9CDB98, 400: #76CC71, 450: #4DA74A, 500: #1F8320, 600: #016807, 700: #025305, 800: #013F03, 900: #012902),
+	"teal": (50: #EFF9F8, 100: #D7F2EF, 200: #B0E7E3, 300: #84DAD4, 400: #4ACBC4, 450: #2CA49E, 500: #027F7A, 600: #026460, 700: #00504C, 800: #003D3A, 900: #012725),
+	"cyan": (50: #EDF9FF, 100: #D5F1FE, 200: #ADE5FF, 300: #7BD7FF, 400: #1FC6FE, 450: #129FCD, 500: #047A9F, 600: #05617E, 700: #034D65, 800: #003A4E, 900: #012533),
+	"blue": (50: #F2F8FF, 100: #E0EEFF, 200: #C6DFFF, 300: #A9CEFE, 400: #87BBFF, 450: #5196EC, 500: #0470D8, 600: #0058AD, 700: #00468B, 800: #01356C, 900: #002249),
+	"violet": (50: #F8F6FF, 100: #EFE9FE, 200: #E3D7FF, 300: #D4C3FE, 400: #C4ABFF, 450: #A67FF3, 500: #8A4EE5, 600: #6F37C1, 700: #5928A1, 800: #431D7E, 900: #2B1254),
+	"magenta": (50: #FEF4FD, 100: #FEE5FB, 200: #FECEF9, 300: #FFB3F7, 400: #FF91F6, 450: #DC66D5, 500: #BA37B4, 600: #9A1F95, 700: #7E0F7A, 800: #620A5E, 900: #41073E),
+	"pink": (50: #FEF5F8, 100: #FEE6EE, 200: #FED1E0, 300: #FEB8D1, 400: #FF9AC0, 450: #E8699E, 500: #CE2E7D, 600: #AB1364, 700: #8C0150, 800: #6D003D, 900: #480327),
+	"brown": (50: #FBF6F3, 100: #F6EAE3, 200: #EFD8CA, 300: #E7C5B0, 400: #DBAF94, 450: #B68A6F, 500: #93674C, 600: #775038, 700: #603F2A, 800: #4A2F1F, 900: #301E13),
+	"slate": (50: #F6F7F9, 100: #E9EDF2, 200: #D5DDE8, 300: #C1CDDC, 400: #AABACE, 450: #8695A9, 500: #637286, 600: #4C5A6C, 700: #3B4757, 800: #2D3642, 900: #1C232B),
+	"gray": (50: #F7F7F7, 100: #ECECEC, 200: #DDDDDD, 300: #CBCBCB, 400: #B8B8B8, 450: #949494, 500: #717171, 600: #595959, 700: #464646, 800: #353535, 900: #222222),
 ) !default;
 
-// The steps of every hue, light to dark
+// The text steps of every hue, light to dark: each has the luminance of
+// the construction rule and a text colour (white or step 900)
 $o-palette-steps: (50, 100, 200, 300, 400, 500, 600, 700, 800, 900) !default;
+
+// The fill steps: step -> (lighter step, darker step). A fill step is the
+// midpoint of its two steps in OKLab (o-palette-mid()), a fill or shape
+// colour without a text colour. It is no swatch role and no colour chooser
+// colour, and the automatic step choices skip it: o-palette-darker-step(),
+// o-scale-candidates(), o-scale-on-color(), the shade tokens
+// (o-scale-auto-steps() in _functions.scss). A token default reads it by
+// name, e.g. o-palette("blue", 450).
+$o-palette-fill-steps: (450: (400, 500)) !default;
+
+// The midpoint of two colours in OKLab as a plain sRGB colour (8 bit per
+// channel, as the values of $o-palette)
+@function o-palette-mid($lighter, $darker) {
+	$mix: color.to-gamut(color.to-space(color.mix($lighter, $darker, 50%, $method: oklab), rgb), $method: clip);
+	@return rgb(math.round(color.channel($mix, "red", $space: rgb)),
+		math.round(color.channel($mix, "green", $space: rgb)),
+		math.round(color.channel($mix, "blue", $space: rgb)));
+}
+
+// The steps of one hue with its fill steps, light to dark. A fill step that
+// the map does not hold is computed from its two steps (a theme config that
+// sets its own $o-palette, the brand ramp of _palette_theme.scss).
+@function o-palette-add-fill-steps($steps) {
+	$result: ();
+	@each $step in $o-palette-steps {
+		@if map.has-key($steps, $step) {
+			$result: map.merge($result, ($step: map.get($steps, $step)));
+		}
+		@each $fill, $between in $o-palette-fill-steps {
+			@if list.nth($between, 1) == $step {
+				$value: map.get($steps, $fill);
+				@if $value == null and map.has-key($steps, list.nth($between, 1)) and map.has-key($steps, list.nth($between, 2)) {
+					$value: o-palette-mid(map.get($steps, list.nth($between, 1)), map.get($steps, list.nth($between, 2)));
+				}
+				@if $value != null {
+					$result: map.merge($result, ($fill: $value));
+				}
+			}
+		}
+	}
+	// a step outside both lists keeps its place at the end
+	@each $step, $value in $steps {
+		@if not map.has-key($result, $step) {
+			$result: map.merge($result, ($step: $value));
+		}
+	}
+	@return $result;
+}
+
+// true when $step is a fill step ($o-palette-fill-steps)
+@function o-palette-is-fill-step($step) {
+	@return map.has-key($o-palette-fill-steps, $step);
+}
+
+// Every hue with its fill steps
+$_o-palette-filled: ();
+@each $_o-hue, $_o-steps in $o-palette {
+	$_o-palette-filled: map.merge($_o-palette-filled, ($_o-hue: o-palette-add-fill-steps($_o-steps)));
+}
+$o-palette: $_o-palette-filled;
 
 // Bright hues: solid fill at step 400 with dark text. All other hues are
 // deep hues: solid fill at step 500 with white text. Quoted on purpose,
@@ -92,8 +160,12 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 	@return string.unquote($hex);
 }
 
-// Returns the step one darker than $step, e.g. 500 -> 600
+// Returns the text step one darker than $step, e.g. 500 -> 600; for a fill
+// step its darker step, 450 -> 500
 @function o-palette-darker-step($step) {
+	@if o-palette-is-fill-step($step) {
+		@return list.nth(map.get($o-palette-fill-steps, $step), 2);
+	}
 	$i: list.index($o-palette-steps, $step);
 	@if $i == null or $i == list.length($o-palette-steps) {
 		@error "o-palette-darker-step: no step darker than '#{$step}'";

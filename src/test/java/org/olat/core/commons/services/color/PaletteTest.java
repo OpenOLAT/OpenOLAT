@@ -23,7 +23,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -65,7 +68,7 @@ public class PaletteTest {
 
 		int count = 0;
 		for (String hue : palette.getHues()) {
-			Assert.assertEquals("Steps of " + hue, List.of(50, 100, 200, 300, 400, 500, 600, 700, 800, 900),
+			Assert.assertEquals("Steps of " + hue, List.of(50, 100, 200, 300, 400, 450, 500, 600, 700, 800, 900),
 					List.copyOf(palette.getSteps(hue)));
 			for (Integer step : palette.getSteps(hue)) {
 				String hex = palette.hex(hue, step.intValue());
@@ -73,7 +76,78 @@ public class PaletteTest {
 				count++;
 			}
 		}
-		Assert.assertEquals(140, count);
+		Assert.assertEquals(154, count);
+	}
+
+	/**
+	 * Every hue and every theme colour has the fill step 450: the midpoint of
+	 * step 400 and step 500 in OKLab, 1 of 255 per channel at most from the
+	 * value that the generator computes (rounding of the compile).
+	 */
+	@Test
+	public void fillStepIsOklabMidpoint() throws IOException {
+		Path openolatCss = Path.of("src/main/webapp/static/themes/openolat/theme.css");
+		Palette openolat = Palette.fromCss(new String(Files.readAllBytes(openolatCss), StandardCharsets.UTF_8));
+		for (Palette p : List.of(palette, openolat)) {
+			List<String> hues = new ArrayList<>(p.getHues());
+			hues.addAll(p.getThemeColors());
+			Assert.assertEquals(14 + p.getThemeColors().size(), hues.size());
+			for (String hue : hues) {
+				Assert.assertTrue(hue, p.getSteps(hue).contains(Integer.valueOf(450)));
+				int[] expected = oklabMidpoint(p.hex(hue, 400), p.hex(hue, 500));
+				int[] actual = rgb(p.hex(hue, 450));
+				for (int i = 0; i < 3; i++) {
+					Assert.assertTrue(hue + "-450 " + p.hex(hue, 450) + " channel " + i + " expected " + expected[i],
+							Math.abs(expected[i] - actual[i]) <= 1);
+				}
+				// lighter than 500, darker than 400
+				double luminance = ColorContrast.relativeLuminance(p.hex(hue, 450));
+				Assert.assertTrue(hue, luminance < ColorContrast.relativeLuminance(p.hex(hue, 400)));
+				Assert.assertTrue(hue, luminance > ColorContrast.relativeLuminance(p.hex(hue, 500)));
+			}
+		}
+		// the values of _palette.scss (gen_palette_step450.py)
+		Assert.assertEquals("#F14442", palette.hex("red", 450));
+		Assert.assertEquals("#CA9600", palette.hex("yellow", 450));
+		Assert.assertEquals("#5196EC", palette.hex("blue", 450));
+		Assert.assertEquals("#949494", palette.hex("gray", 450));
+	}
+
+	/**
+	 * The fill step 450 carries no text at 4.5:1: no swatch role, no variant
+	 * and no colour chooser reads it. The compiled theme has no class for it
+	 * and no swatch property --o-sw-* reads a step 450.
+	 */
+	@Test
+	public void fillStepIsNoChooserColor() {
+		Assert.assertEquals(List.of(450), Palette.FILL_STEPS);
+		Assert.assertFalse(Palette.STEPS.contains(Integer.valueOf(450)));
+		Assert.assertTrue(Palette.isFillStep(450));
+		Assert.assertFalse(Palette.isFillStep(400));
+		List<String> hues = new ArrayList<>(palette.getHues());
+		hues.addAll(palette.getThemeColors());
+		for (String hue : hues) {
+			String fill = palette.hex(hue, 450);
+			Assert.assertNotEquals(hue, fill, palette.text(hue));
+			for (String variant : VARIANTS) {
+				Swatch swatch = new Swatch(hue, variant);
+				Assert.assertNotEquals(swatch.toString(), 450, palette.getBgStep(swatch));
+				Assert.assertNotEquals(swatch.toString(), fill, palette.bg(swatch));
+				Assert.assertNotEquals(swatch.toString(), fill, palette.fg(swatch));
+			}
+		}
+		for (Path css : List.of(LIGHT_THEME_CSS, Path.of("src/main/webapp/static/themes/openolat/theme.css"))) {
+			String content;
+			try {
+				content = new String(Files.readAllBytes(css), StandardCharsets.UTF_8);
+			} catch (IOException e) {
+				throw new AssertionError("Cannot read " + css.toAbsolutePath(), e);
+			}
+			Matcher swatchProperty = Pattern.compile("--o-sw-[a-z-]+\\s*:\\s*var\\(--o-[a-z]+\\d*-450\\)").matcher(content);
+			Assert.assertFalse(css + ": a swatch property reads step 450", swatchProperty.find());
+			Matcher selector = Pattern.compile("\\.o_[a-z_]*450[^{]*\\{").matcher(content);
+			Assert.assertFalse(css + ": a class for step 450", selector.find());
+		}
 	}
 
 	@Test
@@ -273,10 +347,74 @@ public class PaletteTest {
 		Assert.assertTrue(Palette.isThemeColor("theme12"));
 	}
 
+	/**
+	 * A CSS without the fill steps still loads (a palette of an older
+	 * compile): the fill step is missing, the text steps are complete.
+	 */
+	@Test
+	public void cssWithoutFillSteps() {
+		StringBuilder css = new StringBuilder(":root{");
+		for (Integer step : Palette.STEPS) {
+			css.append("--o-red-").append(step).append(": #D2343C;");
+		}
+		css.append("}");
+		Palette plain = Palette.fromCss(css.toString());
+		Assert.assertNotNull(plain);
+		Assert.assertEquals(Palette.STEPS, List.copyOf(plain.getSteps("red")));
+		Assert.assertThrows(IllegalArgumentException.class, () -> plain.hex("red", 450));
+	}
+
 	@Test
 	public void contrast() {
 		Assert.assertEquals(21.0d, ColorContrast.contrast("#000000", "#FFFFFF"), 0.001d);
 		Assert.assertEquals(1.0d, ColorContrast.contrast("#4166E8", "#4166E8"), 0.001d);
 		Assert.assertEquals(4.89d, ColorContrast.contrast("#4166E8", "#FFFFFF"), 0.01d);
+	}
+
+	private static int[] rgb(String hex) {
+		return new int[] { Integer.parseInt(hex.substring(1, 3), 16), Integer.parseInt(hex.substring(3, 5), 16),
+				Integer.parseInt(hex.substring(5, 7), 16) };
+	}
+
+	private static double linear(int channel) {
+		double c = channel / 255.0d;
+		return c <= 0.04045d ? c / 12.92d : Math.pow((c + 0.055d) / 1.055d, 2.4d);
+	}
+
+	private static double[] oklab(String hex) {
+		int[] c = rgb(hex);
+		double r = linear(c[0]);
+		double g = linear(c[1]);
+		double b = linear(c[2]);
+		double l = Math.cbrt(0.4122214708d * r + 0.5363325363d * g + 0.0514459929d * b);
+		double m = Math.cbrt(0.2119034982d * r + 0.6806995451d * g + 0.1073969566d * b);
+		double s = Math.cbrt(0.0883024619d * r + 0.2817188376d * g + 0.6299787005d * b);
+		return new double[] { 0.2104542553d * l + 0.7936177850d * m - 0.0040720468d * s,
+				1.9779984951d * l - 2.4285922050d * m + 0.4505937099d * s,
+				0.0259040371d * l + 0.7827717662d * m - 0.8086757660d * s };
+	}
+
+	/**
+	 * @return The midpoint of two colours in OKLab as 8 bit sRGB channels (clipped)
+	 */
+	private static int[] oklabMidpoint(String hex1, String hex2) {
+		double[] a = oklab(hex1);
+		double[] b = oklab(hex2);
+		double lightness = (a[0] + b[0]) / 2.0d;
+		double green = (a[1] + b[1]) / 2.0d;
+		double blue = (a[2] + b[2]) / 2.0d;
+		double l = Math.pow(lightness + 0.3963377774d * green + 0.2158037573d * blue, 3);
+		double m = Math.pow(lightness - 0.1055613458d * green - 0.0638541728d * blue, 3);
+		double s = Math.pow(lightness - 0.0894841775d * green - 1.2914855480d * blue, 3);
+		double[] linearRgb = { 4.0767416621d * l - 3.3077115913d * m + 0.2309699292d * s,
+				-1.2684380046d * l + 2.6097574011d * m - 0.3413193965d * s,
+				-0.0041960863d * l - 0.7034186147d * m + 1.7076147010d * s };
+		int[] result = new int[3];
+		for (int i = 0; i < 3; i++) {
+			double x = Math.max(0.0d, Math.min(1.0d, linearRgb[i]));
+			double encoded = x <= 0.0031308d ? 12.92d * x : 1.055d * Math.pow(x, 1.0d / 2.4d) - 0.055d;
+			result[i] = (int)Math.round(255.0d * encoded);
+		}
+		return result;
 	}
 }

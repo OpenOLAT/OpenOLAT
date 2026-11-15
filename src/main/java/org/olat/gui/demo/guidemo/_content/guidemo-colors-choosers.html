@@ -31,7 +31,7 @@ The chips render the CSS class each chooser stores, through the alias classes of
 	<thead><tr>
 		<th></th>
 		#foreach($step in $steps)
-		#if($step == 500)<th class="o_gd_col_dead" title="dead zone"></th>#end
+		#if($step == 500)<th class="o_gd_col_dead" title="step 450: fill only, no chooser color"></th>#end
 		<th>$step</th>
 		#end
 	</tr></thead>
@@ -45,10 +45,12 @@ The chips render the CSS class each chooser stores, through the alias classes of
 	<tr>
 		<th class="o_gd_col_hue" scope="row">$row.label</th>
 		#foreach($cell in $row.cells)
+		#if(!$cell.fill)
 		#if($cell.step == 500)<td class="o_gd_col_dead"></td>#end
 		<td class="o_gd_col_cell" data-cell="$cell.id" data-count="$cell.choosers.size()" style="background: var(--o-${cell.hue}-${cell.step}, $cell.hex); color: $cell.fg;" title="$cell.id $cell.hex">
 			<span class="o_gd_col_keys"></span>
 		</td>
+		#end
 		#end
 	</tr>
 	#end

@@ -180,7 +180,9 @@ $brand-success					: #5cb85c !default; //#469C30 !default;
 
 $progress-bar-neutral-bg			: $o-base-blue-color !default;
 
-// The colours of the message boxes of a state: the fill of the state (OO-10043)
+// The colours of the message boxes: border ($o-color-*) and fill
+// ($o-color-*-text-bg). A theme value is the colour of its box ($o-box-*
+// below); with the light value the box has the soft roles of its state.
 $o-color-info					: o-state-color("neutral", "bg") !default;
 $o-color-info-text-bg			: o-neutral(25) !default;
 $o-color-note					: o-neutral(500) !default;
@@ -582,7 +584,8 @@ $o-autocomplete-color 				: $input-color !default;
 
 /* Chart library configuration for visualized statistics */
 $o-d3chart-default 				: $brand-primary !default;
-$o-d3chart-light 				: o-scale-snap($brand-primary, lighten($brand-primary, 15%)) !default;
+// the light bar is a fill without text: the fill step 450 is a candidate
+$o-d3chart-light 				: o-scale-snap($brand-primary, lighten($brand-primary, 15%), $fill: true) !default;
 $o-d3chart-dark 				: o-scale-snap($brand-primary, darken($brand-primary, 15%)) !default;
 
 /* Toggle sliders */
@@ -934,7 +937,6 @@ $o-curriculum-widget-card-border-width  : 1px !default;
 $o-curriculum-widget-card-border-style  : solid !default;
 $o-curriculum-widget-card-border-radius			: 4px !default;
 
-$o-curriculum-widget-template-label-border		: 1px solid o-neutral(250) !default;
 $o-curriculum-widget-template-label-bg			: o-neutral(0);
 
 /* Curriculum element in catalog */
@@ -998,7 +1000,7 @@ $o-editor-edit-background-color						: o-neutral(50);
 /* Editor */
 $o-editor-title-dark								: o-neutral(1000) !default;
 $o-editor-title-bright								: o-neutral(25) !default;
-$o-editor-hover-border-color						: o-palette("magenta", 500) !default;
+$o-editor-hover-border-color						: o-palette("magenta", 450) !default;
 $o-editor-container-border-color					: o-neutral(100) !default;
 $o-editor-container-slot-padding					: 10px;
 
@@ -1245,20 +1247,25 @@ $o-box-margin					: 20px !default;
 $o-box-padding					: 12px !default;
 $o-box-border-size				: 1px !default;
 $o-box-border-radius			: $border-radius-base !default;
-$o-box-info-bg					: $o-color-info-text-bg!default;
-$o-box-info-color				: $o-color-info !default;
-$o-box-note-bg					: $o-color-note-text-bg !default;
-$o-box-note-color				: $o-color-note !default;
-$o-box-tip-bg					: $o-color-tip-text-bg !default;
+// The fill ($o-box-*-bg) and the border ($o-box-*-color) of the message
+// boxes. A box of a state has the soft fill and the soft border of its state:
+// info neutral, note inactive, success, warning, error danger. Tip and
+// important have no state: the fill cyan 50, the border $o-color-tip and
+// $o-color-important. A theme that sets $o-color-* keeps its colour.
+$o-box-info-bg					: o-own-or($o-color-info-text-bg, o-neutral(25), o-state-color("neutral", "soft-bg")) !default;
+$o-box-info-color				: o-own-or($o-color-info, o-state-color("neutral", "bg"), o-state-color("neutral", "soft-border")) !default;
+$o-box-note-bg					: o-own-or($o-color-note-text-bg, o-neutral(25), o-state-color("inactive", "soft-bg")) !default;
+$o-box-note-color				: o-own-or($o-color-note, o-neutral(500), o-state-color("inactive", "soft-border")) !default;
+$o-box-tip-bg					: o-own-or($o-color-tip-text-bg, o-neutral(50), o-palette("cyan", 50)) !default;
 $o-box-tip-color				: $o-color-tip !default;
-$o-box-important-bg				: $o-color-important-text-bg !default;
+$o-box-important-bg				: o-own-or($o-color-important-text-bg, o-neutral(25), o-palette("cyan", 50)) !default;
 $o-box-important-color			: $o-color-important !default;
-$o-box-success-bg				: $o-color-success-text-bg !default;
-$o-box-success-color			: $o-color-success !default;
-$o-box-warning-bg				: $o-color-warning-text-bg !default;
-$o-box-warning-color			: $o-color-warning !default;
-$o-box-error-bg					: $o-color-error-text-bg !default;
-$o-box-error-color				: $o-color-error !default;
+$o-box-success-bg				: o-own-or($o-color-success-text-bg, o-neutral(50), o-state-color("success", "soft-bg")) !default;
+$o-box-success-color			: o-own-or($o-color-success, o-state-color("success", "bg"), o-state-color("success", "soft-border")) !default;
+$o-box-warning-bg				: o-own-or($o-color-warning-text-bg, o-neutral(0), o-state-color("warning", "soft-bg")) !default;
+$o-box-warning-color			: o-own-or($o-color-warning, o-state-color("warning", "bg"), o-state-color("warning", "soft-border")) !default;
+$o-box-error-bg					: o-own-or($o-color-error-text-bg, o-neutral(25), o-state-color("danger", "soft-bg")) !default;
+$o-box-error-color				: o-own-or($o-color-error, o-state-color("danger", "bg"), o-state-color("danger", "soft-border")) !default;
 $o-message-line-padding			: 5px !default;
 $o-message-line-padding-table	: 1px 5px !default;
 $o-message-line-radius			: $border-radius-base !default;
@@ -1319,13 +1326,15 @@ $o-hs-podium-border-radius			: $panel-border-radius !default;
 $o-hs-podium-bg-gradientstyle		: true !default;
 $o-hs-podium-first-bg				: o-palette("yellow", 300) !default;
 $o-hs-podium-second-bg				: o-neutral(400) !default;
-$o-hs-podium-third-bg				: o-palette("orange", 500) !default;
+// bronze: the fill step 450 of orange
+$o-hs-podium-third-bg				: o-palette("orange", 450) !default;
 
 $o-hs-score-size					: 90% !default;
-$o-hs-rank-first-color				: o-neutral(500) !default;
-// 3:1 on the silver podium: the nearest neutral step from o-neutral(500)
-$o-hs-rank-second-color				: o-scale-on-color(o-neutral(500), $o-hs-podium-second-bg, 3) !default;
-$o-hs-rank-third-color				: o-neutral(500) !default;
+// the rank numbers: the darkest step of the hue of their block, 3:1 on each
+// stop of the gradient
+$o-hs-rank-first-color				: o-palette("yellow", 900) !default;
+$o-hs-rank-second-color				: o-neutral(900) !default;
+$o-hs-rank-third-color				: o-palette("orange", 900) !default;
 
 $o-hs-podium-height					: 300px !default;
 $o-hs-podium-margin-bottom			: 50px !default;
@@ -1343,7 +1352,8 @@ $o-hs-histogram-margin-bottom		: 40px !default;
 
 $o-hs-histogram-axis-color				: o-neutral(450) !default;
 $o-hs-histogram-text-color				: o-neutral(450) !default;
-$o-hs-histogram-bar-myself-hover-color	: o-scale-snap($brand-primary, lighten($brand-primary, 10%)) !default;
+// a fill without text: the fill step 450 is a candidate
+$o-hs-histogram-bar-myself-hover-color	: o-scale-snap($brand-primary, lighten($brand-primary, 10%), $fill: true) !default;
 $o-hs-histogram-bar-other-color			: $gray-light !default;
 $o-hs-histogram-bar-other-hover-color	: o-scale-snap($gray-light, lighten($gray-light, 10%)) !default;
 $o-hs-histogram-bar-empty-color			: o-neutral(1000) !default;
@@ -1581,14 +1591,14 @@ $o-selectus-review-comment-date-color		: o-neutral(500) !default;
 $o-selectus-review-comment-glowing-color	: o-state-color("warning", "bg");
 $o-selectus-onhold-color					: o-neutral(450);
 $o-selectus-mail-disabled-color				: o-neutral(450);
+// the decision rows A, B, C: the hue of the rating (A green, B yellow, C red),
+// the hover one step darker than the row
 $o-selectus-table-a-decision-bg				: o-palette("green", 200);
-$o-selectus-table-b-decision-bg				: o-palette("lime", 50);
-$o-selectus-table-c-decision-bg				: o-palette("orange", 100);
-// the hover of the decision rows: mix(fill, black, 90%) of the fixed fills of
-// before, mapped (OO-10043 slice 25); a differs from its fill green-200
+$o-selectus-table-b-decision-bg				: o-palette("yellow", 100);
+$o-selectus-table-c-decision-bg				: o-palette("red", 100);
 $o-selectus-table-a-decision-bg-hover		: o-palette("green", 300);
-$o-selectus-table-b-decision-bg-hover		: o-palette("lime", 100);
-$o-selectus-table-c-decision-bg-hover		: o-palette("brown", 300);
+$o-selectus-table-b-decision-bg-hover		: o-palette("yellow", 200);
+$o-selectus-table-c-decision-bg-hover		: o-palette("red", 200);
 
 
 /* Educational course types */

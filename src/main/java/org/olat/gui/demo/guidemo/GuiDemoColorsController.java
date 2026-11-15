@@ -86,7 +86,7 @@ public class GuiDemoColorsController extends BasicController {
 
 		VelocityContainer paletteVC = createVelocityContainer("guidemo-colors-palette");
 		paletteVC.contextPut("rows", rows);
-		paletteVC.contextPut("steps", Palette.STEPS);
+		paletteVC.contextPut("steps", Palette.ALL_STEPS);
 		paletteVC.contextPut("neutral", GuiDemoColorTokens.neutralSteps());
 		tabPane.addTab("Palette", paletteVC);
 
@@ -123,13 +123,21 @@ public class GuiDemoColorsController extends BasicController {
 		for (String hue : hues) {
 			boolean bright = palette.isBrightColor(hue);
 			List<Cell> cells = new ArrayList<>();
-			for (Integer step : Palette.STEPS) {
+			for (Integer step : Palette.ALL_STEPS) {
+				if (!palette.getSteps(hue).contains(step)) {
+					continue;
+				}
 				String hex = palette.hex(hue, step);
+				boolean fill = Palette.isFillStep(step.intValue());
+				String dark = palette.hex(hue, 900);
+				// a fill step has no text colour: the label takes the better of white and step 900
 				String fg = ColorContrast.contrast(Palette.WHITE, hex) >= Palette.MIN_CONTRAST
-						? Palette.WHITE : palette.hex(hue, 900);
+						|| (fill && ColorContrast.contrast(Palette.WHITE, hex) > ColorContrast.contrast(dark, hex))
+						? Palette.WHITE : dark;
 				String ratio = String.format(Locale.ENGLISH, "%.1f", ColorContrast.contrast(fg, hex));
 				String onWhite = String.format(Locale.ENGLISH, "%.1f", ColorContrast.contrast(Palette.WHITE, hex));
-				Cell cell = new Cell(hue, step.intValue(), hex, fg, ratio, onWhite, roles(palette, hue, step.intValue()));
+				String roles = fill ? "" : roles(palette, hue, step.intValue());
+				Cell cell = new Cell(hue, step.intValue(), hex, fg, ratio, onWhite, roles, fill);
 				for (Chooser chooser : choosers) {
 					List<String> keys = chooser.getKeysOf(cell.getId());
 					if (!keys.isEmpty()) {
@@ -288,9 +296,10 @@ public class GuiDemoColorsController extends BasicController {
 		private final String ratio;
 		private final String onWhite;
 		private final String roles;
+		private final boolean fill;
 		private final Set<String> choosers = new LinkedHashSet<>();
 
-		public Cell(String hue, int step, String hex, String fg, String ratio, String onWhite, String roles) {
+		public Cell(String hue, int step, String hex, String fg, String ratio, String onWhite, String roles, boolean fill) {
 			this.hue = hue;
 			this.step = step;
 			this.hex = hex;
@@ -298,6 +307,7 @@ public class GuiDemoColorsController extends BasicController {
 			this.ratio = ratio;
 			this.onWhite = onWhite;
 			this.roles = roles;
+			this.fill = fill;
 		}
 
 		public String getId() {
@@ -330,6 +340,14 @@ public class GuiDemoColorsController extends BasicController {
 
 		public String getRoles() {
 			return roles;
+		}
+
+		/**
+		 * @return true for a fill step (450): a fill or shape colour only, no
+		 * 		swatch role and no colour chooser colour
+		 */
+		public boolean isFill() {
+			return fill;
 		}
 
 		public Set<String> getChoosers() {

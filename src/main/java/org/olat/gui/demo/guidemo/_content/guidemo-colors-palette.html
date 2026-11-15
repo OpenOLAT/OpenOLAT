@@ -25,8 +25,9 @@ The tab "Tokens" shows which token reads which step.</p>
 </div>
 
 <h4>Colors</h4>
-<p>14 hues with 10 steps each. Every step of a hue has the same relative luminance as the same step of the other hues,
+<p>14 hues with 10 text steps and the fill step 450 each. Every text step of a hue has the same relative luminance as the same step of the other hues,
 so a step number stands for the same lightness in every hue. Each cell shows the hex value and the contrast of its text color.
+Step 450 (dashed outline) is the midpoint of step 400 and step 500 in OKLab: a fill or shape color only, no text color, no swatch role, no chooser color.
 The cell color is <code>var(--o-{hue}-{step})</code> of the current theme. The tab "Swatches" shows which step a swatch role uses.
 Below the 14 hues, separated, are the theme colors: the brand colors of the current theme, generated from <code>&#36;o-theme-colors</code>
 (default <code>&#36;brand-primary</code>) with the same rule. They change with the theme; the 14 hues do not.</p>
@@ -35,8 +36,7 @@ Below the 14 hues, separated, are the theme colors: the brand colors of the curr
 	<thead><tr>
 		<th></th>
 		#foreach($step in $steps)
-		#if($step == 500)<th class="o_gd_col_dead" title="dead zone"></th>#end
-		<th>$step</th>
+		<th#if($step == 450) title="fill only"#end>$step</th>
 		#end
 	</tr></thead>
 	<tbody>
@@ -49,10 +49,9 @@ Below the 14 hues, separated, are the theme colors: the brand colors of the curr
 	<tr>
 		<th class="o_gd_col_hue" scope="row">$row.label<br><span class="o_small">#if($row.themeColor) brand, #end#if($row.bright) bright #else deep #end</span></th>
 		#foreach($cell in $row.cells)
-		#if($cell.step == 500)<td class="o_gd_col_dead"></td>#end
-		<td class="o_gd_col_cell" style="background: var(--o-${cell.hue}-${cell.step}, $cell.hex); color: $cell.fg;" title="--o-${cell.hue}-${cell.step}, $cell.ratio:1 text, $cell.onWhite:1 on white">
+		<td class="o_gd_col_cell#if($cell.fill) o_gd_col_fill#end" style="background: var(--o-${cell.hue}-${cell.step}, $cell.hex); color: $cell.fg;" title="--o-${cell.hue}-${cell.step}, #if($cell.fill)fill only, #end$cell.ratio:1 text, $cell.onWhite:1 on white">
 			<span class="o_gd_col_hex">$cell.hex</span><br>
-			$cell.ratio:1
+			#if($cell.fill)fill only#{else}$cell.ratio:1#end
 		</td>
 		#end
 	</tr>
@@ -65,7 +64,7 @@ Below the 14 hues, separated, are the theme colors: the brand colors of the curr
 <ul>
 	<li><strong>Steps 50 to 400</strong> are tints. Their text is step 900 of the same hue (8:1 and more).</li>
 	<li><strong>Steps 500 to 900</strong> are shades. Their text is white (4.85:1 and more). Step 500 is also the first step that reaches 4.5:1 as text on white.</li>
-	<li><strong>Dead zone</strong> (dashed line): between 400 and 500 the scale skips the lightness where neither white nor dark text reaches 4.5:1.</li>
+	<li><strong>Step 450</strong> (dashed outline): the fill step between 400 and 500, the midpoint of the two steps in OKLab. White text on it has 2.66:1 to 3.71:1, the text of step 900 4.28:1 to 5.99:1, as a mark on white 2.66:1 to 3.71:1. A fill or shape color only (charts, markers, borders); no swatch role, no chooser color, no automatic step choice reads it.</li>
 	<li><strong>Bright hues</strong> (yellow, orange, lime, green, cyan) use step 400 as solid fill with dark text. A yellow with white text reads as brown.</li>
 	<li><strong>Deep hues</strong> (all others) use step 500 as solid fill with white text.</li>
 	<li><strong>Theme colors</strong> use the brand color itself as solid fill ("solid brand"): it replaces the step with the same text polarity and the nearest luminance. A brand color where neither white nor dark text reaches 4.5:1 uses the generated step 500. Tint is step 300 and light is step 200 (200 and 100 for a solid fill of 300), dark is two steps darker than the solid fill.</li>

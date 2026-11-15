@@ -41,6 +41,7 @@ form .o_form, form.o_form {
 	.o_error {
 		margin-top: 1px;
 		padding: 10px;
+		border-color: var(--o-form-error-border);
 	}
 	
 	.o_error.o_block {

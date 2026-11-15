@@ -100,7 +100,7 @@
   <div class="cl-component" id="primitives">
     <div class="cl-component-header">
       <h3>Palette primitives</h3>
-      <p>Steps 50 to 400 are tints, their text colour is the step 900 of the hue. Steps 500 to 900 are shades, their text colour is white. Each cell shows the hex value and the contrast of that text colour on the step. Bright hues (yellow, orange, lime, green, cyan) use step 400 as solid fill, deep hues use step 500.</p>
+      <p>Steps 50 to 400 are tints, their text colour is the step 900 of the hue. Steps 500 to 900 are shades, their text colour is white. Each cell shows the hex value and the contrast of that text colour on the step. Bright hues (yellow, orange, lime, green, cyan) use step 400 as solid fill, deep hues use step 500. Step 450 (dashed outline) is the fill step, the midpoint of steps 400 and 500 in OKLab: a fill or shape colour only, no text colour, no swatch role and no chooser colour.</p>
       <div class="cl-classes">
         <code>--o-{hue}-{step}</code> <code>$o-palette</code> <code>o-palette($hue, $step)</code> <code>$o-palette-bright</code>
       </div>
@@ -1387,7 +1387,7 @@ $o-tokens: (
   var STATES = ['neutral', 'success', 'warning', 'critical', 'danger', 'finished', 'inactive', 'highlight'];
   var ROLES = ['text', 'bg', 'fg', 'border', 'soft-bg', 'soft-fg', 'soft-border'];
   var PALETTE_HUES = ['red', 'orange', 'yellow', 'lime', 'green', 'teal', 'cyan', 'blue', 'violet', 'magenta', 'pink', 'brown', 'slate', 'gray', 'theme1', 'theme2', 'theme3', 'theme4'];
-  var PALETTE_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+  var PALETTE_STEPS = [50, 100, 200, 300, 400, 450, 500, 600, 700, 800, 900];
 
   function parseColor(value) {
     var v = (value || '').trim();
@@ -1649,7 +1649,9 @@ $o-tokens: (
 <script>
 (function() {
   var HUES = ['red', 'orange', 'yellow', 'lime', 'green', 'teal', 'cyan', 'blue', 'violet', 'magenta', 'pink', 'brown', 'slate', 'gray'];
-  var STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+  // 450 is the fill step: a fill or shape colour, no text colour, no chooser colour
+  var STEPS = [50, 100, 200, 300, 400, 450, 500, 600, 700, 800, 900];
+  var FILL_STEPS = [450];
   var NEUTRAL_STEPS = [0, 25, 50, 100, 150, 200, 250, 300, 400, 450, 500, 600, 700, 750, 800, 900, 950, 1000];
   var TEXT_MIN = 4.5;
   var BORDER_MIN = 3;
@@ -1720,6 +1722,7 @@ $o-tokens: (
       STEPS.forEach(function(step) {
         var name = '--o-' + hue + '-' + step;
         var bg = prop(root, name);
+        var fill = FILL_STEPS.indexOf(step) >= 0;
         var fg = step <= 400 ? c900 : '#FFFFFF';
         var td = tr.insertCell();
         td.className = 'cl-pal-cell';
@@ -1729,13 +1732,19 @@ $o-tokens: (
           return;
         }
         found++;
+        if (fill) {
+          // no text colour: the label takes the better of step 900 and white
+          fg = contrast(bg, c900) >= contrast(bg, '#FFFFFF') ? c900 : '#FFFFFF';
+          td.title = name + ', fill only, ' + contrast(bg, '#FFFFFF').toFixed(2) + ':1 on white';
+        }
         var ratio = contrast(bg, fg);
         td.style.backgroundColor = 'var(' + name + ')';
         td.style.color = fg;
         td.innerHTML = '<span class="cl-pal-hex"></span><span class="cl-pal-ratio"></span>';
         td.firstChild.textContent = bg.toUpperCase();
-        td.lastChild.textContent = isNaN(ratio) ? 'n/a' : ratio.toFixed(2) + ':1';
-        if (!(ratio >= TEXT_MIN)) td.classList.add('cl-ratio-fail');
+        td.lastChild.textContent = fill ? 'fill only' : (isNaN(ratio) ? 'n/a' : ratio.toFixed(2) + ':1');
+        if (fill) td.style.outline = '2px dashed #717171';
+        else if (!(ratio >= TEXT_MIN)) td.classList.add('cl-ratio-fail');
       });
     });
     document.getElementById('cl-missing').classList.toggle('visible', found === 0);

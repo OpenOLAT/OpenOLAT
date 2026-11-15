@@ -13,15 +13,17 @@
  *
  *   $o-theme-colors: ($brand-primary, $brand-accent, #0090C5);
  *
- * An entry is a colour or a map with all 10 steps (50: ..., 900: ...).
- * For a colour this file generates the 10 steps with the rule of palette
- * v2 (_palette.scss): hue angle and chroma of the colour (OKLCH), the
- * luminance targets of the palette steps. The exact colour replaces the
+ * An entry is a colour or a map with the 10 text steps (50: ..., 900: ...).
+ * For a colour this file generates the 10 text steps with the rule of
+ * palette v2 (_palette.scss): hue angle and chroma of the colour (OKLCH),
+ * the luminance targets of the palette steps. The exact colour replaces the
  * step with the same text polarity and the nearest luminance (the anchor),
  * never lighter than step 300. Without an anchor the fill is the generated
  * step 500, or 400 for a light colour: a colour in the dead zone, where
  * neither white nor step 900 reaches 4.5:1, or a colour that is almost
- * white (below 1.5:1 on white).
+ * white (below 1.5:1 on white). Every ramp gets the fill step 450, the
+ * OKLab midpoint of its steps 400 and 500 (o-palette-add-fill-steps(),
+ * also for a map without it); the steps above are the text steps only.
  *
  * Output: theme{n} entries are appended to $o-palette and $o-swatches,
  * so modules/_palette_vars.scss emits --o-theme{n}-{step} and
@@ -132,7 +134,7 @@ $o-palette-chroma: (50: 0.020, 100: 0.050, 200: 0.100, 300: 0.150, 400: 0.200, 5
 // Returns ("steps": (50: ..., 900: ...), "anchor": step or null)
 @function o-theme-scale($brand) {
 	@if meta.type-of($brand) == "map" {
-		@return ("steps": $brand, "anchor": null, "fill": 500);
+		@return ("steps": o-palette-add-fill-steps($brand), "anchor": null, "fill": 500);
 	}
 	$oklch: color.to-space($brand, oklch);
 	$chroma: 0;
@@ -188,7 +190,7 @@ $o-palette-chroma: (50: 0.020, 100: 0.050, 200: 0.100, 300: 0.150, 400: 0.200, 5
 			$fill: 400;
 		}
 	}
-	@return ("steps": $steps, "anchor": $anchor, "fill": $fill);
+	@return ("steps": o-palette-add-fill-steps($steps), "anchor": $anchor, "fill": $fill);
 }
 
 // The first step from $from to 900 that reaches 3:1 on white

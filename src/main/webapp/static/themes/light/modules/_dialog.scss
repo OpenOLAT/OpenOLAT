@@ -3,13 +3,13 @@
 	@include o-make-message-box(var(--o-box-info-bg), var(--o-box-info-border));
 }
 .o_info_with_icon, %o_info_with_icon { 
-	@include o-make-message-box(var(--o-box-info-bg), var(--o-box-info-border), 'circle-info', var(--o-box-info-text));
+	@include o-make-message-box(var(--o-box-info-bg), var(--o-box-info-border), 'circle-info', var(--o-box-info-icon));
 }
 .o_note, %o_note { 
 	@include o-make-message-box(var(--o-box-note-bg), var(--o-box-note-border));
 }
 .o_note_with_icon, %o_note_with_icon { 
-	@include o-make-message-box(var(--o-box-note-bg), var(--o-box-note-border), 'lightbulb');
+	@include o-make-message-box(var(--o-box-note-bg), var(--o-box-note-border), 'lightbulb', var(--o-box-note-icon));
 }
 .o_tip, %o_tip { 
 	@include o-make-message-box(var(--o-box-tip-bg), var(--o-box-tip-border));
@@ -27,7 +27,7 @@
 	@include o-make-message-box(var(--o-box-success-bg), var(--o-box-success-border));
 }
 .o_success_with_icon, %o_success_with_icon { 
-	@include o-make-message-box(var(--o-box-success-bg), var(--o-box-success-border), 'circle-check', var(--o-box-success-text));
+	@include o-make-message-box(var(--o-box-success-bg), var(--o-box-success-border), 'circle-check', var(--o-box-success-icon));
 }
 .o_warning, %o_warning { 
 	@include o-make-message-box(var(--o-box-warning-bg), var(--o-box-warning-border));
@@ -36,13 +36,13 @@
 	@include o-make-message-line(var(--o-message-line-warning-bg), var(--o-message-line-warning-fg));
 }
 .o_warning_with_icon, %o_warning_with_icon { 
-	@include o-make-message-box(var(--o-box-warning-bg), var(--o-box-warning-border), 'triangle-exclamation', var(--o-box-warning-text));
+	@include o-make-message-box(var(--o-box-warning-bg), var(--o-box-warning-border), 'triangle-exclamation', var(--o-box-warning-icon));
 }
 .o_error, %o_error { 
 	@include o-make-message-box(var(--o-box-error-bg), var(--o-box-error-border));
 }
 .o_error_with_icon, %o_error_with_icon { 
-	@include o-make-message-box(var(--o-box-error-bg), var(--o-box-error-border), 'circle-xmark', var(--o-box-error-text));
+	@include o-make-message-box(var(--o-box-error-bg), var(--o-box-error-border), 'circle-xmark', var(--o-box-error-icon));
 }
 .o_error_line, %o_error_line { 
 	@include o-make-message-line(var(--o-message-line-error-bg), var(--o-message-line-error-fg));

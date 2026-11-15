@@ -244,6 +244,22 @@ $o-contrast-check: "error" !default;
 		math.clamp(0, math.round(color.channel($color, "blue", $space: rgb)), 255));
 }
 
+/* Helper method for a default that changes when a theme keeps the light
+ * value of another variable: returns $new when $value is the light value
+ * $light, else $value (the own colour of the theme wins).
+ *
+ * @param {Color} $value - The value of the variable that a theme can set
+ * @param {Color} $light - The light default of that variable
+ * @param {Color} $new - The default when the theme keeps the light value
+ * @return {Color}
+ */
+@function o-own-or($value, $light, $new) {
+	@if $value == $light {
+		@return $new;
+	}
+	@return $value;
+}
+
 /* Helper method for the text colour of a hover or pressed state (OO-10043,
  * decision D13). Returns $fg when it passes on the fill of the state, and
  * when it fails on the fill of the normal state already (a state cannot
@@ -347,7 +363,24 @@ $o-scale-grey-chroma: 0.012;
 // step (OKLab x 100): it is the brand colour itself
 $o-scale-brand-distance: 0.5;
 
+/* The steps of a palette hue or a brand ramp that an automatic choice of a
+ * step reads (o-scale-nearest(), o-scale-candidates(), the shade tokens):
+ * without the fill steps ($o-palette-fill-steps in _palette.scss, step
+ * 450), which carry no text. The neutral scale does not pass here: its
+ * step 450 is a step of its own construction.
+ *
+ * @param {Map} $steps - The steps of a hue, step -> colour
+ * @return {Map}
+ */
+@function o-scale-auto-steps($steps) {
+	@if not meta.global-variable-exists("o-palette-fill-steps") {
+		@return $steps;
+	}
+	@return map.remove($steps, map.keys($o-palette-fill-steps)...);
+}
+
 /* The colours of one family of the scales: "neutral", "palette" or "brand".
+ * A palette hue and a brand ramp without the fill steps (o-scale-auto-steps()).
  *
  * @param {String} $family - "neutral", "palette" or "brand"
  * @return {Map} name ("neutral-150", "orange-500", "theme1-600") -> colour
@@ -365,7 +398,7 @@ $o-scale-brand-distance: 0.5;
 	@each $hue, $steps in $o-palette {
 		$brand: string.index($hue, "theme") == 1;
 		@if ($family == "brand" and $brand) or ($family == "palette" and not $brand and not list.index($o-scale-grey-hues, $hue)) {
-			@each $step, $color in $steps {
+			@each $step, $color in o-scale-auto-steps($steps) {
 				$colors: map.merge($colors, ("#{$hue}-#{$step}": $color));
 			}
 		}
@@ -467,16 +500,22 @@ $o-scale-brand-distance: 0.5;
 
 /* The steps of the scale of the nearest colour (o-scale-nearest()), nearest
  * first: the candidates of a shade token that must keep a contrast pair.
+ * Without the fill steps of a palette hue (o-scale-auto-steps()), unless
+ * $fill is true.
  *
  * @param {Color} $color - The colour
  * @param {Boolean} $brand-source - true: the colour derives from the brand ramp
+ * @param {Boolean} $fill - true: the fill steps are candidates too
  * @return {List} the colours of the family, sorted by the distance to $color
  */
-@function o-scale-candidates($color, $brand-source: false) {
+@function o-scale-candidates($color, $brand-source: false, $fill: false) {
 	$hue: list.nth(o-scale-split(list.nth(o-scale-nearest($color, $brand-source), 1)), 1);
 	$steps: $o-neutral;
 	@if $hue != "neutral" {
 		$steps: map.get($o-palette, $hue);
+		@if not $fill {
+			$steps: o-scale-auto-steps($steps);
+		}
 	}
 	$rest: map.values($steps);
 	$sorted: ();
@@ -502,7 +541,9 @@ $o-scale-brand-distance: 0.5;
 /* The steps of the scale of a scale colour (its palette hue, the neutral
  * scale or its brand ramp), sorted by the distance to $target: the
  * candidates of a shade token, which never leaves the scale of its source
- * (OO-10043 slice 25). An empty list for a colour that is no scale step.
+ * (OO-10043 slice 25). A source at a fill step (450) is a scale colour, the
+ * candidates never hold a fill step of a palette hue or a brand ramp
+ * (o-scale-auto-steps()). An empty list for a colour that is no scale step.
  *
  * @param {Color} $source - The scale colour the shade starts from
  * @param {Color} $target - The computed shade
@@ -520,7 +561,7 @@ $o-scale-brand-distance: 0.5;
 			@if $steps == null and (o-scale-brand-target() or string.index($hue, "theme") != 1) {
 				@each $step, $value in $hue-steps {
 					@if $value == $source {
-						$steps: $hue-steps;
+						$steps: o-scale-auto-steps($hue-steps);
 					}
 				}
 			}
@@ -603,20 +644,22 @@ $o-scale-brand-distance: 0.5;
  * With $fg, the step keeps $ratio for that text when the result keeps it;
  * else the next nearest step of the same scale. A source that is the own
  * colour of a client theme, or a scale without such a step, keeps the
- * computed result.
+ * computed result. A fill or shape colour without text (a chart bar)
+ * passes $fill: true, so that the fill step 450 is a candidate too.
  *
  * @param {Color} $source - The colour the maths starts from
  * @param {Color} $result - The result of the maths
  * @param {Boolean} $distinct - false: the result may be the source
  * @param {Color} $fg - The text on the result, or null
  * @param {Number} $ratio - The contrast ratio of $fg, default 4.5
+ * @param {Boolean} $fill - true: the fill steps are candidates too
  * @return {Color}
  */
-@function o-scale-snap($source, $result, $distinct: true, $fg: null, $ratio: 4.5) {
+@function o-scale-snap($source, $result, $distinct: true, $fg: null, $ratio: 4.5, $fill: false) {
 	@if not o-scale-has($source) {
 		@return $result;
 	}
-	@each $candidate in o-scale-candidates($result, o-scale-is-brand($source)) {
+	@each $candidate in o-scale-candidates($result, o-scale-is-brand($source), $fill) {
 		$ok: not ($distinct and $candidate == $source and o-color-round($result) != o-color-round($source));
 		@if $ok and $fg != null {
 			@if contrast($fg, $candidate) < $ratio and contrast($fg, $result) >= $ratio {

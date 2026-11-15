@@ -126,7 +126,9 @@
 		margin: 5px 0;
 	}
 	.o_email_todo_more {
-		color: $o-box-info-color;
+		// the coloured text of the info box: the text of the state neutral, or
+		// the info colour of a theme that sets $o-box-info-color
+		color: o-own-or($o-box-info-color, o-state-color("neutral", "soft-border"), o-state-color("neutral", "text"));
 		margin: 0 0 5px 0;
 	}
 	tr.o_email_todo_row {

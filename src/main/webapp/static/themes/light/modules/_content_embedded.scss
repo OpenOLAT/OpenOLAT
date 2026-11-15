@@ -169,10 +169,10 @@ table {
 		}
 	}
 	&.b_gray {
-		@include o-make-colored-table("info");
+		@include o-make-colored-table("note");
 	}
 	&.b_blue {
-		@include o-make-colored-table("note");
+		@include o-make-colored-table("info");
 	}
 	&.b_green {
 		@include o-make-colored-table("success");

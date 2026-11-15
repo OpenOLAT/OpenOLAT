@@ -173,12 +173,12 @@ public class GuiDemoColorBadges {
 				new Sample("o_labeled_light o_gmembership_status_resourcedeleted", "Resource deleted", INACTIVE, TEXT),
 				new Sample("o_labeled_light o_gmembership_status_select", "Select", INACTIVE, TEXT))));
 		groups.add(new Group("Curriculum", null, List.of(
-				new Sample("o_labeled o_curriculum_status_preparation", "Preparation", NEUTRAL, TINT),
+				new Sample("o_labeled o_curriculum_status_preparation", "Preparation", NEUTRAL, SOLID),
 				new Sample("o_labeled_light o_curriculum_status_preparation", "Preparation", NEUTRAL, TEXT),
-				new Sample("o_labeled o_curriculum_status_provisional", "Provisional", WARNING, TINT),
+				new Sample("o_labeled o_curriculum_status_provisional", "Provisional", WARNING, SOLID),
 				new Sample("o_labeled_light o_curriculum_status_provisional", "Provisional", WARNING, TEXT),
-				new Sample("o_labeled o_curriculum_status_confirmed", "Confirmed", LIME, SOLID),
-				new Sample("o_labeled_light o_curriculum_status_confirmed", "Confirmed", LIME, TEXT),
+				new Sample("o_labeled o_curriculum_status_confirmed", "Confirmed", SUCCESS, SOLID),
+				new Sample("o_labeled_light o_curriculum_status_confirmed", "Confirmed", SUCCESS, TEXT),
 				new Sample("o_labeled o_curriculum_status_active", "Active", SUCCESS, SOLID),
 				new Sample("o_labeled_light o_curriculum_status_active", "Active", SUCCESS, TEXT),
 				new Sample("o_labeled o_curriculum_status_cancelled", "Cancelled", INACTIVE, SOLID),

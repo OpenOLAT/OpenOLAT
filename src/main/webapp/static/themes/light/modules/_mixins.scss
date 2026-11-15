@@ -204,5 +204,5 @@
 	background: var(--o-#{$name});
 	background: -moz-linear-gradient(top, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
 	background: -webkit-linear-gradient(top, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
-	background: linear-gradient(top, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
+	background: linear-gradient(to bottom, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
 }

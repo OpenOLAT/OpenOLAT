@@ -9,7 +9,7 @@
  *
  *   dark   stronger weight, mostly counters
  *   solid  default status label
- *   tint   pre-status: draft, preparation, provisional
+ *   tint   pre-status: draft, preparation, in review
  *   light  not seen, in process
  *   text   outline: white fill, text and border in the text
  *          colour of the hue (o_labeled_light)
@@ -37,8 +37,8 @@ $o-state-styles: ("dark", "solid", "tint", "light", "text");
 
 // Exceptions: a status without a state, wired to a hue. "lime" is the status
 // "confirmed, but not open to all yet" between neutral and success (course
-// published for coaches, curriculum element confirmed, topic broker enrolment
-// running). An exception has the styles of a state, but no class .o_state_*.
+// published for coaches, topic broker enrolment running). An exception has
+// the styles of a state, but no class .o_state_*.
 $o-state-hue-exceptions: ("lime": "lime");
 
 @each $state, $hue in map.merge($o-states, $o-state-hue-exceptions) {
@@ -201,12 +201,12 @@ $o-state-wiring: (
 	".o_labeled_light.o_gmembership_status_resourcedeleted": ("inactive", "text"),
 	".o_labeled_light.o_gmembership_status_select": ("inactive", "text"),
 	// Curriculum
-	".o_labeled.o_curriculum_status_preparation": ("neutral", "tint"),
+	".o_labeled.o_curriculum_status_preparation": ("neutral", "solid"),
 	".o_labeled_light.o_curriculum_status_preparation": ("neutral", "text"),
-	".o_labeled.o_curriculum_status_provisional": ("warning", "tint"),
+	".o_labeled.o_curriculum_status_provisional": ("warning", "solid"),
 	".o_labeled_light.o_curriculum_status_provisional": ("warning", "text"),
-	".o_labeled.o_curriculum_status_confirmed": ("lime", "solid"),
-	".o_labeled_light.o_curriculum_status_confirmed": ("lime", "text"),
+	".o_labeled.o_curriculum_status_confirmed": ("success", "solid"),
+	".o_labeled_light.o_curriculum_status_confirmed": ("success", "text"),
 	".o_labeled.o_curriculum_status_active": ("success", "solid"),
 	".o_labeled_light.o_curriculum_status_active": ("success", "text"),
 	".o_labeled.o_curriculum_status_cancelled": ("inactive", "solid"),

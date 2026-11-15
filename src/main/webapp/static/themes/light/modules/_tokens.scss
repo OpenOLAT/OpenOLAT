@@ -295,6 +295,11 @@ $o-token-layer-framework: (
 	"input-placeholder":                          ($input-color-placeholder, ()),
 	"legend":                                     ($legend-color, ()),
 	"legend-border":                              ($legend-border-color, ()),
+	// the border of the error message under a form field (form .o_error): red
+	// 300, one step stronger than the soft border of the error box. A theme
+	// that sets $o-box-error-color (or $o-color-error) gets its colour. No
+	// contrast pair: 1.86:1 on box-error-bg, 1.99:1 on white.
+	"form-error-border":                          (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-palette("red", 300)), ()),
 	// Modal dialogs and popovers
 	"modal-content-border":                       ($modal-content-border-color, ("border",)),
 	"modal-header-border":                        ($modal-header-border-color, ()),
@@ -322,31 +327,38 @@ $o-token-layer-framework: (
 	"alert-close":                                ($gray-light, ()),
 	"alert-close-hover":                          ($gray, ()),
 	"message-table-border":                       ($gray-dark, ()),
-	// Message boxes of a state (.o_info, .o_success, .o_warning, .o_error):
-	// the border is the fill of the state, the icon and a coloured text the
-	// text of the state. A theme that sets $o-box-*-color (or $o-color-*)
-	// gets its colour for both.
-	"box-info-border":                            ($o-box-info-color, ("state-neutral-bg",)),
-	"box-info-text":                              (if($o-box-info-color == o-state-color("neutral", "bg"), o-state-color("neutral", "text"), $o-box-info-color), ("state-neutral-text",)),
-	"box-success-border":                         ($o-box-success-color, ("state-success-bg",)),
-	"box-success-text":                           (if($o-box-success-color == o-state-color("success", "bg"), o-state-color("success", "text"), $o-box-success-color), ("state-success-text",)),
-	"box-warning-border":                         ($o-box-warning-color, ("state-warning-bg",)),
-	"box-warning-text":                           (if($o-box-warning-color == o-state-color("warning", "bg"), o-state-color("warning", "text"), $o-box-warning-color), ("state-warning-text",)),
-	"box-error-border":                           ($o-box-error-color, ("state-danger-bg",)),
-	"box-error-text":                             (if($o-box-error-color == o-state-color("danger", "bg"), o-state-color("danger", "text"), $o-box-error-color), ("state-danger-text",)),
-	// the fill of the message boxes ($o-box-*-bg); the coloured tables in a
-	// box have shade tokens of it (border, stripe and header)
-	"box-info-bg":                                ($o-box-info-bg, ()),
-	"box-note-bg":                                ($o-box-note-bg, ()),
-	"box-success-bg":                             ($o-box-success-bg, ()),
-	"box-warning-bg":                             ($o-box-warning-bg, ()),
-	"box-error-bg":                               ($o-box-error-bg, ()),
+	// Message boxes of a state (.o_info, .o_note, .o_success, .o_warning,
+	// .o_error): the border is the soft border of the state, the icon the soft
+	// text of the state, a coloured text the text of the state. A theme that
+	// sets $o-box-*-color (or $o-color-*) gets its colour for all three.
+	"box-info-border":                            ($o-box-info-color, ("state-neutral-soft-border",)),
+	"box-info-text":                              (o-own-or($o-box-info-color, o-state-color("neutral", "soft-border"), o-state-color("neutral", "text")), ("state-neutral-text",)),
+	"box-info-icon":                              (o-own-or($o-box-info-color, o-state-color("neutral", "soft-border"), o-state-color("neutral", "soft-fg")), ("state-neutral-soft-fg",)),
+	"box-note-icon":                              (o-own-or($o-box-note-color, o-state-color("inactive", "soft-border"), o-state-color("inactive", "soft-fg")), ("state-inactive-soft-fg",)),
+	"box-success-border":                         ($o-box-success-color, ("state-success-soft-border",)),
+	"box-success-text":                           (o-own-or($o-box-success-color, o-state-color("success", "soft-border"), o-state-color("success", "text")), ("state-success-text",)),
+	"box-success-icon":                           (o-own-or($o-box-success-color, o-state-color("success", "soft-border"), o-state-color("success", "soft-fg")), ("state-success-soft-fg",)),
+	"box-warning-border":                         ($o-box-warning-color, ("state-warning-soft-border",)),
+	"box-warning-text":                           (o-own-or($o-box-warning-color, o-state-color("warning", "soft-border"), o-state-color("warning", "text")), ("state-warning-text",)),
+	"box-warning-icon":                           (o-own-or($o-box-warning-color, o-state-color("warning", "soft-border"), o-state-color("warning", "soft-fg")), ("state-warning-soft-fg",)),
+	"box-error-border":                           ($o-box-error-color, ("state-danger-soft-border",)),
+	"box-error-text":                             (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-state-color("danger", "text")), ("state-danger-text",)),
+	"box-error-icon":                             (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-state-color("danger", "soft-fg")), ("state-danger-soft-fg",)),
+	// the fill of the message boxes ($o-box-*-bg): the soft fill of the state,
+	// cyan 50 for tip and important; the coloured tables in a box have shade
+	// tokens of it (border, stripe and header)
+	"box-info-bg":                                ($o-box-info-bg, ("state-neutral-soft-bg",)),
+	"box-note-bg":                                ($o-box-note-bg, ("state-inactive-soft-bg",)),
+	"box-success-bg":                             ($o-box-success-bg, ("state-success-soft-bg",)),
+	"box-warning-bg":                             ($o-box-warning-bg, ("state-warning-soft-bg",)),
+	"box-error-bg":                               ($o-box-error-bg, ("state-danger-soft-bg",)),
 	// the note, tip and important boxes (.o_note, .o_tip, .o_important): the
-	// fill ($o-box-*-bg) and the colour of the border and the icon
-	// ($o-box-*-color)
-	"box-note-border":                             ($o-box-note-color, ()),
-	// the text of a note message ($o-box-note-color, the colour of the border)
-	"box-note-text":                               ($o-box-note-color, ("box-note-border",)),
+	// fill ($o-box-*-bg) and the colour of the border ($o-box-*-color); the
+	// icon of tip and important has the colour of the border
+	"box-note-border":                             ($o-box-note-color, ("state-inactive-soft-border",)),
+	// the text of a note message: $o-color-note, or the colour of a theme
+	// that sets $o-box-note-color
+	"box-note-text":                               (o-own-or($o-box-note-color, o-state-color("inactive", "soft-border"), $o-color-note), ()),
 	"box-tip-bg":                                  ($o-box-tip-bg, ()),
 	"box-tip-border":                              ($o-box-tip-color, ()),
 	"box-important-bg":                            ($o-box-important-bg, ()),
@@ -1304,16 +1316,18 @@ $o-token-layer-component: (
 	"selectus-decision-a-hover-bg":               ($o-selectus-table-a-decision-bg-hover, ()),
 	"selectus-decision-b-hover-bg":               ($o-selectus-table-b-decision-bg-hover, ()),
 	"selectus-decision-c-hover-bg":               ($o-selectus-table-c-decision-bg-hover, ()),
-	// the status icons of the positions and the references: fixed colours
-	// (decision D29 of OO-10043; a mapping to the states needs a UX review)
-	"selectus-status-preparation":                (o-neutral(450), ()),
-	"selectus-status-published":                  (o-palette("green", 600), ()),
-	"selectus-status-published-screening":        (o-palette("green", 500), ()),
-	"selectus-status-screening":                  (o-palette("yellow", 400), ()),
-	"selectus-status-closed-screening":           (o-scale-on-color(o-palette("red", 400), $body-bg, 3), ()),
-	"selectus-status-closed":                     (o-palette("red", 600), ()),
-	"selectus-status-reporting":                  (o-neutral(800), ()),
-	"selectus-status-deactivated":                (o-neutral(300), ()),
+	// the status icons of the positions and the references: the text colour
+	// of the state of the status. selectus-status-screening is never shown
+	// alone: it is the fill of the back circle of the two screening icons, the
+	// front half has the colour of published-screening or closed-screening
+	"selectus-status-preparation":                "state-neutral-text",
+	"selectus-status-published":                  "state-success-text",
+	"selectus-status-published-screening":        "state-success-text",
+	"selectus-status-screening":                  "state-warning-bg",
+	"selectus-status-closed-screening":           "state-critical-text",
+	"selectus-status-closed":                     "state-danger-text",
+	"selectus-status-reporting":                  "state-finished-text",
+	"selectus-status-deactivated":                "state-inactive-text",
 	// Tests and question pool (QTI 2.1)
 	"drawing-border":                             "primary",
 	"drawing-select-border":                      "primary",
@@ -1458,10 +1472,11 @@ $o-token-layer-component: (
 	"video-timeline-incorrect-bg":                 ($o-video-timeline-incorrect-bg, ("state-danger-bg",)),
 	// the audio and video recorder: the outline and the recording fill of a
 	// button decoration, the record button and the symbols (stop, play)
-	// with their hover and pressed colours; fixed colours (D29)
+	// with their hover and pressed colours; fixed colours (D29). The record
+	// symbol is a shape on white: the fill step 450, hover and pressed darker
 	"recorder-decoration":                        (o-neutral(1000), ()),
 	"recorder-recording":                         (o-palette("red", 300), ()),
-	"recorder-record":                            (o-palette("red", 500), ()),
+	"recorder-record":                            (o-palette("red", 450), ()),
 	"recorder-record-hover":                      (o-palette("red", 600), ()),
 	"recorder-record-active":                     (o-palette("red", 700), ()),
 	"recorder-symbol":                            (o-neutral(1000), ()),
@@ -1796,18 +1811,17 @@ $o-token-shades: (
 
 // The hover and the pressed fill of a bright fill (step 400 of a hue of
 // $o-palette-bright, dark text) when no darker step of the hue keeps the
-// contrast of the text (OO-10043 slice 25): the state goes lighter inside
-// the hue, the hover one step (300), the pressed fill two steps (200). The
-// step keeps every contrast pair of the shade. null for any other shade.
+// contrast of the text: the state goes one step lighter inside the hue
+// (300), the hover and the pressed fill have the same step. The step keeps
+// every contrast pair of the shade. null for any other shade.
 @function o-token-shade-lighter($name, $color, $def, $values) {
 	@if list.length($def) > 2 and list.nth($def, 3) != "state" {
 		@return null;
 	}
 	$n: null;
-	@if string.length($name) > 6 and string.slice($name, -6) == "-hover" {
+	@if (string.length($name) > 6 and string.slice($name, -6) == "-hover")
+			or (string.length($name) > 7 and string.slice($name, -7) == "-active") {
 		$n: 1;
-	} @else if string.length($name) > 7 and string.slice($name, -7) == "-active" {
-		$n: 2;
 	}
 	@if $n == null {
 		@return null;
@@ -1833,10 +1847,9 @@ $o-token-shades: (
 }
 
 // The hover and the pressed fill of one element (shade tokens "-hover" and
-// "-active" of the same token) as two different scale steps (OO-10043 slice
-// 25): the token, the hover and the pressed fill have three colours. The
-// first hover candidate with a pressed candidate beyond it; null when no pair
-// exists.
+// "-active" of the same token) as two different scale steps: the token, the
+// hover and the pressed fill have three colours. The first hover candidate
+// with a pressed candidate beyond it; null when no pair exists.
 @function o-token-shade-trio($hover, $active, $values) {
 	$hdef: map.get($o-token-shades, $hover);
 	$adef: map.get($o-token-shades, $active);
@@ -1860,8 +1873,10 @@ $o-token-shades: (
 
 // Three different colours for a token and its hover and pressed fill: when
 // the pressed fill has the colour of the hover or no scale step, the two
-// shades take the first pair of steps of o-token-shade-trio(). A shade that
-// $o-tokens sets keeps its value.
+// shades take the first pair of steps of o-token-shade-trio(). Exception: a
+// bright fill that goes lighter (o-token-shade-lighter()) keeps one step for
+// the hover and the pressed fill. A shade that $o-tokens sets keeps its
+// value.
 @function o-token-shade-trios($values) {
 	@each $name, $def in $o-token-shades {
 		@if string.length($name) > 7 and string.slice($name, -7) == "-active" {
@@ -1870,7 +1885,10 @@ $o-token-shades: (
 					and not map.has-key($o-tokens, $name) and not map.has-key($o-tokens, $hover) {
 				$h: map.get($values, $hover);
 				$a: map.get($values, $name);
-				@if o-scale-has(map.get($values, list.nth($def, 1))) and ($h == $a or not o-scale-has($a) or not o-scale-has($h)) {
+				$color: map.get($values, list.nth($def, 1));
+				$lighter: o-token-shade-lighter($hover, $color, map.get($o-token-shades, $hover), $values);
+				@if o-scale-has($color) and not ($lighter != null and $h == $lighter and $a == $lighter)
+						and ($h == $a or not o-scale-has($a) or not o-scale-has($h)) {
 					$trio: o-token-shade-trio($hover, $name, $values);
 					@if $trio != null {
 						$values: map.merge($values, ($hover: list.nth($trio, 1), $name: list.nth($trio, 2)));
@@ -2010,6 +2028,31 @@ $o-token-contrast-pairs: (
 	("selectus-rating-abstain-bg", "bg", 3),
 	("selectus-rating-abstain-bg", "table-striped-bg", 3),
 	("selectus-rating-abstain-bg", "table-hover-bg", 3),
+	// the marks of the ratings on the decision rows A, B, C and their hover
+	("selectus-rating-a-bg", "selectus-decision-a-bg", 3),
+	("selectus-rating-a-bg", "selectus-decision-a-hover-bg", 3),
+	("selectus-rating-a-bg", "selectus-decision-b-bg", 3),
+	("selectus-rating-a-bg", "selectus-decision-b-hover-bg", 3),
+	("selectus-rating-a-bg", "selectus-decision-c-bg", 3),
+	("selectus-rating-a-bg", "selectus-decision-c-hover-bg", 3),
+	("selectus-rating-b-marker", "selectus-decision-a-bg", 3),
+	("selectus-rating-b-marker", "selectus-decision-a-hover-bg", 3),
+	("selectus-rating-b-marker", "selectus-decision-b-bg", 3),
+	("selectus-rating-b-marker", "selectus-decision-b-hover-bg", 3),
+	("selectus-rating-b-marker", "selectus-decision-c-bg", 3),
+	("selectus-rating-b-marker", "selectus-decision-c-hover-bg", 3),
+	("selectus-rating-c-bg", "selectus-decision-a-bg", 3),
+	("selectus-rating-c-bg", "selectus-decision-a-hover-bg", 3),
+	("selectus-rating-c-bg", "selectus-decision-b-bg", 3),
+	("selectus-rating-c-bg", "selectus-decision-b-hover-bg", 3),
+	("selectus-rating-c-bg", "selectus-decision-c-bg", 3),
+	("selectus-rating-c-bg", "selectus-decision-c-hover-bg", 3),
+	("selectus-rating-abstain-bg", "selectus-decision-a-bg", 3),
+	("selectus-rating-abstain-bg", "selectus-decision-a-hover-bg", 3),
+	("selectus-rating-abstain-bg", "selectus-decision-b-bg", 3),
+	("selectus-rating-abstain-bg", "selectus-decision-b-hover-bg", 3),
+	("selectus-rating-abstain-bg", "selectus-decision-c-bg", 3),
+	("selectus-rating-abstain-bg", "selectus-decision-c-hover-bg", 3),
 	// the Bootstrap state buttons and labels: the text on the hover and
 	// active fill (the active fill of the warning state is 16% darker,
 	// o-token-active-percent())
@@ -2025,6 +2068,35 @@ $o-token-contrast-pairs: (
 	("box-success-text", #FFFFFF, 4.5),
 	("box-warning-text", #FFFFFF, 4.5),
 	("box-error-text", #FFFFFF, 4.5),
+	// the message boxes: the text, the coloured text and the icon on the fill,
+	// the text on the header of a table in a box
+	("text", "box-info-bg", 4.5),
+	("text", "box-note-bg", 4.5),
+	("text", "box-success-bg", 4.5),
+	("text", "box-warning-bg", 4.5),
+	("text", "box-error-bg", 4.5),
+	("text", "box-tip-bg", 4.5),
+	("text", "box-important-bg", 4.5),
+	("box-info-text", "box-info-bg", 4.5),
+	("box-success-text", "box-success-bg", 4.5),
+	("box-warning-text", "box-warning-bg", 4.5),
+	("box-error-text", "box-error-bg", 4.5),
+	("box-info-icon", "box-info-bg", 3),
+	("box-note-icon", "box-note-bg", 3),
+	("box-success-icon", "box-success-bg", 3),
+	("box-warning-icon", "box-warning-bg", 3),
+	("box-error-icon", "box-error-bg", 3),
+	("text", "box-info-table-header-bg", 4.5),
+	("text", "box-note-table-header-bg", 4.5),
+	("text", "box-success-table-header-bg", 4.5),
+	("text", "box-warning-table-header-bg", 4.5),
+	("text", "box-error-table-header-bg", 4.5),
+	// the border of the cells of the one-time code in the error state: the
+	// border of a form field with an error, on the cell fill and its focus fill
+	("state-danger-text", "box-error-bg", 3),
+	("state-danger-text", "registration-otp-error-bg-focus", 3),
+	// the warning icons (.o_icon_warn, .o_icon_important) on the page
+	("state-warning-text", "bg", 3),
 	("evaluation-insufficient-text", #FFFFFF, 4.5),
 	("evaluation-neutral-text", #FFFFFF, 4.5),
 	("evaluation-sufficient-text", #FFFFFF, 4.5),
@@ -2074,9 +2146,8 @@ $o-token-contrast-pairs: (
 	// decision D29 of OO-10043: the caret of the one-time code field, the
 	// link under the pointer in the off-canvas menu, the dashed border of a
 	// QTI text gap (the only mark of the gap), the status icons of selectus
-	// and the icons of the recorder that pass today. Not listed, they fail
-	// today: selectus-status-screening (1.71:1), selectus-status-deactivated
-	// (1.61:1), recorder-record-active (2.96:1).
+	// and the icons of the recorder that pass today. Not listed, it fails
+	// today: recorder-record-active (2.96:1).
 	("otp-caret", "otp-cell-bg", 4.5),
 	("otp-caret", "otp-cell-active-bg", 4.5),
 	("offcanvas-link-hover", "offcanvas-bg", 4.5),
@@ -2084,9 +2155,12 @@ $o-token-contrast-pairs: (
 	("selectus-status-preparation", "bg", 3),
 	("selectus-status-published", "bg", 3),
 	("selectus-status-published-screening", "bg", 3),
+	("selectus-status-published-screening", "selectus-status-screening", 3),
+	("selectus-status-closed-screening", "selectus-status-screening", 3),
 	("selectus-status-closed-screening", "bg", 3),
 	("selectus-status-closed", "bg", 3),
 	("selectus-status-reporting", "bg", 3),
+	("selectus-status-deactivated", "bg", 3),
 	("recorder-record", "bg", 3),
 	("recorder-record-hover", "bg", 3),
 	("recorder-symbol", "bg", 3),
@@ -2094,10 +2168,11 @@ $o-token-contrast-pairs: (
 	("recorder-symbol-active", "bg", 3),
 	// OO-10043 slice 16, the framework modules: the icons and texts of the
 	// new tokens that pass today. Not listed, they fail today:
-	// box-important-border on box-important-bg (2.13:1), widget-subtitle and
+	// box-important-border on box-important-bg (1.85:1), the soft borders of
+	// the boxes of a state box-{info,note,success,warning,error}-border on
+	// their fill (1.18:1 to 1.38:1), widget-subtitle and
 	// widget-text-additional on white (4.48:1); tree-insertion-disabled is the
 	// text of a disabled control.
-	("box-note-border", "box-note-bg", 3),
 	("box-tip-border", "box-tip-bg", 3),
 	("message-line-warning-fg", "message-line-warning-bg", 4.5),
 	("message-line-error-fg", "message-line-error-bg", 4.5),
@@ -2140,8 +2215,7 @@ $o-token-contrast-pairs: (
 	// empty-icon on bg (1.66:1, 3:1), export-area-meta,
 	// curriculum-element-inactive and selectus-review-comment-date on bg
 	// (4.48:1), selectus-onhold and selectus-mail-disabled on bg (2.68:1),
-	// highscore-histogram-text on bg (3.54:1), highscore-rank-third on
-	// highscore-podium-third-bg (1.83:1, 3:1 for the large number).
+	// highscore-histogram-text on bg (3.54:1).
 	("datecomp-month-fg", "datecomp-month-bg", 4.5),
 	("day-nav-day-selected-fg", "day-nav-day-selected-bg", 4.5),
 	("empty-indicator", "bg", 3),
@@ -2177,7 +2251,17 @@ $o-token-contrast-pairs: (
 	("curriculum-avatar-fg", "curriculum-avatar-bg", 4.5),
 	("curriculum-widget-template-label", "curriculum-widget-template-label-bg", 4.5),
 	("highscore-rank-first", "highscore-podium-first-bg", 3),
+	("highscore-rank-first", "highscore-podium-first-bg-stop-1", 3),
+	("highscore-rank-first", "highscore-podium-first-bg-stop-2", 3),
+	("highscore-rank-first", "highscore-podium-first-bg-stop-4", 3),
 	("highscore-rank-second", "highscore-podium-second-bg", 3),
+	("highscore-rank-second", "highscore-podium-second-bg-stop-1", 3),
+	("highscore-rank-second", "highscore-podium-second-bg-stop-2", 3),
+	("highscore-rank-second", "highscore-podium-second-bg-stop-4", 3),
+	("highscore-rank-third", "highscore-podium-third-bg", 3),
+	("highscore-rank-third", "highscore-podium-third-bg-stop-1", 3),
+	("highscore-rank-third", "highscore-podium-third-bg-stop-2", 3),
+	("highscore-rank-third", "highscore-podium-third-bg-stop-4", 3),
 	("proj-timeline-overdue", "bg", 4.5),
 	("proj-timeline-today", "bg", 4.5),
 	("user-initials-fg", "user-initials-base-bg", 4.5),

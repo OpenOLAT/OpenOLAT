@@ -8,6 +8,13 @@
 			@include o-focus-ring-inset;
 		}
 	}
+	// the link around the thumbnail has the box of the thumbnail, so the ring
+	// runs along the edge of the image (an inline link has the box of one text
+	// line at the bottom of the image, cut by the overflow of .o_visual)
+	.o_visual > a {
+		display: block;
+		height: 100%;
+	}
 	.btn-primary, .o_start, .o_book {
 		&:focus:focus-visible {
 			@include o-focus-ring-on-fill;

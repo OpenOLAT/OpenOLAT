@@ -404,7 +404,8 @@ body.o_dmz {
 
 		.o_sel_registration_otp {
 			.o_background {
-				--otp-border-color: var(--o-box-error-border);				
+				// the border of a form field with an error (.has-error .form-control)
+				--otp-border-color: var(--o-state-danger-text);
 			}
 
 			input.o_sel_registration_otp {

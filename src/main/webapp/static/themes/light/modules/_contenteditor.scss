@@ -192,7 +192,7 @@
 		}
 
 		&.o_alert_box_type_note {
-			@include alert_box(var(--o-box-note-border), var(--o-box-note-bg));
+			@include alert_box(var(--o-box-note-border), var(--o-box-note-bg), var(--o-box-note-icon));
 		}
 
 		&.o_alert_box_type_info {

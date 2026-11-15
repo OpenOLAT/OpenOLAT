@@ -51,7 +51,8 @@ the light theme and extends on top of it.
 - theme.js (optional): javascript code that should be embedded to the page to add some more complex
   features that can't be done with CSS alone
 - _config.scss: all OpenOLAT and bootstrap SASS variables
-- _palette.scss: the colour palette for all user colour choosers (14 hues x 10 steps), the swatch roles
+- _palette.scss: the colour palette for all user colour choosers (14 hues x 10 text steps, plus the
+  fill step 450 between 400 and 500 for fills and shapes, not offered in the choosers), the swatch roles
   and the semantic states of the status labels ($o-states)
 - _palette_theme.scss: the theme colours, the brand colours of the theme the choosers offer after the 14 hues
 - _palette_neutral.scss: the neutral scale, the 18 greys of the theme (--o-neutral-{step})
@@ -88,9 +89,10 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
   - for the theme colours: light/_palette_theme.scss. Set $o-theme-colors to the brand colours of
     the client, default is ($brand-primary). Example with 3 colours:
       $o-theme-colors: ($brand-primary, $brand-accent, #0090C5);
-    The compile generates 10 steps per colour; the colour itself is the solid fill when a text
-    colour reaches 4.5:1 on it. The choosers show them as "Theme 1" ... "Theme n" after the 14 hues.
-    An entry can also be a map with all 10 steps (50: ..., 900: ...). The theme colours need
+    The compile generates 10 text steps per colour and the fill step 450; the colour itself is the
+    solid fill when a text colour reaches 4.5:1 on it. The choosers show them as "Theme 1" ...
+    "Theme n" after the 14 hues. An entry can also be a map with the 10 text steps (50: ..., 900: ...),
+    the compile adds step 450. The theme colours need
     Dart Sass 1.79.0 or later.
   - for the greys: light/_palette_neutral.scss. The neutral scale has 18 steps: 0 (white), 25,
     50, 100, 150, 200, 250, 300, 400, 450, 500, 600, 700, 750, 800, 900, 950 and 1000 (black),
@@ -151,7 +153,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     token reads the nearest step of the same hue (neutral scale, brand ramp) that differs
     from the token and keeps the contrast of its text, e.g. --o-btn-primary-bg-hover:
     var(--o-theme1-600). A bright fill at step 400 with dark text (the warning and success
-    fills, the dirty button) goes lighter: hover step 300, pressed step 200 of its hue. The name is the token name and a suffix:
+    fills, the dirty button) goes lighter: hover and pressed fill step 300 of its hue. The name is the token name and a suffix:
       -hover, -active, -focus   the colour of a state, e.g. --o-tag-bg-hover, --o-chelp-bg-hover
       -edge                     a darker edge around a fill, e.g. --o-focus-edge
       -tint                     a lighter tint as a surface, e.g. --o-immunity-proof-none-bg-tint

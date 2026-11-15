@@ -63,8 +63,22 @@ public class Palette {
 	/** Hues which carry dark text on their solid fill */
 	public static final Set<String> BRIGHT_HUES = Set.of("yellow", "orange", "lime", "green", "cyan");
 
-	/** The steps every hue must have */
+	/**
+	 * The text steps every hue must have: each has a text colour (white or
+	 * step 900) and the swatch roles read them
+	 */
 	public static final List<Integer> STEPS = List.of(50, 100, 200, 300, 400, 500, 600, 700, 800, 900);
+
+	/**
+	 * The fill steps: the midpoint of step 400 and step 500 in OKLab
+	 * (<code>$o-palette-fill-steps</code> in <code>_palette.scss</code>). A
+	 * fill or shape colour without a text colour at 4.5:1, no swatch role and
+	 * no colour chooser colour. Optional: a CSS without them still loads.
+	 */
+	public static final List<Integer> FILL_STEPS = List.of(450);
+
+	/** The text steps and the fill steps, light to dark */
+	public static final List<Integer> ALL_STEPS = List.of(50, 100, 200, 300, 400, 450, 500, 600, 700, 800, 900);
 
 	/** The prefix of the theme colours, e.g. "theme1" */
 	public static final String THEME_COLOR_PREFIX = "theme";
@@ -93,7 +107,8 @@ public class Palette {
 	/**
 	 * Reads the palette from the custom properties <code>--o-{hue}-{step}: #RRGGBB</code>
 	 * of a compiled theme CSS. A hue without all of the {@link #STEPS} is
-	 * dropped with a warning. The neutral scale {@link #NEUTRAL} is no hue.
+	 * dropped with a warning; the {@link #FILL_STEPS} are read when the CSS
+	 * has them. The neutral scale {@link #NEUTRAL} is no hue.
 	 * If a property is declared twice, the last declaration wins, as in CSS.
 	 *
 	 * @param css The content of a CSS file, e.g. theme.css
@@ -120,11 +135,7 @@ public class Palette {
 			}
 			Map<Integer,String> steps = hue.getValue();
 			if (steps.keySet().containsAll(STEPS)) {
-				Map<Integer,String> paletteSteps = new LinkedHashMap<>();
-				for (Integer step : STEPS) {
-					paletteSteps.put(step, steps.get(step));
-				}
-				hues.put(hue.getKey(), Collections.unmodifiableMap(paletteSteps));
+				hues.put(hue.getKey(), paletteSteps(steps));
 			} else {
 				log.warn("Colour palette: hue {} has the steps {}, not {}. The hue is dropped.", hue.getKey(), steps.keySet(), STEPS);
 			}
@@ -148,11 +159,8 @@ public class Palette {
 			if (steps == null || !steps.keySet().containsAll(STEPS)) {
 				break;
 			}
-			Map<Integer,String> paletteSteps = new LinkedHashMap<>();
-			for (Integer step : STEPS) {
-				paletteSteps.put(step, steps.get(step));
-			}
-			themeColors.put(themeColor, Collections.unmodifiableMap(paletteSteps));
+			Map<Integer,String> paletteSteps = paletteSteps(steps);
+			themeColors.put(themeColor, paletteSteps);
 			fillSteps.put(themeColor, fillStep(paletteSteps, fills.get(themeColor)));
 		}
 		return new Palette(Collections.unmodifiableMap(hues), Collections.unmodifiableMap(themeColors),
@@ -160,12 +168,35 @@ public class Palette {
 	}
 
 	/**
-	 * @return The step with the fill colour, 500 if the fill is missing or not a step
+	 * @return The steps of {@link #ALL_STEPS} that the parsed steps hold, light to dark
+	 */
+	private static Map<Integer,String> paletteSteps(Map<Integer,String> steps) {
+		Map<Integer,String> paletteSteps = new LinkedHashMap<>();
+		for (Integer step : ALL_STEPS) {
+			String hex = steps.get(step);
+			if (hex != null) {
+				paletteSteps.put(step, hex);
+			}
+		}
+		return Collections.unmodifiableMap(paletteSteps);
+	}
+
+	/**
+	 * @param step A step, e.g. 450
+	 * @return true if the step is a fill step ({@link #FILL_STEPS})
+	 */
+	public static boolean isFillStep(int step) {
+		return FILL_STEPS.contains(Integer.valueOf(step));
+	}
+
+	/**
+	 * @return The text step with the solid fill colour, 500 if the fill is
+	 * 		missing or not a text step
 	 */
 	private static Integer fillStep(Map<Integer,String> steps, String fill) {
-		for (Map.Entry<Integer,String> step : steps.entrySet()) {
-			if (step.getValue().equals(fill)) {
-				return step.getKey();
+		for (Integer step : STEPS) {
+			if (steps.get(step).equals(fill)) {
+				return step;
 			}
 		}
 		return Integer.valueOf(500);
@@ -211,7 +242,8 @@ public class Palette {
 	}
 
 	/**
-	 * @return The steps of a hue, e.g. 50 to 900
+	 * @return The steps of a hue, light to dark, e.g. 50 to 900 with the fill
+	 * 		step 450 when the CSS has it
 	 * @throws IllegalArgumentException if the hue does not exist
 	 */
 	public Set<Integer> getSteps(String hue) {
