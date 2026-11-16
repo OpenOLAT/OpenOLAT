@@ -399,7 +399,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		
-		String page = velocity_root + "/details.html";
+		String page = Util.getPackageVelocityRoot(TBTopicListController.class) + "/details.html";
 		detailsVC = new VelocityContainer("details_" + counter++, "vc_details", page, getTranslator(), this);
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
@@ -523,7 +523,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	}
 
 	private void forgeExecution(TBTopicRow row, TBTopic topic, List<TBTopicDate> dates) {
-		row.setTranslatedExecutionType(TBUIFactory.getTranslatedType(getTranslator(), topic.getExecutionType()));
+		row.setTranslatedExecutionType(TBUIFactory.getTranslatedSchedule(getTranslator(), topic));
 		if (!dates.isEmpty()) {
 			row.setNumDates(Integer.valueOf(dates.size()));
 		}

@@ -95,7 +95,7 @@ public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> imp
 		title("topic.title"),
 		beginDate("topic.begin.first.date"),
 		endDate("topic.end.last.date"),
-		executionType("topic.execution"),
+		executionType("topic.schedule"),
 		numDates("topic.dates.num"),
 		minParticipants("topic.participants.min"),
 		maxParticipants("topic.participants.max"),

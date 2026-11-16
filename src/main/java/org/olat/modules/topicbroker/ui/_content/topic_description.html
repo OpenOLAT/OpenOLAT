@@ -1,7 +1,7 @@
 <div class="o_tb_topic_descriptions">
 	#if($r.isNotEmpty($description))
 		<div class="o_tb_topic_description">
-			<div class="o_tb_legend">
+			<div class="o_muted_label">
 				$r.translate("topic.description")
 			</div>
 			<div>
@@ -10,7 +10,7 @@
 		</div>
 	#end
 	<div class="o_tb_topic_participants">
-		<div class="o_tb_legend">
+		<div class="o_muted_label">
 			$r.translate("topic.participants.num")
 		</div>
 		<div>
@@ -19,7 +19,7 @@
 	</div>
 	#if($r.isNotEmpty($executionPeriod))
 		<div class="o_tb_topic_execution_period">
-			<div class="o_tb_legend">
+			<div class="o_muted_label">
 				$executionLabel
 			</div>
 			<div>
@@ -29,7 +29,7 @@
 	#end
 	#if($dates && $dates.size() > 0)
 		<div class="o_tb_topic_dates">
-			<div class="o_tb_legend">
+			<div class="o_muted_label">
 				$r.translate("topic.dates")
 			</div>
 			<table class="table table-condensed o_tb_topic_dates_table">
@@ -64,7 +64,7 @@
 	#end
 	#if($groups && $groups.size() > 0)
 		<div class="o_tb_group_restrictionss">
-			<div class="o_tb_legend">
+			<div class="o_muted_label">
 				$r.translate("topic.group.restriction")
 			</div>
 			<ul class="list-unstyled">
@@ -76,7 +76,7 @@
 	#end
 	#foreach($customField in $customFields)
 		<div class="o_tb_topic_custom_item">
-			<div class="o_tb_legend">
+			<div class="o_muted_label">
 				$r.escapeHtml($customField.name)
 			</div>
 			<div>

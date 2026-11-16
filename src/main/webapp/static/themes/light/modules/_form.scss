@@ -827,6 +827,10 @@ form.o_dnd_over {
 		font-weight: 400;
 	}
 }
+.o_muted_label {
+	color: var(--o-text-muted);
+	font-weight: 400;
+}
 .o_form_label {
 	display: inline-block;
 	margin-bottom: 5px;

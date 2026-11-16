@@ -279,6 +279,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
 			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.beginDate, dateRenderer));
 			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.endDate, dateRenderer));
+			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.schedule));
 		}
 		
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
@@ -357,6 +358,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
 			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.beginDate, dateRenderer));
 			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.endDate, dateRenderer));
+			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.schedule));
 		}
 		
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
@@ -506,6 +508,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			List<TBTopicDate> dates = topicKeyToDates.getOrDefault(topic.getKey(), List.of());
 			row.setBeginDate(TBUIFactory.getBeginDate(topic, dates));
 			row.setEndDate(TBUIFactory.getEndDate(topic, dates));
+			row.setTranslatedSchedule(TBUIFactory.getTranslatedSchedule(getTranslator(), topic));
 			row.setExecutionPeriod(TBUIFactory.getExecutionPeriod(getTranslator(), formatter, topic, dates));
 			row.setTopicSortOrder(topic.getSortOrder());
 			

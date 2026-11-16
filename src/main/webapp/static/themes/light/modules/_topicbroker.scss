@@ -37,9 +37,9 @@
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-}
-.o_tb_legend {
-	font-weight: bold;
+	.table.o_tb_topic_dates_table {
+		margin-top: 0;
+	}
 }
 
 .o_tb_selection {
@@ -195,14 +195,14 @@
 	// selected, enrolled, waiting, not_enrolled, surplus: semantic states in _states.scss (OO-10042)
 	>.o_tb_priority_fillin {
 		color: var(--o-topicbroker-fillin);
-		border: none;
+		border-color: transparent;
 	}
 }
 .o_tb_priority_labels {
-	display: grid;
+	display: inline-grid;
 	grid-auto-flow: column;
-	grid-auto-columns: 1fr;
-	gap: 2px;
+	grid-auto-columns: minmax(max-content, 1fr);
+	gap: 5px;
 	.o_tb_priority_label > div {
 		white-space: nowrap;
 	}

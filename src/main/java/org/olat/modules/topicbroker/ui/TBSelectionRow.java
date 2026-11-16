@@ -46,6 +46,7 @@ public class TBSelectionRow {
 	private String participants;
 	private Date beginDate;
 	private Date endDate;
+	private String translatedSchedule;
 	private String executionPeriod;
 	private String thumbnailUrl;
 	private boolean enrolled;
@@ -100,6 +101,14 @@ public class TBSelectionRow {
 	
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+	
+	public String getTranslatedSchedule() {
+		return translatedSchedule;
+	}
+	
+	public void setTranslatedSchedule(String translatedSchedule) {
+		this.translatedSchedule = translatedSchedule;
 	}
 
 	public Integer getMinParticipants() {

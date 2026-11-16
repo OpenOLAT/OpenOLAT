@@ -309,7 +309,7 @@ public class TBUIFactory {
 		label += getPriorityCss(status);
 		label += "\">";
 		if (TBSelectionStatus.surplus == status) {
-			label += translator.translate("selection.surplus.abbr");
+			label += translator.translate("selection.status.surplus");
 		} else {
 			label += translator.translate("selection.priority.tag", String.valueOf(sortOrder));
 		}
@@ -343,7 +343,9 @@ public class TBUIFactory {
 	
 	public static String getParticipantRange(Translator translator, TBTopic topic) {
 		String participants = "<i class=\"o_icon o_icon-fw o_icon_num_participants\"></i> ";
-		if (topic.getMinParticipants() > 0) {
+		if (topic.getMaxParticipants() == 1) {
+			participants += translator.translate("topic.participants.label.one");
+		} else if (topic.getMinParticipants() > 0) {
 			participants += translator.translate("topic.participants.label.min.max",
 					String.valueOf(topic.getMinParticipants()), String.valueOf(topic.getMaxParticipants()));
 		} else {
@@ -576,7 +578,17 @@ public class TBUIFactory {
 		}
 		return null;
 	}
-	
+
+	public static String getTranslatedSchedule(Translator translator, TBTopic topic) {
+		if (TBTopicExecutionType.dates == topic.getExecutionType()) {
+			return translator.translate("topic.schedule.dates");
+		}
+		if (topic.getBeginDate() == null && topic.getEndDate() == null) {
+			return translator.translate("topic.schedule.anytime");
+		}
+		return translator.translate("topic.schedule.period");
+	}
+
 	public static String getTranslatedTypeDesc(Translator translator, TBEnrollmentStrategyType type) {
 		if (type != null) {
 			switch (type) {

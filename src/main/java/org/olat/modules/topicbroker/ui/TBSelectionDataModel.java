@@ -67,6 +67,7 @@ public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelection
 		case status: return row;
 		case beginDate: return row.getBeginDate();
 		case endDate: return row.getEndDate();
+		case schedule: return row.getTranslatedSchedule();
 		case minParticipants: return row.getMinParticipants();
 		case maxParticipants: return row.getMaxParticipants();
 		case upDown: return row.getUpDown();
@@ -83,6 +84,7 @@ public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelection
 		status("selection.status"),
 		beginDate("topic.begin.first.date"),
 		endDate("topic.end.last.date"),
+		schedule("topic.schedule"),
 		minParticipants("topic.participants.min"),
 		maxParticipants("topic.participants.max"),
 		upDown("updown"),
