@@ -152,8 +152,9 @@ public class ColorTokensTest {
 			new Shade("competence-selected-border-active", "competence-selected-border", 15),
 			new Shade("tinymce-danger-bg-edge", "tinymce-danger-bg", 25),
 			// the remaining colour maths
-			new Shade("box-info-table-border", "box-info-bg", -5), new Shade("box-info-table-stripe-bg", "box-info-bg", -5),
-			new Shade("box-info-table-header-bg", "box-info-bg", 10),
+			new Shade("content-table-blue-border", "content-table-blue-bg", -5),
+			new Shade("content-table-blue-stripe-bg", "content-table-blue-bg", -5),
+			new Shade("content-table-blue-header-bg", "content-table-blue-bg", 10),
 			new Shade("box-note-table-border", "box-note-bg", -5), new Shade("box-note-table-stripe-bg", "box-note-bg", -5),
 			new Shade("box-note-table-header-bg", "box-note-bg", 10),
 			new Shade("box-success-table-border", "box-success-bg", -5),
@@ -977,7 +978,6 @@ public class ColorTokensTest {
 		assertContrast("box-info-border", "box-info-bg", 3.0);
 		assertContrast("alert-close", "box-info-bg", 3.0);
 		assertContrast("alert-close-hover", "box-info-bg", 3.0);
-		assertContrast("text", "box-info-table-header-bg", 4.5);
 
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
 		assertRuleReads(css, ".o_info", "background-color:var(--o-box-info-bg)");
@@ -1113,7 +1113,7 @@ public class ColorTokensTest {
 	 * token of the state, which follows the text of the button in light, and
 	 * their fills keep their values (the default themes do not change);
 	 * a fill is 3% darker or lighter at least; the progress bars of the
-	 * selectus ratings read the tokens of the rating buttons.
+	 * selectus ratings A, B and C read the fills of the rating marks.
 	 */
 	@Test
 	public void decisionD12D13D15RulesReadTokens() {
@@ -1160,11 +1160,10 @@ public class ColorTokensTest {
 		Assert.assertEquals(17, contrastShadeAmount("#DE323C", "#FFFFFF", 17));
 		// the light danger button: red-500 of the tuned palette keeps 4.5:1 up to 4%
 		Assert.assertEquals(4, contrastShadeAmount(resolve("btn-danger-light-fg"), "#FFFFFF", 10));
-		// the rating bars (bar A has no rule)
-		for (String rating : List.of("B", "C")) {
-			String token = "selectus-rating-" + rating.toLowerCase() + "-bg";
-			assertRuleReads(css, ".progress-bar.o_bar_rating_" + rating.toLowerCase(),
-					"background-image:linear-gradient(to bottom, var(--o-" + token + ") 0%, var(--o-" + token + "-hover) 100%)");
+		// the rating bars: the solid fill of the marks
+		for (String rating : List.of("a", "b", "c")) {
+			assertRuleReads(css, ".progress-bar.o_bar_rating_" + rating,
+					"background-color:var(--o-selectus-rating-" + rating + "-mark)");
 		}
 		// the fill of a styled course element (counted by the ratchet pattern)
 		assertRuleReads(css, ".o_cn_styled", "background-color:var(--o-course-style-bg)");
@@ -1174,7 +1173,7 @@ public class ColorTokensTest {
 	/**
 	 * The abstention bar of the
 	 * selectus statistics reads the tokens of the abstention button, the label
-	 * of bar B the text of button B; the marks of the ratings read their mark
+	 * of bar B the text on mark B; the marks of the ratings read their mark
 	 * tokens, the explanation texts the fill of the rating buttons, B its own
 	 * text token with 4.5:1 on the background; the border of a styled
 	 * course element reads course-style-border (the shorthand
@@ -1188,7 +1187,7 @@ public class ColorTokensTest {
 		String abstain = ".progress-bar.o_bar_rating_abstain";
 		assertRuleReads(css, abstain, "background-image:linear-gradient(to bottom, var(--o-selectus-rating-abstain-bg) 0%, var(--o-selectus-rating-abstain-bg-hover) 100%)");
 		assertRuleReads(css, abstain, "color:var(--o-selectus-rating-abstain-fg)");
-		assertRuleReads(css, ".progress-bar.o_bar_rating_b", "color:var(--o-selectus-rating-b-fg)");
+		assertRuleReads(css, ".progress-bar.o_bar_rating_b", "color:var(--o-selectus-rating-b-mark-fg)");
 		// marks 1 = C, 2 = B, 3 = A; the letter has the colour of the mark
 		Map<String, String> marks = Map.of("div.f_rating_1", "selectus-rating-c-mark", "div.f_rating_2",
 				"selectus-rating-b-mark", "div.f_rating_3", "selectus-rating-a-mark");
@@ -1227,9 +1226,9 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * Selectus: the bar of rating A has no
-	 * own rule (PositionApplicationsController renders it as a success
-	 * segment); the letters B and C keep 4.5:1 on a white, a striped and a
+	 * Selectus: the bar of rating A is a
+	 * success segment with the class o_bar_rating_a
+	 * (PositionApplicationsController); the letters B and C keep 4.5:1 on a white, a striped and a
 	 * hovered table row (adjusted against the darkest of the three,
 	 * o-darkest-color()), the border of the marks 3:1; the 8 state fills are the only
 	 * shade tokens with the function "state"; the mark of
@@ -1240,9 +1239,8 @@ public class ColorTokensTest {
 	public void decisionD25ToD28Selectus() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
-		// no rule for bar A, and the Java code renders bar A as a success
-		// segment without a class of its own (OO-10053: segments of the progress bar)
-		Assert.assertFalse("The compiled theme has a rule for bar A", Pattern.compile("o_bar_rating_a(?![a-z])").matcher(css).find());
+		// the Java code renders bar A as a success segment with the class
+		// o_bar_rating_a (OO-10053: segments of the progress bar)
 		Assert.assertFalse("The compiled theme has a rule of the old bar selector", css.contains("o_bar_rating_on"));
 		Path controller = Path.of("src/main/java/org/olat/modules/selectus/ui/PositionApplicationsController.java");
 		Matcher bar = Pattern.compile("new Segment\\(statistics\\.getRating\\((\\d)\\), BarColor\\.(\\w+), (?:\"([^\"]*)\", )?translate")
@@ -1251,8 +1249,8 @@ public class ColorTokensTest {
 		while (bar.find()) {
 			bars++;
 			if ("2".equals(bar.group(1))) {
-				Assert.assertEquals("Bar A (rating.2) needs a rule of _selectus.scss again", "success", bar.group(2));
-				Assert.assertNull("Bar A (rating.2) has a class of its own", bar.group(3));
+				Assert.assertEquals("Bar A (rating.2) is a success segment", "success", bar.group(2));
+				Assert.assertEquals("Bar A (rating.2)", "o_bar_rating_a", bar.group(3));
 			} else {
 				String cssClass = "1".equals(bar.group(1)) ? "o_bar_rating_b" : "o_bar_rating_c";
 				Assert.assertEquals("Bar rating." + bar.group(1), cssClass, bar.group(3));
@@ -2347,10 +2345,12 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * Selectus: the links of an on-hold row have the on-hold colour. The
-	 * rule has the selector chain of the table link rule plus the row class,
-	 * so it wins against the table link rule (all cells of the application
-	 * list are links), as the link rule of the decision rows does.
+	 * Selectus: the links of an on-hold row without a decision have the
+	 * on-hold colour. The rule has the selector chain of the table link rule
+	 * plus the row class, so it wins against the table link rule (all cells
+	 * of the application list are links), as the link rule of the decision
+	 * rows does. The links of a decision row have the text colour and an
+	 * underline.
 	 */
 	@Test
 	public void selectusOnHoldRowLinksHaveTheOnHoldColour() {
@@ -2368,10 +2368,50 @@ public class ColorTokensTest {
 		String links = tableLink.substring(".o_table_wrapper td ".length());
 		for (String table : List.of("table.o_table", "table.table")) {
 			assertRuleReads(css, ".o_table_wrapper " + table + " tbody tr.fx_r_onhold>td " + links, "color:var(--o-selectus-onhold)");
-			assertRuleReads(css, ".o_table_wrapper " + table + " tbody tr.fx_r_a_decision>td " + links, "color:var(--o-text)");
+			for (String decision : List.of("a", "b", "c")) {
+				String row = ".o_table_wrapper " + table + " tbody tr.fx_r_" + decision + "_decision>td " + links;
+				assertRuleReads(css, row, "color:var(--o-text)");
+				assertRuleReads(css, row, "text-decoration:underline");
+			}
 		}
 		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
 			assertContrast("selectus-onhold", row, 4.5);
+		}
+	}
+
+	/**
+	 * Selectus: a row on hold with a decision keeps the decision fill. Its
+	 * text and its links read selectus-onhold-decision (neutral 700), which
+	 * keeps 4.5:1 on the six decision fills; the links keep the underline
+	 * of the decision rows. The links rule has the chain of the table link
+	 * rule, so buttons, the practice play link, uncoloured links and the row
+	 * details stay excluded. Every on-hold row shows its cells in italic as
+	 * the second cue; the buttons keep the upright font.
+	 */
+	@Test
+	public void selectusOnHoldRowsWithDecisionReadTheOnHoldDecisionColourInItalic() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		Assert.assertEquals("selectus-onhold-decision", "var(--o-neutral-700)", tokens.get("selectus-onhold-decision"));
+		String links = "a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a)";
+		for (String table : List.of("table.o_table", "table.table")) {
+			for (String decision : List.of("a", "b", "c")) {
+				String row = table + " tr.fx_r_onhold.fx_r_" + decision + "_decision";
+				for (String cell : List.of(" td", " td span", " td a")) {
+					assertRuleReads(css, row + cell, "color:var(--o-selectus-onhold-decision)");
+				}
+				assertRuleReads(css, ".o_table_wrapper " + table + " tbody tr.fx_r_onhold.fx_r_" + decision + "_decision>td " + links,
+						"color:var(--o-selectus-onhold-decision)");
+				assertRuleReads(css, ".o_table_wrapper " + table + " tbody tr.fx_r_" + decision + "_decision>td",
+						"background-color:var(--o-selectus-decision-" + decision + "-bg) !important");
+				assertRuleReads(css, ".o_table_wrapper " + table + " tbody tr.fx_r_" + decision + "_decision>td " + links,
+						"text-decoration:underline");
+			}
+			assertRuleReads(css, table + " tr.fx_r_onhold td", "font-style:italic");
+			assertRuleReads(css, table + " tr.fx_r_onhold td .btn", "font-style:normal");
+		}
+		for (String decision : List.of("a", "b", "c")) {
+			assertContrast("selectus-onhold-decision", "selectus-decision-" + decision + "-bg", 4.5);
+			assertContrast("selectus-onhold-decision", "selectus-decision-" + decision + "-hover-bg", 4.5);
 		}
 	}
 
@@ -2409,6 +2449,72 @@ public class ColorTokensTest {
 		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg", "selectus-decision-a-bg", "selectus-decision-a-hover-bg",
 				"selectus-decision-b-bg", "selectus-decision-b-hover-bg", "selectus-decision-c-bg", "selectus-decision-c-hover-bg")) {
 			assertContrast("btn-default-border", row, 3.0);
+		}
+	}
+
+	/**
+	 * Selectus: the bars of the ratings A, B and C in the statistics have the
+	 * solid fills of the rating marks, without the gradient of the rating
+	 * buttons, and the text of the state on the fill, 4.5:1. Bar A has an own
+	 * rule, so that it follows an override of mark A. The abstention bar
+	 * keeps the gradient of the abstention button.
+	 */
+	@Test
+	public void selectusRatingBarsHaveTheFillsOfTheMarks() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		Map<String, String> states = Map.of("a", "success", "b", "warning", "c", "danger");
+		for (Map.Entry<String, String> rating : states.entrySet()) {
+			String bar = ".progress-bar.o_bar_rating_" + rating.getKey();
+			String mark = "selectus-rating-" + rating.getKey() + "-mark";
+			assertRuleReads(css, bar, "background-color:var(--o-" + mark + ")");
+			assertRuleReads(css, bar, "color:var(--o-" + mark + "-fg)");
+			Assert.assertEquals(mark + "-fg", "var(--o-state-" + rating.getValue() + "-fg)", tokens.get(mark + "-fg"));
+			assertContrast(mark + "-fg", mark, 4.5);
+			Matcher m = RULE.matcher(css);
+			while (m.find()) {
+				if (m.group(1).trim().equals(bar)) {
+					Assert.assertFalse(bar + " has a gradient: " + m.group(2), m.group(2).contains("gradient"));
+				}
+			}
+		}
+		Assert.assertEquals("#012902", resolve("selectus-rating-a-mark-fg"));
+		Assert.assertEquals("#301E06", resolve("selectus-rating-b-mark-fg"));
+		Assert.assertEquals("#FFFFFF", resolve("selectus-rating-c-mark-fg"));
+		assertRuleReads(css, ".progress-bar.o_bar_rating_abstain",
+				"background-image:linear-gradient(to bottom, var(--o-selectus-rating-abstain-bg) 0%, var(--o-selectus-rating-abstain-bg-hover) 100%)");
+	}
+
+	/**
+	 * The blue table of the HTML editor (b_blue) has own tokens: the soft
+	 * fill of the neutral state (blue 50), white cell borders and even rows,
+	 * header cells 10% darker (blue 200). It does not read the tokens of the
+	 * info box, which has a near white fill. The text keeps 4.5:1 on the three
+	 * fills. The grey, green, yellow and red tables keep the tokens of their
+	 * message box.
+	 */
+	@Test
+	public void blueTableHasOwnBlueTokens() {
+		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("content-table-blue-bg"));
+		Assert.assertEquals("#F2F8FF", resolve("content-table-blue-bg"));
+		Assert.assertEquals("#FFFFFF", resolve("content-table-blue-border"));
+		Assert.assertEquals("#FFFFFF", resolve("content-table-blue-stripe-bg"));
+		Assert.assertEquals("#C6DFFF", resolve("content-table-blue-header-bg"));
+		for (String fill : List.of("content-table-blue-bg", "content-table-blue-stripe-bg", "content-table-blue-header-bg")) {
+			assertContrast("text", fill, 4.5);
+		}
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		assertRuleReads(css, "table.b_blue td", "background:var(--o-content-table-blue-bg)");
+		assertRuleReads(css, "table.b_blue td", "border:1px solid var(--o-content-table-blue-border)");
+		assertRuleReads(css, "table.b_blue thead td", "background:var(--o-content-table-blue-header-bg)");
+		assertRuleReads(css, "table.b_blue tbody tr:nth-child(even) td", "background:var(--o-content-table-blue-stripe-bg)");
+		Assert.assertFalse("The blue table reads a token of the info box",
+				Pattern.compile("table\\.b_blue[^{}]*\\{[^{}]*--o-box-info").matcher(css).find());
+		Map<String, String> boxes = Map.of("b_gray", "note", "b_green", "success", "b_yellow", "warning", "b_red", "error");
+		for (Map.Entry<String, String> table : boxes.entrySet()) {
+			String selector = "table." + table.getKey();
+			assertRuleReads(css, selector + " td", "background:var(--o-box-" + table.getValue() + "-bg)");
+			assertRuleReads(css, selector + " thead td",
+					"background:var(--o-box-" + table.getValue() + "-table-header-bg)");
 		}
 	}
 

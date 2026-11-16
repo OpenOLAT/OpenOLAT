@@ -63,6 +63,8 @@ public class GuiDemoColorTokensTest {
 	private static final Pattern FOLLOWS = Pattern.compile("follows ([a-z0-9-]+)");
 	// "N% darker at most, ...": the amount of o-contrast-shade-amount() (OO-10043)
 	private static final Pattern SHADE = Pattern.compile("^shade: ([a-z0-9-]+), (\\d+)% darker( at most, .*)?$");
+	// "neutral N": a step of the neutral scale as default, o-neutral(N)
+	private static final Pattern NEUTRAL_DEFAULT = Pattern.compile("^neutral (\\d+)$");
 
 	@Test
 	public void tokensDeclared() {
@@ -146,7 +148,8 @@ public class GuiDemoColorTokensTest {
 
 	/**
 	 * The element tokens and their shade tokens have the layer and the
-	 * default of _tokens.scss.
+	 * default of _tokens.scss. The default is a reference, a Sass variable,
+	 * a shade or a step of the neutral scale.
 	 */
 	@Test
 	public void elementTokens() {
@@ -188,8 +191,12 @@ public class GuiDemoColorTokensTest {
 				}
 				String def = definition(layer, token.name());
 				Assert.assertNotNull(name + " is not in the map of the " + group.layer() + " in _tokens.scss", def);
+				Matcher neutral = NEUTRAL_DEFAULT.matcher(value);
 				if (value.startsWith("\"")) {
 					Assert.assertEquals(name + ": reference default", value, def);
+				} else if (neutral.matches()) {
+					Assert.assertTrue(name + ": the default is not " + value + " in _tokens.scss: " + def,
+							def.replace(" ", "").startsWith("(o-neutral(" + neutral.group(1) + "),"));
 				} else {
 					Matcher var = SASS_VARIABLE.matcher(value);
 					Assert.assertTrue(name + ": no Sass variable in the default of the tab: " + value, var.find());

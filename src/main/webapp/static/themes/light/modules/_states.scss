@@ -21,8 +21,7 @@
  *
  * The existing status classes keep their names. $o-state-wiring
  * assigns each of them a state and a style; the list is generated
- * from the OO-colors mapping (fxWorkspace/projects/OO-colors/
- * ux-handover/gen_states_code.py), do not edit it by hand.
+ * from the mapping of the status classes, do not edit it by hand.
  * The module is imported after all other modules, so the state
  * colours win over the old colour rules of the status modules.
  *

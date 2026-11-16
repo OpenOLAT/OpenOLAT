@@ -260,7 +260,11 @@ public class GuiDemoColorTokens {
 		groups.add(new TokenGroup("Content", "base layer", List.of(
 				new Token("content-table-bordered-header-bg", "$gray-base", "Header cells of a bordered table in the HTML editor, the rule mixes it at 10%",
 						new Sample("background-color: color-mix(in srgb, var(--o-content-table-bordered-header-bg) 10%, transparent); color: var(--o-text);",
-								null, "Header cell", MEASURE_TEXT, AA_TEXT)))));
+								null, "Header cell", MEASURE_TEXT, AA_TEXT)),
+				new Token("content-table-blue-bg", "\"state-neutral-soft-bg\"", "Fill of the blue table in the HTML editor (b_blue)",
+						fill("content-table-blue-bg", "text", "Blue table", AA_TEXT)),
+				new Token("content-table-blue-header-bg", "shade: content-table-blue-bg, 10% darker", "Header cells of the blue table in the HTML editor (b_blue)",
+						fill("content-table-blue-header-bg", "text", "Header cell", AA_TEXT)))));
 		groups.add(new TokenGroup("Navigation links", "framework layer", List.of(
 				new Token("nav-link", "$navbar-default-link-color", "Neutral link colour of the menu tree, the toolbar and the QTI menu",
 						text("nav-link", "bg", "Navigation link", AA_TEXT)),
@@ -388,7 +392,7 @@ public class GuiDemoColorTokens {
 						text("box-error-icon", "box-error-bg", "Error", AA_NON_TEXT)),
 				new Token("form-error-border", "$o-box-error-color, follows state-danger-text", "Border of the error message under a form field (form .o_error)",
 						border("form-error-border", "box-error-bg", "text", "Form error", AA_NON_TEXT)),
-				new Token("box-info-bg", "$o-box-info-bg, neutral 25 in light", "Fill of the info box, of the info message at the top of the page and of the blue table (b_blue)",
+				new Token("box-info-bg", "$o-box-info-bg, neutral 25 in light", "Fill of the info box and of the info message at the top of the page",
 						fill("box-info-bg", "text", "Info box", AA_TEXT)),
 				new Token("box-note-bg", "$o-box-note-bg, follows state-inactive-soft-bg", "Fill of the note box and of the grey table (b_gray)",
 						fill("box-note-bg", "text", "Note box", AA_TEXT)),
@@ -499,7 +503,9 @@ public class GuiDemoColorTokens {
 				new Token("qti-bad-response", "$o-qti-badResponse-color, follows state-danger-text", "Text of a bad response of a test question",
 						text("qti-bad-response", "bg", "Bad response", AA_TEXT)),
 				new Token("lecture-excluded", "$o-lm-excluded-color, follows state-danger-text", "Text of a participant excluded from the lectures",
-						text("lecture-excluded", "bg", "Excluded", AA_TEXT)))));
+						text("lecture-excluded", "bg", "Excluded", AA_TEXT)),
+				new Token("selectus-onhold-decision", "neutral 700", "Text of a selectus row on hold with a decision, on the decision fill",
+						text("selectus-onhold-decision", "selectus-decision-a-bg", "On hold", AA_TEXT)))));
 		return groups;
 	}
 

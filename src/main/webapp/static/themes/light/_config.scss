@@ -311,7 +311,7 @@ $o-content-border-img-padding	: 3px !default;
 $o-font-size-xlarge				: ceil(($font-size-base * 1.7)) !default;  // ~24px
 $o-font-size-xsmall				: ceil(($font-size-base * 0.71)) !default; // ~10px
 $o-font-size-section-title		: ceil(($font-size-base * 1.3)) !default; // ~18px
-// the selected row: the soft fill of the neutral state (OO-10043, decision S4)
+// the selected row: the soft fill of the neutral state (OO-10043)
 $o-table-row-selected-color     : o-state-color("neutral", "soft-bg") !default;
 
 $o-table-edit-border			: o-palette("orange", 400);
@@ -1459,7 +1459,7 @@ $o-email-btn-border-radius				: 4px !default;
 $o-ap-planned-color					: o-state-color("warning", "bg") !default;
 $o-ap-confirmed-color				: o-state-color("success", "bg") !default;
 // text of the confirm button on the planned fill: the fg role on the state
-// fill (OO-10043, decision A1 c), else the old near-white
+// fill (OO-10043), else the old near-white
 $o-ap-select-icon-color				: if($o-ap-planned-color == o-state-color("warning", "bg"), o-state-color("warning", "fg"), o-neutral(25)) !default;
 
 /* Reminders */

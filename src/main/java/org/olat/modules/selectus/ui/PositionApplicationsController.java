@@ -1654,7 +1654,7 @@ public class PositionApplicationsController extends FormBasicController implemen
 	
 	private List<Segment> getStatisticsSegments(ApplicationStatistics statistics) {
 		return List.of(
-				new Segment(statistics.getRating(2), BarColor.success, translate("rating.2")),
+				new Segment(statistics.getRating(2), BarColor.success, "o_bar_rating_a", translate("rating.2")),
 				new Segment(statistics.getRating(1), BarColor.primary, "o_bar_rating_b", translate("rating.1")),
 				new Segment(statistics.getRating(0), BarColor.primary, "o_bar_rating_c", translate("rating.0")),
 				new Segment(statistics.getAbstention(), BarColor.primary, "o_bar_rating_abstain", translate("abstain.title")),

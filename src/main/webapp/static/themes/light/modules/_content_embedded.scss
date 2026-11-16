@@ -70,40 +70,47 @@ div.b_scrollblock {
 // A table with the fill of a message box: the token --o-box-{$box}-bg and its
 // shade tokens -table-border, -table-stripe-bg and -table-header-bg
 @mixin o-make-colored-table($box){
+	@include o-make-colored-table-tokens("box-#{$box}-bg", "box-#{$box}-table-border",
+		"box-#{$box}-table-stripe-bg", "box-#{$box}-table-header-bg");
+}
+
+// A table with a coloured fill: the names of the tokens of the fill, of the
+// cell border, of the fill of the even rows and of the header cells
+@mixin o-make-colored-table-tokens($bg, $border, $stripe-bg, $header-bg){
 	border-collapse: collapse;
 	td, th {
 		padding: $table-cell-padding;
-		background: var(--o-box-#{$box}-bg);
-		border: 1px solid var(--o-box-#{$box}-table-border);
+		background: var(--o-#{$bg});
+		border: 1px solid var(--o-#{$border});
 	}
 	thead td, th {
-		background: var(--o-box-#{$box}-table-header-bg);
+		background: var(--o-#{$header-bg});
 		font-weight: bold;
 	}
 	tbody tr:nth-child(even) td {
-		background: var(--o-box-#{$box}-table-stripe-bg);
-		border: 1px solid var(--o-box-#{$box}-bg);
+		background: var(--o-#{$stripe-bg});
+		border: 1px solid var(--o-#{$bg});
 	}
 	&.b_no_stripes tbody tr:nth-child(even) td {
-		background: var(--o-box-#{$box}-bg);
-		border: 1px solid var(--o-box-#{$box}-table-border);
+		background: var(--o-#{$bg});
+		border: 1px solid var(--o-#{$border});
 	}
 
 	@media print {
 		td, th {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
-			background: var(--o-box-#{$box}-bg) !important;
+			background: var(--o-#{$bg}) !important;
 		}
 		thead td, th {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
-			background: var(--o-box-#{$box}-table-header-bg) !important;
+			background: var(--o-#{$header-bg}) !important;
 		}
 		tbody tr:nth-child(even) td {
 			-webkit-print-color-adjust: exact;
 			color-adjust: exact;
-			background: var(--o-box-#{$box}-table-stripe-bg) !important;
+			background: var(--o-#{$stripe-bg}) !important;
 		}
 	}
 }
@@ -171,8 +178,10 @@ table {
 	&.b_gray {
 		@include o-make-colored-table("note");
 	}
+	// the blue table has own tokens: the info box has a near white fill
 	&.b_blue {
-		@include o-make-colored-table("info");
+		@include o-make-colored-table-tokens("content-table-blue-bg", "content-table-blue-border",
+			"content-table-blue-stripe-bg", "content-table-blue-header-bg");
 	}
 	&.b_green {
 		@include o-make-colored-table("success");

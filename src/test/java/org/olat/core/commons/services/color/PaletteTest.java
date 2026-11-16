@@ -106,7 +106,7 @@ public class PaletteTest {
 				Assert.assertTrue(hue, luminance > ColorContrast.relativeLuminance(p.hex(hue, 500)));
 			}
 		}
-		// the values of _palette.scss (gen_palette_step450.py)
+		// the values of _palette.scss
 		Assert.assertEquals("#F14442", palette.hex("red", 450));
 		Assert.assertEquals("#CA9600", palette.hex("yellow", 450));
 		Assert.assertEquals("#5196EC", palette.hex("blue", 450));

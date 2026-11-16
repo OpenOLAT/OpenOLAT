@@ -45,8 +45,7 @@ import org.junit.Test;
  * against <code>theme_color_baseline.properties</code>. New code reads
  * the colour tokens with <code>var(--o-*)</code> (doc/openolat-frontend.md,
  * chapter 26). When a module reads more tokens, lower its count in the
- * baseline. The patterns are the same as in the OO-colors inventory
- * script color_inventory.py.
+ * baseline.
  * <p>
  * A reference that stays by design has a marker, a silent Sass comment
  * (OO-10043): <code>// o-color-keep(reason)</code> at the end

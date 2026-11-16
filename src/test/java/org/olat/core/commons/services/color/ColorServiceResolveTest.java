@@ -28,15 +28,16 @@ import org.junit.Test;
 
 /**
  * Checks {@link ColorService#resolve(String, ColorFamily)} against the alias
- * table of OO-colors (spec section 3.3, mapping_v2.md). The palette is read
- * from the compiled <code>light/theme.css</code>.
+ * table of the swatch aliases (<code>$o-swatch-alias-families</code> in
+ * <code>_palette.scss</code>). The palette is read from the compiled
+ * <code>light/theme.css</code>.
  *
  * Initial date: 29 Oct 2026<br>
  * @author gnaegi, https://www.frentix.com
  */
 public class ColorServiceResolveTest {
 
-	/** family, key, hue, variant: the alias table of the spec */
+	/** family, key, hue, variant: the alias table */
 	private static final String[][] ALIASES = {
 		{ "COLOR_SERVICE", "lightgray", "gray", "dark" },
 		{ "COLOR_SERVICE", "yellow", "yellow", "solid" },

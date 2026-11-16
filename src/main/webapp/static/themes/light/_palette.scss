@@ -24,12 +24,10 @@
  *    ($o-palette-fill-steps); a token default reads it by name
  * 5. Bright hues use step 400 as solid fill, deep hues step 500
  *
- * Generated from fxWorkspace/projects/OO-colors/scripts/palette_v2.json,
- * teal, slate (blue-gray), green (hue 143) and blue (hue 255) from
- * gen_palette_v3_additions.py. Red, orange and yellow are tuned by hand
- * (generator scripts/build_palette_tuning.py, palette_v4_tuning.json): the
- * hue turns along the ramp. Step 450 from gen_palette_step450.py
- * (palette_step450.json). Do not edit values by hand.
+ * The values are generated, also for teal, slate (blue-gray), green
+ * (hue 143) and blue (hue 255) and for step 450. Red, orange and yellow
+ * are tuned by hand: the hue turns along the ramp. Do not edit values by
+ * hand.
  *
  * modules/_palette_vars.scss emits the map as custom properties
  * --o-{hue}-{step} in theme.css. Java reads the same values from the custom
@@ -173,7 +171,7 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 	@return list.nth($o-palette-steps, $i + 1);
 }
 
-// Computes the swatch roles of every hue (see OO-colors spec 4.3).
+// Computes the swatch roles of every hue.
 // Every foreground is selected with o-on-color() and validated at
 // compile time, the build stops when a pair has less than 4.5:1.
 //
@@ -238,7 +236,7 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 $o-swatches: o-palette-swatches($o-palette, $o-palette-bright) !default;
 
 /*
- * Swatch aliases (OO-colors spec 3.3 and 4.5)
+ * Swatch aliases
  *
  * The CSS classes stored in the database and in XML files keep their old
  * names. Each legacy class renders as one swatch: a hue of $o-palette and a

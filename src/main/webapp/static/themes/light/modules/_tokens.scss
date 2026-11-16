@@ -268,7 +268,11 @@ $o-token-layer-base: (
 	"content-table-header-bg":                    ($gray-lighter, ()),
 	// header cells of the bordered tables of the HTML editor (b_border): the
 	// rule mixes the colour at 10% with transparent ($gray-base)
-	"content-table-bordered-header-bg":           ($gray-base, ())
+	"content-table-bordered-header-bg":           ($gray-base, ()),
+	// the fill of the blue table of the HTML editor (b_blue): the soft fill
+	// of the neutral state; the cell border, the even rows and the header
+	// cells are shade tokens of it
+	"content-table-blue-bg":                      "state-neutral-soft-bg"
 );
 
 $o-token-layer-framework: (
@@ -349,8 +353,8 @@ $o-token-layer-framework: (
 	"box-error-icon":                             (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-state-color("danger", "soft-fg")), ("state-danger-soft-fg",)),
 	// the fill of the message boxes ($o-box-*-bg): the soft fill of the state,
 	// neutral 25 (near white) for info, cyan 50 for tip and important; the
-	// coloured tables in a box have shade tokens of it (border, stripe and
-	// header)
+	// grey, green, yellow and red tables have shade tokens of it (border,
+	// stripe and header), the blue table has own tokens
 	"box-info-bg":                                ($o-box-info-bg, ()),
 	"box-note-bg":                                ($o-box-note-bg, ("state-inactive-soft-bg",)),
 	"box-success-bg":                             ($o-box-success-bg, ("state-success-soft-bg",)),
@@ -1303,6 +1307,9 @@ $o-token-layer-component: (
 	// the text of a row on hold and of a row with the mail disabled, the glow
 	// of a new comment, the date of a comment
 	"selectus-onhold":                             ($o-selectus-onhold-color, ("text-muted",)),
+	// the text of a row on hold with a decision: 4.5:1 on the decision fills
+	// and their hover, where selectus-onhold has too little contrast
+	"selectus-onhold-decision":                    (o-neutral(700), ()),
 	"selectus-review-comment-glow":                ($o-selectus-review-comment-glowing-color, ("state-warning-bg",)),
 	"selectus-review-comment-date":                ($o-selectus-review-comment-date-color, ()),
 	"selectus-mail-disabled":                      ($o-selectus-mail-disabled-color, ("text-muted",)),
@@ -1330,10 +1337,17 @@ $o-token-layer-component: (
 	// the marks of the ratings A, B, C in the overview and of the own rating:
 	// the solid fill of the state success, warning and danger, so that the
 	// three hues are told apart. The border of the mark (btn-default-border)
-	// shows its shape with 3:1 on the rows, the fill has no pair.
+	// shows its shape with 3:1 on the rows, the fill has no pair on the rows.
+	// The bars of the ratings in the statistics have the same fills.
 	"selectus-rating-a-mark":                     "state-success-bg",
 	"selectus-rating-b-mark":                     "state-warning-bg",
 	"selectus-rating-c-mark":                     "state-danger-bg",
+	// the text on the bars of the ratings A, B, C in the statistics: the
+	// bars have the fill of the marks, the text is the text of the state on
+	// its solid fill
+	"selectus-rating-a-mark-fg":                  "state-success-fg",
+	"selectus-rating-b-mark-fg":                  "state-warning-fg",
+	"selectus-rating-c-mark-fg":                  "state-danger-fg",
 	// the decision cells A, B, C of the table and their hover
 	"selectus-decision-a-bg":                     ($o-selectus-table-a-decision-bg, ()),
 	"selectus-decision-b-bg":                     ($o-selectus-table-b-decision-bg, ()),
@@ -1655,11 +1669,12 @@ $o-token-shades: (
 	"tinymce-danger-bg-edge":                     ("tinymce-danger-bg", 25%),
 	// Toolbar and breadcrumb: the close icon under the pointer
 	"toolbar-close-hover":                        ("toolbar-close", 15%),
-	// The coloured tables in a message box (o-make-colored-table): the cell
-	// border, the even rows and the header cells
-	"box-info-table-border":                      ("box-info-bg", 5%, "lighten"),
-	"box-info-table-stripe-bg":                   ("box-info-bg", 5%, "lighten"),
-	"box-info-table-header-bg":                   ("box-info-bg", 10%),
+	// The coloured tables with the fill of a message box
+	// (o-make-colored-table): the cell border, the even rows and the header
+	// cells; the blue table has the same shades of its own fill
+	"content-table-blue-border":                  ("content-table-blue-bg", 5%, "lighten"),
+	"content-table-blue-stripe-bg":               ("content-table-blue-bg", 5%, "lighten"),
+	"content-table-blue-header-bg":               ("content-table-blue-bg", 10%),
 	"box-note-table-border":                      ("box-note-bg", 5%, "lighten"),
 	"box-note-table-stripe-bg":                   ("box-note-bg", 5%, "lighten"),
 	"box-note-table-header-bg":                   ("box-note-bg", 10%),
@@ -2030,6 +2045,11 @@ $o-token-contrast-pairs: (
 	("selectus-rating-b-fg", "selectus-rating-b-bg-active", 4.5),
 	("selectus-rating-c-fg", "selectus-rating-c-bg-active", 4.5),
 	("selectus-rating-abstain-fg", "selectus-rating-abstain-bg-active", 4.5),
+	// the text on the bars of the ratings A, B, C in the statistics (the
+	// fill of the marks)
+	("selectus-rating-a-mark-fg", "selectus-rating-a-mark", 4.5),
+	("selectus-rating-b-mark-fg", "selectus-rating-b-mark", 4.5),
+	("selectus-rating-c-mark-fg", "selectus-rating-c-mark", 4.5),
 	// the marks and the letters of the ratings on a white, a striped and a
 	// hovered table row: the letters read their text tokens (4.5:1); the
 	// border of a mark (3:1) shows the marks A, B, C (solid state fills
@@ -2111,7 +2131,9 @@ $o-token-contrast-pairs: (
 	// the border of the error message under a form field
 	("form-error-border", "box-error-bg", 3),
 	("form-error-border", "bg", 3),
-	("text", "box-info-table-header-bg", 4.5),
+	("text", "content-table-blue-bg", 4.5),
+	("text", "content-table-blue-stripe-bg", 4.5),
+	("text", "content-table-blue-header-bg", 4.5),
 	("text", "box-note-table-header-bg", 4.5),
 	("text", "box-success-table-header-bg", 4.5),
 	("text", "box-warning-table-header-bg", 4.5),
@@ -2459,6 +2481,13 @@ $o-token-contrast-pairs: (
 	("selectus-onhold", "bg", 4.5),
 	("selectus-onhold", "table-striped-bg", 4.5),
 	("selectus-onhold", "table-hover-bg", 4.5),
+	// a row on hold with a decision: the six decision fills
+	("selectus-onhold-decision", "selectus-decision-a-bg", 4.5),
+	("selectus-onhold-decision", "selectus-decision-a-hover-bg", 4.5),
+	("selectus-onhold-decision", "selectus-decision-b-bg", 4.5),
+	("selectus-onhold-decision", "selectus-decision-b-hover-bg", 4.5),
+	("selectus-onhold-decision", "selectus-decision-c-bg", 4.5),
+	("selectus-onhold-decision", "selectus-decision-c-hover-bg", 4.5),
 	("selectus-mail-disabled", "bg", 4.5),
 	("selectus-mail-disabled", "table-striped-bg", 4.5),
 	("selectus-mail-disabled", "table-hover-bg", 4.5),

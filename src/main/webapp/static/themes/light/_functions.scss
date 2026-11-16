@@ -461,8 +461,7 @@ $o-scale-brand-distance: 0.5;
 	@return not (meta.global-variable-exists("o-brand-primary-from-theme") and $o-brand-primary-from-theme);
 }
 
-/* The scale colour that replaces a colour (rule of the OO-10043 colour
- * inventory, propose() in build_unmapped_colors.py): a colour without a
+/* The scale colour that replaces a colour: a colour without a
  * visible hue (OKLab chroma below $o-scale-grey-chroma) takes the nearest
  * neutral step. A fixed colour does not follow the client brand: it takes the
  * brand ramp only when it is the brand colour itself (distance below

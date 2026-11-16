@@ -68,8 +68,8 @@ $o-neutral-chroma: 0.038 !default;
 // The steps of the neutral scale, light to dark
 $o-neutral-steps: (0, 25, 50, 100, 150, 200, 250, 300, 400, 450, 500, 600, 700, 750, 800, 900, 950, 1000);
 
-// The default steps, tinted with hue 260 and chroma 0.038 (OO-colors
-// analysis step 3, neutral_scale.py). Do not edit the values by hand.
+// The default steps, tinted with hue 260 and chroma 0.038. Do not edit
+// the values by hand.
 $o-neutral-default: (
 	0: #FFFFFF, 25: #F9FAFB, 50: #F6F7FA, 100: #EAECF0, 150: #E4E7EC, 200: #D9DDE3,
 	250: #D0D5DD, 300: #C6CCD6, 400: #B1B8C5, 450: #8B95A7, 500: #657286, 600: #4E596D,

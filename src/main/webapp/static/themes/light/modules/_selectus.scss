@@ -8,14 +8,49 @@ table.table tr.fx_r_onhold td span, table.table tr.fx_r_onhold td a, table.table
 	color: var(--o-selectus-onhold);
 }
 
+// A row on hold with a decision: the decision fill stays, the text reads
+// selectus-onhold-decision. selectus-onhold has less than 4.5:1 on the
+// decision fills.
+table.o_table,
+table.table {
+	tr.fx_r_onhold.fx_r_a_decision,
+	tr.fx_r_onhold.fx_r_b_decision,
+	tr.fx_r_onhold.fx_r_c_decision {
+		td span, td a, td {
+			color: var(--o-selectus-onhold-decision);
+		}
+	}
+}
+
+// Italic is the second cue of a row on hold, with or without a decision.
+// The text and the links of the cells inherit it. The buttons (the rating
+// buttons) keep the upright font, the icons set their own font style.
+table.o_table tr.fx_r_onhold td,
+table.table tr.fx_r_onhold td {
+	font-style: italic;
+
+	.btn {
+		font-style: normal;
+	}
+}
+
 .o_table_wrapper table.o_table,
 .o_table_wrapper table.table {
 	tbody tr {
 		// the links on an on-hold row: same chain as the table link rule and
-		// the decision rows below
+		// the decision rows below. On a decision row the links read
+		// selectus-onhold-decision and keep the underline of the decision
+		// rows.
 		&.fx_r_onhold {
 			> td a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a) {
 				color: var(--o-selectus-onhold);
+			}
+			&.fx_r_a_decision,
+			&.fx_r_b_decision,
+			&.fx_r_c_decision {
+				> td a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a) {
+					color: var(--o-selectus-onhold-decision);
+				}
 			}
 		}
 
@@ -158,10 +193,10 @@ div.f_rating_abstention, span.f_rating_abstention{ background-color: var(--o-sel
 	}
 }
 
-// The bar of a rating in the statistics: the fill of the rating button as
-// vertical gradient to its hover shade, 10% darker. The rules of the
-// Bootstrap mixin gradient-vertical without its IE 9 filter, which cannot
-// read a token.
+// The bar of the abstention in the statistics: the fill of the abstention
+// button as vertical gradient to its hover shade, 10% darker. The rules of
+// the Bootstrap mixin gradient-vertical without its IE 9 filter, which
+// cannot read a token.
 @mixin progress-bar-rating-styles($token) {
 	background-image: -webkit-linear-gradient(top, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
 	background-image: -o-linear-gradient(top, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
@@ -169,17 +204,23 @@ div.f_rating_abstention, span.f_rating_abstention{ background-color: var(--o-sel
 	background-repeat: repeat-x;
 }
 
-// The bar of rating A has no rule here: PositionApplicationsController
-// renders it with the class progress-bar-success.
+// The bars of the ratings A, B and C in the statistics: the solid fill of
+// the marks of the ratings and the text of the state on it. Bar A has also
+// the class progress-bar-success (PositionApplicationsController): its rule
+// sets the fill of mark A.
 .progress-bar {
+	&.o_bar_rating_a {
+		background-color: var(--o-selectus-rating-a-mark);
+		color: var(--o-selectus-rating-a-mark-fg);
+	}
 	&.o_bar_rating_b {
-		@include progress-bar-rating-styles("selectus-rating-b-bg");
-		// the dark text of button B, white has 1.50:1 on the yellow
-		color: var(--o-selectus-rating-b-fg);
+		background-color: var(--o-selectus-rating-b-mark);
+		color: var(--o-selectus-rating-b-mark-fg);
 		text-shadow: none;
 	}
 	&.o_bar_rating_c {
-		@include progress-bar-rating-styles("selectus-rating-c-bg");
+		background-color: var(--o-selectus-rating-c-mark);
+		color: var(--o-selectus-rating-c-mark-fg);
 	}
 	// the colours of the abstention button
 	&.o_bar_rating_abstain {
