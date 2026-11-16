@@ -45,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsTog
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -60,6 +59,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.media.MediaResource;
@@ -67,6 +67,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -82,10 +83,10 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.repository.ui.author.AuthorListConfiguration;
-import org.olat.repository.ui.author.AuthorListController;
-import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.EmptyScreenData;
+import org.olat.repository.ui.RepositoryEntrySelectionController;
+import org.olat.repository.ui.TableConfiguration;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
@@ -123,7 +124,8 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 	private List<UserPropertyHandler> userPropertyHandlers;
 
 	private CloseableModalController cmc;
-	private AuthorListController formSearchCtrl;
+	private FooterModalController footerCmc;
+	private RepositoryEntrySelectionController selectionCtrl;
 	private OfferSurveyStepNameEditController stepNameEditCtrl;
 	private CloseableCalloutWindowController stepNameCalloutCtrl;
 	private ConfirmationController removeConfirmationCtrl;
@@ -339,11 +341,11 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (formSearchCtrl == source) {
-			if (event instanceof AuthoringEntryRowSelectionEvent se) {
-				doAddForm(se.getRow());
+		if (selectionCtrl == source) {
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				doAddForm(selectionCtrl.getSelectedEntry());
 			}
-			cmc.deactivate();
+			footerCmc.deactivate();
 			cleanUp();
 		} else if (stepNameEditCtrl == source) {
 			if (event == Event.DONE_EVENT) {
@@ -365,21 +367,23 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 				toolsCalloutCtrl = null;
 				toolsCtrl = null;
 			}
-		} else if (cmc == source || stepNameCalloutCtrl == source || toolsCalloutCtrl == source) {
+		} else if (cmc == source || footerCmc == source || stepNameCalloutCtrl == source || toolsCalloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(formSearchCtrl);
+		removeAsListenerAndDispose(selectionCtrl);
+		removeAsListenerAndDispose(footerCmc);
 		removeAsListenerAndDispose(stepNameEditCtrl);
 		removeAsListenerAndDispose(stepNameCalloutCtrl);
 		removeAsListenerAndDispose(removeConfirmationCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
-		formSearchCtrl = null;
+		selectionCtrl = null;
+		footerCmc = null;
 		stepNameEditCtrl = null;
 		stepNameCalloutCtrl = null;
 		removeConfirmationCtrl = null;
@@ -389,30 +393,60 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 	}
 
 	private void doChooseForm(UserRequest ureq) {
-		if (guardModalController(formSearchCtrl)) return;
+		if (guardModalController(selectionCtrl)) return;
+
+		removeAsListenerAndDispose(footerCmc);
+		removeAsListenerAndDispose(selectionCtrl);
 
 		Roles roles = ureq.getUserSession().getRoles();
-		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("offer-survey-form-v1", EvaluationFormResource.TYPE_NAME);
-		tableConfig.setSelectRepositoryEntry(SelectionMode.single);
-		tableConfig.setBatchSelect(true);
-		tableConfig.setSharedWithMeTab(true);
-		tableConfig.setImportRessources(false);
-		tableConfig.setCreateRessources(false);
-		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.embedded));
-		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
-		searchParams.addResourceTypes(EvaluationFormResource.TYPE_NAME);
-		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
-		searchParams.setCanReference(true);
-		searchParams.setSharedOrganisations(loadSharedOrganisations(roles));
+		List<OrganisationRef> sharedOrganisations = loadSharedOrganisations(roles);
+		CourseNodeReferenceProvider referenceProvider = new OfferSurveyFormReferenceProvider(repositoryService);
 
-		formSearchCtrl = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
-		listenTo(formSearchCtrl);
-		formSearchCtrl.selectFilterTab(ureq, formSearchCtrl.getFavoritTab());
+		selectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "offer-survey-form-v2",
+				List.of(EvaluationFormResource.TYPE_NAME), null, sharedOrganisations,
+				List.of(RepositoryEntryRuntimeType.embedded), referenceProvider);
+		listenTo(selectionCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), formSearchCtrl.getInitialComponent(),
-				true, translate("offer.survey.add"));
-		listenTo(cmc);
-		cmc.activate();
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), selectionCtrl.getBodyComponent(),
+				selectionCtrl.getFooterComponent(), translate("offer.survey.add"));
+		listenTo(footerCmc);
+		footerCmc.activate();
+	}
+
+	private class OfferSurveyFormReferenceProvider extends CourseNodeReferenceProvider {
+
+		public OfferSurveyFormReferenceProvider(RepositoryService repositoryService) {
+			super(repositoryService, List.of(EvaluationFormResource.TYPE_NAME), null, null, null, null);
+		}
+
+		@Override
+		public TableConfiguration getTableConfiguration() {
+			return TableConfiguration.WITHOUT_USAGE;
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("offer.survey.my.forms");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-FORM_icon",
+					translate("offer.survey.select.no.form.yet"),
+					translate("offer.survey.select.no.form.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-FORM_icon",
+					translate("offer.survey.select.no.forms.in.view"),
+					translate("offer.survey.select.no.forms.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("offer.survey.select.enter.search.term");
+		}
 	}
 
 	private List<OrganisationRef> loadSharedOrganisations(Roles roles) {

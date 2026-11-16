@@ -35,6 +35,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
@@ -69,6 +70,15 @@ public class RepositoryEntrySelectionController extends BasicController {
 	public RepositoryEntrySelectionController(UserRequest ureq, WindowControl wControl, String tableId,
 											  List<String> resourceTypes, List<Organisation> defaultOrganisations, 
 											  RepositoryEntryReferenceProvider referenceProvider) {
+		this(ureq, wControl, tableId, resourceTypes, defaultOrganisations,
+				ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.author), null, referenceProvider);
+	}
+
+	public RepositoryEntrySelectionController(UserRequest ureq, WindowControl wControl, String tableId,
+											  List<String> resourceTypes, List<Organisation> defaultOrganisations,
+											  List<OrganisationRef> sharedOrganisations,
+											  List<RepositoryEntryRuntimeType> allowedRuntimeTypes,
+											  RepositoryEntryReferenceProvider referenceProvider) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
@@ -82,6 +92,9 @@ public class RepositoryEntrySelectionController extends BasicController {
 		configuration.setRedesignedSelectionDialog(true);
 		configuration.setImportRessources(false);
 		configuration.setCreateRessources(false);
+		if (allowedRuntimeTypes != null && !allowedRuntimeTypes.isEmpty()) {
+			configuration.setAllowedRuntimeTypes(allowedRuntimeTypes);
+		}
 
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(
 				getIdentity(), ureq.getUserSession().getRoles());
@@ -89,7 +102,10 @@ public class RepositoryEntrySelectionController extends BasicController {
 		searchParams.setCanReference(true);
 		searchParams.setExcludeDecommissionedStatus(true);
 		searchParams.setRestrictStatusToReviewToPublished(true);
-		searchParams.setSharedOrganisations(ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.author));
+		searchParams.setSharedOrganisations(sharedOrganisations);
+		if (allowedRuntimeTypes != null && !allowedRuntimeTypes.isEmpty()) {
+			searchParams.setRuntimeTypes(allowedRuntimeTypes);
+		}
 		if (defaultOrganisations != null && !defaultOrganisations.isEmpty()) {
 			List<OrganisationRef> organisationRefs = defaultOrganisations.stream()
 					.map(OrganisationRef.class::cast)

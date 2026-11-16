@@ -29,4 +29,6 @@ public record TableConfiguration(boolean showTypeColumn, boolean showTechnicalTy
 
 	public static final TableConfiguration DEFAULT = new TableConfiguration(false, false, true, true);
 
+	public static final TableConfiguration WITHOUT_USAGE = new TableConfiguration(false, false, false, false);
+
 }
