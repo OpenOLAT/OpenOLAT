@@ -109,6 +109,7 @@ import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -213,6 +214,8 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
+	private LifecycleModule lifecycleModule;
+	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -284,6 +287,10 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 		columnsModel.addFlexiColumnModel(nameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.externalId, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.externalRef, CMD_SELECT));
+		if (lifecycleModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lifecycleSoftkey));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.lifecycleLabel));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lifecycleStart,
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lifecycleEnd,
@@ -371,7 +378,7 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 		}
 		initSorters(tableEl);
 
-		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.7-" + runtimeTypesGroup.name());
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.8-" + runtimeTypesGroup.name());
 		if(config.withPresetsFilters() && tableEl.getSelectedFilterTab() == null) {
 			FlexiFiltersTab defaultTab = runtimeTypesGroup.loadStatistics() ? relevantTab : allTab;
 			tableEl.setSelectedFilterTab(ureq, defaultTab);
@@ -531,28 +538,32 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		if(runtimeTypesGroup.loadStatistics()) {
-			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("relevant"),
-					TabSelectionBehavior.clear,
-					List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-							List.of(RepositoryEntryStatusEnum.published.name(),
-									RepositoryEntryStatusEnum.coachpublished.name()))));
-			relevantTab.setFiltersExpanded(true);
-			tabs.add(relevantTab);
-		
-			FlexiFiltersTab publishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PUBLISHED_TAB_ID, translate("filter.published"),
-					TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-							RepositoryEntryStatusEnum.published.name())));
-			publishedTab.setFiltersExpanded(true);
-			tabs.add(publishedTab);
-			
-			FlexiFiltersTab accessForCoachTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACCESS_FOR_COACH_TAB_ID, translate("filter.access.for.coach"),
-					TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-							RepositoryEntryStatusEnum.coachpublished.name())));
-			accessForCoachTab.setFiltersExpanded(true);
-			tabs.add(accessForCoachTab);
+		List<String> statusList = new ArrayList<>();
+		boolean owner = roles.contains(CoachingRoles.owner);
+		if(owner) {
+			statusList.add(RepositoryEntryStatusEnum.preparation.name());
+			statusList.add(RepositoryEntryStatusEnum.review.name());
 		}
-		
+		statusList.add(RepositoryEntryStatusEnum.coachpublished.name());
+		statusList.add(RepositoryEntryStatusEnum.published.name());
+		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("relevant"),
+				TabSelectionBehavior.clear,
+				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, statusList)));
+		relevantTab.setFiltersExpanded(true);
+		tabs.add(relevantTab);
+
+		FlexiFiltersTab publishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PUBLISHED_TAB_ID, translate("filter.published"),
+				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+						RepositoryEntryStatusEnum.published.name())));
+		publishedTab.setFiltersExpanded(true);
+		tabs.add(publishedTab);
+
+		FlexiFiltersTab accessForCoachTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACCESS_FOR_COACH_TAB_ID, translate("filter.access.for.coach"),
+				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+						RepositoryEntryStatusEnum.coachpublished.name())));
+		accessForCoachTab.setFiltersExpanded(true);
+		tabs.add(accessForCoachTab);
+
 		FlexiFiltersTab finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB_ID, translate("filter.finished"),
 				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 						RepositoryEntryStatusEnum.closed.name())));

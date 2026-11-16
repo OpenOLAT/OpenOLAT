@@ -49,6 +49,8 @@ public class CourseStatEntry implements OLATResourceable {
 	private String repoLocation;
 	private String repoAuthors;
 	private RepositoryEntryStatusEnum status;
+	private String lifecycleLabel;
+	private String lifecycleSoftkey;
 	private Date lifecycleStartDate;
 	private Date lifecycleEndDate;
 	
@@ -192,6 +194,22 @@ public class CourseStatEntry implements OLATResourceable {
 
 	public void setResourceTypeName(String resourceTypeName) {
 		this.resourceTypeName = resourceTypeName;
+	}
+
+	public String getLifecycleLabel() {
+		return lifecycleLabel;
+	}
+
+	public void setLifecycleLabel(String lifecycleLabel) {
+		this.lifecycleLabel = lifecycleLabel;
+	}
+
+	public String getLifecycleSoftkey() {
+		return lifecycleSoftkey;
+	}
+
+	public void setLifecycleSoftkey(String lifecycleSoftkey) {
+		this.lifecycleSoftkey = lifecycleSoftkey;
 	}
 
 	public Date getLifecycleStartDate() {

@@ -587,7 +587,8 @@ public class CoachingDAO {
 			List<RepositoryEntryStatusEnum> status, List<RepositoryEntryRuntimeType> runtimeTypes) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key, lifecycle.key, v.displayname, v.technicalType, v.externalId, v.externalRef, v.status,")
-		  .append("  v.teaser, v.location, v.authors, res.resId, res.resName, lifecycle.validFrom, lifecycle.validTo,")
+		  .append("  v.teaser, v.location, v.authors, res.resId, res.resName, ")
+		  .append("  lifecycle.label, lifecycle.softKey, lifecycle.validFrom, lifecycle.validTo,")
 		  .append("  stats.rating, v.educationalType.key, courseInfos.activity, courseInfos.recentLaunch, courseInfos.visit,")
 		  .append(" (select min(membership.creationDate) from repoentrytogroup rel")
 		  .append("   inner join rel.group g")
@@ -657,14 +658,16 @@ public class CoachingDAO {
 				entry.setRepoAuthors((String)rawStat[9]);
 				entry.setResourceId(PersistenceHelper.extractLong(rawStat, 10));
 				entry.setResourceTypeName((String)rawStat[11]);
-				entry.setLifecycleStartDate((Date)rawStat[12]);
-				entry.setLifecycleEndDate((Date)rawStat[13]);
-				entry.setAverageRating(PersistenceHelper.extractDouble(rawStat, 14));
-				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 15));
-				entry.setMyActivity(PersistenceHelper.extractPrimitiveDouble(rawStat, 16));
-				entry.setMyLastVisit((Date)rawStat[17]);
-				entry.setMyVisits(PersistenceHelper.extractPrimitiveInt(rawStat, 18));
-				entry.setMembersSince((Date)rawStat[19]);
+				entry.setLifecycleLabel((String)rawStat[12]);
+				entry.setLifecycleSoftkey((String)rawStat[13]);
+				entry.setLifecycleStartDate((Date)rawStat[14]);
+				entry.setLifecycleEndDate((Date)rawStat[15]);
+				entry.setAverageRating(PersistenceHelper.extractDouble(rawStat, 16));
+				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 17));
+				entry.setMyActivity(PersistenceHelper.extractPrimitiveDouble(rawStat, 18));
+				entry.setMyLastVisit((Date)rawStat[19]);
+				entry.setMyVisits(PersistenceHelper.extractPrimitiveInt(rawStat, 20));
+				entry.setMembersSince((Date)rawStat[21]);
 				entry.setRelevance(userCourseInformationsManager.calculateRelevance(entry.getMyActivity(), entry.getMyVisits(), entry.getMembersSince(), now));
 				return entry;
 			});

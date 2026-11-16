@@ -406,6 +406,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			case name -> row.getDisplayName();
 			case externalId -> row.getExternalId();
 			case externalRef -> row.getExternalRef();
+			case lifecycleLabel -> row.getLifecycleLabel();
+			case lifecycleSoftkey -> row.getLifecycleSoftkey();
 			case lifecycleStart -> row.getLifecycleStart();
 			case lifecycleEnd -> row.getLifecycleEnd();
 			case access -> row.getStatus();
@@ -544,6 +546,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		name("table.header.course.title"),
 		externalId("table.header.course.externalId"),
 		externalRef("table.header.course.externalRef"),
+		lifecycleSoftkey("table.header.lifecycle.softkey"),
+		lifecycleLabel("table.header.lifecycle.label"),
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
 		access("table.header.course.access"),

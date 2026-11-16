@@ -205,6 +205,14 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	public boolean isClosed() {
 		return entry.getRepoStatus() == null ? true : entry.getRepoStatus().decommissioned();
 	}
+	
+	public String getLifecycleLabel() {
+		return entry.getLifecycleLabel();
+	}
+	
+	public String getLifecycleSoftkey() {
+		return entry.getLifecycleSoftkey();
+	}
 
 	public Date getLifecycleStart() {
 		return entry.getLifecycleStartDate();
