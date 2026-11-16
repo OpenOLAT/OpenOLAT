@@ -38,19 +38,32 @@
 			$r.render($mode.continue.dispatchID)
 		#end
 		</div>
-	#else
-		<div class="o_error o_assessment_mode_error">$mode.errors</div>
-		#if($r.visible($mode.downloadSEBButton.dispatchID) || $r.visible($mode.downloadSEBConfigurationButton.dispatchID))
-			<div class="o_button_group">
-			#if($r.visible($mode.downloadSEBButton.dispatchID))
-				$r.render($mode.downloadSEBButton.dispatchID)
-			#end
-		
-			#if($r.visible($mode.downloadSEBConfigurationButton.dispatchID))
-				$r.render($mode.downloadSEBConfigurationButton.dispatchID)
-			#end
+	#elseif($mode.status == "seb")
+		#if($mode.sebPending)
+			<div class="o_info o_assessment_mode_seb_pending" role="status" aria-live="polite">
+				<i class="o_icon o_icon_pending o_icon-spin" aria-hidden="true"> </i> $mode.sebDescription
+			</div>
+		#else
+			<div class="o_info_with_icon o_assessment_mode_seb o_sel_seb_${mode.sebStatus}" role="status" aria-live="polite">
+				<h4>$mode.sebTitle</h4>
+				<p>$mode.sebDescription</p>
+				#if($mode.sebButtons)
+				<div class="o_button_group">
+					#if($r.visible($mode.downloadSEBButton.dispatchID))
+						$r.render($mode.downloadSEBButton.dispatchID)
+					#end
+					#if($r.visible($mode.downloadSEBConfigurationButton.dispatchID))
+						$r.render($mode.downloadSEBConfigurationButton.dispatchID)
+					#end
+				</div>
+				#end
 			</div>
 		#end
+		#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
+			<div class="o_hint">$r.xssScan($mode.safeExamBrowserHint)</div>
+		#end
+	#else
+		<div class="o_error o_assessment_mode_error">$mode.errors</div>
 	#end
 #end
 
@@ -61,35 +74,56 @@
 
 #if("not-checked" == $checked)
 <script>
-"use strict";
-function checkSEBKeys () {
-	// if the SafeExamBrowser.security.updateKeys() function is not defined (for example on login from a normal
-	// browser or with an older SEB version), this will throw an error and not go in the didUpdateSEBKeys() callback
-	// function, so the ajax request to AssessmentModeGuardController will not be sent
-	SafeExamBrowser.security.updateKeys(didUpdateSEBKeys);
-}
+(function() {
+	"use strict";
+	## The first answer wins, a late answer of the JavaScript API after the timeout can still upgrade the check
+	let sent = false;
+	const timeout = setTimeout(sendHeaders, 5000);
 
-function didUpdateSEBKeys () {
-	jQuery("div.o_error.o_assessment_mode_error").addClass("hide");
-	
-	const configKey = SafeExamBrowser.security.configKey;
-	const browserExamKey = SafeExamBrowser.security.browserExamKey;
-	const sebVersion = SafeExamBrowser.version;
-	const currentPage = window.location.toString();
-	${r.openJavaScriptCommand('checkSEBKeys')}, 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage, 'browserVersion', sebVersion);
-}
-
-function checkSEBHeaders () {
-	const currentPage = window.location.toString();
-	${r.openJavaScriptCommand('checkSEBHeaders')}, 'urlForKeyHash', currentPage);
-}
-
-jQuery(function() {
-	if(typeof SafeExamBrowser !== "undefined") {
-		checkSEBKeys();
-	} else {
-		checkSEBHeaders();
+	function sendHeaders() {
+		if(sent) return;
+		sent = true;
+		clearTimeout(timeout);
+		const currentPage = window.location.toString();
+		${r.openJavaScriptCommand('checkSEBHeaders')}, 'urlForKeyHash', currentPage, 'browserVersion', sebVersion());
 	}
-});
+
+	## The version is available without the keys update (timeout or SEB without updateKeys)
+	function sebVersion() {
+		try {
+			return typeof SafeExamBrowser !== "undefined" && SafeExamBrowser.version ? SafeExamBrowser.version : "";
+		} catch(e) {
+			return "";
+		}
+	}
+
+	function sendKeys() {
+		sent = true;
+		clearTimeout(timeout);
+		const configKey = SafeExamBrowser.security.configKey;
+		const browserExamKey = SafeExamBrowser.security.browserExamKey;
+		const sebVersion = SafeExamBrowser.version;
+		const currentPage = window.location.toString();
+		${r.openJavaScriptCommand('checkSEBKeys')}, 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage, 'browserVersion', sebVersion);
+	}
+
+	jQuery(function() {
+		if(typeof SafeExamBrowser !== "undefined") {
+			try {
+				// Older versions of SEB don't have this function
+				## SEB on macOS and iOS calls the callback by its name in the global scope:
+				## the callback must be a global function with the same name
+				window.oSebModeKeysUpdated = function oSebModeKeysUpdated() {
+					sendKeys();
+				};
+				SafeExamBrowser.security.updateKeys(window.oSebModeKeysUpdated);
+			} catch(e) {
+				sendHeaders();
+			}
+		} else {
+			sendHeaders();
+		}
+	});
+})();
 </script>
 #end

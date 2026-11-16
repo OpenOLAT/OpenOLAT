@@ -47,7 +47,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
@@ -64,9 +63,11 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
-import org.olat.course.assessment.manager.SafeExamBrowserValidator;
-import org.olat.course.assessment.model.SafeExamBrowserVersion;
+import org.olat.course.assessment.model.SafeExamBrowserCheck;
+import org.olat.course.assessment.model.SafeExamBrowserProbe;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.course.assessment.model.SafeExamBrowserProbe.Source;
+import org.olat.course.assessment.ui.mode.SafeExamBrowserGuardHelper.SafeExamBrowserDialog;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,7 +87,6 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	private final String mapperUri;
 	
 	private boolean pushUpdate = false;
-	private Boolean authorizedSebVersion = null;
 	private List<TransientAssessmentMode> modes;
 	
 	private final ResourceGuards guards = new ResourceGuards();
@@ -130,7 +130,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		mainSEBQuitButton.setVisible(false);
 		mainVC.put("quit-main", mainSEBQuitButton);
 		
-		syncAssessmentModes(ureq, null);
+		syncAssessmentModes(SafeExamBrowserProbe.NONE);
 		
 		putInitialPanel(mainVC);
 		
@@ -157,7 +157,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	public boolean updateLockRequests(UserRequest ureq) {
 		boolean f;
 		if(pushUpdate) {
-			syncAssessmentModes(ureq, null);
+			syncAssessmentModes(SafeExamBrowserProbe.NONE);
 			f = true;
 			pushUpdate = false;
 		} else {
@@ -166,15 +166,17 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return f;
 	}
 	
-	private void syncAssessmentModes(UserRequest ureq, Boolean useHeaders) {
+	private void syncAssessmentModes(SafeExamBrowserProbe probe) {
 		List<ResourceGuard> modeWrappers = new ArrayList<>();
 		
 		String quitUrl = null;
+		boolean browserCheckNeeded = false;
 		for(TransientAssessmentMode mode:modes) {
 			if(mode != null) {
-				ResourceGuard wrapper = syncAssessmentMode(ureq, mode, useHeaders);
+				ResourceGuard wrapper = syncAssessmentMode(mode, probe);
 				if(wrapper != null) {
 					modeWrappers.add(wrapper);
+					browserCheckNeeded |= wrapper.isSebPending();
 				}
 				if(mode.hasLinkToQuitSEB()) {
 					quitUrl = mode.getLinkToQuitSEB();
@@ -200,6 +202,8 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		} else {
 			mainSEBQuitButton.setVisible(false);
 		}
+		// The script of the browser check is rendered as long as a guard waits for it
+		mainVC.contextPut("checked", browserCheckNeeded ? "not-checked" : "checked");
 		mainVC.setDirty(true);
 	}
 	
@@ -211,7 +215,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return null;
 	}
 	
-	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode, Boolean useHeaders) {
+	private ResourceGuard syncAssessmentMode(TransientAssessmentMode mode, SafeExamBrowserProbe probe) {
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
 		Date endWithFollowupTime = mode.getEndWithFollowupTime();
@@ -236,7 +240,6 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 
 		StringBuilder sb = new StringBuilder();
 		boolean allowed = true;
-		boolean safeExamCheck = false;
 		if(mode.getIpList() != null) {
 			boolean ipInRange = IpListValidator.isIpAllowed(mode.getIpList(), address);
 			if(!ipInRange) {
@@ -248,54 +251,23 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			allowed &= ipInRange;
 		}
 		
-		// Only need to authorized the version once. 
-		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()
-				&& (StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey()) || StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList()))) {
-			String browserVersion = ureq.getParameter("browserVersion");
-			 if(StringHelper.containsNonWhitespace(browserVersion)) {
-				SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
-				boolean authorizedVersion = isVersionAllowed(ureq, versionInfos);
-				if(authorizedVersion) {
-					authorizedSebVersion = Boolean.TRUE;
-				} else {
-					writeSafeExamVersionWarning(sb);
-					authorizedSebVersion = Boolean.FALSE;
-				}
-				allowed &= authorizedVersion;
-			} else if(authorizedSebVersion != null) {
-				if(!authorizedSebVersion.booleanValue()) {
-					writeSafeExamVersionWarning(sb);
-				}
-				allowed &= authorizedSebVersion.booleanValue();
-			} else if(useHeaders != null) {
-				writeSafeExamVersionWarning(sb);
-				allowed &= false;
-			}
-		}
-		
-		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())) {
-			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, mode.getSafeExamBrowserKey(), null, useHeaders);
-			if(!safeExamCheck && (authorizedSebVersion == null || authorizedSebVersion.booleanValue()))  {
-				writeSafeExamWarning(sb);
-			}
-			allowed &= safeExamCheck;
-		} else if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
-			safeExamCheck = guard.isSafeExamCheck() || isSafelyAllowed(ureq, null, mode.getSafeExamBrowserConfigPListKey(), useHeaders);
-			if(!safeExamCheck) {
-				if(authorizedSebVersion == null || authorizedSebVersion.booleanValue()) {
-					writeSafeExamWarning(sb);
-				}
-				guard.getDownloadSEBButton().setVisible(true);
-				guard.getDownloadSEBConfigurationButton().setVisible(mode.isSafeExamBrowserConfigDownload());
-			}
-			allowed &= safeExamCheck;
-		}
-
+		// Safe Exam Browser: SEB detected -> version -> configuration
+		SafeExamBrowserCheck sebCheck = SafeExamBrowserGuardHelper.check(guard.getSebCheck(), probe,
+				mode.getSafeExamBrowserKey(), getSafeExamBrowserConfigurationKey(mode), assessmentModule);
+		boolean configDownloadAllowed = StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())
+				&& mode.isSafeExamBrowserConfigDownload();
+		SafeExamBrowserDialog sebDialog = SafeExamBrowserGuardHelper.dialog(sebCheck, configDownloadAllowed, assessmentModule, getTranslator());
+		guard.getDownloadSEBButton().setVisible(sebDialog != null && sebDialog.sebDownload());
+		guard.getDownloadSEBConfigurationButton().setVisible(sebDialog != null && sebDialog.configDownload());
 		guard.getCountDown().setDate(mode.getBegin());
 
 		String state;
-		if(allowed) {
-			guard.setSafeExamCheck(safeExamCheck);
+		if(!allowed) {
+			// The IP range message ends the chain, no SEB dialog in addition
+			state = "error";
+		} else if(!sebCheck.isPassed()) {
+			state = "seb";
+		} else {
 			Link go = guard.getGo();
 			Link cont = guard.getContinue();
 			ExternalLink quit = guard.getQuitSEB();
@@ -303,47 +275,22 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			if(go.isVisible()) {
 				assessmentModeCoordinationService.waitFor(getIdentity(), mode);
 			}
-		} else {
-			state = "error";
 		}
 		
-		guard.sync(state, sb.toString(), mode, getLocale());
+		guard.sync(state, sb.toString(), sebCheck, sebDialog, mode, getLocale());
 		return guard;
 	}
 	
-
-	private void writeSafeExamWarning(StringBuilder sb) {
-		sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
-		sb.append(translate("error.safe.exam"));
-		sb.append("</h4>");
-		sb.append(translate("error.safe.exam.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
-	}
-	
-	private void writeSafeExamVersionWarning(StringBuilder sb) {
-		sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
-		sb.append(translate("error.safe.exam.version"));
-		sb.append("</h4>");
-		sb.append(translate("error.safe.exam.version.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
-	}
-	
-	private boolean isVersionAllowed(UserRequest ureq, SafeExamBrowserVersion versionInfos) {
-		String browserVersion = ureq.getParameter("browserVersion");
-		String userAgent = ServletUtil.getUserAgent(ureq.getHttpReq());
-		getLogger().info("SEB browser version: {} (User-Agent: {})", browserVersion, userAgent);
-		if(versionInfos == null) {
-			return false;
+	/**
+	 * The keys have precedence over the configuration, the configuration key
+	 * is only relevant if a configuration exists.
+	 */
+	private String getSafeExamBrowserConfigurationKey(TransientAssessmentMode mode) {
+		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())
+				|| !StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
+			return null;
 		}
-		String minimalVersion = assessmentModule.getSafeExamBrowserMinimalVersion(versionInfos.os());
-		return SafeExamBrowserValidator.isBrowserVersionAllowed(versionInfos.version(), minimalVersion);
-	}
-	
-	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey, Boolean useHeaders) {
-		String safeExamHash = ureq.getParameter("configKey");
-		String url = ureq.getParameter("urlForKeyHash");
-		String browserExamKey = ureq.getParameter("browserExamKey");
-		getLogger().info("SEB requests parameters - configkey: {}, url: {}, browser exam key: {} (Configuration: {})", safeExamHash, url, browserExamKey, configurationKey);
-		return (useHeaders != null && useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey))
-				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, browserExamKey, url, safeExamBrowserKeys, configurationKey));
+		return mode.getSafeExamBrowserConfigPListKey();
 	}
 	
 	private static final Date addExtraTimeToDate(Date date, Integer extraTime) {
@@ -484,7 +431,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		continueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		
 		String quitUrl = mode.getLinkToQuitSEB();
-		ExternalLink quitSEBLink = LinkFactory.createExternalLink("download.seb-" + id, translate("current.mode.seb.quit"), quitUrl);
+		ExternalLink quitSEBLink = LinkFactory.createExternalLink("quit-seb-" + id, translate("current.mode.seb.quit"), quitUrl);
 		quitSEBLink.setName(translate("current.mode.seb.quit"));
 		quitSEBLink.setTooltip(translate("current.mode.seb.quit"));
 		quitSEBLink.setElementCssClass("btn btn-default");
@@ -502,6 +449,8 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		downloadSEBLink.setName(translate("download.seb"));
 		downloadSEBLink.setTooltip(translate("download.seb"));
 		downloadSEBLink.setElementCssClass("btn btn-default");
+		downloadSEBLink.setTarget("_blank");
+		downloadSEBLink.setVisible(false);
 		
 		CountDownComponent countDown = new CountDownComponent("count-" + id, mode.getBegin(), getTranslator());
 		countDown.setI18nKey("current.mode.in");
@@ -509,6 +458,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		ResourceGuard guard = new ResourceGuard(mode.getModeKey(), goButton, continueButton, quitSEBLink, downloadSEBLink, downloadSEBConfigurationButton, countDown);
 		mainVC.put(goButton.getDispatchID(), goButton);
 		mainVC.put(continueButton.getDispatchID(), continueButton);
+		mainVC.put(quitSEBLink.getDispatchID(), quitSEBLink);
 		mainVC.put(countDown.getDispatchID(), countDown);
 		mainVC.put(downloadSEBConfigurationButton.getDispatchID(), downloadSEBConfigurationButton);
 		mainVC.put(downloadSEBLink.getDispatchID(), downloadSEBLink);
@@ -567,12 +517,9 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 				continueAfterAssessmentMode(ureq, guard);
 			}
 		} else if(source == mainVC) {
-			if("checkSEBKeys".equals(event.getCommand())) {
-				syncAssessmentModes(ureq, Boolean.FALSE);
-				mainVC.contextPut("checked", "checked");
-			} else if("checkSEBHeaders".equals(event.getCommand())) {
-				syncAssessmentModes(ureq, Boolean.TRUE);
-				mainVC.contextPut("checked", "checked");
+			Source sebSource = SafeExamBrowserGuardHelper.toSource(event.getCommand());
+			if(sebSource != null) {
+				syncAssessmentModes(SafeExamBrowserGuardHelper.probe(ureq, sebSource));
 			}
 		}
 	}
@@ -645,12 +592,13 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		private String safeExamBrowserHint;
 		private String safeExamBrowserConfigPList;
 		
+		private SafeExamBrowserCheck sebCheck;
+		private SafeExamBrowserDialog sebDialog;
+		
 		private String begin;
 		private String end;
 		private String leadTime;
 		private String followupTime;
-		
-		private boolean safeExamCheck = false;
 		
 		private TransientAssessmentMode reference;
 		
@@ -667,9 +615,12 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			this.downloadSEBConfigurationButton = downloadSEBConfigurationButton;
 		}
 		
-		public void sync(String newStatus, String newErrors, TransientAssessmentMode mode, Locale locale) {
+		public void sync(String newStatus, String newErrors, SafeExamBrowserCheck newSebCheck,
+				SafeExamBrowserDialog newSebDialog, TransientAssessmentMode mode, Locale locale) {
 			errors = newErrors;
 			status = newStatus;
+			sebCheck = newSebCheck;
+			sebDialog = newSebDialog;
 			
 			reference = mode;
 			name = mode.getName();
@@ -747,12 +698,28 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			this.status = status;
 		}
 
-		public boolean isSafeExamCheck() {
-			return safeExamCheck;
+		public SafeExamBrowserCheck getSebCheck() {
+			return sebCheck;
 		}
-
-		public void setSafeExamCheck(boolean safeExamCheck) {
-			this.safeExamCheck = safeExamCheck;
+		
+		public boolean isSebPending() {
+			return sebDialog != null && sebDialog.isPending();
+		}
+		
+		public String getSebStatus() {
+			return sebDialog == null ? null : sebDialog.status();
+		}
+		
+		public String getSebTitle() {
+			return sebDialog == null ? null : sebDialog.title();
+		}
+		
+		public String getSebDescription() {
+			return sebDialog == null ? null : sebDialog.description();
+		}
+		
+		public boolean isSebButtons() {
+			return sebDialog != null && sebDialog.isButtons();
 		}
 
 		public String getErrors() {

@@ -36,7 +36,7 @@
 					$r.render($inspection.cancelInspection)
 				#end
 			</div>
-		#elseif($mode.status == "end")
+		#elseif($inspection.status == "end")
 			<div class="o_hint">$r.translate("current.mode.end.info")</div>
 			<div class="o_button_group">
 			#if($r.visible($inspection.quitSEBButton)) 
@@ -45,16 +45,37 @@
 				$r.render($inspection.cancelInspection)
 			#end
 			</div>
+		#elseif($inspection.status == "seb")
+			#if($inspection.sebPending)
+				<div class="o_info o_assessment_mode_seb_pending" role="status" aria-live="polite">
+					<i class="o_icon o_icon_pending o_icon-spin" aria-hidden="true"> </i> $inspection.sebDescription
+				</div>
+			#else
+				<div class="o_info_with_icon o_assessment_mode_seb o_sel_seb_${inspection.sebStatus}" role="status" aria-live="polite">
+					<h4>$inspection.sebTitle</h4>
+					<p>$inspection.sebDescription</p>
+					#if($inspection.sebButtons)
+					<div class="o_button_group">
+						#if($r.visible($inspection.downloadSEBButton))
+							$r.render($inspection.downloadSEBButton)
+						#end
+						#if($r.visible($inspection.downloadSEBConfigurationButton))
+							$r.render($inspection.downloadSEBConfigurationButton)
+						#end
+					</div>
+					#end
+				</div>
+			#end
+			#if($inspection.safeExamBrowserHint && !$inspection.safeExamBrowserHint.empty)
+				<div class="o_hint">$r.xssScan($inspection.safeExamBrowserHint)</div>
+			#end
+			<div class="o_button_group">
+				$r.render($inspection.cancelInspection)
+			</div>
 		#else
 			<div class="o_error o_assessment_mode_error">$inspection.errors</div>
 			<div class="o_button_group">
-				#if($r.visible($inspection.downloadSEBButton))
-					$r.render($inspection.downloadSEBButton)
-				#end
-				#if($r.visible($inspection.downloadSEBConfigurationButton))
-					$r.render($inspection.downloadSEBConfigurationButton)
-				#end
-				$r.render($inspection.cancelInspection)		
+				$r.render($inspection.cancelInspection)
 			</div>
 		#end
 	</div>
@@ -67,35 +88,56 @@
 
 #if("not-checked" == $checked)
 <script>
-"use strict";
-function checkSEBKeys() {
-	// if the SafeExamBrowser.security.updateKeys() function is not defined (for example on login from a normal
-	// browser or with an older SEB version), this will throw an error and not go in the didUpdateSEBKeys() callback
-	// function, so the ajax request to AssessmentModeGuardController will not be sent
-	SafeExamBrowser.security.updateKeys(didUpdateSEBKeys);
-}
+(function() {
+	"use strict";
+	## The first answer wins, a late answer of the JavaScript API after the timeout can still upgrade the check
+	let sent = false;
+	const timeout = setTimeout(sendHeaders, 5000);
 
-function didUpdateSEBKeys() {
-	jQuery("div.o_error.o_assessment_mode_error").addClass("hide");
-	
-	const configKey = SafeExamBrowser.security.configKey;
-	const browserExamKey = SafeExamBrowser.security.browserExamKey;
-	const sebVersion = SafeExamBrowser.version;
-	const currentPage = window.location.toString();
-	$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBKeys', 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage, 'browserVersion', sebVersion);
-}
-
-function checkSEBHeaders() {
-	const currentPage = window.location.toString();
-	$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBHeaders', 'urlForKeyHash', currentPage);
-}
-
-jQuery(function() {
-	if(typeof SafeExamBrowser !== "undefined") {
-		checkSEBKeys();
-	} else {
-		checkSEBHeaders();
+	function sendHeaders() {
+		if(sent) return;
+		sent = true;
+		clearTimeout(timeout);
+		const currentPage = window.location.toString();
+		$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBHeaders', 'urlForKeyHash', currentPage, 'browserVersion', sebVersion());
 	}
-});
+
+	## The version is available without the keys update (timeout or SEB without updateKeys)
+	function sebVersion() {
+		try {
+			return typeof SafeExamBrowser !== "undefined" && SafeExamBrowser.version ? SafeExamBrowser.version : "";
+		} catch(e) {
+			return "";
+		}
+	}
+
+	function sendKeys() {
+		sent = true;
+		clearTimeout(timeout);
+		const configKey = SafeExamBrowser.security.configKey;
+		const browserExamKey = SafeExamBrowser.security.browserExamKey;
+		const sebVersion = SafeExamBrowser.version;
+		const currentPage = window.location.toString();
+		$f.openFfXHREvent(false, false, false), 'cid', 'checkSEBKeys', 'configKey', configKey, 'browserExamKey', browserExamKey, 'urlForKeyHash', currentPage, 'browserVersion', sebVersion);
+	}
+
+	jQuery(function() {
+		if(typeof SafeExamBrowser !== "undefined") {
+			try {
+				// Older versions of SEB don't have this function
+				## SEB on macOS and iOS calls the callback by its name in the global scope:
+				## the callback must be a global function with the same name
+				window.oSebInspectionKeysUpdated = function oSebInspectionKeysUpdated() {
+					sendKeys();
+				};
+				SafeExamBrowser.security.updateKeys(window.oSebInspectionKeysUpdated);
+			} catch(e) {
+				sendHeaders();
+			}
+		} else {
+			sendHeaders();
+		}
+	});
+})();
 </script>
 #end

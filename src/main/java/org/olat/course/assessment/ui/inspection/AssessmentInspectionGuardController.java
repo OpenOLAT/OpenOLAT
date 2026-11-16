@@ -49,7 +49,6 @@ import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
@@ -63,11 +62,14 @@ import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
-import org.olat.course.assessment.manager.SafeExamBrowserValidator;
-import org.olat.course.assessment.model.SafeExamBrowserVersion;
+import org.olat.course.assessment.model.SafeExamBrowserCheck;
+import org.olat.course.assessment.model.SafeExamBrowserProbe;
 import org.olat.course.assessment.model.TransientAssessmentInspection;
+import org.olat.course.assessment.model.SafeExamBrowserProbe.Source;
 import org.olat.course.assessment.ui.mode.ContinueEvent;
 import org.olat.course.assessment.ui.mode.SafeExamBrowserConfigurationMediaResource;
+import org.olat.course.assessment.ui.mode.SafeExamBrowserGuardHelper;
+import org.olat.course.assessment.ui.mode.SafeExamBrowserGuardHelper.SafeExamBrowserDialog;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -100,7 +102,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		mapperUri = registerCacheableMapper(ureq, "seb-settings", new SettingsMapper(guards));
 		
 		initForm(ureq);
-		syncInspections(ureq, null);
+		syncInspections(SafeExamBrowserProbe.NONE);
 	}
 	
 	@Override
@@ -124,15 +126,17 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		formLayout.add("quit-seb-main", mainSEBQuitButton);
 	}
 
-	private void syncInspections(UserRequest ureq, Boolean useHeaders) {
+	private void syncInspections(SafeExamBrowserProbe probe) {
 		List<ResourceGuard> guardsList = new ArrayList<>();
 		
 		String quitUrl = null;
+		boolean browserCheckNeeded = false;
 		for(TransientAssessmentInspection inspection:inspections) {
 			if(inspection != null) {
-				ResourceGuard guard = syncAssessmentInspection(ureq, inspection, useHeaders);
+				ResourceGuard guard = syncAssessmentInspection(inspection, probe);
 				if(guard != null) {
 					guardsList.add(guard);
+					browserCheckNeeded |= guard.isSebPending();
 				}
 				if(inspection.hasLinkToQuitSEB()) {
 					quitUrl = inspection.getLinkToQuitSEB();
@@ -167,6 +171,8 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		} else {
 			mainSEBQuitButton.setVisible(false);
 		}
+		// The script of the browser check is rendered as long as a guard waits for it
+		flc.contextPut("checked", browserCheckNeeded ? "not-checked" : "checked");
 		flc.setDirty(true);
 	}
 	
@@ -194,7 +200,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		return null;
 	}
 	
-	private ResourceGuard syncAssessmentInspection(UserRequest ureq, TransientAssessmentInspection inspection, Boolean useHeaders) {
+	private ResourceGuard syncAssessmentInspection(TransientAssessmentInspection inspection, SafeExamBrowserProbe probe) {
 		Date now = new Date();
 		Date from = inspection.getFromDate();
 		Date to = inspection.getToDate();
@@ -204,7 +210,10 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			return null;
 		}
 
-		ResourceGuard guard = createGuard(inspection);
+		ResourceGuard guard = guards.getGuardFor(inspection);
+		if(guard == null) {
+			guard = createGuard(inspection);
+		}
 
 		StringBuilder sb = new StringBuilder();
 		boolean allowed = true;
@@ -219,54 +228,39 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			allowed &= ipInRange;
 		}
 		
-		if(StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserKey())) {
-			boolean safeExamCheck = isSafelyAllowed(ureq, inspection.getSafeExamBrowserKey(), null, useHeaders);
-			if(!safeExamCheck) {
-				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>")
-				  .append(translate("error.safe.exam")).append("</h4>")
-				  .append(translate("error.safe.exam.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
-			}
-			allowed &= safeExamCheck;
-		} else if(StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserConfigPList())) {
-			boolean safeExamCheck = isSafelyAllowed(ureq, null, inspection.getSafeExamBrowserConfigPListKey(), useHeaders);
-			if(!safeExamCheck) {
-				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>")
-				  .append(translate("error.safe.exam")).append("</h4>")
-				  .append(translate("error.safe.exam.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
-				
-				guard.getDownloadSEBButton().setVisible(true);
-				guard.getDownloadSEBConfigurationButton().setVisible(inspection.isSafeExamBrowserConfigDownload());
-			}
-			allowed &= safeExamCheck;
-		}
-		
-		if(assessmentModule.isSafeExamBrowserEnforceMinimalVersion()
-				&& (StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserKey()) || StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserConfigPList()))) {
-			String browserVersion = ureq.getParameter("browserVersion");
-			SafeExamBrowserVersion versionInfos = SafeExamBrowserVersion.valueOf(browserVersion);
-			if(versionInfos == null && !allowed) {
-				// Don't write message twice
-			} else {
-				boolean authorizedVersion = isVersionAllowed(ureq, versionInfos);
-				if(!authorizedVersion) {
-					sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
-					sb.append(translate("error.safe.exam.version"));
-					sb.append("</h4>");
-					sb.append(translate("error.safe.exam.version.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
-				}
-				allowed &= authorizedVersion;
-			}
-		}
+		// Safe Exam Browser: SEB detected -> version -> configuration
+		SafeExamBrowserCheck sebCheck = SafeExamBrowserGuardHelper.check(guard.getSebCheck(), probe,
+				inspection.getSafeExamBrowserKey(), getSafeExamBrowserConfigurationKey(inspection), assessmentModule);
+		boolean configDownloadAllowed = StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserConfigPList())
+				&& inspection.isSafeExamBrowserConfigDownload();
+		SafeExamBrowserDialog sebDialog = SafeExamBrowserGuardHelper.dialog(sebCheck, configDownloadAllowed, assessmentModule, getTranslator());
+		guard.getDownloadSEBButton().setVisible(sebDialog != null && sebDialog.sebDownload());
+		guard.getDownloadSEBConfigurationButton().setVisible(sebDialog != null && sebDialog.configDownload());
 
 		String state;
-		if(allowed) {
+		if(!allowed) {
+			// The IP range message ends the chain, no SEB dialog in addition
+			state = "error";
+		} else if(!sebCheck.isPassed()) {
+			state = "seb";
+		} else {
 			FormLink start = guard.getStartInspection();
 			state = updateButtons(inspection, now, start);
-		} else {
-			state = "error";
 		}
-		guard.sync(state, sb.toString());
+		guard.sync(state, sb.toString(), sebCheck, sebDialog);
 		return guard;
+	}
+	
+	/**
+	 * The keys have precedence over the configuration, the configuration key
+	 * is only relevant if a configuration exists.
+	 */
+	private String getSafeExamBrowserConfigurationKey(TransientAssessmentInspection inspection) {
+		if(StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserKey())
+				|| !StringHelper.containsNonWhitespace(inspection.getSafeExamBrowserConfigPList())) {
+			return null;
+		}
+		return inspection.getSafeExamBrowserConfigPListKey();
 	}
 	
 	private ResourceGuard createGuard(TransientAssessmentInspection inspection) {
@@ -289,7 +283,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 				.getCourseNodeConfigurationEvenForDisabledBB(inspection.getCourseNodeType()).getIconCSSClass();
 		
 		String quitUrl = inspection.getLinkToQuitSEB();
-		ExternalLinkItem quitSEBButton = uifactory.addExternalLink("download.seb-" + id, translate("current.mode.seb.quit"), quitUrl, null, flc);
+		ExternalLinkItem quitSEBButton = uifactory.addExternalLink("quit-seb-" + id, translate("current.mode.seb.quit"), quitUrl, null, flc);
 		quitSEBButton.setName(translate("current.mode.seb.quit"));
 		quitSEBButton.setTooltip(translate("current.mode.seb.quit"));
 		quitSEBButton.setElementCssClass("btn btn-default");
@@ -330,26 +324,6 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			return translate("inspection.fromto", format.formatDateAndTime(from), format.formatDateAndTime(to));
 		}
 		return "-";
-	}
-	
-	private boolean isVersionAllowed(UserRequest ureq, SafeExamBrowserVersion versionInfos) {
-		String browserVersion = ureq.getParameter("browserVersion");
-		String userAgent = ServletUtil.getUserAgent(ureq.getHttpReq());
-		getLogger().info("SEB browser version: {} (User-Agent: {})", browserVersion, userAgent);
-		if(versionInfos == null) {
-			return false;
-		}
-		String minimalVersion = assessmentModule.getSafeExamBrowserMinimalVersion(versionInfos.os());
-		return SafeExamBrowserValidator.isBrowserVersionAllowed(versionInfos.version(), minimalVersion);
-	}
-	
-	private boolean isSafelyAllowed(UserRequest ureq, String safeExamBrowserKeys, String configurationKey, Boolean useHeaders) {
-		String safeExamHash = ureq.getParameter("configKey");
-		String url = ureq.getParameter("urlForKeyHash");
-		String browserExamKey = ureq.getParameter("browserExamKey");
-		getLogger().info("SEB requests parameters - configkey: {}, url: {}, browser exam key: {}", safeExamHash, url, browserExamKey);
-		return (useHeaders != null && useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey))
-				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, browserExamKey, url, safeExamBrowserKeys, configurationKey));
 	}
 	
 	private String updateButtons(TransientAssessmentInspection inspection, Date now, FormLink start) {
@@ -402,12 +376,9 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 				continueAfterAssessmentInspection(ureq, link.getUserObject());
 			}
 		} else if("ONCLICK".equals(event.getCommand())) {
-			if("checkSEBKeys".equals(ureq.getParameter("cid"))) {
-				syncInspections(ureq, Boolean.FALSE);
-				flc.contextPut("checked", "checked");
-			} else if("checkSEBHeaders".equals(ureq.getParameter("cid"))) {
-				syncInspections(ureq, Boolean.TRUE);
-				flc.contextPut("checked", "checked");
+			Source sebSource = SafeExamBrowserGuardHelper.toSource(ureq.getParameter("cid"));
+			if(sebSource != null) {
+				syncInspections(SafeExamBrowserGuardHelper.probe(ureq, sebSource));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -556,6 +527,8 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 
 		private String errors;
 		private String status;
+		private SafeExamBrowserCheck sebCheck;
+		private SafeExamBrowserDialog sebDialog;
 		
 		private final String fromTo;
 		private final String duration;
@@ -657,9 +630,35 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 			return downloadSEBConfigurationButton;
 		}
 		
-		public void sync(String newStatus, String newErrors) {
+		public SafeExamBrowserCheck getSebCheck() {
+			return sebCheck;
+		}
+		
+		public boolean isSebPending() {
+			return sebDialog != null && sebDialog.isPending();
+		}
+		
+		public String getSebStatus() {
+			return sebDialog == null ? null : sebDialog.status();
+		}
+		
+		public String getSebTitle() {
+			return sebDialog == null ? null : sebDialog.title();
+		}
+		
+		public String getSebDescription() {
+			return sebDialog == null ? null : sebDialog.description();
+		}
+		
+		public boolean isSebButtons() {
+			return sebDialog != null && sebDialog.isButtons();
+		}
+		
+		public void sync(String newStatus, String newErrors, SafeExamBrowserCheck newSebCheck, SafeExamBrowserDialog newSebDialog) {
 			this.status = newStatus;
 			this.errors = newErrors;
+			this.sebCheck = newSebCheck;
+			this.sebDialog = newSebDialog;
 		}
 	}
 }
