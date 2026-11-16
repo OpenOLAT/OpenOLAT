@@ -97,7 +97,7 @@ public class ImportCurriculumsValidator {
 	public static final String OFF = "OFF";
 	public static final String DEFAULT = "DEFAULT";
 	
-	private List<Room> availableRooms;
+	private List<Room> allowedRooms;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final Set<String> curriculumsNoPermissions = new HashSet<>();
 
@@ -962,11 +962,11 @@ public class ImportCurriculumsValidator {
 		
 		String column = translate(ImportCurriculumsCols.rooms.i18nHeaderKey());
 		
-		if(availableRooms == null) {
+		if(allowedRooms == null) {
 			SearchRoomParameters params = new SearchRoomParameters();
-			params.setStatus(List.of(RoomStatus.active));
+			params.setStatus(List.of(RoomStatus.active, RoomStatus.inactive));
 			params.setIdentity(identity);
-			availableRooms = roomManagementService.searchRooms(params, roles);
+			allowedRooms = roomManagementService.searchRooms(params, roles);
 		}
 
 		for(RoomKey roomKey:roomsList) {
@@ -984,7 +984,7 @@ public class ImportCurriculumsValidator {
 				break;// only one error per field
 			} else if(currentRooms.contains(RoomKey.valueOf(room))) {
 				// Already allocated, no error
-			} else if(!availableRooms.contains(room)) {
+			} else if(!allowedRooms.contains(room)) {
 				importedRow.addValidationError(ImportCurriculumsCols.rooms, column, null,
 						translator.translate("error.permissions", rooms));
 				allOk &= false;
