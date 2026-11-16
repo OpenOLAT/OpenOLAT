@@ -102,7 +102,8 @@ public class ImsQTI21EditorTest extends Deployments {
 			.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 			.assertOnAssessmentItem()
-			.edit();
+			.edit()
+			.assertOnAssessmentItemEditor();
 		
 		// import a single choice, a multiple and 2 gap texts
 		qtiEditor
@@ -184,7 +185,8 @@ public class ImsQTI21EditorTest extends Deployments {
 			.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 			.assertOnAssessmentItem()
-			.edit();
+			.edit()
+			.assertOnAssessmentItemEditor();
 		
 		// import a single choice, a multiple and 2 gap texts
 		qtiEditor
@@ -3497,7 +3499,8 @@ public class ImsQTI21EditorTest extends Deployments {
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
 				.assertOnAssessmentItem()
-				.edit();
+				.edit()
+				.assertOnAssessmentItemEditor();
 		//customize the section
 		qtiEditor
 			.selectSection()
