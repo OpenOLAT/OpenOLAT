@@ -126,8 +126,18 @@ public class PortfolioConfigController extends BasicController implements Refere
 		}
 
 		@Override
+		public boolean canCreate() {
+			return !isTemplateInUse(getPortfolioReference());
+		}
+
+		@Override
 		public boolean canImport() {
 			return false;
+		}
+
+		@Override
+		public boolean isReplaceable(RepositoryEntry repositoryEntry) {
+			return !isTemplateInUse(repositoryEntry) && super.isReplaceable(repositoryEntry);
 		}
 
 		@Override
