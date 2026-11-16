@@ -201,7 +201,9 @@ public class UserWebService {
 			" <br> The lookup is possible for authors, usermanagers and system administrators. Normal\n" + 
 			" users are not allowed to use the lookup service.<br>\n" + 
 			" With the parameter modifiedSince, only the users with a changed user property or status\n" + 
-			" since this date are returned, with all their properties, ordered by key.")
+			" since this date are returned, with all their properties, ordered by key.<br>\n" +
+			" The endpoint returns per default only the active users. You can send statusVisibleLimit=all\n" +
+			" to retrieve all the users.")
 	@ApiResponse(responseCode = "200", description = "The list of all users in the OLAT system", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) })
@@ -210,7 +212,8 @@ public class UserWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getUserListQuery(@QueryParam("login") String login, @QueryParam("externalId") String externalId,
 			@QueryParam("authProvider") String authProvider, @QueryParam("authUsername") String authUsername,
-			@QueryParam("statusVisibleLimit") String statusVisibleLimit, @QueryParam("status") Integer status,
+			@QueryParam("statusVisibleLimit") @Parameter(description = "Returns per default only the active users. Use statusVisibleLimit=all to retrieve all the users.") String statusVisibleLimit,
+			@QueryParam("status") Integer status,
 			@QueryParam("modifiedSince") @Parameter(description = "Return only the users changed since this date, ISO 8601 with offset (2026-11-12T04:50:00Z) or as local server time (2026-11-12T05:50:00)") String modifiedSince,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
 
