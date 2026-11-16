@@ -145,6 +145,9 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.video.resource.selected"))
 				.withIconCss("o_icon o_FileResource-MOVIE_icon")
+				.withPrimaryButton("o_icon_search", "select", null)
+				.withSecondaryButton("o_icon_add", "import", null, "import")
+				.withSecondaryButton("o_icon_link", "cmd.import.url.ressource", null, "import.url")
 				.build();
 		String selectionTitle = translate("select.video");
 		RepositoryEntry videoEntry = getVideoReference(config, false);
