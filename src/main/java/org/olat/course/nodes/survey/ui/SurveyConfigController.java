@@ -234,6 +234,16 @@ public class SurveyConfigController extends FormBasicController implements Refer
 		}
 
 		@Override
+		public boolean canImport() {
+			return formEntry == null || surveyManager.isFormUpdateable(survey);
+		}
+
+		@Override
+		public boolean isReplaceable(RepositoryEntry repositoryEntry) {
+			return surveyManager.isFormUpdateable(survey) && super.isReplaceable(repositoryEntry);
+		}
+
+		@Override
 		public Confirm confirmCanReplace(UserRequest ureq) {
 			// When no form is selected yet, select/create/import are always allowed.
 			if (formEntry == null) {
