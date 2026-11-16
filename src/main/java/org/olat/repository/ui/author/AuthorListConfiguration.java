@@ -59,6 +59,7 @@ public class AuthorListConfiguration {
 	private boolean templatesMode = false;
 	private boolean templateMode = false;
 	private boolean sharedWithMeTab = false;
+	private List<RepositoryEntryRuntimeType> sharedWithMeRuntimeTypes;
 	private String myTabLabel;
 	private boolean redesignedSelectionDialog = false;
 	private EmptyScreenData emptyScreenDataForNoEntriesYet;
@@ -293,6 +294,14 @@ public class AuthorListConfiguration {
 
 	public void setSharedWithMeTab(boolean sharedWithMeTab) {
 		this.sharedWithMeTab = sharedWithMeTab;
+	}
+
+	public List<RepositoryEntryRuntimeType> getSharedWithMeRuntimeTypes() {
+		return sharedWithMeRuntimeTypes;
+	}
+
+	public void setSharedWithMeRuntimeTypes(List<RepositoryEntryRuntimeType> sharedWithMeRuntimeTypes) {
+		this.sharedWithMeRuntimeTypes = sharedWithMeRuntimeTypes;
 	}
 
 	public String getMyTabLabel() {

@@ -686,7 +686,11 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setShowAllRowsEnabled(true);
 		if(configuration.isSelectRepositoryEntries()) {
-			tableEl.setSelection(true, configuration.getSelectRepositoryEntries() == SelectionMode.multi, configuration.isRowSelect());
+			boolean multiSelect = configuration.getSelectRepositoryEntries() == SelectionMode.multi;
+			tableEl.setSelection(true, multiSelect, configuration.isRowSelect());
+			if (multiSelect) {
+				tableEl.setSelectAllEnable(true);
+			}
 		} else {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
@@ -748,7 +752,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			tabs.add(bookmarkTab);
 		}
 		
-		if(configuration.isRedesignedSelectionDialog() && !configuration.isOnlyAllowedResourceType("CourseModule")) {
+		if(configuration.isRedesignedSelectionDialog()) {
 			allTab = FlexiFiltersTabFactory.tab("All", translate("search.all"), TabSelectionBehavior.reloadData);
 			allTab.setElementCssClass("o_sel_author_all");
 			allTab.setFiltersExpanded(true);
@@ -756,7 +760,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			tabs.add(allTab);
 		}
 
-		if(configuration.isResourceTypeAllowed("CourseModule")) {
+		if(configuration.isResourceTypeAllowed("CourseModule") && !configuration.isRedesignedSelectionDialog()) {
 			if (configuration.isTemplateMode()) {
 				allCoursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("AllCourses",
 						translate("search.all"),
@@ -785,7 +789,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 		
-		if(!configuration.isOnlyAllowedResourceType("CourseModule")) {
+		if(!configuration.isOnlyAllowedResourceType("CourseModule") || configuration.isRedesignedSelectionDialog()) {
 			String myTabLabel = StringHelper.containsNonWhitespace(configuration.getMyTabLabel())
 					? configuration.getMyTabLabel() : translate("search.my");
 			myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", myTabLabel,
@@ -796,8 +800,16 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		if(configuration.isSharedWithMeTab()) {
+			List<FlexiTableFilterValue> sharedWithMeFilters = new ArrayList<>();
+			sharedWithMeFilters.add(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared"));
+			List<RepositoryEntryRuntimeType> sharedWithMeRuntimeTypes = configuration.getSharedWithMeRuntimeTypes();
+			if (sharedWithMeRuntimeTypes != null && !sharedWithMeRuntimeTypes.isEmpty()) {
+				List<String> runtimeTypeNames = sharedWithMeRuntimeTypes.stream()
+						.map(RepositoryEntryRuntimeType::name).collect(Collectors.toList());
+				sharedWithMeFilters.add(FlexiTableFilterValue.valueOf(AuthorSourceFilter.RUNTIMETYPE, runtimeTypeNames));
+			}
 			sharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("SharedWithMe", translate("search.shared.with.me"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared")));
+					TabSelectionBehavior.reloadData, sharedWithMeFilters);
 			sharedWithMeTab.setElementCssClass("o_sel_author_shared_with_me");
 			sharedWithMeTab.setFiltersExpanded(true);
 			tabs.add(sharedWithMeTab);

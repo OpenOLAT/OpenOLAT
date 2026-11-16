@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -61,29 +62,34 @@ public class RepositoryEntrySelectionController extends BasicController {
 	private final Link selectButton;
 	private final Link cancelButton;
 	private final AuthorListController authorListCtrl;
+	private final boolean multiSelect;
 
 	private RepositoryEntry selectedEntry;
+	private List<RepositoryEntry> selectedEntries;
 
 	@Autowired
 	private RepositoryManager repositoryManager;
 
 	public RepositoryEntrySelectionController(UserRequest ureq, WindowControl wControl, String tableId,
-											  List<String> resourceTypes, List<Organisation> defaultOrganisations, 
+											  List<String> resourceTypes, List<Organisation> defaultOrganisations,
 											  RepositoryEntryReferenceProvider referenceProvider) {
 		this(ureq, wControl, tableId, resourceTypes, defaultOrganisations,
-				ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.author), null, referenceProvider);
+				ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.author), null, false, referenceProvider);
 	}
 
 	public RepositoryEntrySelectionController(UserRequest ureq, WindowControl wControl, String tableId,
 											  List<String> resourceTypes, List<Organisation> defaultOrganisations,
 											  List<OrganisationRef> sharedOrganisations,
 											  List<RepositoryEntryRuntimeType> allowedRuntimeTypes,
+											  boolean multiSelect,
 											  RepositoryEntryReferenceProvider referenceProvider) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		this.multiSelect = multiSelect;
 
 		AuthorListConfiguration configuration = AuthorListConfiguration.selectRessource(tableId, resourceTypes);
 		configuration.setSharedWithMeTab(true);
+		configuration.setSharedWithMeRuntimeTypes(referenceProvider.getSharedWithMeRuntimeTypes());
 		configuration.setTableConfiguration(referenceProvider.getTableConfiguration());
 		configuration.setMyTabLabel(referenceProvider.getMyTabLabel());
 		configuration.setEmptyScreenDataForNoEntriesYet(referenceProvider.getEmptyScreenDataForNoEntriesYet());
@@ -92,6 +98,9 @@ public class RepositoryEntrySelectionController extends BasicController {
 		configuration.setRedesignedSelectionDialog(true);
 		configuration.setImportRessources(false);
 		configuration.setCreateRessources(false);
+		if (multiSelect) {
+			configuration.setSelectRepositoryEntry(SelectionMode.multi);
+		}
 		if (allowedRuntimeTypes != null && !allowedRuntimeTypes.isEmpty()) {
 			configuration.setAllowedRuntimeTypes(allowedRuntimeTypes);
 		}
@@ -145,11 +154,25 @@ public class RepositoryEntrySelectionController extends BasicController {
 		return selectedEntry;
 	}
 
+	/**
+	 * Only populated when this controller was created with {@code multiSelect} true.
+	 */
+	public List<RepositoryEntry> getSelectedEntries() {
+		return selectedEntries;
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == selectButton) {
 			List<AuthoringEntryRow> rows = authorListCtrl.getMultiSelectedRows();
-			if (rows.size() == 1) {
+			if (rows.isEmpty()) {
+				showWarning("bulk.update.nothing.selected");
+			} else if (multiSelect) {
+				selectedEntries = rows.stream()
+						.map(row -> repositoryManager.lookupRepositoryEntry(row.getKey()))
+						.collect(Collectors.toList());
+				fireEvent(ureq, ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED);
+			} else if (rows.size() == 1) {
 				selectedEntry = repositoryManager.lookupRepositoryEntry(rows.get(0).getKey());
 				fireEvent(ureq, ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED);
 			} else {

@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 
 public interface RepositoryEntryReferenceProvider {
 	
@@ -86,6 +87,10 @@ public interface RepositoryEntryReferenceProvider {
 	}
 
 	public default String getEnterSearchTermMessage() {
+		return null;
+	}
+
+	public default List<RepositoryEntryRuntimeType> getSharedWithMeRuntimeTypes() {
 		return null;
 	}
 

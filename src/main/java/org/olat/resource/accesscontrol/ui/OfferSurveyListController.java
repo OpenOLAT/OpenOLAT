@@ -404,7 +404,7 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 
 		selectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "offer-survey-form-v2",
 				List.of(EvaluationFormResource.TYPE_NAME), null, sharedOrganisations,
-				List.of(RepositoryEntryRuntimeType.embedded), referenceProvider);
+				List.of(RepositoryEntryRuntimeType.embedded), false, referenceProvider);
 		listenTo(selectionCtrl);
 
 		footerCmc = new FooterModalController(getWindowControl(), translate("close"), selectionCtrl.getBodyComponent(),

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -44,13 +45,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
@@ -59,9 +60,10 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.repository.controllers.RepositoryEntryFilter;
-import org.olat.repository.controllers.RepositorySearchController.Can;
+import org.olat.repository.ui.EmptyScreenData;
+import org.olat.repository.ui.RepositoryEntrySelectionController;
 import org.olat.repository.ui.RepositoryTableModel;
+import org.olat.repository.ui.TableConfiguration;
 import org.olat.repository.ui.author.RepositoryEntrySmallDetailsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,20 +85,21 @@ public class BusinessGroupEditResourceController extends BasicController {
 
 	private TableController resourcesCtr;
 	private RepositoryTableModel repoTableModel;
-	private ReferencableEntriesSearchController repoSearchCtr;
-	private CloseableModalController cmc;
+	private RepositoryEntrySelectionController selectionCtrl;
+	private FooterModalController footerCmc;
 	private DialogBoxController confirmRemoveResource;
 	private CloseableCalloutWindowController calloutCtrl;
 	private RepositoryEntrySmallDetailsController infosCtrl;
-	
+
 	private Link addTabResourcesButton;
 
 	private BusinessGroup group;
 	private final boolean managed;
-	private final boolean hasAuthorRight;
-	
+
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	/**
 	 * Constructor for a business group edit controller
@@ -110,10 +113,7 @@ public class BusinessGroupEditResourceController extends BasicController {
 		
 		this.group = group;
 		managed = BusinessGroupManagedFlag.isManaged(group, BusinessGroupManagedFlag.resources);
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		hasAuthorRight =  roles.isAdministrator() || roles.isLearnResourceManager() || roles.isAuthor();
-		
+
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		if (managed) {
@@ -160,25 +160,18 @@ public class BusinessGroupEditResourceController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == repoSearchCtr) {
-			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				// repository search controller done
-				RepositoryEntry re = repoSearchCtr.getSelectedEntry();
-				removeAsListenerAndDispose(repoSearchCtr);
-				cmc.deactivate();
-				if (re != null) {
-					doAddRepositoryEntry(Collections.singletonList(re));
-					fireEvent(ureq, Event.CHANGED_EVENT);
-				}
-			} else if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
-				// repository search controller done
-				List<RepositoryEntry> res = repoSearchCtr.getSelectedEntries();
-				removeAsListenerAndDispose(repoSearchCtr);
-				cmc.deactivate();
+		if (source == selectionCtrl) {
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
+				List<RepositoryEntry> res = selectionCtrl.getSelectedEntries();
+				removeAsListenerAndDispose(selectionCtrl);
+				footerCmc.deactivate();
 				if (res != null && !res.isEmpty()) {
 					doAddRepositoryEntry(res);
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
+			} else {
+				removeAsListenerAndDispose(selectionCtrl);
+				footerCmc.deactivate();
 			}
 		} else if (source == resourcesCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
@@ -207,17 +200,62 @@ public class BusinessGroupEditResourceController extends BasicController {
 	}
 	
 	private void doAddRepositoryEntry(UserRequest ureq) {
-		removeAsListenerAndDispose(repoSearchCtr);
-		removeAsListenerAndDispose(cmc);
-		
-		RepositoryEntryFilter filter = new ManagedEntryfilter();
-		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ CourseModule.getCourseTypeName() }, List.of(), filter, null,
-				translate("resources.add"), hasAuthorRight, hasAuthorRight, true, false, true, false, Can.referenceable);
-		listenTo(repoSearchCtr);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("resources.add.title"));
-		listenTo(cmc);
-		cmc.activate();
+		removeAsListenerAndDispose(footerCmc);
+		removeAsListenerAndDispose(selectionCtrl);
+
+		CourseNodeReferenceProvider referenceProvider = new BGCourseReferenceProvider(repositoryService);
+		selectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "bg-course-selection-v1",
+				List.of(CourseModule.getCourseTypeName()), null,
+				ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.author),
+				List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.embedded),
+				true, referenceProvider);
+		listenTo(selectionCtrl);
+
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), selectionCtrl.getBodyComponent(),
+				selectionCtrl.getFooterComponent(), translate("resources.add.title"));
+		listenTo(footerCmc);
+		footerCmc.activate();
+	}
+
+	private class BGCourseReferenceProvider extends CourseNodeReferenceProvider {
+
+		public BGCourseReferenceProvider(RepositoryService repositoryService) {
+			super(repositoryService, List.of(CourseModule.getCourseTypeName()), null, null, null, null);
+		}
+
+		@Override
+		public TableConfiguration getTableConfiguration() {
+			return TableConfiguration.WITH_TECHNICAL_TYPE;
+		}
+
+		@Override
+		public List<RepositoryEntryRuntimeType> getSharedWithMeRuntimeTypes() {
+			return List.of(RepositoryEntryRuntimeType.standalone);
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("resources.my.courses");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_CourseModule_icon",
+					translate("resources.select.no.course.yet"),
+					translate("resources.select.no.course.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_CourseModule_icon",
+					translate("resources.select.no.courses.in.view"),
+					translate("resources.select.no.courses.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("resources.select.enter.search.term");
+		}
 	}
 	
 	private void doOpenInfos(UserRequest ureq, RepositoryEntry repositoryEntry, int rowId) {
@@ -242,27 +280,12 @@ public class BusinessGroupEditResourceController extends BasicController {
 	private void doAddRepositoryEntry(List<RepositoryEntry> entries) {
 		List<RepositoryEntry> repoEntries = new ArrayList<>();
 		for(RepositoryEntry entry:entries) {
-			if(!repoTableModel.getObjects().contains(entry)) {
+			if(!repoTableModel.getObjects().contains(entry) && !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.groups)) {
 				repoEntries.add(entry);
 			}
 		}
 		businessGroupService.addResourcesTo(Collections.singletonList(group), repoEntries);
 		repoTableModel.addObjects(repoEntries);
 		resourcesCtr.modelChanged();
-	}
-	
-	private static class ManagedEntryfilter implements RepositoryEntryFilter {
-
-		@Override
-		public boolean accept(RepositoryEntry re) {
-			if (RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups)) {
-				return false;
-			}
-			if (RepositoryEntryRuntimeType.curricular.equals(re.getRuntimeType())
-					|| RepositoryEntryRuntimeType.template.equals(re.getRuntimeType())) {
-				return false;
-			}
-			return true;
-		}
 	}
 }
