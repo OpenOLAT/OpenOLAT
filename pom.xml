@@ -93,7 +93,7 @@
 		<qtiworks.version>1.0.37</qtiworks.version>
 		<org.commonmark>0.32.0</org.commonmark>
 		<dev.langchain4j>1.23.0</dev.langchain4j>
-		<mcp.sdk.version>2.1.0</mcp.sdk.version>
+		<mcp.sdk.version>2.2.0</mcp.sdk.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -1816,7 +1816,7 @@
 		<dependency>
 			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 			<artifactId>owasp-java-html-sanitizer</artifactId>
-			<version>20261107.1</version>
+			<version>20261110.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
