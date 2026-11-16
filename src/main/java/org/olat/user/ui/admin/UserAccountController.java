@@ -319,7 +319,7 @@ public class UserAccountController extends FormBasicController {
 		lifecycleInactivationDateEl.setVisible(lifecycleVisible && showAsInactive);
 
 		boolean showDaysDeactivation = lifecycleVisible && userModule.isUserAutomaticDeactivation()
-				&& (showAsActive || showAsReactivated);
+				&& (showAsActive || showAsReactivated) && !Identity.STATUS_PERMANENT.equals(editedIdentity.getStatus());
 		if(showDaysDeactivation) {
 			long daysBeforeDeactivation = userLifecycleManager.getDaysUntilDeactivation(editedIdentity, now);
 			String deactivationDate = formatter.formatDate(userLifecycleManager.getDateUntilDeactivation(editedIdentity));
