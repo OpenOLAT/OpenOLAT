@@ -280,7 +280,9 @@ public class RepositoryEntryReferenceController extends BasicController {
 				referencePanel.setAdditionalContent(settingsProvider.getSettingsContent(repositoryEntry));
 			}
 			
-			replaceSelectLink.setEnabled(referenceProvider.isReplaceable(repositoryEntry));
+			boolean replaceable = referenceProvider.isReplaceable(repositoryEntry);
+			replaceSelectLink.setEnabled(replaceable);
+			replaceSelectLink.setVisible(replaceable);
 			
 			RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 			if (typeToEdit.supportsEdit(repositoryEntry.getOlatResource(), getIdentity(), ureq.getUserSession().getRoles()) != EditionSupport.no) {
@@ -297,9 +299,11 @@ public class RepositoryEntryReferenceController extends BasicController {
 		
 		boolean enabled = false;
 		for(Component command:commandsDropdown.getComponents()) {
-			enabled |= command.isEnabled();
+			if (command instanceof Spacer) continue;
+			enabled |= command.isVisible() && command.isEnabled();
 		}
 		commandsDropdown.setEnabled(enabled);
+		commandsDropdown.setVisible(enabled);
 	}
 
 	public RepositoryEntry getRepositoryEntry() {

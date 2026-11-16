@@ -263,10 +263,12 @@ public class FormConfigController extends FormBasicController implements Referen
 		if (newFormEntry == null) {
 			return;
 		}
-		this.formEntry = newFormEntry;
-		if (this.survey != null) {
+		if (this.survey == null) {
+			this.survey = formManager.createSurvey(surveyIdent, newFormEntry);
+		} else {
 			this.survey = formManager.updateSurveyForm(this.survey, newFormEntry);
 		}
+		this.formEntry = newFormEntry;
 		SurveyCourseNode.setEvaluationFormReference(newFormEntry, config);
 		updateReferenceContentUI(newFormEntry);
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -344,15 +346,6 @@ public class FormConfigController extends FormBasicController implements Referen
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (formEntry != null) {
-			if (survey == null) {
-				survey = formManager.createSurvey(surveyIdent, formEntry);
-			} else {
-				survey = formManager.updateSurveyForm(survey, formEntry);
-			}
-			SurveyCourseNode.setEvaluationFormReference(formEntry, config);
-		}
-		
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
 		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_RELATIVE_DATES, relativeDates);
 		
@@ -396,6 +389,16 @@ public class FormConfigController extends FormBasicController implements Referen
 		@Override
 		public boolean canCreate() {
 			return formEntry == null;
+		}
+
+		@Override
+		public boolean canImport() {
+			return formEntry == null || formManager.isFormUpdateable(survey);
+		}
+
+		@Override
+		public boolean isReplaceable(RepositoryEntry repositoryEntry) {
+			return formManager.isFormUpdateable(survey) && super.isReplaceable(repositoryEntry);
 		}
 
 		@Override
