@@ -731,3 +731,48 @@ $o-scale-brand-distance: 0.5;
 	}
 	@return o-a11y-color($color, $bg, $ratio);
 }
+
+/* The name of the scale that holds a colour: a brand ramp ("theme1"), a
+ * chromatic hue of the palette ("blue") or the neutral scale ("neutral").
+ * The brand ramps come first: a brand step with the colour of a palette
+ * step belongs to the brand ramp. A fill step (450) and a colour on no
+ * scale give null.
+ *
+ * @param {Color} $color - The colour
+ * @return {String} the name of the scale, or null
+ */
+@function o-scale-holder($color) {
+	@if meta.type-of($color) != "color" {
+		@return null;
+	}
+	@each $family in ("brand", "palette", "neutral") {
+		@each $name, $value in o-scale-family($family) {
+			@if $value == $color {
+				@return list.nth(o-scale-split($name), 1);
+			}
+		}
+	}
+	@return null;
+}
+
+/* A light fill in the hue of a colour: step $step of the scale that holds
+ * the colour (o-scale-holder()). A colour on no scale (the own colour of a
+ * client theme) gets the step of its own ramp: o-theme-scale() builds the
+ * ramp with the hue and the chroma of the colour, as for a brand colour.
+ * The fills of a selection read it with the focus colour and the steps
+ * $o-selection-step and $o-selection-hover-step (_config.scss).
+ *
+ * @param {Color} $color - The colour that gives the hue
+ * @param {Number} $step - A text step of the palette: 50, 100, ... 900
+ * @return {Color}
+ */
+@function o-scale-tint($color, $step) {
+	$scale: o-scale-holder($color);
+	@if $scale == "neutral" {
+		@return o-neutral($step);
+	}
+	@if $scale != null {
+		@return map.get($o-palette, $scale, $step);
+	}
+	@return map.get(o-theme-scale($color), "steps", $step);
+}

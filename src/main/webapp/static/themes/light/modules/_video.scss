@@ -584,8 +584,17 @@
 	padding: 5px;
 }
 
+// The rows of the timeline have the fills of the rows of a striped table:
+// the odd rows the striped fill, the even rows the page fill. The channel
+// labels and the channels are in two containers with the same order of rows
+// (time bar, then the visible channels), so a label and its channel get the
+// same fill. The active channel has the fill of a selected row.
 .o_video_timeline_box {
-	background-color: var(--o-table-hover-bg);
+	background-color: var(--o-bg);
+
+	&:nth-child(odd) {
+		background-color: var(--o-table-striped-bg);
+	}
 
 	&.o_video_active {
 		background-color: var(--o-table-row-selected-bg);

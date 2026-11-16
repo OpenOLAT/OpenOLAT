@@ -93,9 +93,20 @@
 		margin: $line-height-computed 0;
 	}
 	
-	.o_row_selected ~ .o_table_row_details > td ,
+	.o_row_selected + .o_table_row_details > td ,
 	.o_row_selected td { 
 		background-color: var(--o-table-row-selected-bg) !important; 
+	}
+	// The hover fill wins over the selected fill: a selected row and its
+	// details row while the pointer is on one of them. The selected fill has
+	// !important, so this rule has it too. :where() keeps the specificity
+	// below the rows with an own hover fill (selectus decision rows).
+	.table-hover > tbody {
+		> tr.o_row_selected:where(:hover, :has(+ .o_table_row_details:hover)) > td,
+		> tr.o_row_selected:where(:hover) + .o_table_row_details > td,
+		> tr.o_row_selected + .o_table_row_details:where(:hover) > td {
+			background-color: var(--o-table-hover-bg) !important;
+		}
 	}
 
 	.o_table {
@@ -224,6 +235,10 @@
 				&:is(.o_table_row_expanded *) {
 					background: var(--o-table-details-bg);
 				}
+				// the opened row or its details row under the pointer
+				&:is(.o_table_row_expanded:hover *, .o_table_row_expanded:where(:has(+ .o_table_row_details:hover)) *) {
+					background: var(--o-table-details-bg-hover);
+				}
 		    }
 		}
   	}
@@ -233,6 +248,10 @@
 		    	background-color: var(--o-table-sticky-col-striped-bg);		    
 				&:is(.o_table_row_expanded *) {
 					background: var(--o-table-details-bg);
+				}
+				// the opened row or its details row under the pointer
+				&:is(.o_table_row_expanded:hover *, .o_table_row_expanded:where(:has(+ .o_table_row_details:hover)) *) {
+					background: var(--o-table-details-bg-hover);
 				}
 			}
 		}
@@ -260,7 +279,7 @@
   		> tbody > tr:not(.o_table_row_expanded):hover {
   			.o_col_sticky_right,
   			.o_col_sticky_left {		
-    			background-color: var(--o-bg-hover);
+    			background-color: var(--o-table-hover-bg);
   			}
 		}
 	}

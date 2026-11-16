@@ -218,8 +218,38 @@ $link-color						: $brand-primary !default;
 $link-hover-color				: o-scale-snap($link-color, darken($link-color, 15%)) !default;
 $btn-primary-bg					: $brand-primary !default;
 $btn-primary-border				: o-scale-snap($btn-primary-bg, darken($btn-primary-bg, 5%)) !default;
+
+/* Focus ring of every control (OO-10043): outline of
+   $o-focus-ring-width in the colour of the token focus, $o-focus-ring-offset
+   away from the control, on :focus-visible (modules/_focus.scss).
+   $o-focus-color is the base colour of the token focus. Default: the primary
+   colour, adjusted to 3:1 on the page background. A theme that sets
+   $input-border-focus keeps that colour. A value that the theme sets for
+   $o-focus-color or $input-border-focus is not adjusted. */
+$o-focus-color						: null !default;
+@if not $o-focus-color {
+	@if $o-focus-color-from-input-border {
+		$o-focus-color: $input-border-focus;
+	} @else {
+		$o-focus-color: o-a11y-color($brand-primary, $body-bg, 3);
+	}
+}
+$o-focus-ring-width					: 2px !default;
+$o-focus-ring-offset				: 2px !default;
+
 $dropdown-link-hover-bg			: o-neutral(50) !default;
-$table-bg-hover					: o-neutral(50) !default;
+/* The fills of a selection have the hue of the focus colour, in a light
+   version (o-scale-tint(), _functions.scss): a step of the scale of the
+   focus colour. Level 1, $o-selection-step: the selected row and the opened
+   details row. Level 2, $o-selection-hover-step: a row or an item under the
+   pointer, also on a selected or an opened row. A step is a text step of
+   the palette (50, 100, 200, ...). Light: theme1-100 and theme1-200.
+   $table-bg-active is the default of $o-table-row-selected-color and
+   $o-table-details-bg. */
+$o-selection-step				: 100 !default;
+$o-selection-hover-step			: 200 !default;
+$table-bg-hover					: o-scale-tint($o-focus-color, $o-selection-hover-step) !default;
+$table-bg-active				: o-scale-tint($o-focus-color, $o-selection-step) !default;
 // the placeholder of a field 4.5:1 on the field; the typed text the body
 // text (light: neutral 750). A theme that sets $gray keeps its typed text.
 $input-color-placeholder		: o-neutral(500) !default;
@@ -254,24 +284,6 @@ $pre-border-color				: color-mix(in srgb, var(--o-shadow-color) 10%, transparent
 
 /* 	Add standard bootstrap variables to the mix */
 @import "../../bootstrap/stylesheets/bootstrap/variables";
-
-/* Focus ring of every control (OO-10043): outline of
-   $o-focus-ring-width in the colour of the token focus, $o-focus-ring-offset
-   away from the control, on :focus-visible (modules/_focus.scss).
-   $o-focus-color is the base colour of the token focus. Default: the primary
-   colour, adjusted to 3:1 on the page background. A theme that sets
-   $input-border-focus keeps that colour. A value that the theme sets for
-   $o-focus-color or $input-border-focus is not adjusted. */
-$o-focus-color						: null !default;
-@if not $o-focus-color {
-	@if $o-focus-color-from-input-border {
-		$o-focus-color: $input-border-focus;
-	} @else {
-		$o-focus-color: o-a11y-color($brand-primary, $body-bg, 3);
-	}
-}
-$o-focus-ring-width					: 2px !default;
-$o-focus-ring-offset				: 2px !default;
 
 /* General purpose brand based style */
 $o-brand-box-border				: o-scale-snap($brand-primary, darken($brand-primary, 5%)) !default;
@@ -311,13 +323,32 @@ $o-content-border-img-padding	: 3px !default;
 $o-font-size-xlarge				: ceil(($font-size-base * 1.7)) !default;  // ~24px
 $o-font-size-xsmall				: ceil(($font-size-base * 0.71)) !default; // ~10px
 $o-font-size-section-title		: ceil(($font-size-base * 1.3)) !default; // ~18px
-// the selected row: the soft fill of the neutral state (OO-10043)
-$o-table-row-selected-color     : o-state-color("neutral", "soft-bg") !default;
+// the selected row: the selected fill (level 1 in the hue of the focus colour)
+$o-table-row-selected-color     : $table-bg-active !default;
 
 $o-table-edit-border			: o-palette("orange", 400);
 $o-table-edit-bg				: o-neutral(25);
 
-$o-table-details-bg							: o-neutral(25) !default;
+// the opened row and its details row: the selected fill (level 1 in the hue
+// of the focus colour); under the pointer o-table-details-bg-hover()
+$o-table-details-bg							: $table-bg-active !default;
+// The fill of the opened row and its details row under the pointer (token
+// table-details-bg-hover) for the fill $bg of the details row: the hover
+// fill while $bg is the selected fill, else (a theme colour of
+// $o-table-details-bg) the step of its scale that is 10% darker, or the
+// computed colour for a colour on no scale.
+@function o-table-details-bg-hover($bg) {
+	@if $bg == $table-bg-active and $table-bg-hover != $table-bg-active {
+		@return $table-bg-hover;
+	}
+	@return o-scale-snap($bg, darken($bg, 10%));
+}
+// The darkest fill of a table row: page, striped row, row under the pointer,
+// selected row, opened row and its details row with and without the
+// pointer. A text token of a row is adjusted against it.
+@function o-table-row-darkest-bg() {
+	@return o-darkest-color(o-opaque-colors($body-bg, $table-bg-accent, $table-bg-hover, $table-bg-active, $o-table-row-selected-color, $o-table-details-bg, o-table-details-bg-hover($o-table-details-bg))...);
+}
 $o-table-details-padding						: 5px 30px 20px 30px !default;
 $o-table-details-container-margin			: 0px !default;
 $o-table-details-container-padding			: 10px !default;

@@ -183,6 +183,12 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
       --o-backdrop       $modal-backdrop-bg         layer behind a modal dialog
       --o-shadow-color   black                      colour of the shadows
       --o-scrim          white                      light veil over content
+    $table-bg-hover and $table-bg-active default to a step of the scale of the focus colour:
+    o-scale-tint($o-focus-color, $o-selection-hover-step) and
+    o-scale-tint($o-focus-color, $o-selection-step), steps 200 and 100 by default. A selected or
+    hovered row has the hue of the focus colour; under the pointer the hover fill wins over the
+    selected fill. $o-table-row-selected-color and $o-table-details-bg default to
+    $table-bg-active. A theme that sets one of these variables keeps its value.
     --o-shadow-color, --o-backdrop and --o-scrim are opaque. A rule sets the transparency, e.g.
       box-shadow: 0 4px 16px color-mix(in srgb, var(--o-shadow-color) 10%, transparent);
     The black shadows, the layer behind a dialog or a lightbox and the light veils of the modules

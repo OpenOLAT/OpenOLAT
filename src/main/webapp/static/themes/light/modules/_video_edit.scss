@@ -453,6 +453,11 @@ $label_right_margin_dialog: 5px;
 				cursor: pointer;
 			}
 
+			.o_category_list_item.o_selected {
+				background-color: var(--o-table-row-selected-bg);
+			}
+
+			// after the selected item: the hover fill wins over the selected fill
 			.o_category_list_item:hover {
 				background-color: var(--o-bg-hover);
 			}
@@ -460,10 +465,6 @@ $label_right_margin_dialog: 5px;
 			.o_category_list_item:active {
 				background-color: var(--o-video-category-active-bg);
 				font-weight: bold;
-			}
-
-			.o_category_list_item.o_selected {
-				background-color: var(--o-table-row-selected-bg);
 			}
 
 			.o_color_cube {
@@ -486,7 +487,7 @@ $label_right_margin_dialog: 5px;
 	margin-top: 10px;
 
 	a {
-		background-color: var(--o-table-hover-bg);
+		background-color: var(--o-video-category-edit-bg);
 		width: 100%;
 		border-top-left-radius: 0;
 		border-bottom-left-radius: 0;

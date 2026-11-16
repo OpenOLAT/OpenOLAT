@@ -123,9 +123,9 @@ public class GuiDemoColorTokens {
 						fill("bg", "text", "Page surface", AA_TEXT)),
 				new Token("bg-subtle", "$panel-default-heading-bg", "Panel heading, side column, quiet area",
 						fill("bg-subtle", "text", "Subtle surface", AA_TEXT)),
-				new Token("bg-hover", "$table-bg-hover", "Row or item under the pointer",
+				new Token("bg-hover", "$table-bg-hover", "Row or item under the pointer: level 2, step $o-selection-hover-step (200) in the hue of the focus colour",
 						fill("bg-hover", "text", "Hover row", AA_TEXT)),
-				new Token("bg-selected", "$table-bg-active", "Selected row or item",
+				new Token("bg-selected", "$table-bg-active", "Selected row or item, opened details row: level 1, step $o-selection-step (100) in the hue of the focus colour",
 						fill("bg-selected", "text", "Selected row", AA_TEXT)),
 				new Token("bg-raised", "$dropdown-bg", "Surface above the page: dropdown menu, popover, dialog",
 						fill("bg-raised", "text", "Raised surface", AA_TEXT)))));
@@ -305,17 +305,17 @@ public class GuiDemoColorTokens {
 		groups.add(new TokenGroup("Table", "framework layer", List.of(
 				new Token("table-header", "\"text\"", "Text of the table header",
 						text("table-header", "bg", "Column header", AA_TEXT)),
-				new Token("table-link", "\"link-subtle\"", "Links in table cells",
-						text("table-link", "bg", "Link in a cell", AA_TEXT)),
-				new Token("table-striped-link", "\"link-subtle\"", "Links in the striped rows",
-						text("table-striped-link", "bg-subtle", "Link in a striped row", AA_TEXT)),
-				new Token("table-details-bg", "$o-table-details-bg", "Fill of an expanded row and of its details row",
+				new Token("table-link", "$link-color adjusted to 4.5:1 on the darkest row fill, follows link-subtle", "Links in table cells",
+						text("table-link", "table-hover-bg", "Link in a row under the pointer", AA_TEXT)),
+				new Token("table-striped-link", "\"table-link\"", "Links in the striped rows",
+						text("table-striped-link", "table-striped-bg", "Link in a striped row", AA_TEXT)),
+				new Token("table-details-bg", "$o-table-details-bg, follows bg-selected", "Fill of an expanded row and of its details row",
 						fill("table-details-bg", "text", "Details row", AA_TEXT)),
-				new Token("table-details-bg-hover", "shade: table-details-bg, 10% darker", "Expanded row and details row under the pointer",
+				new Token("table-details-bg-hover", "$o-table-details-bg: the hover fill, or 10% darker for an own colour, follows bg-hover", "Expanded row and details row under the pointer",
 						fill("table-details-bg-hover", "text", "Details row, hover", AA_TEXT)),
 				new Token("table-sticky-col-edge", "shade: table-border, 10% darker", "Shadow line of a sticky column",
 						border("table-sticky-col-edge", "bg", "text", "Sticky column", NO_RATIO)),
-				new Token("table-row-selected-bg", "$o-table-row-selected-color, follows state-neutral-soft-bg", "Fill of a selected row",
+				new Token("table-row-selected-bg", "$o-table-row-selected-color, follows bg-selected", "Fill of a selected row",
 						fill("table-row-selected-bg", "text", "Selected row", AA_TEXT)),
 				new Token("table-edit-bg", "$o-table-edit-bg", "Fill of a table in the edit mode",
 						fill("table-edit-bg", "text", "Edit mode", AA_TEXT)))));
@@ -506,6 +506,11 @@ public class GuiDemoColorTokens {
 						text("lecture-excluded", "bg", "Excluded", AA_TEXT)),
 				new Token("selectus-onhold-decision", "neutral 700", "Text of a selectus row on hold with a decision, on the decision fill",
 						text("selectus-onhold-decision", "selectus-decision-a-bg", "On hold", AA_TEXT)))));
+		groups.add(new TokenGroup("Resting fills of the video editor and the portfolio", "component layer", List.of(
+				new Token("video-category-edit-bg", "neutral 50", "Fill of the button that edits the categories of a segment",
+						fill("video-category-edit-bg", "btn-default-fg", "Edit categories", AA_TEXT)),
+				new Token("portfolio-publication-nested-bg", "neutral 50", "Fill of the third level of the list of a publication",
+						fill("portfolio-publication-nested-bg", "text", "Third level", AA_TEXT)))));
 		return groups;
 	}
 

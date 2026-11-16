@@ -145,9 +145,11 @@ $o-token-base: (
 	"heading": if(meta.type-of($headings-color) == "color", $headings-color, $text-color),
 	"bg": $body-bg,
 	"bg-subtle": $panel-default-heading-bg,
-	// background of a row or an item under the pointer
+	// background of a row or an item under the pointer: level 2 in the hue
+	// of the focus colour ($table-bg-hover, o-scale-tint())
 	"bg-hover": $table-bg-hover,
-	// background of the selected (active) row or item
+	// background of the selected (active) row or item and of the opened
+	// details row: level 1 in the hue of the focus colour ($table-bg-active)
 	"bg-selected": $table-bg-active,
 	// surface above the page: dropdown menu, popover, dialog
 	"bg-raised": $dropdown-bg,
@@ -173,6 +175,16 @@ $o-token-base: (
 	// or a progress indicator, rgba(255, 255, 255, a)
 	"scrim": o-neutral(0)
 );
+
+// The scale that the base colour of a name searches first (o-token-ref()):
+// the fills of a selection read the scale of the focus colour, so that
+// --o-base-bg-selected is var(--o-theme1-{step}) and not the palette step with
+// the same colour. Other base colours search the palette first.
+$o-token-base-scales: ();
+$_o-token-focus-scale: o-scale-holder($o-focus-color);
+@if $_o-token-focus-scale != null and $_o-token-focus-scale != "neutral" {
+	$o-token-base-scales: ("bg-hover": $_o-token-focus-scale, "bg-selected": $_o-token-focus-scale);
+}
 
 // The swatch roles of the state tokens --o-state-{state}-{role}
 $o-token-state-roles: ("text", "bg", "fg", "border", "soft-bg", "soft-fg", "soft-border");
@@ -745,16 +757,23 @@ $o-token-layer-framework: (
 	"scope-toggle-on-hover-fg":                   (o-contrast-shade-text($o-scope-toggle-on-color, $o-scope-toggle-on-bg-color, 10%, "lighten", $state-bg: $o-scope-toggle-on-bg-hover-color), ("scope-toggle-on-fg",)),
 	// Table
 	"table-header":                               "text",
-	"table-link":                                 "link-subtle",
-	"table-striped-link":                         "link-subtle",
-	// the fill of an expanded row and of its details row
-	"table-details-bg":                           ($o-table-details-bg, ()),
+	// the links of a row: the link colour adjusted to 4.5:1 on the darkest
+	// fill of a row (o-table-row-darkest-bg(), _config.scss: under the
+	// pointer, selected, opened)
+	"table-link":                                 (o-scale-a11y-color($link-color, o-table-row-darkest-bg()), ("link-subtle", "link")),
+	"table-striped-link":                         "table-link",
+	// the fill of an opened row and of its details row: the selected fill
+	"table-details-bg":                           ($o-table-details-bg, ("bg-selected",)),
+	// the fill of an opened row and of its details row under the pointer:
+	// the hover fill, or the 10% darker shade of a theme colour of
+	// $o-table-details-bg (o-table-details-bg-hover(), _config.scss)
+	"table-details-bg-hover":                     (o-table-details-bg-hover($o-table-details-bg), ("bg-hover",)),
 	// the box in a details row, the table in the edit mode (line and fill),
 	// the fill of a selected row, the line of the collapsible filter row
 	"table-details-container-bg":                  ($o-table-details-container-bg, ()),
 	"table-edit-border":                           ($o-table-edit-border, ()),
 	"table-edit-bg":                               ($o-table-edit-bg, ()),
-	"table-row-selected-bg":                       ($o-table-row-selected-color, ("state-neutral-soft-bg",)),
+	"table-row-selected-bg":                       ($o-table-row-selected-color, ("bg-selected",)),
 	"table-filter-collapse-border":                ($o-table-filter-collapse-color, ()),
 	// the border of the box in a details row (width and style
 	// $o-table-details-container-border-width, -style)
@@ -887,8 +906,8 @@ $o-token-layer-component: (
 	"appointment-confirmed":                       ($o-ap-confirmed-color, ("state-success-bg",)),
 	"cal-desc-bg":                                 ($o-cal-desc-background-color, ()),
 	// Badges
-	"badge-row-expanded-link":                    (o-a11y-color($link-color, $o-table-details-bg), ("link",)),
-	"badge-row-expanded-link-hover":              (o-scale-a11y-color($link-color, darken($o-table-details-bg, 10%)), ("badge-row-expanded-link", "link")),
+	"badge-row-expanded-link":                    (o-scale-a11y-color($link-color, $o-table-details-bg), ("link",)),
+	"badge-row-expanded-link-hover":              (o-scale-a11y-color($link-color, o-table-details-bg-hover($o-table-details-bg)), ("badge-row-expanded-link", "link")),
 	// the text of a badge status: the text of the state, adjusted for the toolbar background
 	"badge-status-info":                          (o-a11y-color(o-state-color("neutral", "text"), $o-toolbar-bg-color), ("state-neutral-text",)),
 	"badge-status-success":                       (o-a11y-color(o-state-color("success", "text"), $o-toolbar-bg-color), ("state-success-text",)),
@@ -1248,6 +1267,9 @@ $o-token-layer-component: (
 	// the fill of a media in a page and of the toolbar of a container, the
 	// border of an image ($o-portfolio-media-content-background-color)
 	"portfolio-media-content-bg":                  ($o-portfolio-media-content-background-color, ()),
+	// the third level of the list of a publication: a fixed light grey on
+	// the second level (bg-subtle)
+	"portfolio-publication-nested-bg":             (o-neutral(50), ()),
 	// the version label of a media: border, text and fill
 	"media-version-label-border":                  ($o-media-version-label-color, ("state-neutral-text",)),
 	"media-version-label-fg":                      ($o-media-version-label-text, ("state-neutral-text",)),
@@ -1305,14 +1327,15 @@ $o-token-layer-component: (
 	"selectus-review-comments-bg":                ($navbar-default-bg, ("bg",)),
 	"selectus-review-comments-border":            ($navbar-default-border, ()),
 	// the text of a row on hold and of a row with the mail disabled, the glow
-	// of a new comment, the date of a comment
-	"selectus-onhold":                             ($o-selectus-onhold-color, ("text-muted",)),
+	// of a new comment, the date of a comment; adjusted to 4.5:1 on the
+	// darkest fill of a row (o-table-row-darkest-bg(), _config.scss)
+	"selectus-onhold":                             (o-scale-a11y-color($o-selectus-onhold-color, o-table-row-darkest-bg()), ("text-muted",)),
 	// the text of a row on hold with a decision: 4.5:1 on the decision fills
 	// and their hover, where selectus-onhold has too little contrast
 	"selectus-onhold-decision":                    (o-neutral(700), ()),
 	"selectus-review-comment-glow":                ($o-selectus-review-comment-glowing-color, ("state-warning-bg",)),
 	"selectus-review-comment-date":                ($o-selectus-review-comment-date-color, ()),
-	"selectus-mail-disabled":                      ($o-selectus-mail-disabled-color, ("text-muted",)),
+	"selectus-mail-disabled":                      (o-scale-a11y-color($o-selectus-mail-disabled-color, o-table-row-darkest-bg()), ("text-muted",)),
 	// the rating buttons A, B, C and abstain: fixed colours, the text on the
 	// fill. The text keeps 4.5:1 on the fill, the hover and the pressed fill:
 	// B has a dark text, adjusted for its pressed
@@ -1326,14 +1349,13 @@ $o-token-layer-component: (
 	"selectus-rating-abstain-bg":                 (o-neutral(600), ()),
 	"selectus-rating-abstain-fg":                 (o-neutral(0), ()),
 	// the colours of the ratings as text on the background: the letters in
-	// the explanation of the rating policy (4.5:1). The letter A has the
-	// colour of the fill of the button (selectus-rating-a-text). The yellow
-	// of B has too little contrast: the letters B and C keep their contrast
-	// on a white, a striped and a hovered table row, adjusted against the
-	// darkest of the three.
-	"selectus-rating-a-text":                     "selectus-rating-a-bg",
-	"selectus-rating-b-text":                     (o-a11y-color(o-palette("yellow", 500), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)), ()),
-	"selectus-rating-c-text":                     (o-a11y-color(o-palette("red", 500), o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)), ()),
+	// the explanation of the rating policy (4.5:1): the hue of the fill of
+	// the button, the nearest step of its hue with 4.5:1 on the darkest fill
+	// of a table row (o-table-row-darkest-bg(), _config.scss: white,
+	// striped, under the pointer, selected, opened).
+	"selectus-rating-a-text":                     (o-scale-a11y-color(o-palette("green", 500), o-table-row-darkest-bg()), ("selectus-rating-a-bg",)),
+	"selectus-rating-b-text":                     (o-scale-a11y-color(o-palette("yellow", 500), o-table-row-darkest-bg()), ()),
+	"selectus-rating-c-text":                     (o-scale-a11y-color(o-palette("red", 500), o-table-row-darkest-bg()), ()),
 	// the marks of the ratings A, B, C in the overview and of the own rating:
 	// the solid fill of the state success, warning and danger, so that the
 	// three hues are told apart. The border of the mark (btn-default-border)
@@ -1521,8 +1543,10 @@ $o-token-layer-component: (
 	"recorder-symbol-hover":                      (o-neutral(900), ()),
 	"recorder-symbol-active":                     (o-neutral(750), ()),
 	// the pressed item of the segment category list of the video editor:
-	// a fixed grey, darker than the hover fill bg-hover
+	// a fixed grey
 	"video-category-active-bg":                   (o-palette("gray", 200), ()),
+	// the button that edits the categories of a segment: a fixed light grey
+	"video-category-edit-bg":                     (o-neutral(50), ()),
 	// Video task
 	"video-startbox-main-border":                 "primary",
 	// the video task: the fill of the start box (color-mix() of primary by
@@ -1712,10 +1736,8 @@ $o-token-shades: (
 	"highscore-podium-third-bg-stop-1":           ("highscore-podium-third-bg", 40%, "lighten"),
 	"highscore-podium-third-bg-stop-2":           ("highscore-podium-third-bg", 10%, "lighten"),
 	"highscore-podium-third-bg-stop-4":           ("highscore-podium-third-bg", 20%, "lighten"),
-	// Table: the shadow line of a sticky column, the expanded row and its
-	// details row under the pointer
+	// Table: the shadow line of a sticky column
 	"table-sticky-col-edge":                      ("table-border", 10%),
-	"table-details-bg-hover":                     ("table-details-bg", 10%),
 	// Competence and taxonomy tag: under the pointer and pressed
 	"competence-bg-hover":                        ("competence-bg", 10%),
 	"competence-bg-active":                       ("competence-bg", 15%),
@@ -2357,6 +2379,9 @@ $o-token-contrast-pairs: (
 	("speedometer-warning-text", "bg", 3),
 	("speedometer-danger-text", "bg", 3),
 	("video-recording-info-fg", "video-recording-info-bg", 4.5),
+	("btn-default-fg", "video-category-edit-bg", 4.5),
+	("text", "table-striped-bg", 4.5),
+	("text", "portfolio-publication-nested-bg", 4.5),
 	// the focus ring inside the row of a tree entry, on the hover and the
 	// active hover fill of the row (the page and the tree have the focus pair)
 	("tree-focus", "tree-link-hover-bg", 3),
@@ -2461,6 +2486,17 @@ $o-token-contrast-pairs: (
 	("table-header", "bg", 4.5),
 	("table-link", "bg", 4.5),
 	("table-striped-link", "table-striped-bg", 4.5),
+	// the rows under the pointer, the selected row, the opened row and its
+	// details row
+	("table-link", "table-hover-bg", 4.5),
+	("table-striped-link", "table-hover-bg", 4.5),
+	("table-link", "table-row-selected-bg", 4.5),
+	("table-link", "table-details-bg", 4.5),
+	("table-link", "table-details-bg-hover", 4.5),
+	("text", "table-hover-bg", 4.5),
+	("text", "table-row-selected-bg", 4.5),
+	("text", "table-details-bg", 4.5),
+	("text", "table-details-bg-hover", 4.5),
 	("toolbar-close", "toolbar-bg", 3),
 	("toolbar-close", "toolbar-breadcrumb-bg", 3),
 	("toolbar-dropdown-active", "toolbar-bg", 4.5),
@@ -2929,7 +2965,7 @@ $o-token-removed-shorthands-renamed: (
 	// a base colour reads the scale step of its colour,
 	// the colour of a client theme stays a literal value
 	@each $name, $value in $o-token-base {
-		--o-base-#{$name}: #{o-token-ref($value, $neutral: true)};
+		--o-base-#{$name}: #{o-token-ref($value, map.get($o-token-base-scales, $name), $neutral: true)};
 	}
 
 	// semantic tokens

@@ -181,7 +181,6 @@ public class ColorTokensTest {
 			new Shade("highscore-podium-third-bg-stop-2", "highscore-podium-third-bg", -10),
 			new Shade("highscore-podium-third-bg-stop-4", "highscore-podium-third-bg", -20),
 			new Shade("table-sticky-col-edge", "table-border", 10),
-			new Shade("table-details-bg-hover", "table-details-bg", 10),
 			new Shade("competence-bg-hover", "competence-bg", 10), new Shade("competence-bg-active", "competence-bg", 15),
 			new Shade("labeled-bg-hover", "labeled-bg", 10), new Shade("labeled-border-hover", "labeled-border", 12),
 			new Shade("labeled-light-bg-hover", "labeled-light-bg", 10),
@@ -235,7 +234,7 @@ public class ColorTokensTest {
 			Map.entry("popover-bg", "#FFFFFF"), Map.entry("popover-border", "color-mix(in srgb, var(--o-shadow-color) 20%, transparent)"),
 			Map.entry("panel-bg", "#FFFFFF"), Map.entry("progress-bar-fg", "#FFFFFF"),
 			Map.entry("thumbnail-border", "#DDDDDD"), Map.entry("table-border", "#DDDDDD"),
-			Map.entry("table-striped-bg", "#F9FAFB"), Map.entry("table-hover-bg", "#F6F7FA"),
+			Map.entry("table-striped-bg", "#F9FAFB"), Map.entry("table-hover-bg", "#C8DFFF"),
 			Map.entry("alert-close", "#657286"), Map.entry("alert-close-hover", "#4E596D"),
 			Map.entry("message-table-border", "#2A3649"), Map.entry("chart-help-line", "#657286"),
 			Map.entry("content-table-header-bg", "#EAECF0"), Map.entry("editor-media-unavailable", "#8B95A7"),
@@ -459,7 +458,8 @@ public class ColorTokensTest {
 
 	/**
 	 * The new semantic tokens with the Bootstrap values of light: bg-hover
-	 * ($table-bg-hover), bg-selected ($table-bg-active), bg-raised
+	 * ($table-bg-hover, theme1-200), bg-selected ($table-bg-active,
+	 * theme1-100), bg-raised
 	 * ($dropdown-bg), border-subtle ($hr-border), text-disabled
 	 * ($btn-link-disabled-color), backdrop ($modal-backdrop-bg). shadow-color
 	 * and scrim have no Sass variable: black and white, the colours of the
@@ -467,10 +467,11 @@ public class ColorTokensTest {
 	 */
 	@Test
 	public void newSemanticTokenDefaults() {
-		// the Bootstrap greys read the neutral scale:
-		// #F5F5F5 neutral-50, #EEEEEE neutral-100, #777777 neutral-500
-		Assert.assertEquals("#F6F7FA", resolve("bg-hover"));
-		Assert.assertEquals("#F6F7FA", resolve("bg-selected"));
+		// the fills of a selection: steps 200 and 100 of the scale of the
+		// focus colour (theme1-500 in light); the Bootstrap greys read the
+		// neutral scale: #EEEEEE neutral-100, #777777 neutral-500
+		Assert.assertEquals("#C8DFFF", resolve("bg-hover"));
+		Assert.assertEquals("#E1EDFF", resolve("bg-selected"));
 		Assert.assertEquals("#FFFFFF", resolve("bg-raised"));
 		Assert.assertEquals("#EAECF0", resolve("border-subtle"));
 		Assert.assertEquals("#657286", resolve("text-disabled"));
@@ -489,7 +490,7 @@ public class ColorTokensTest {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
 		assertRuleReads(css, ".o_highlight_on_hover:hover", "background-color:var(--o-bg-hover)");
 		assertRuleReads(css, ".o_table_wrapper .table-hover>tbody>tr:not(.o_table_row_expanded):hover .o_col_sticky_left",
-				"background-color:var(--o-bg-hover)");
+				"background-color:var(--o-table-hover-bg)");
 		assertRuleReads(css, "ul.o_dropdown>li>a", "background:var(--o-bg-raised)");
 		assertRuleReads(css, ".o_assistance_accordion .o_item", "border-top:1px solid var(--o-border-subtle)");
 		assertRuleReads(css, ".o_assistance_accordion .o_item:last-child", "border-bottom:1px solid var(--o-border-subtle)");
@@ -1009,9 +1010,9 @@ public class ColorTokensTest {
 			Assert.assertEquals("var(--o-state-" + role + "-text)", tokens.get("badge-status-" + state));
 		}
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("").toLowerCase();
-		// the selected row reads its token, the soft fill of the neutral state
+		// the selected row reads its token, the selected fill
 		assertRuleReads(css, ".o_row_selected", "background:var(--o-table-row-selected-bg) !important");
-		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("table-row-selected-bg"));
+		Assert.assertEquals("var(--o-bg-selected)", tokens.get("table-row-selected-bg"));
 		// the right kprim cell reads its token, the soft fill of the success state
 		assertRuleReads(css, "table.o_qti_item_kprim td.o_qti_item_kprim_input_correct",
 				"background-color:var(--o-qti-match-kprim-correct-bg)");
@@ -1262,22 +1263,27 @@ public class ColorTokensTest {
 		// the letters B and C on the three rows, the letter A and the mark of
 		// the abstention with the fill of the button, the border of the marks
 		assertRuleReads(css, "span.o_rating_expl[title=C]", "color:var(--o-selectus-rating-c-text)");
-		Assert.assertEquals("#9D6500", resolve("selectus-rating-b-text"));
-		Assert.assertEquals("#E2002D", resolve("selectus-rating-c-text"));
+		// the nearest step of the hue with 4.5:1 on the darkest row (the row
+		// under the pointer): yellow-600, red-600, green-600
+		Assert.assertEquals("#7D4F00", resolve("selectus-rating-b-text"));
+		Assert.assertEquals("#B50022", resolve("selectus-rating-c-text"));
+		Assert.assertEquals("#016807", resolve("selectus-rating-a-text"));
 		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
 			assertContrast("btn-default-border", row, 3.0);
 			assertContrast("selectus-rating-abstain-bg", row, 3.0);
-			assertContrast("selectus-rating-a-bg", row, 4.5);
+			assertContrast("selectus-rating-a-text", row, 4.5);
 			assertContrast("selectus-rating-b-text", row, 4.5);
 			assertContrast("selectus-rating-c-text", row, 4.5);
 		}
-		// the adjusted tokens read the darkest row of the theme config, no hex value
+		// the adjusted tokens read the darkest row of the theme config
+		// (o-table-row-darkest-bg(), _config.scss), no hex value
 		String scss = read(light.resolve("modules/_tokens.scss"));
-		String darkest = "o-darkest-color($body-bg, $table-bg-accent, $table-bg-hover)";
-		for (String token : List.of("selectus-rating-b-text", "selectus-rating-c-text")) {
+		String darkest = "o-table-row-darkest-bg())";
+		for (String token : List.of("selectus-rating-a-text", "selectus-rating-b-text", "selectus-rating-c-text")) {
 			Matcher m = Pattern.compile("\"" + token + "\":\\s*\\(([^\\n]*)\\),\\s*\\n").matcher(scss);
 			Assert.assertTrue(token + " not in _tokens.scss", m.find());
-			Assert.assertTrue(token + " is not adjusted against the darkest row: " + m.group(1), m.group(1).contains(darkest));
+			Assert.assertTrue(token + " is not adjusted against the darkest row: " + m.group(1),
+					m.group(1).startsWith("o-scale-a11y-color(o-palette(") && m.group(1).contains(darkest));
 		}
 		// the lighter black fill stays with the 8 state fills
 		Matcher state = Pattern.compile("\"([a-z0-9-]+)\":[^\\n]*, \"state\"\\),").matcher(scss);
@@ -1506,7 +1512,7 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-dialog-header-bg)", tokens.get("dialog-footer-bg"));
 		Assert.assertEquals("var(--o-text)", tokens.get("login-lead"));
 		Assert.assertEquals("var(--o-content-header)", tokens.get("login-lead-header"));
-		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("table-row-selected-bg"));
+		Assert.assertEquals("var(--o-bg-selected)", tokens.get("table-row-selected-bg"));
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("navbar-logout"));
 		// the colours of today
 		String[] values = { "box-tip-border", "#4E596D", "box-important-border", "#047A9F",
@@ -1828,7 +1834,7 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-state-warning-bg)", tokens.get("selectus-review-comment-glow"));
 		// the colours of today
 		String[] values = { "empty-border", "#E4E7EC", "highscore-podium-border", "#D9DDE3", "user-info-profile-border", "#C6CCD6",
-				"lp-pagination-done-border", "#436202", "curriculum-element-inactive", "#657286", "selectus-onhold", "#657286",
+				"lp-pagination-done-border", "#436202", "curriculum-element-inactive", "#657286", "selectus-onhold", "#4E596D",
 				"authentication-level1", "#7A2F07", "user-status-inactive-border", "#637286" };
 		for (int i = 0; i < values.length; i += 2) {
 			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
@@ -2102,8 +2108,9 @@ public class ColorTokensTest {
 	public void contrastReviewColours() throws IOException {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
 		Assert.assertEquals("var(--o-text-muted)", tokens.get("highscore-histogram-text"));
-		Assert.assertEquals("var(--o-text-muted)", tokens.get("selectus-onhold"));
-		Assert.assertEquals("var(--o-text-muted)", tokens.get("selectus-mail-disabled"));
+		// the muted text adjusted to 4.5:1 on the row under the pointer
+		Assert.assertEquals("var(--o-neutral-600)", tokens.get("selectus-onhold"));
+		Assert.assertEquals("var(--o-neutral-600)", tokens.get("selectus-mail-disabled"));
 		assertContrast("highscore-histogram-text", "bg", 4.5);
 		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
 			assertContrast("selectus-onhold", row, 4.5);
@@ -2416,6 +2423,116 @@ public class ColorTokensTest {
 	}
 
 	/**
+	 * The fills of a selection have the hue of the focus colour, in a light
+	 * version (o-scale-tint()): level 1, step $o-selection-step (100), for the
+	 * selected row and the opened details row; level 2, step
+	 * $o-selection-hover-step (200), for a row under the pointer. In light
+	 * and openolat the focus colour is a step of the brand ramp: the base
+	 * colours read the brand ramp. The table tokens are own customisation
+	 * points that follow the two semantic tokens. Under the pointer level 2
+	 * wins over level 1: on a selected row, on an opened row and its details
+	 * row, on their sticky columns and on a selected video category. Text and
+	 * table links keep 4.5:1 on both levels.
+	 */
+	@Test
+	public void selectionFillsFollowTheFocusHue() {
+		Path openolatCss = Path.of("src/main/webapp/static/themes/openolat/theme.css");
+		for (Map<String, String> theme : List.of(tokens, parseTokens(read(openolatCss)))) {
+			Assert.assertEquals("var(--o-theme1-200)", theme.get("base-bg-hover"));
+			Assert.assertEquals("var(--o-theme1-100)", theme.get("base-bg-selected"));
+			Assert.assertEquals("var(--o-bg-hover)", theme.get("table-hover-bg"));
+			Assert.assertEquals("var(--o-bg-selected)", theme.get("table-row-selected-bg"));
+			Assert.assertEquals("var(--o-bg-selected)", theme.get("table-details-bg"));
+			Assert.assertEquals("var(--o-bg-hover)", theme.get("table-details-bg-hover"));
+		}
+		Assert.assertEquals("#C8DFFF", resolve("bg-hover"));
+		Assert.assertEquals("#E1EDFF", resolve("bg-selected"));
+		// the Sass defaults: one function, the scale of the focus colour, the
+		// two steps in one place
+		Path light = Path.of("src/main/webapp/static/themes/light");
+		assertSourceHas(light.resolve("_config.scss"),
+				"$o-selection-step				: 100 !default;",
+				"$o-selection-hover-step			: 200 !default;",
+				"$table-bg-hover					: o-scale-tint($o-focus-color, $o-selection-hover-step) !default;",
+				"$table-bg-active				: o-scale-tint($o-focus-color, $o-selection-step) !default;",
+				"$o-table-row-selected-color     : $table-bg-active !default;",
+				"$o-table-details-bg							: $table-bg-active !default;");
+		assertSourceHas(light.resolve("modules/_tokens.scss"),
+				"\"table-row-selected-bg\":                       ($o-table-row-selected-color, (\"bg-selected\",)),",
+				"\"table-details-bg\":                           ($o-table-details-bg, (\"bg-selected\",)),",
+				"\"table-details-bg-hover\":                     (o-table-details-bg-hover($o-table-details-bg), (\"bg-hover\",)),");
+		// the rows under the pointer read the table token
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		assertRuleReads(css, ".table-hover>tbody>tr:hover", "background-color:var(--o-table-hover-bg)");
+		assertRuleReads(css, ".o_table_wrapper .table-hover>tbody>tr:not(.o_table_row_expanded):hover .o_col_sticky_right",
+				"background-color:var(--o-table-hover-bg)");
+		// level 2 wins over level 1: the selected row and its details row (the
+		// selector lists hold commas: the compiled text is checked)
+		Assert.assertTrue("No hover rule of the selected row", css.contains(
+				".o_table_wrapper .table-hover>tbody>tr.o_row_selected:where(:hover,:has(+.o_table_row_details:hover))>td,"
+				+ ".o_table_wrapper .table-hover>tbody>tr.o_row_selected:where(:hover)+.o_table_row_details>td,"
+				+ ".o_table_wrapper .table-hover>tbody>tr.o_row_selected+.o_table_row_details:where(:hover)>td"
+				+ "{background-color:var(--o-table-hover-bg) !important}"));
+		assertRuleReads(css, ".o_table_wrapper .o_row_selected+.o_table_row_details>td",
+				"background-color:var(--o-table-row-selected-bg) !important");
+		// the opened row and its details row, and their sticky columns
+		assertRuleReads(css, ".o_table_wrapper .table-striped>tbody>tr.o_table_row_expanded:hover>td",
+				"background-color:var(--o-table-details-bg-hover)");
+		assertRuleReads(css, ".o_table_wrapper .table-striped>tbody>tr.o_table_row_details:hover>td",
+				"background-color:var(--o-table-details-bg-hover)");
+		for (String side : List.of("right", "left")) {
+			Assert.assertTrue("No hover rule of the sticky column " + side + " of an opened row", css.contains(
+					".o_table_wrapper .o_scrollable_" + side + " .table-striped>tbody>tr:nth-child(odd) .o_col_sticky_" + side
+					+ ":is(.o_table_row_expanded:hover *,.o_table_row_expanded:where(:has(+.o_table_row_details:hover)) *)"
+					+ "{background:var(--o-table-details-bg-hover)}"));
+		}
+		// the video category: the hover rule comes after the selected rule
+		String category = ".o_video_segment_category_selection .o_categories .o_category_list .o_category_list_item";
+		int selected = css.indexOf(category + ".o_selected{");
+		int hover = css.indexOf(category + ":hover{");
+		Assert.assertTrue("No rule of the selected or the hovered video category", selected >= 0 && hover >= 0);
+		Assert.assertTrue("The hover of a video category comes before the selected one", hover > selected);
+		// the striped row and the two levels differ
+		Assert.assertNotEquals(resolve("table-striped-bg"), resolve("table-row-selected-bg"));
+		Assert.assertNotEquals(resolve("table-row-selected-bg"), resolve("table-hover-bg"));
+		Assert.assertNotEquals(resolve("table-details-bg"), resolve("table-details-bg-hover"));
+		// text and table links on the two levels
+		for (String fill : List.of("bg-hover", "bg-selected", "table-hover-bg", "table-row-selected-bg", "table-details-bg",
+				"table-details-bg-hover")) {
+			assertContrast("text", fill, 4.5);
+			assertContrast("table-link", fill, 4.5);
+		}
+		assertContrast("table-striped-link", "table-hover-bg", 4.5);
+		// light: the table link is one step darker than the link (theme1-600)
+		Assert.assertEquals("var(--o-theme1-600)", tokens.get("table-link"));
+		// a resting fill never reads a hover token: own tokens with the light
+		// grey of the neutral scale
+		for (String token : List.of("video-category-edit-bg", "portfolio-publication-nested-bg")) {
+			Assert.assertEquals(token, "var(--o-neutral-50)", tokens.get(token));
+		}
+		assertRuleReads(css, ".o_video_segment_category_edit a", "background-color:var(--o-video-category-edit-bg)");
+		assertRuleReads(css, ".o_portfolio_publication ul li li li", "background:var(--o-portfolio-publication-nested-bg)");
+		// the rows of the video timeline have the fills of a striped table, the
+		// active channel the selected fill (it comes after the stripes)
+		assertRuleReads(css, ".o_video_timeline_box", "background-color:var(--o-bg)");
+		assertRuleReads(css, ".o_video_timeline_box:nth-child(odd)", "background-color:var(--o-table-striped-bg)");
+		assertRuleReads(css, ".o_video_timeline_box.o_video_active", "background-color:var(--o-table-row-selected-bg)");
+		Assert.assertTrue("The active channel comes before the stripes",
+				css.indexOf(".o_video_timeline_box.o_video_active{") > css.indexOf(".o_video_timeline_box:nth-child(odd){"));
+		assertContrast("text", "table-striped-bg", 4.5);
+		assertContrast("text", "table-row-selected-bg", 4.5);
+		assertContrast("btn-default-fg", "video-category-edit-bg", 4.5);
+		assertContrast("text", "portfolio-publication-nested-bg", 4.5);
+		// the hover tokens are read only by rules of a pointer state
+		Matcher rule = RULE.matcher(css);
+		while (rule.find()) {
+			if (rule.group(2).matches("(?s).*var\\(--o-(bg-hover|table-hover-bg|table-details-bg-hover)\\).*")) {
+				Assert.assertTrue("A resting fill reads a hover token: " + rule.group(1), rule.group(1).contains(":hover"));
+			}
+		}
+	}
+
+	/**
 	 * Selectus: the marks of the ratings A, B and C (overview and own rating)
 	 * read their mark tokens, references to the solid fill of the state
 	 * success, warning and danger; the hidden letter has the colour of the
@@ -2544,7 +2661,8 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_icon_progress_success", "color:var(--o-state-success-text)");
 		assertRuleReads(css, ".o_icon_progress_danger", "color:var(--o-state-danger-text)");
 		assertRuleReads(css, "span.o_rating_expl[title=A]", "color:var(--o-selectus-rating-a-text)");
-		Assert.assertEquals("var(--o-selectus-rating-a-bg)", tokens.get("selectus-rating-a-text"));
+		// the hue of the fill, the step with 4.5:1 on the rows: green-600
+		Assert.assertEquals("var(--o-green-600)", tokens.get("selectus-rating-a-text"));
 		for (String row : List.of("bg", "table-striped-bg", "table-hover-bg")) {
 			assertContrast("selectus-rating-a-text", row, 4.5);
 		}

@@ -50,7 +50,13 @@ $state-danger-bg: var(--o-state-danger-soft-bg);
 @import "../../../bootstrap/stylesheets/bootstrap/type";
 @import "../../../bootstrap/stylesheets/bootstrap/code";
 @import "../../../bootstrap/stylesheets/bootstrap/grid";
+// The Bootstrap rule of a row under the pointer (.table-hover) reads the
+// token table-hover-bg: the Sass variable holds the token during the import
+// only
+$o-bootstrap-table-bg-hover: $table-bg-hover;
+$table-bg-hover: var(--o-table-hover-bg);
 @import "../../../bootstrap/stylesheets/bootstrap/tables";
+$table-bg-hover: $o-bootstrap-table-bg-hover;
 @import "../../../bootstrap/stylesheets/bootstrap/forms";
 // The Bootstrap rules of .btn, .btn-default, .btn-primary and .btn-danger read
 // the button tokens, .btn-success, .btn-info and .btn-warning the state tokens

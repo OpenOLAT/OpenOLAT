@@ -1824,12 +1824,24 @@ a.o_labeled_light {
 .dropdown-menu.o_with_labeled {
 	padding: 0;
 	margin: 0;
+	// the items fill the menu up to its rounded corners; the focus ring of
+	// an item is inside the item (_accessibility.scss) and stays visible
+	overflow: hidden;
 	.o_labeled {
 		text-align: left;
 	}
 	& >li>a {
 		padding: 5px 5px;
-		margin: 1px;
+		margin: 0;
+	}
+}
+// a label in a menu is a menu item: no border, no rounded corners, no margin
+.dropdown-menu {
+	.o_labeled,
+	.o_labeled_light {
+		border: 0;
+		border-radius: 0;
+		margin: 0;
 	}
 }
 
