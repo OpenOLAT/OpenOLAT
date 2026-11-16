@@ -374,7 +374,8 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment chooseCP(String resourceTitle) {
-		return chooseResource(chooseCpButton, resourceTitle);
+		By chooseBy = By.cssSelector(".o_sel_cp_config .o_re_reference .btn.btn-primary");
+		return chooseResourceModernV2(chooseBy, resourceTitle);
 	}
 	
 	/**

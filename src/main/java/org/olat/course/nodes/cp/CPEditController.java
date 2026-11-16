@@ -28,15 +28,13 @@ package org.olat.course.nodes.cp;
 import java.io.File;
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -44,18 +42,16 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.ICourse;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CPCourseNode;
-import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.ims.cp.CPManager;
@@ -65,7 +61,9 @@ import org.olat.modules.cp.CPUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.EmptyScreenData;
+import org.olat.repository.ui.RepositoryEntryReferenceController;
+import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,26 +73,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class CPEditController extends ActivateableTabbableDefaultController {
+public class CPEditController extends ActivateableTabbableDefaultController implements ReferenceContentProvider {
 
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
-	private static final String VC_CHOSENCP = "chosencp";
 	public static final String CONFIG_DELIVERYOPTIONS = "deliveryOptions";
   
 	// NLS support:	
 	public static final String NLS_ERROR_CPREPOENTRYMISSING = "error.cprepoentrymissing";
-	private static final String NLS_NO_CP_CHOSEN = "no.cp.chosen";
-	private static final String NLS_COMMAND_CHOOSECP = "command.choosecp";
-	private static final String NLS_COMMAND_CREATECP = "command.createcp";
-	private static final String NLS_COMMAND_CHANGECP = "command.changecp";
 	
 	private Panel main;
 	private VelocityContainer cpConfigurationVc;
 	
 	private ModuleConfiguration config;
-	private ReferencableEntriesSearchController searchController;
+	private final IconPanelLabelTextContent iconPanelContent;
+	private final RepositoryEntryReferenceController referenceCtrl;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	
 	private CPCourseNode cpNode;
@@ -105,13 +99,7 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 
 	private static final String[] paneKeys = { PANE_TAB_CPCONFIG };
 
-	private Link previewLink;
-	private Link editLink;
-	private Link chooseCPButton;
-	private Link changeCPButton;
-
 	private Controller previewCtr;
-	private CloseableModalController cmc;
 	private final BreadcrumbPanel stackPanel;
 	
 	@Autowired
@@ -129,39 +117,35 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 		main = new Panel("cpmain");
 		
 		cpConfigurationVc = createVelocityContainer("edit");
-		chooseCPButton = LinkFactory.createButtonSmall(NLS_COMMAND_CREATECP, cpConfigurationVc, this);
-		chooseCPButton.setElementCssClass("o_sel_cp_choose_repofile");
-		changeCPButton = LinkFactory.createButtonSmall(NLS_COMMAND_CHANGECP, cpConfigurationVc, this);
-		changeCPButton.setElementCssClass("o_sel_cp_change_repofile");
 		
+		iconPanelContent = new IconPanelLabelTextContent("content");
+
+		RepositoryEntry cpEntry = cpNode.getReferencedRepositoryEntry();
 		DeliveryOptions parentConfig = null;
-		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
-			// fetch repository entry to display the repository entry title of the chosen cp
-			RepositoryEntry re = getCPReference(config, false);
-			if (re == null) { // we cannot display the entries name, because the
-				// repository entry had been deleted between the time when it was chosen here, and now				
-				showError(NLS_ERROR_CPREPOENTRYMISSING);
-				cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
-				cpConfigurationVc.contextPut(VC_CHOSENCP, translate("no.cp.chosen"));
-			} else {
-				if (canManage(re)) {
-					editLink = LinkFactory.createButtonSmall("edit", cpConfigurationVc, this);
-				}
-				cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-				String displayname = StringHelper.escapeHtml(re.getDisplayname());
-				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, cpConfigurationVc, this);
-				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-				previewLink.setTitle(getTranslator().translate("command.preview"));
-				
-				CPPackageConfig cpConfig = cpManager.getCPPackageConfig(re.getOlatResource());
-				parentConfig = (cpConfig == null ? null : cpConfig.getDeliveryOptions());
-			}
-		} else {
-			// no valid config yet
-			cpConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
-			cpConfigurationVc.contextPut(VC_CHOSENCP, translate(NLS_NO_CP_CHOSEN));
+		if (cpEntry != null) {
+			CPPackageConfig cpConfig = cpManager.getCPPackageConfig(cpEntry.getOlatResource());
+			parentConfig = (cpConfig == null ? null : cpConfig.getDeliveryOptions());
+		} else if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
+			// we cannot display the entry, because the repository entry had been deleted
+			// between the time when it was chosen here, and now
+			showError(NLS_ERROR_CPREPOENTRYMISSING);
 		}
-		
+
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+				.withMessageTranslated(translate("no.cp.resource.selected"))
+				.withDescTranslated(translate("no.cp.resource.selected.text"))
+				.withIconCss("o_icon o_FileResource-IMSCP_icon")
+				.withPrimaryButton("o_icon_search o_sel_cp_choose_repofile", "select", null)
+				.withSecondaryButton("o_icon_add", "create", null, "create")
+				.withSecondaryButton("o_icon_import", "import", null, "import")
+				.build();
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
+		CPCourseNodeReferenceProvider referenceProvider = new CPCourseNodeReferenceProvider(repositoryService,
+				List.of(ImsCPFileResource.TYPE_NAME), defaultOrganisations, emptyStateConfig, translate("command.choosecp"), this);
+		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, cpEntry, referenceProvider);
+		listenTo(referenceCtrl);
+		cpConfigurationVc.put("reference", referenceCtrl.getInitialComponent());
+
 		Boolean cpMenu = config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU);
 		cpMenuForm = new CompMenuForm(ureq, wControl, cpMenu);
 		listenTo(cpMenuForm);
@@ -178,75 +162,17 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == chooseCPButton || source == changeCPButton) {
-			removeAsListenerAndDispose(searchController);
-			List<Organisation> defaultOrganisations = repositoryService.getOrganisations(courseEntry);
-			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
-					ImsCPFileResource.TYPE_NAME, defaultOrganisations, translate(NLS_COMMAND_CHOOSECP));			
-			listenTo(searchController);
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate(NLS_COMMAND_CREATECP)
-			);
-			listenTo(cmc);
-			cmc.activate();
-			
-		} else if (source == previewLink){
-			// Preview as modal dialogue only if the config is valid
-			RepositoryEntry re = getCPReference(config, false);
-			if (re == null) { // we cannot preview it, because the repository entry
-				// had been deleted between the time when it was chosen here, and now				
-				showError(NLS_ERROR_CPREPOENTRYMISSING);
-			} else {
-				File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
-				Boolean showMenuB = config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU);
-				// pre: showMenuB != null
-				removeAsListenerAndDispose(previewCtr);
-				
-				DeliveryOptions previewOptions = deliveryOptionsCtrl.getOptionsForPreview();
-				previewCtr = CPUIFactory.getInstance().createMainLayoutPreviewController_v2(ureq, getWindowControl(), new LocalFolderImpl(cpRoot),
-						showMenuB.booleanValue(), previewOptions);
-				stackPanel.pushController(translate("preview.cp"), previewCtr);
-			}
-		} else if (source == editLink) {
-			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, getWindowControl(), cpNode);
-		}
+		//
 	}
 
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if (source == searchController) {
-			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) { 
-				// search controller done
-				// -> close closeable modal controller
-				cmc.deactivate();
-				RepositoryEntry re = searchController.getSelectedEntry();
-				if (re != null) {
-					setCPReference(re, config);
-					cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-					String displayname = StringHelper.escapeHtml(re.getDisplayname());
-					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, cpConfigurationVc, this);
-					previewLink.setCustomEnabledLinkCSS("o_preview");
-					previewLink.setTitle(getTranslator().translate("command.preview"));
-					// remove existing edit link, add new one if user is allowed to edit this CP
-					if (editLink != null) {
-						cpConfigurationVc.remove(editLink);
-						editLink = null;
-					}
-					if (canManage(re)) {
-						editLink = LinkFactory.createButtonSmall("edit", cpConfigurationVc, this);
-					}
-					// fire event so the updated config is saved by the editormaincontroller
-					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-					
-					CPPackageConfig cpConfig = cpManager.getCPPackageConfig(re.getOlatResource());
-					if(cpConfig != null && cpConfig.getDeliveryOptions() != null) {
-						deliveryOptionsCtrl.setParentDeliveryOptions(cpConfig.getDeliveryOptions());
-					}
-				}
+		if (source == referenceCtrl) {
+			if (event == RepositoryEntryReferenceController.SELECTION_EVENT) {
+				doChangeCP(urequest, referenceCtrl.getRepositoryEntry());
+			} else if (event == RepositoryEntryReferenceController.PREVIEW_EVENT) {
+				doPreview(urequest);
 			}
-			// else cancelled repo search
 		} else if (source == cpMenuForm) {
 			if (event == Event.DONE_EVENT) {
 				config.setBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU, cpMenuForm.isCpMenu());
@@ -260,10 +186,38 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 		}
 	}
 
-	private boolean canManage(RepositoryEntry re) {
-		return repositoryService.hasRoleExpanded(getIdentity(), re,
-				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
-				GroupRoles.owner.name());
+	private void doChangeCP(UserRequest ureq, RepositoryEntry re) {
+		if (re == null) {
+			return;
+		}
+		setCPReference(re, config);
+		// fire event so the updated config is saved by the editormaincontroller
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+
+		CPPackageConfig cpConfig = cpManager.getCPPackageConfig(re.getOlatResource());
+		if (cpConfig != null && cpConfig.getDeliveryOptions() != null) {
+			deliveryOptionsCtrl.setParentDeliveryOptions(cpConfig.getDeliveryOptions());
+		}
+	}
+
+	private void doPreview(UserRequest ureq) {
+		RepositoryEntry re = getCPReference(config, false);
+		if (re == null) { // we cannot preview it, because the repository entry
+			// had been deleted between the time when it was chosen here, and now
+			showError(NLS_ERROR_CPREPOENTRYMISSING);
+			return;
+		}
+
+		File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
+		Boolean showMenuB = config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU);
+		// pre: showMenuB != null
+		removeAsListenerAndDispose(previewCtr);
+
+		DeliveryOptions previewOptions = deliveryOptionsCtrl.getOptionsForPreview();
+		previewCtr = CPUIFactory.getInstance().createMainLayoutPreviewController_v2(ureq, getWindowControl(), new LocalFolderImpl(cpRoot),
+				showMenuB.booleanValue(), previewOptions);
+		listenTo(previewCtr);
+		stackPanel.pushController(translate("preview.cp"), previewCtr);
 	}
 
 	@Override
@@ -325,10 +279,6 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 	@Override
 	protected void doDispose() {
 		//child controllers registered with listenTo() get disposed in BasicController
-		if (previewCtr != null) {
-			previewCtr.dispose();
-			previewCtr = null;
-		}
         super.doDispose();
 	}
 
@@ -340,6 +290,58 @@ public class CPEditController extends ActivateableTabbableDefaultController {
 	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
+	}
+
+	@Override
+	public Component getContent(RepositoryEntry repositoryEntry) {
+		return iconPanelContent;
+	}
+
+	@Override
+	public void refresh(Component cmp, RepositoryEntry repositoryEntry) {
+		// Refresh is handled on change event.
+	}
+
+	/**
+	 * A CP learning content can be selected, created or imported for a course element,
+	 * and replace is unconditional (matches the previous behaviour).
+	 */
+	public class CPCourseNodeReferenceProvider extends CourseNodeReferenceProvider {
+
+		public CPCourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes,
+				List<Organisation> defaultOrganisations, EmptyStateConfig emptyStateConfig, String selectionTitle,
+				ReferenceContentProvider referenceContentProvider) {
+			super(repositoryService, resourceTypes, defaultOrganisations, emptyStateConfig, selectionTitle, referenceContentProvider);
+		}
+
+		@Override
+		public boolean useNewSelectionDialog() {
+			return true;
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.cps");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-IMSCP_icon",
+					translate("select.no.cp.yet"),
+					translate("select.no.cp.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-IMSCP_icon",
+					translate("select.no.cps.in.view"),
+					translate("select.no.cps.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term");
+		}
 	}
 
 }

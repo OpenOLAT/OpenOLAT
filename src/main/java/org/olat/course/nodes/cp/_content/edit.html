@@ -1,29 +1,7 @@
-<fieldset class="o_form form-horizontal clearfix">
+<fieldset class="o_form form-horizontal clearfix o_sel_cp_config">
 	<legend>$r.contextHelpWithWrapper("manual_user/learningresources/Course_Element_CP_Learning_Content/")
 	$r.translate("header")</legend>
-	
-	#if ($showPreviewButton)
-		<div class="form-group">
-			<label class="control-label col-sm-3">$r.translate("chosencp")</label>
-			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview")</p></div>
-		</div>
-		<div class="form-group">
-			<div class="col-sm-offset-3 col-sm-9">
-			$r.render("command.changecp")	    
-			#if($r.available("edit"))
-				$r.render("edit")
-			#end
-			</div>
-		</div>
-	#else
-		<div class="form-group">
-			<label class="control-label col-sm-3">$r.translate("chosencp")</label>
-			<div class="col-sm-9"><p class="form-control-static">$chosencp</p></div>
-		</div>
-		<div class="form-group">
-			<div class="col-sm-offset-3 col-sm-9">$r.render("command.createcp")</div>
-		</div>    
-	#end	
+	$r.render("reference")
 </fieldset>
 <fieldset class="clearfix o_block_top">
   	<legend>
