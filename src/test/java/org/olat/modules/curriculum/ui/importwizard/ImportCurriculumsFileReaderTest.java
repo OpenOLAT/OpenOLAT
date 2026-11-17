@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.importwizard;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
@@ -144,8 +145,23 @@ public class ImportCurriculumsFileReaderTest extends OlatTestCase {
 			.map(ImportedMembershipRow::getUsername)
 			.contains("slangenegger", "knotter", "mdelacruz", "cwieser", "akieser", "cmueller")
 			.doesNotContain("equastmann_lwitschi");
+	}
 	
+	@Test
+	public void parseExcelTimeEnglish() {
+		LocalTime time = ImportCurriculumsFileReader.parseTime("06:20\u202FPM");
+		Assert.assertEquals(LocalTime.of(18, 20), time);
 		
+		LocalTime time2 = ImportCurriculumsFileReader.parseTime("12:00\u202FPM");
+		Assert.assertEquals(LocalTime.of(12, 0), time2);
+		
+		LocalTime time3 = ImportCurriculumsFileReader.parseTime("11:00 AM");
+		Assert.assertEquals(LocalTime.of(11, 0), time3);
 	}
 
+	@Test
+	public void parseExcelTimeSwiss() {
+		LocalTime time4 = ImportCurriculumsFileReader.parseTime("18:30");
+		Assert.assertEquals(LocalTime.of(18, 30), time4);
+	}
 }

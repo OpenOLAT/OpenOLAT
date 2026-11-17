@@ -207,6 +207,7 @@ public abstract class AbstractExcelReader {
 	public static final LocalTime parseTime(String value) {
 		try {
 			if(value.contains("AM") || value.contains("PM")) {
+				value = value.replace('\u202F', ' ');
 				return LocalTime.parse(value, AM_PM_TIME_FORMATTER);
 			}
 			if(value.contains(":")) {
