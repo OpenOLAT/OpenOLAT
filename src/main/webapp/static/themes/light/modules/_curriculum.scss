@@ -403,17 +403,12 @@ a.o_validation_open_results {
 		grid-area: status;
 		white-space: nowrap;
 		font-size: $o-figure-card-label-font-size;
-	}
-	.o_curriculum_members_status_minimum {
-		font-weight: bold;
-		color: var(--o-state-neutral-text);
-	}
-	.o_curriculum_members_status_overbooked {
-		font-weight: bold;
-		color: var(--o-state-danger-text);
-	}
-	.o_curriculum_members_status_fullybooked {
-		font-weight: bold;
+		.o_icon_info {
+			color: var(--o-progress-bar-neutral-bg);
+		}
+		.o_ac_offer_overbooked_icon {
+			color: var(--o-state-danger-bg);
+		}
 	}
 	.o_curriculum_members_bar {
 		grid-area: bar;

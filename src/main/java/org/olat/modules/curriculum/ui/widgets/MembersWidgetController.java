@@ -209,25 +209,24 @@ public class MembersWidgetController extends TableWidgetController implements Fl
 		
 		ParticipantsAvailabilityNum availabilityNum = withMax? acService.getParticipantsAvailability(max, total, true): null;
 		String status = null;
-		String statusCss = null;
+		String iconCss = null;
 		if (minNotReached) {
 			status = translate("participants.to.minimum", format(min - total));
-			statusCss = "o_curriculum_members_status_minimum";
+			iconCss = "o_icon_info";
 		} else if (availabilityNum != null && availabilityNum.availability() == ParticipantsAvailability.overbooked) {
 			status = translate("widget.members.overbooked", format(total - max));
-			statusCss = "o_curriculum_members_status_overbooked";
+			iconCss = ParticipantsAvailability.getIconCss(availabilityNum);
 		} else if (availabilityNum != null && availabilityNum.availability() == ParticipantsAvailability.fullyBooked) {
 			status = translate("filter.occupancy.status.fully.booked");
-			statusCss = "o_curriculum_members_status_fullybooked";
 		} else if (availabilityNum != null) {
 			status = translateCount(availabilityNum.numAvailable(), "widget.members.seats.left");
 		}
 		if (status != null) {
-			sb.append("<span class='o_curriculum_members_status");
-			if (statusCss != null) {
-				sb.append(" ").append(statusCss);
+			sb.append("<span class='o_curriculum_members_status'>");
+			if (iconCss != null) {
+				sb.append("<i class='o_icon ").append(iconCss).append("' aria-hidden='true'> </i> ");
 			}
-			sb.append("'>").append(StringHelper.escapeHtml(status)).append("</span>");
+			sb.append(StringHelper.escapeHtml(status)).append("</span>");
 		}
 		
 		if (withMax) {
@@ -246,9 +245,13 @@ public class MembersWidgetController extends TableWidgetController implements Fl
 		progressBar.setRenderSize(RenderSize.small);
 		progressBar.setAriaHidden(true);
 		
-		List<Segment> segments = new ArrayList<>(2);
-		segments.add(new Segment(numActive, BarColor.success, "o_members_widget_bar_active", translate("widget.members.bar.active")));
-		segments.add(new Segment(numPending, BarColor.warning, translate("widget.members.bar.pending")));
+		long activeInMax = Math.min(numActive, max);
+		List<Segment> segments = new ArrayList<>(3);
+		segments.add(new Segment(activeInMax, BarColor.success, "o_members_widget_bar_active", translate("widget.members.bar.active")));
+		segments.add(new Segment(Math.min(numPending, max - activeInMax), BarColor.warning, translate("widget.members.bar.pending")));
+		if (total > max) {
+			segments.add(new Segment(total - max, BarColor.danger, translate("filter.occupancy.status.overbooked")));
+		}
 		List<Marker> markers = new ArrayList<>(2);
 		if (minNotReached) {
 			markers.add(new Marker(min, BarColor.neutral, translate("widget.members.bar.minimum")));
