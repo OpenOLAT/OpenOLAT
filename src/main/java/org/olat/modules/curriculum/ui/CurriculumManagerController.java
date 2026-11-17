@@ -90,7 +90,6 @@ public class CurriculumManagerController extends BasicController implements Acti
 
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);
 		toolbarPanel.setShowCloseLink(false, false);
-		toolbarPanel.setInvisibleCrumb(-1);
 		toolbarPanel.setToolbarEnabled(false);
 		putInitialPanel(toolbarPanel);
 		

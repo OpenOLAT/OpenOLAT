@@ -51,7 +51,6 @@ public class CoachMainController extends BasicController implements Activateable
 		
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);
 		toolbarPanel.setShowCloseLink(false, false);
-		toolbarPanel.setInvisibleCrumb(-1);
 		toolbarPanel.setToolbarAutoEnabled(true);
 		putInitialPanel(toolbarPanel);
 		

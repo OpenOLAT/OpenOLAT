@@ -40,13 +40,13 @@ public class CoachingPage {
 	}
 	
 	public CoachingPage assertOnOverview() {
-		By coachingBy = By.className("o_coaching_overview");
+		By coachingBy = By.className("o_overview_nav");
 		OOGraphene.waitElement(coachingBy, browser);
 		return this;
 	}
 	
 	public CoachingPage openAssessment() {
-		By assessmentBy = By.cssSelector(".o_coaching_overview a.o_button_mega.o_sel_coaching_orders");
+		By assessmentBy = By.cssSelector(".o_overview_nav a.o_sel_coaching_orders");
 		OOGraphene.waitElement(assessmentBy, browser);
 		browser.findElement(assessmentBy).click();
 		return this;
@@ -66,7 +66,7 @@ public class CoachingPage {
 	}
 	
 	public CoachingPage openCourses() {
-		By assessmentBy = By.cssSelector(".o_coaching_overview a.o_button_mega.o_sel_coaching_courses");
+		By assessmentBy = By.cssSelector(".o_overview_nav a.o_sel_coaching_courses");
 		OOGraphene.waitElement(assessmentBy, browser).click();
 		OOGraphene.waitElement(By.className("o_coaching_course_list"), browser);
 		return this;

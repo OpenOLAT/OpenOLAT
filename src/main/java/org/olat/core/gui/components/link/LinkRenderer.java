@@ -205,6 +205,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if(link.getAriaControls() != null) {
 				sb.append(" aria-controls=\"").appendHtmlAttributeEscaped(link.getAriaControls()).append("\"");
 			}
+			if(StringHelper.containsNonWhitespace(link.getAriaDescribedBy())) {
+				sb.append(" aria-describedby=\"").appendHtmlAttributeEscaped(link.getAriaDescribedBy()).append("\"");
+			}
 			sb.append(">");
 			
 			// LEFT CSS icon

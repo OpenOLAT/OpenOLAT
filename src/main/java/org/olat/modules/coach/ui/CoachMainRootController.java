@@ -26,7 +26,8 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.overviewnav.OverviewNavigation;
+import org.olat.core.gui.components.overviewnav.OverviewNavigationFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -149,7 +150,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		listenTo(searchFieldCtrl);
 		mainVC.put("searchField", searchFieldCtrl.getInitialComponent());
 		
-		initButtons();
+		initNavigation(ureq);
 		
 		dashboardCtrl = new CoachDashboardController(ureq, wControl, coachingSec);
 		listenTo(dashboardCtrl);
@@ -158,51 +159,40 @@ public class CoachMainRootController extends BasicController implements Activate
 	}
 
 
-	private void initButtons() {
-		pendingConfirmationsButton = LinkFactory.createLink("pending.confirmations.menu.title", "pending.confirmations.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		pendingConfirmationsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_pending_confirmations");
-		pendingConfirmationsButton.setElementCssClass("btn btn-default o_button_mega");
-		pendingConfirmationsButton.setVisible(showPendingConfirmations);
-
-		lecturesButton = LinkFactory.createLink("lectures.menu.title", "lectures.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		lecturesButton.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
-		lecturesButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_lectures");
-		lecturesButton.setVisible(lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoach()));
+	private void initNavigation(UserRequest ureq) {
+		peopleButton = OverviewNavigationFactory.createLink("students.menu.title", "students.menu.title", getTranslator(), this, "o_icon_user", "o_sel_coaching_people", showPeopleView);
+		coursesButton = OverviewNavigationFactory.createLink("courses.menu.title", "courses.menu.title", getTranslator(), this, "o_CourseModule_icon", "o_sel_coaching_courses",
+				coachingSec.coach() || coachingSec.masterCoach() || coachingSec.owner());
+		implementationsButton = OverviewNavigationFactory.createLink("implementations.menu.title", "implementations.menu.title", getTranslator(), this, "o_icon_curriculum", "o_sel_coaching_implementations",
+				curriculumModule.isEnabled() && coachingSec.coursePlannerMember());
+		businessGroupsButton = OverviewNavigationFactory.createLink("groups.menu.title", "groups.menu.title", getTranslator(), this, "o_icon_group", "o_sel_coaching_groups",
+				coachingSec.coach() || coachingSec.owner());
+		lecturesButton = OverviewNavigationFactory.createLink("lectures.menu.title", "lectures.menu.title", getTranslator(), this, "o_icon_calendar_day", "o_sel_coaching_lectures",
+				lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoach()));
+		ordersButton = OverviewNavigationFactory.createLink("orders.menu.title", "orders.menu.title", getTranslator(), this, "o_icon_assessment_tool", "o_sel_coaching_orders",
+				coachingSec.coach() || coachingSec.owner() || (gradingModule.isEnabled() && gradingSec.isGrader()));
+		pendingConfirmationsButton = OverviewNavigationFactory.createLink("pending.confirmations.menu.title", "pending.confirmations.menu.title", getTranslator(), this, "o_icon_pending_confirmations", "o_sel_coaching_pending_confirmations",
+				showPendingConfirmations);
+		reportsButton = OverviewNavigationFactory.createLink("reports.menu.title", "reports.menu.title", getTranslator(), this, "o_icon_chart_simple", "o_sel_coaching_reports",
+				coachingSec.coach() || coachingSec.masterCoach() || coachingSec.owner() || coachingSec.isLineManager() || coachingSec.isEducationManager());
+		ordersAdminButton = OverviewNavigationFactory.createLink("orders.admin.menu.title", "orders.admin.menu.title", getTranslator(), this, "o_icon_courselog", "o_sel_coaching_orders_admin",
+				(gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) || coachAssignmentsAvailable);
 		
-		ordersButton = LinkFactory.createLink("orders.menu.title", "orders.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		ordersButton.setIconLeftCSS("o_icon o_icon-xl o_icon_assessment_tool");
-		ordersButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_orders");
-		ordersButton.setVisible(coachingSec.coach() || coachingSec.owner() || (gradingModule.isEnabled() && (gradingSec.isGrader())));
-	
-		ordersAdminButton = LinkFactory.createLink("orders.admin.menu.title", "orders.admin.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		ordersAdminButton.setIconLeftCSS("o_icon o_icon-xl o_icon_courselog");
-		ordersAdminButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_orders_admin");
-		ordersAdminButton.setVisible((gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) || coachAssignmentsAvailable);
-		
-		reportsButton = LinkFactory.createLink("reports.menu.title", "reports.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		reportsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_chart_simple");
-		reportsButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_reports");
-		reportsButton.setVisible(coachingSec.coach() || coachingSec.masterCoach() || coachingSec.owner() || coachingSec.isLineManager() || coachingSec.isEducationManager());
-
-		peopleButton = LinkFactory.createLink("students.menu.title", "students.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		peopleButton.setIconLeftCSS("o_icon o_icon-xl o_icon_user");
-		peopleButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_people");
-		peopleButton.setVisible(showPeopleView);
-		
-		coursesButton = LinkFactory.createLink("courses.menu.title", "courses.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		coursesButton.setIconLeftCSS("o_icon o_icon-xl o_CourseModule_icon");
-		coursesButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_courses");
-		coursesButton.setVisible(coachingSec.coach() || coachingSec.masterCoach() || coachingSec.owner());
-	
-		businessGroupsButton = LinkFactory.createLink("groups.menu.title", "groups.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		businessGroupsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_group");
-		businessGroupsButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_groups");
-		businessGroupsButton.setVisible(coachingSec.coach() || coachingSec.owner());	
-		
-		implementationsButton = LinkFactory.createLink("implementations.menu.title", "implementations.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		implementationsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_curriculum");
-		implementationsButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_implementations");
-		implementationsButton.setVisible(curriculumModule.isEnabled() && coachingSec.coursePlannerMember());	
+		OverviewNavigation navigation = OverviewNavigationFactory.createOverviewNavigation("navigation", "coaching-overview-nav", ureq, mainVC);
+		navigation.setAriaLabel(translate("overview.nav.coaching"));
+		navigation.setGroups(List.of(
+				OverviewNavigationFactory.createGroup(translate("overview.nav.group.people.courses"),
+						OverviewNavigationFactory.createItem(peopleButton, translate("students.menu.desc")),
+						OverviewNavigationFactory.createItem(coursesButton, translate("courses.menu.desc")),
+						OverviewNavigationFactory.createItem(implementationsButton, translate("implementations.menu.desc")),
+						OverviewNavigationFactory.createItem(businessGroupsButton, translate("groups.menu.desc"))),
+				OverviewNavigationFactory.createGroup(translate("overview.nav.group.oversight"),
+						OverviewNavigationFactory.createItem(lecturesButton, translate("lectures.menu.desc")),
+						OverviewNavigationFactory.createItem(ordersButton, translate("orders.menu.desc")),
+						OverviewNavigationFactory.createItem(pendingConfirmationsButton, translate("pending.confirmations.menu.desc")),
+						OverviewNavigationFactory.createItem(reportsButton, translate("reports.menu.desc"))),
+				OverviewNavigationFactory.createGroup(translate("coaching.administration.title"),
+						OverviewNavigationFactory.createItem(ordersAdminButton, translate("orders.admin.menu.desc")))));
 	}
 	
 	@Override

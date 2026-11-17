@@ -38,7 +38,7 @@ public class CoursePlannerPage {
 	}
 	
 	public CurriculumPage openCurriculumBrowser() {
-		By curriculumListBy = By.cssSelector(".o_mega_buttons a.o_sel_cur_browser");
+		By curriculumListBy = By.cssSelector(".o_overview_nav a.o_sel_cur_browser");
 		OOGraphene.waitElement(curriculumListBy, browser).click();
 		return new CurriculumPage(browser).assertOnCurriculumList();
 	}

@@ -102,6 +102,7 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	private String ariaHasPopup;
 	private Boolean ariaExpanded;
 	private String ariaControls;
+	private String ariaDescribedBy;
 	private final String elementId;
 	private String textReasonForDisabling;
 	private String customDisplayText;
@@ -396,6 +397,10 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 		return ariaControls;
 	}
 
+	public String getAriaDescribedBy() {
+		return ariaDescribedBy;
+	}
+	
 	@Override
 	public FormLink getFormItem() {
 		return flexiLink;
@@ -498,6 +503,11 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 		setDirty(true);
 	}
 
+	public void setAriaDescribedBy(String ariaDescribedBy) {
+		this.ariaDescribedBy = ariaDescribedBy;
+		setDirty(true);
+	}
+	
 	public void setAriaDialogOpener() {
 		setAriaRole(ARIA_ROLE_BUTTON);
 		setAriaHasPopup("dialog");

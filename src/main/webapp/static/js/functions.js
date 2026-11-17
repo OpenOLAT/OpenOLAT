@@ -1873,6 +1873,42 @@ function o_urlComponent(id) {
 	});
 }
 
+function o_overviewNav(id) {
+	const root = document.getElementById(id);
+	if (!root) {
+		return;
+	}
+	const button = root.querySelector('.o_overview_nav_menu');
+	const setOpen = function(open) {
+		root.classList.toggle('o_open', open);
+		button.setAttribute('aria-expanded', open);
+	};
+	button.addEventListener('click', function() {
+		setOpen(!root.classList.contains('o_open'));
+	});
+	root.addEventListener('keydown', function(e) {
+		if (e.key === 'Escape' && root.classList.contains('o_open')) {
+			e.stopPropagation();
+			o_info.dropdownEscape = true;
+			setOpen(false);
+			button.focus();
+		}
+	});
+	root.addEventListener('focusout', function(e) {
+		if (e.relatedTarget && !root.contains(e.relatedTarget)) {
+			setOpen(false);
+		}
+	});
+	const closeOutside = function(e) {
+		if (!document.body.contains(root)) {
+			document.removeEventListener('click', closeOutside);
+		} else if (!root.contains(e.target)) {
+			setOpen(false);
+		}
+	};
+	document.addEventListener('click', closeOutside);
+}
+
 function b_resizeIframeToMainMaxHeight(iframeId) {
 	// adjust the given iframe to use as much height as possible
 	// (fg)

@@ -202,23 +202,6 @@ a.o_validation_open_results {
 	text-transform: uppercase;
 }
 
-.o_curriculum_buttons_overview {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	column-gap: 20px;
-	row-gap: 10px;
-
-	.o_mega_buttons {
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-	}
-}
-
-@media (max-width: $screen-xs-max) {
-	.o_curriculum_buttons_overview {
-		grid-template-columns: 1fr;
-	}
-}
-
 /* Use the same color and border as o_widget */
 .o_curriculum_overview {
 	.o_curriculum_course_cards {

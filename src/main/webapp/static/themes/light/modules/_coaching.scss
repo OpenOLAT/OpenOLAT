@@ -8,23 +8,6 @@
 	justify-content: center;
 }
 
-.o_coaching_overview {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	column-gap: 20px;
-	row-gap: 10px;
-	
-	.o_mega_buttons {
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-	}
-}
-
-@media (max-width: $screen-xs-max) {
-	.o_coaching_overview {
-		grid-template-columns: 1fr;
-	}
-}
-
 .o_coaching_status {
 	display: grid;
 	grid-template-columns: 100px auto;

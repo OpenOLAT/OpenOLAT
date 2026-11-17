@@ -29,6 +29,8 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.overviewnav.OverviewNavigation;
+import org.olat.core.gui.components.overviewnav.OverviewNavigationFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -151,39 +153,33 @@ public class CurriculumManagerRootController extends BasicController implements 
 		listenTo(searchFieldCtrl);
 		mainVC.put("searchField", searchFieldCtrl.getInitialComponent());
 
-		curriculumsLink = LinkFactory.createLink("curriculum.browser", "curriculums", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		curriculumsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_curriculum");
-		curriculumsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_browser");
-		curriculumsLink.setVisible(secCallback.canViewCurriculums());
+		curriculumsLink = OverviewNavigationFactory.createLink("curriculum.browser", "curriculums", getTranslator(), this, "o_icon_curriculum", "o_sel_cur_browser",
+				secCallback.canViewCurriculums());
+		implementationsLink = OverviewNavigationFactory.createLink("curriculum.implementations", "implementations", getTranslator(), this, "o_icon_curriculum_implementations", "o_sel_cur_implementations",
+				secCallback.canViewImplementations());
+		lecturesBlocksLink = OverviewNavigationFactory.createLink("curriculum.lectures", "lecturesblocks", getTranslator(), this, "o_icon_calendar_day", "o_sel_cur_lectures",
+				lecturesSecCallback.viewAs() != null && lectureModule.isEnabled());
+		todosLink = OverviewNavigationFactory.createLink("curriculum.todos", "todos", getTranslator(), this, "o_icon_todo_task", "o_sel_cur_todos", true);
+		roomsLink = OverviewNavigationFactory.createLink("curriculum.rooms", "rooms", getTranslator(), this, "o_icon_room_management", "o_sel_cur_rooms",
+				roomManagementModule.isEnabled() && secCallback.canViewRooms());
+		reportsLink = OverviewNavigationFactory.createLink("curriculum.reports", "reports", getTranslator(), this, "o_icon_chart_simple", "o_sel_cur_reports",
+				secCallback.canCurriculumsReports());
+		certificationProgramsLink = OverviewNavigationFactory.createLink("certification.programs", "certifications", getTranslator(), this, "o_icon_certificate", "o_sel_certification_programs",
+				certificationProgramModule.isEnabled() && certificationSecCallback.canViewCertificationPrograms());
 		
-		implementationsLink = LinkFactory.createLink("curriculum.implementations", "implementations", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		implementationsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_curriculum_implementations");
-		implementationsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_implementations");
-		implementationsLink.setVisible(secCallback.canViewImplementations());
-		
-		lecturesBlocksLink = LinkFactory.createLink("curriculum.lectures", "lecturesblocks", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		lecturesBlocksLink.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
-		lecturesBlocksLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_lectures");
-		lecturesBlocksLink.setVisible(lecturesSecCallback.viewAs() != null && lectureModule.isEnabled());
-		
-		todosLink = LinkFactory.createLink("curriculum.todos", "todos", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		todosLink.setIconLeftCSS("o_icon o_icon-xl o_icon_todo_task");
-		todosLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_todos");
-		
-		reportsLink = LinkFactory.createLink("curriculum.reports", "reports", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		reportsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_chart_simple");
-		reportsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_reports");
-		reportsLink.setVisible(secCallback.canCurriculumsReports());
-		
-		certificationProgramsLink = LinkFactory.createLink("certification.programs", "certifications", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		certificationProgramsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_certificate");
-		certificationProgramsLink.setElementCssClass("btn btn-default o_button_mega o_sel_certification_programs");
-		certificationProgramsLink.setVisible(certificationProgramModule.isEnabled() && certificationSecCallback.canViewCertificationPrograms());
-
-		roomsLink = LinkFactory.createLink("curriculum.rooms", "rooms", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		roomsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_room_management");
-		roomsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_rooms");
-		roomsLink.setVisible(roomManagementModule.isEnabled() && secCallback.canViewRooms());
+		OverviewNavigation navigation = OverviewNavigationFactory.createOverviewNavigation("navigation", "curriculum-overview-nav", ureq, mainVC);
+		navigation.setAriaLabel(translate("overview.nav.course.planner"));
+		navigation.setGroups(List.of(
+				OverviewNavigationFactory.createGroup(translate("overview.nav.group.products.implementations"),
+						OverviewNavigationFactory.createItem(curriculumsLink, translate("curriculum.browser.desc")),
+						OverviewNavigationFactory.createItem(implementationsLink, translate("curriculum.implementations.desc")),
+						OverviewNavigationFactory.createItem(lecturesBlocksLink, translate("curriculum.lectures.desc"))),
+				OverviewNavigationFactory.createGroup(translate("overview.nav.group.oversight"),
+						OverviewNavigationFactory.createItem(todosLink, translate("curriculum.todos.desc")),
+						OverviewNavigationFactory.createItem(roomsLink, translate("curriculum.rooms.desc")),
+						OverviewNavigationFactory.createItem(reportsLink, translate("curriculum.reports.desc"))),
+				OverviewNavigationFactory.createGroup(translate("overview.nav.group.accreditation"),
+						OverviewNavigationFactory.createItem(certificationProgramsLink, translate("certification.programs.desc")))));
 
 		initDashboard(ureq);
 		putInitialPanel(mainVC);

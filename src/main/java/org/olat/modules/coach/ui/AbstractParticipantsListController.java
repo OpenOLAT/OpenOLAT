@@ -197,7 +197,6 @@ implements Activateable2, OnlineStatusFactory {
         userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 
         this.stackPanel = stackPanel;
-        this.stackPanel.setInvisibleCrumb(0);
         stackPanel.addListener(this);
     }
 
