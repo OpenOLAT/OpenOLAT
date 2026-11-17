@@ -187,6 +187,9 @@ public class ResourceInfoHelper {
 		jsonLd.put("@context", "https://schema.org");
 		jsonLd.put("@type", "Course");
 		jsonLd.put("name", entry.getDisplayname());
+		if (StringHelper.containsNonWhitespace(entry.getExternalRef())) {
+			jsonLd.put("courseCode", entry.getExternalRef());
+		}
 
 		jsonLd.put("description", SeoJsonLdHelper.firstPlainText(entry.getTeaser(), entry.getDescription(),
 				metaDescription, entry.getDisplayname()));

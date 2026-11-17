@@ -136,6 +136,9 @@ public class CurriculumInfoHelper {
 		jsonLd.put("@context", "https://schema.org");
 		jsonLd.put("@type", "Course");
 		jsonLd.put("name", element.getDisplayName());
+		if (StringHelper.containsNonWhitespace(element.getIdentifier())) {
+			jsonLd.put("courseCode", element.getIdentifier());
+		}
 
 		jsonLd.put("description", SeoJsonLdHelper.firstPlainText(element.getTeaser(), element.getDescription(),
 				metaDescription, element.getDisplayName()));
