@@ -77,7 +77,7 @@ public class QTI21AdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer layoutForm, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.signature.title");
-		setFormContextHelp("manual_admin/administration/e-Assessment_Administration/#test");
+		setFormContextHelp("manual_admin/administration/e-Assessment_Test/#tab_QTI");
 		
 		validationButton = uifactory.addFormLink("validate.xml.signature", layoutForm, Link.BUTTON);
 		validationButton.setCustomEnabledLinkCSS("btn btn-default pull-right");
