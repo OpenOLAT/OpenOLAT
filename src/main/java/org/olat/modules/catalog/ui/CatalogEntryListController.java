@@ -778,9 +778,16 @@ public class CatalogEntryListController extends FormBasicController implements A
 
 	private void setWindowTitle() {
 		String windowTitle = taxonomyLevel != null
-				? translate("window.title.taxonomy", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel))
-				: translate("window.title.main");
+				? translateWindowTitle("window.title.taxonomy", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel))
+				: translateWindowTitle("window.title.main");
 		getWindow().setTitle(windowTitle);
+	}
+	
+	private String translateWindowTitle(String i18nKey, String... args) {
+		if (searchParams.isWebPublish()) {
+			return WebCatalogDispatcher.translateWithOrganisation(getWindow().getSeoMetadata(), getLocale(), "web.catalog." + i18nKey, args);
+		}
+		return translate(i18nKey, args);
 	}
 
 	@Override
@@ -1074,7 +1081,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			String displayName = entry.getDisplayname();
 			stackPanel.pushController(displayName, infosCtrl);
 			
-			String windowTitle = translate("window.title.infos", displayName);
+			String windowTitle = translateWindowTitle("window.title.infos", displayName);
 			getWindow().setTitle(windowTitle);
 			// SEO: set per-entry meta data for the public catalog detail pages
 			if (searchParams.isWebPublish()) {
@@ -1083,6 +1090,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 				String ogImageUrl = WebCatalogDispatcher.getImageUrl(repositoryService.getIntroductionImage(entry), entry.getOlatResource().getKey());
 				ResourceInfoHelper.populateEntrySeoMetadata(seo, entry, canonicalUrl, ogImageUrl,
 						getLocale(), getTranslator(), repositoryService);
+				WebCatalogDispatcher.setOfferMetaDescriptionFallback(seo, displayName, getLocale());
 			}
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
@@ -1118,7 +1126,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			String displayName = curriculumElement.getDisplayName();
 			stackPanel.pushController(displayName, infosCtrl);
 			
-			String windowTitle = translate("window.title.infos", displayName);
+			String windowTitle = translateWindowTitle("window.title.infos", displayName);
 			getWindow().setTitle(windowTitle);
 			// SEO: set per-element meta data for the public catalog detail pages
 			if (searchParams.isWebPublish()) {
@@ -1127,6 +1135,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 				CurriculumInfoHelper.populateSeoMetadata(seo, curriculumElement, entry,
 						canonicalUrl, getLocale(), getTranslator(), repositoryService, curriculumService,
 						curriculumInfosCtrl.getLectureBlocks(), curriculumInfosCtrl.getTaughtBys());
+				WebCatalogDispatcher.setOfferMetaDescriptionFallback(seo, displayName, getLocale());
 			}
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {

@@ -36,7 +36,6 @@ public class SeoMetadata {
 
 	private String robotsMetaContent = "nofollow";
 	private String metaDescription;
-	private String metaKeywords;
 	private String metaOrganisationName;
 	private String canonicalUrl;
 	private String ogImageUrl;
@@ -51,16 +50,13 @@ public class SeoMetadata {
 	 */
 	public void resetMetadata() {
 		metaDescription = null;
-		metaKeywords = null;
 		metaOrganisationName = null;
+		canonicalUrl = null;
 		ogImageUrl = null;
 		structuredDataJson = null;		
 		
 		OAIPmhModule oaiPmhModule = CoreSpringFactory.getImpl(OAIPmhModule.class);
 		if (oaiPmhModule != null && oaiPmhModule.isSearchEngineEnabled()) {
-			if (StringHelper.containsNonWhitespace(oaiPmhModule.getSeoKeywords())) {
-				metaKeywords = oaiPmhModule.getSeoKeywords();
-			}
 			if (StringHelper.containsNonWhitespace(oaiPmhModule.getSeoOrganisationName())) {
 				metaOrganisationName = oaiPmhModule.getSeoOrganisationName();
 			}
@@ -81,14 +77,6 @@ public class SeoMetadata {
 
 	public void setMetaDescription(String metaDescription) {
 		this.metaDescription = metaDescription;
-	}
-
-	public String getMetaKeywords() {
-		return metaKeywords;
-	}
-
-	public void setMetaKeywords(String metaKeywords) {
-		this.metaKeywords = metaKeywords;
 	}
 
 	public String getMetaOrganisationName() {

@@ -51,6 +51,7 @@ public class FunctionCommand extends Command {
 		
 		SET_DOCUMENT_TITLE("setdocumenttitle"),
 		SET_BUSINESS_PATH("setbusinesspath"),
+		PUSH_STATE("pushstate"),
 		SET_BODY_DATA_RESOURCE("setbodydataresource"),
 		SET_COURSE_DATA_ATTRIBUTES("setcoursedataattributes"),
 		
@@ -174,6 +175,10 @@ public class FunctionCommand extends Command {
 	
 	public static FunctionCommand setBusinessPath(String url) {
 		return valueOf(Functions.SET_BUSINESS_PATH, "url", url);
+	}
+	
+	public static FunctionCommand pushState(String url) {
+		return valueOf(Functions.PUSH_STATE, "url", url);
 	}
 	
 	public static FunctionCommand setBodyDataResource(String restype, String resid, String repoentryid) {
