@@ -140,7 +140,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		if (!usedInWizard) {
 			setFormTitle("course.disclaimer.headline");
 		}
-		setFormContextHelp("manual_user/learningresources/Course_Settings/#disclaimer");
+		setFormContextHelp("manual_user/learningresources/Course_Settings_Disclaimer/#setup");
 		formLayout.setElementCssClass("o_sel_course_disclaimer_settings");
 		
 		// Enable and disable the disclaimers

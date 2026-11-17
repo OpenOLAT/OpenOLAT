@@ -64,7 +64,7 @@ public class GradingAdminConfigurationController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.title");
-		setFormContextHelp("manual_admin/administration/e-Assessment_Administration/#test");
+		setFormContextHelp("manual_admin/administration/e-Assessment_Test/#tab_correction-workflow");
 		setFormDescription("admin.desc");
 		
 		String[] onValues = new String[]{ translate("on") };
