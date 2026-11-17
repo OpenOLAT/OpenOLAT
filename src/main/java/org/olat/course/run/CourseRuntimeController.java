@@ -2840,7 +2840,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void doEfficiencyStatements(UserRequest ureq) {
 		if(delayedClose == Delayed.efficiencyStatements || requestForClose(ureq)) {
-			// will not be disposed on course run dispose, popus up as new browserwindow
 			WindowControl bwControl = getSubWindowControl("Certification");
 			removeAsListenerAndDispose(efficiencyStatementCtrl);
 			efficiencyStatementCtrl = new CertificateAndEfficiencyStatementController(addToHistory(ureq, bwControl), ureq, getRepositoryEntry());
