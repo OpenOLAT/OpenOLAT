@@ -20,6 +20,7 @@
 package org.olat.repository.ui;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationRoles;
@@ -74,7 +75,7 @@ public class RepositoryEntrySelectionController extends BasicController {
 											  List<String> resourceTypes, List<Organisation> defaultOrganisations,
 											  RepositoryEntryReferenceProvider referenceProvider) {
 		this(ureq, wControl, tableId, resourceTypes, defaultOrganisations,
-				ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.author), null, false, referenceProvider);
+				ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.author), null, false, null, referenceProvider);
 	}
 
 	public RepositoryEntrySelectionController(UserRequest ureq, WindowControl wControl, String tableId,
@@ -82,6 +83,17 @@ public class RepositoryEntrySelectionController extends BasicController {
 											  List<OrganisationRef> sharedOrganisations,
 											  List<RepositoryEntryRuntimeType> allowedRuntimeTypes,
 											  boolean multiSelect,
+											  RepositoryEntryReferenceProvider referenceProvider) {
+		this(ureq, wControl, tableId, resourceTypes, defaultOrganisations, sharedOrganisations,
+				allowedRuntimeTypes, multiSelect, null, referenceProvider);
+	}
+
+	public RepositoryEntrySelectionController(UserRequest ureq, WindowControl wControl, String tableId,
+											  List<String> resourceTypes, List<Organisation> defaultOrganisations,
+											  List<OrganisationRef> sharedOrganisations,
+											  List<RepositoryEntryRuntimeType> allowedRuntimeTypes,
+											  boolean multiSelect,
+											  Consumer<SearchAuthorRepositoryEntryViewParams> searchParamsCustomizer,
 											  RepositoryEntryReferenceProvider referenceProvider) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -120,6 +132,9 @@ public class RepositoryEntrySelectionController extends BasicController {
 					.map(OrganisationRef.class::cast)
 					.collect(Collectors.toList());
 			searchParams.setEntryOrganisations(organisationRefs);
+		}
+		if (searchParamsCustomizer != null) {
+			searchParamsCustomizer.accept(searchParams);
 		}
 
 		authorListCtrl = new AuthorListController(ureq, wControl, searchParams, configuration);
