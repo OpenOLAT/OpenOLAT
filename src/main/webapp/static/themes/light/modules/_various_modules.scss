@@ -658,7 +658,7 @@ ul.o_certificates li {
 		margin: 0 0 3px 0;
 		
 		// .o_certificate_expiration: semantic state in _states.scss (OO-10042)
-		.o_labeled, o_labeled_light {
+		.o_labeled, .o_labeled_light {
 			text-transform: none;
 			font-weight: bold;
 			display: inline-block;

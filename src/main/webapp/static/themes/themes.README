@@ -230,7 +230,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     (.btn-success, .btn-info, .btn-warning, alerts, labels, progress bars, form validation)
     and the message boxes. They do not read $brand-success, $brand-info, $brand-warning,
     $brand-danger or $state-{success,info,warning,danger}-{text,bg,border} any more. Your
-    values of these Bootstrap variables reach only email.css and the own rules of your theme.
+    values of these Bootstrap variables reach only the own rules of your theme. One exception:
+    $brand-success also sets the fill of the done icon in the to-do mail (email.css).
     When your config sets one of them to a value other than the default of the light theme,
     the compile prints one warning for theme.css and one for content.css:
       WARNING: OpenOLAT theme: your config sets $brand-danger, ... These variables do not
@@ -240,7 +241,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
          of a state) or $o-tokens (one token), e.g.
            $o-tokens: ("state-danger-bg": "red-600", "state-danger-text": "red-600");
       2. Remove the Bootstrap variables from your config when your theme does not need them
-         for email.css or for its own rules.
+         for its own rules or, for $brand-success, for the done icon in the to-do mail.
       3. When you keep them on purpose, set
            $o-legacy-color-warning: false;
          in your config to hide the warning.
