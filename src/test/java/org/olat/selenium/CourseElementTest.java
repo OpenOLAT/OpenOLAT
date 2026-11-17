@@ -21,6 +21,7 @@ package org.olat.selenium;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.DayOfWeek;
@@ -267,7 +268,7 @@ public class CourseElementTest extends Deployments {
 			.logout();
 		
 		// participant log in and go directly to the course with the SCORM
-		LoginPage participantLoginPage = LoginPage.load(browser, new URL(courseUrl));		
+		LoginPage participantLoginPage = LoginPage.load(browser, new URI(courseUrl).toURL());		
 		
 		participantLoginPage
 			.loginAs(participant.getLogin(), participant.getPassword(),

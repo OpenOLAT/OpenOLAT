@@ -375,7 +375,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseCP(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_cp_config .o_re_reference .btn.btn-primary");
-		return chooseResourceModernV2(chooseBy, resourceTitle);
+		return chooseResource(chooseBy, resourceTitle);
 	}
 	
 	/**
@@ -385,7 +385,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseWiki(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_wiki_config .o_re_reference .btn.btn-primary");
-		return chooseResourceModernV2(chooseBy, resourceTitle);
+		return chooseResource(chooseBy, resourceTitle);
 	}
 	
 	/**
@@ -395,7 +395,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseSurvey(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_survey_config_form .o_re_reference .btn.btn-primary");
-		return chooseResourceModernV2(chooseBy, resourceTitle);
+		return chooseResource(chooseBy, resourceTitle);
 	}
 	
 	/**
@@ -405,7 +405,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseBlog(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_feed .o_re_reference .btn.btn-primary");
-		return chooseResourceModernV2(chooseBy, resourceTitle);
+		return chooseResource(chooseBy, resourceTitle);
 	}
 
 	/**
@@ -415,7 +415,7 @@ public class CourseEditorPageFragment {
 	 */
 	public FormConfigurationPage chooseForm(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_re_reference .btn.btn-primary");
-		chooseResourceModernV2(chooseBy, resourceTitle);
+		chooseResource(chooseBy, resourceTitle);
 		return new FormConfigurationPage(browser);
 	}
 	
@@ -426,7 +426,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment chooseScorm(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_scorm_config .o_re_reference .btn.btn-primary");
-		return chooseResourceModernV2(chooseBy, resourceTitle);
+		return chooseResource(chooseBy, resourceTitle);
 	}
 	
 	/**
@@ -437,7 +437,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment choosePortfolio(String resourceTitle) {
 		By chooseBy = By.cssSelector(".o_sel_portfolio_config .o_re_reference .btn.btn-primary");
-		return chooseResourceModernV2(chooseBy, resourceTitle);
+		return chooseResource(chooseBy, resourceTitle);
 	}
 	
 	/**
@@ -449,40 +449,8 @@ public class CourseEditorPageFragment {
 	 * @param chooseButton The By of the choose button in the course node editor
 	 * @param resourceTitle The resource title to find
 	 * @return
-	 */
+	 */	
 	public CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle) {
-		By landingBy = By.xpath("//div[@class='o_course_editor']//a/span[text()[contains(.,'" + resourceTitle + "')]]");
-		return chooseResource(chooseButton, resourceTitle, landingBy);
-	}
-	
-	public CourseEditorPageFragment chooseResourceModern(By chooseButton, String resourceTitle) {
-		By landingBy = By.xpath("//div[@class='o_re_reference']//div[@class='o_icon_panel_header']/h4[text()[contains(.,'" + resourceTitle + "')]]");
-		return chooseResource(chooseButton, resourceTitle, landingBy);
-	}
-	
-	private CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle, By landingBy) {
-		browser.findElement(chooseButton).click();
-		OOGraphene.waitModalDialog(browser);
-	
-		By referenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]");
-		OOGraphene.waitElement(referenceableEntriesBy, browser);
-		By myReferenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]/a[contains(@class,'o_sel_repo_popup_my_resources')][contains(@class,'btn-primary')]");
-		if(!browser.findElements(myReferenceableEntriesBy).isEmpty()) {
-			browser.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
-			OOGraphene.waitElement(myReferenceableEntriesBy, browser);
-		}
-
-		//find the row
-		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + resourceTitle + "')]]");
-		OOGraphene.waitElement(rowBy, browser).click();
-		OOGraphene.waitModalDialogDisappears(browser);
-		
-		//double check that the resource is selected (search the preview link)
-		OOGraphene.waitElement(landingBy, browser);
-		return this;
-	}
-	
-	public CourseEditorPageFragment chooseResourceModernV2(By chooseButton, String resourceTitle) {
 		By landingBy = By.xpath("//div[@class='o_re_reference']//div[@class='o_icon_panel_header']/h4[text()[contains(.,'" + resourceTitle + "')]]");
 		return chooseResourceV2(chooseButton, resourceTitle, landingBy);
 	}
@@ -501,8 +469,17 @@ public class CourseEditorPageFragment {
 			OOGraphene.waitElement(allEntriesBy, browser);
 		}
 
-		//find the row
+		// Wait the table
+		By rowsBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]");
+		OOGraphene.waitElement(rowsBy, browser);
+		
 		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + resourceTitle + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
+		if(browser.findElements(selectRowBy).isEmpty()) {
+			By searchFieldBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_table_toolbar')]//input[contains(@class,'o_search_input')][@role='searchbox']");
+			browser.findElement(searchFieldBy).sendKeys(resourceTitle);
+			By searchBy = By.cssSelector(".o_sel_author_env .o_search.o_search_default a.btn.o_search_button");
+			OOGraphene.click(searchBy, browser);
+		}
 		OOGraphene.waitElement(selectRowBy, browser);
 		OOGraphene.click(selectRowBy, browser);
 		

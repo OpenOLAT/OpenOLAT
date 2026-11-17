@@ -47,9 +47,9 @@ public class VideoTaskConfigurationPage {
 	}
 
 	public VideoTaskConfigurationPage selectVideoResource(String resourceTitle) {
-		By chooseVideoButton = By.className("o_sel_re_reference_select");
+		By chooseVideoButtonBy = By.cssSelector(".o_video_configuration .o_re_reference .btn.btn-primary");
 		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
-		fragment.chooseResourceModernV2(chooseVideoButton, resourceTitle);
+		fragment.chooseResource(chooseVideoButtonBy, resourceTitle);
 		return this;
 	}
 	
