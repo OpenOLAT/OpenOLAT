@@ -549,14 +549,15 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 						videoResource.getResourceableId(), trackName);
 			} else if (VideoSubtitlesHelper.isConvertibleSrt(tmpFile)) {
 				VFSLeaf newTrack = masterContainer.createChildLeaf(trackName);
-				try (FileInputStream fileInputStream = new FileInputStream(tmpFile)) {
-					VideoSubtitlesHelper.convertSrtToVtt(fileInputStream, newTrack.getOutputStream(false));
-					vfsRepositoryService.itemSaved(newTrack, null);
-					log.debug("Converted SRT file to VTT subtitles [videoResource={}, trackName={}]", 
+				try (FileInputStream fileInputStream = new FileInputStream(tmpFile);
+						OutputStream out = newTrack.getOutputStream(false)) {
+					VideoSubtitlesHelper.convertSrtToVtt(fileInputStream, out);
+					log.debug("Converted SRT file to VTT subtitles [videoResource={}, trackName={}]",
 							videoResource.getResourceableId(), trackName);
 				} catch (Exception e) {
 					log.error("Cannot convert non-VTT to VTT", e);
 				}
+				vfsRepositoryService.itemSaved(newTrack, null);
 			}
 		} catch (IOException e) {
 			log.warn("Failed to download subtitles for video [uuid={}]", result.getUuid(), e);

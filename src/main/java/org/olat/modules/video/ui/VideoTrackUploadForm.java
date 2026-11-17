@@ -22,6 +22,7 @@ package org.olat.modules.video.ui;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.io.FileInputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.util.Arrays;
 
@@ -140,12 +141,19 @@ public class VideoTrackUploadForm extends FormBasicController {
 					existingItem.deleteSilently();
 				}
 				VFSLeaf newTrack = mediaContainer.createChildLeaf(newTrackName);
-				try (FileInputStream fileInputStream = new FileInputStream(fileEl.getUploadFile())) {
-					VideoSubtitlesHelper.convertSrtToVtt(fileInputStream, newTrack.getOutputStream(false));
-					CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(newTrack, getIdentity());
-					fireEvent(ureq, new TrackUploadEvent(langsItem.getSelectedKey(), newTrack));
+				boolean converted;
+				try (FileInputStream fileInputStream = new FileInputStream(fileEl.getUploadFile());
+						OutputStream out = newTrack.getOutputStream(false)) {
+					VideoSubtitlesHelper.convertSrtToVtt(fileInputStream, out);
+					converted = true;
 				} catch (Exception e) {
+					converted = false;
 					log.error("Cannot convert non-VTT to VTT", e);
+				}
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(newTrack, getIdentity());
+				if (converted) {
+					fireEvent(ureq, new TrackUploadEvent(langsItem.getSelectedKey(), newTrack));
+				} else {
 					getWindowControl().setWarning(translate("track.upload.error.filetype"));
 				}
 			}

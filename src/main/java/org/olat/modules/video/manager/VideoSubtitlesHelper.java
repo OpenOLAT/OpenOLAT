@@ -76,12 +76,12 @@ public class VideoSubtitlesHelper {
 			} else {
 				if (tracksContainer.resolve(newTrackName) == null) {
 					VFSLeaf newTrack = tracksContainer.createChildLeaf(newTrackName);
-					try {
-						convertSrtToVtt(((VFSLeaf) track).getInputStream(), newTrack.getOutputStream(false));
-						CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(newTrack, savedBy);
+					try (OutputStream out = newTrack.getOutputStream(false)) {
+						convertSrtToVtt(((VFSLeaf) track).getInputStream(), out);
 					} catch (Exception e) {
 						log.error("Cannot convert non-VTT to VTT", e);
 					}
+					CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(newTrack, savedBy);
 				}
 				track.deleteSilently();
 			}

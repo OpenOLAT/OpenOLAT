@@ -83,6 +83,8 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 	private VFSVersionModule versionModule;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private VFSMetadataDAO metadataDao;
 	
 	@Before
 	public void cleanUp() {
@@ -197,6 +199,48 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		softly.assertThat(vfsMetadata.getFileLastModifiedBy()).isEqualTo(savedBy);
 		softly.assertThat(vfsMetadata.getFileSize()).isEqualTo(leaf.getSize());
 		softly.assertAll();
+	}
+	
+	/**
+	 * OO-9904: the metadata holds the size of the file on disk directly
+	 * after the copy, also for a file smaller than the 8 KiB buffer.
+	 */
+	@Test
+	public void copyContentFileSize() {
+		Identity savedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSLeaf leaf = testContainer.createChildLeaf(UUID.randomUUID() + ".txt");
+		dbInstance.commitAndCloseSession();
+		
+		boolean successful = VFSManager.copyContent(new ByteArrayInputStream(new byte[1024]), leaf, savedBy);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(successful);
+		Assert.assertEquals(1024l, leaf.getSize());
+		VFSMetadata metadata = loadMetadataFromDb(leaf);
+		Assert.assertNotNull(metadata);
+		Assert.assertEquals(leaf.getSize(), metadata.getFileSize());
+	}
+	
+	/**
+	 * OO-9904: after a copy that fails midway, the metadata holds the size
+	 * of the partial file on disk, not the size of the previous content.
+	 */
+	@Test
+	public void copyContentFileSizeAfterFailure() {
+		Identity savedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		VFSLeaf leaf = createFile();
+		long previousSize = leaf.getSize();
+		
+		boolean successful = VFSManager.copyContent(new FailingInputStream(512), leaf, savedBy);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertFalse(successful);
+		Assert.assertEquals(512l, leaf.getSize());
+		Assert.assertNotEquals(previousSize, leaf.getSize());
+		VFSMetadata metadata = loadMetadataFromDb(leaf);
+		Assert.assertNotNull(metadata);
+		Assert.assertEquals(leaf.getSize(), metadata.getFileSize());
 	}
 	
 	@Test
@@ -822,6 +866,16 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		Assert.assertFalse(restoredMetadata.isDeleted());
 	}
 	
+	/**
+	 * Load the metadata directly from the database. getMetadataFor() can
+	 * repair a wrong size on load and would hide the error.
+	 */
+	private VFSMetadata loadMetadataFromDb(VFSLeaf leaf) {
+		// the metadata stores the relative path without the leading slash
+		String relativePath = leaf.getParentContainer().getRelPath().substring(1);
+		return metadataDao.getMetadata(relativePath, leaf.getName(), false);
+	}
+	
 	private VFSLeaf createFile() {
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
 		return createFile(testContainer);
@@ -879,6 +933,27 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		} catch(Exception e) {
 			log.error("", e);
 			return -1;
+		}
+	}
+	
+	/**
+	 * Delivers the given number of bytes, then throws an IOException.
+	 */
+	private static class FailingInputStream extends InputStream {
+		
+		private int remaining;
+		
+		FailingInputStream(int length) {
+			this.remaining = length;
+		}
+		
+		@Override
+		public int read() throws IOException {
+			if (remaining <= 0) {
+				throw new IOException("Simulated read error");
+			}
+			remaining--;
+			return 0;
 		}
 	}
 }

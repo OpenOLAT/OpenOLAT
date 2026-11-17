@@ -890,15 +890,13 @@ public class VFSManager {
 			try(InputStream in = new BufferedInputStream(inStream);
 					OutputStream out = new BufferedOutputStream(target.getOutputStream(false))) {
 				FileUtils.cpio(in, out, "");
-				// flush before the metadata records the size of the file
-				out.flush();
-				vfsRepositoryService.itemSaved(target, savedBy);
 				successful = true;
 			} catch (IOException e) {
 				// something went wrong.
 				successful = false;
 				log.error("Error while copying content from source: {} to target: {}", inStream, target.getName(), e);
 			}
+			vfsRepositoryService.itemSaved(target, savedBy);
 		} else {
 			// source or target is null
 			successful = false;
