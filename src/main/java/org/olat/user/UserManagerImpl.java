@@ -502,7 +502,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
 		} catch (Exception e) {
 			log.error("", e);
-			fullName = getUserDisplayName(identity.getKey());
+			fullName = getUserDisplayName(identity == null ? null : identity.getKey());
 		}
 		return fullName;
 	}
