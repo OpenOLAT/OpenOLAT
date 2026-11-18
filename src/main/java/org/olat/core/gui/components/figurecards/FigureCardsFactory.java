@@ -68,7 +68,6 @@ public class FigureCardsFactory {
 			sb.append(StringHelper.escapeHtml(label));
 			sb.append("</span>");
 		}
-		sb.append("<i class='o_icon o_icon_start o_figure_card_chevron' aria-hidden='true'> </i>");
 		return sb.toString();
 	}
 	

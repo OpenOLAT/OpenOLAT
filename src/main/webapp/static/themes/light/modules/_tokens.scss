@@ -524,7 +524,6 @@ $o-token-layer-framework: (
 	"radial-progress-passed-glyph":                "state-success-soft-bg",
 	"radial-progress-failed-glyph":                "state-danger-soft-bg",
 	// Figure cards
-	"figure-card-chevron":                        "text-muted",
 	"figure-card-figure":                         "primary",
 	"figure-card-icon":                           ($o-figure-card-icon-color, ("primary",)),
 	// the fill of a figure card and of its icon (color-mix() of primary by
@@ -2466,7 +2465,6 @@ $o-token-contrast-pairs: (
 	("dropdown-link", "bg-raised", 4.5),
 	("dropdown-link-hover", "dropdown-link-hover-bg", 4.5),
 	("empty-msg", "bg", 4.5),
-	("figure-card-chevron", "figure-card-bg", 3),
 	("figure-card-figure", "figure-card-bg", 4.5),
 	("indicator-label", "bg", 4.5),
 	("input-fg", "input-bg", 4.5),

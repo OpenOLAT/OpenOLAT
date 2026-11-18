@@ -2216,7 +2216,7 @@ $o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
 	.o_figure_card {
 		padding: $o-figure-card-padding;
 		> span {
-			grid-template-areas: "icon figure . chevron" "label label label label";
+			grid-template-areas: "icon figure ." "label label label";
 		}
 	}
 	.o_figure_card_icon {
@@ -2270,8 +2270,8 @@ $o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
 		// The link wraps its content in a span
 		> span {
 			display: grid;
-			grid-template-columns: auto auto minmax(0, 1fr) auto;
-			grid-template-areas: "icon figure label chevron";
+			grid-template-columns: auto auto minmax(0, 1fr);
+			grid-template-areas: "icon figure label";
 			align-items: center;
 			column-gap: 6px;
 		}
@@ -2289,7 +2289,6 @@ $o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
 	
 	.o_figure_card_figure {
 		grid-area: figure;
-		font-weight: bold;
 		color: var(--o-figure-card-figure);
 	}
 	
@@ -2299,11 +2298,6 @@ $o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-	}
-	
-	.o_figure_card_chevron {
-		grid-area: chevron;
-		color: var(--o-figure-card-chevron);
 	}
 }
 

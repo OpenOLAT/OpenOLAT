@@ -11,9 +11,6 @@
 $r.render("navigation")
 #if($r.available("dashboard"))
 <div class="o_block">
-	<fieldset>
-		<legend>$r.translate("overview")</legend>
-		$r.render("dashboard")
-	</fieldset>
+	$r.render("dashboard")
 </div>
 #end

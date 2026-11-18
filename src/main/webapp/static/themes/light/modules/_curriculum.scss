@@ -392,11 +392,11 @@ a.o_validation_open_results {
 	@include o-figure-cards-two-line(1);
 	
 	.o_figure_card > span {
-		grid-template-columns: auto auto minmax(0, 1fr) auto auto;
-		grid-template-areas: "icon figure label status chevron";
+		grid-template-columns: auto auto minmax(0, 1fr) auto;
+		grid-template-areas: "icon figure label status";
 	}
 	.o_figure_card.o_curriculum_members_with_bar > span {
-		grid-template-areas: "icon figure label status chevron" "bar bar bar bar bar";
+		grid-template-areas: "icon figure label status" "bar bar bar bar";
 		row-gap: 8px;
 	}
 	.o_curriculum_members_status {
@@ -426,8 +426,8 @@ a.o_validation_open_results {
 	
 	@container (width < 300px) {
 		.o_figure_card.o_curriculum_members_with_bar > span {
-			grid-template-columns: auto auto minmax(0, 1fr) auto;
-			grid-template-areas: "icon figure label chevron" "bar bar bar bar" "status status status status";
+			grid-template-columns: auto auto minmax(0, 1fr);
+			grid-template-areas: "icon figure label" "bar bar bar" "status status status";
 		}
 	}
 }
