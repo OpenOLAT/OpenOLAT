@@ -445,8 +445,10 @@ a.o_validation_open_results {
 		white-space: nowrap;
 	}
 }
-.o_widget_implementation_row {
+.o_table_row:has(> .o_widget_implementation_row) {
 	container-type: inline-size;
+}
+.o_widget_implementation_row {
 	
 	display: grid;
 	grid-template-columns: 1fr 25px 110px 100px;
