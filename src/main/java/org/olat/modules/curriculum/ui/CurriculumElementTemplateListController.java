@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -53,12 +52,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -71,11 +72,10 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.EmptyScreenData;
+import org.olat.repository.ui.RepositoryEntrySelectionController;
 import org.olat.repository.ui.author.AccessRenderer;
-import org.olat.repository.ui.author.AuthorListConfiguration;
-import org.olat.repository.ui.author.AuthorListController;
-import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
 import org.olat.repository.ui.author.RuntimeTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,8 +104,9 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private FooterModalController footerCmc;
+	private RepositoryEntrySelectionController selectionCtrl;
 	private DialogBoxController confirmRemoveCtrl;
-	private AuthorListController templateSearchCtr;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmInstantiateTemplateController confirmInstantiateCtrl;
 	
@@ -277,12 +278,15 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 				doRemove(ureq, rows);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-		} else if(templateSearchCtr == source) {
-			if(event instanceof AuthoringEntryRowSelectionEvent se) {
-				doAddTemplate(se.getRow());
-				fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(selectionCtrl == source) {
+			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				RepositoryEntry entry = selectionCtrl.getSelectedEntry();
+				if(entry != null) {
+					doAddTemplate(entry);
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
 			}
-			cmc.deactivate();
+			footerCmc.deactivate();
 			cleanUp();
 		} else if(confirmInstantiateCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
@@ -293,18 +297,20 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		} else if(toolsCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
-		} else if(cmc == source || toolsCalloutCtrl == source) {
+		} else if(cmc == source || footerCmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
-		removeAsListenerAndDispose(templateSearchCtr);
+		removeAsListenerAndDispose(selectionCtrl);
+		removeAsListenerAndDispose(footerCmc);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
-		templateSearchCtr = null;
+		selectionCtrl = null;
+		footerCmc = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -342,37 +348,64 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 	}
 	
 	private void doChooseTemplate(UserRequest ureq) {
-		if(guardModalController(templateSearchCtr)) return;
-		
+		if(guardModalController(selectionCtrl)) return;
+
 		Roles roles = ureq.getUserSession().getRoles();
-		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("curriculum-template-v1", "CourseModule");
-		tableConfig.setSelectRepositoryEntry(SelectionMode.single);
-		tableConfig.setBatchSelect(true);
-		tableConfig.setImportRessources(false);
-		tableConfig.setCreateRessources(false);
-		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
-		
-		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		List<OrganisationRoles> additionalRoles = roles.isCurriculumManager()
 				? List.of(OrganisationRoles.curriculummanager)
 				: List.of();
-		searchParams.setAdditionalManagerRoles(additionalRoles);
 		List<Organisation> additionalOrgs = curriculum != null && secCallback.canEditCurriculumElement(curriculumElement)
 				? organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true)
 				: List.of();
-		searchParams.setAdditionalOrganisationsAccess(additionalOrgs);
-		searchParams.addResourceTypes("CourseModule");
-		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
-		templateSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
-		listenTo(templateSearchCtr);
-		templateSearchCtr.selectFilterTab(ureq, templateSearchCtr.getMyCoursesTab());
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), templateSearchCtr.getInitialComponent(),
-				true, translate("add.template"));
-		listenTo(cmc);
-		cmc.activate();
+
+		CourseNodeReferenceProvider referenceProvider = new CurriculumTemplateReferenceProvider(repositoryService);
+		selectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "curriculum-template-v1",
+				List.of("CourseModule"), null, null,
+				List.of(RepositoryEntryRuntimeType.template), false,
+				searchParams -> {
+					searchParams.setAdditionalManagerRoles(additionalRoles);
+					searchParams.setAdditionalOrganisationsAccess(additionalOrgs);
+				},
+				referenceProvider);
+		listenTo(selectionCtrl);
+
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), selectionCtrl.getBodyComponent(),
+				selectionCtrl.getFooterComponent(), translate("add.template"));
+		listenTo(footerCmc);
+		footerCmc.activate();
 	}
-	
+
+	private class CurriculumTemplateReferenceProvider extends CourseNodeReferenceProvider {
+
+		public CurriculumTemplateReferenceProvider(RepositoryService repositoryService) {
+			super(repositoryService, List.of("CourseModule"), null, null, null, null);
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.templates");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_CourseModule_icon",
+					translate("select.no.template.yet"),
+					translate("select.no.template.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_CourseModule_icon",
+					translate("select.no.templates.in.view"),
+					translate("select.no.templates.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term.template");
+		}
+	}
+
 	private void doAddTemplate(RepositoryEntryRef entryRef) {
 		RepositoryEntry entry = repositoryService.loadBy(entryRef);
 		if(entry != null && entry.getRuntimeType() == RepositoryEntryRuntimeType.template) {
