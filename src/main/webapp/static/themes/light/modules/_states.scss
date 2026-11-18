@@ -540,6 +540,7 @@ $o-state-wiring: (
 	".o_labeled_light.o_qual_prev_data_collection_light": ("inactive", "text"),
 	".o_labeled_light.o_qual_prev_blacklisted_light": ("inactive", "text"),
 	// Topic broker priority
+	".o_tb_priority_neutral": ("neutral", "text"),
 	".o_tb_priority_selected": ("neutral", "text"),
 	".o_tb_priority_enrolled": ("success", "solid"),
 	".o_tb_priority_waiting": ("warning", "text"),

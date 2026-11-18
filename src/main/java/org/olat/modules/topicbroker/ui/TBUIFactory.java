@@ -297,7 +297,23 @@ public class TBUIFactory {
 		return null;
 	}
 	
+	public static String getParticipantLabelCss(TBSelectionStatus status) {
+		return getLabelCss(TBSelectionStatus.surplus == status? TBSelectionStatus.waitingList: status);
+	}
+	
+	public static String getParticipantLabelLightCss(TBSelectionStatus status) {
+		return getLabelLightCss(TBSelectionStatus.surplus == status? TBSelectionStatus.waitingList: status);
+	}
+	
 	public static final String getPriorityLabel(Translator translator, TBSelectionStatus status, int sortOrder, String topicTitle) {
+		return getPriorityLabel(translator, status, getPriorityCss(status), sortOrder, topicTitle);
+	}
+	
+	public static final String getParticipantPriorityLabel(Translator translator, TBSelectionStatus status, int sortOrder) {
+		return getPriorityLabel(translator, status, "o_tb_priority_neutral", sortOrder, null);
+	}
+	
+	private static final String getPriorityLabel(Translator translator, TBSelectionStatus status, String priorityCss, int sortOrder, String topicTitle) {
 		String label = "<div class=\"o_tb_priority_label\"";
 		if (StringHelper.containsNonWhitespace(topicTitle)) {
 			label += " title=\"";
@@ -306,7 +322,7 @@ public class TBUIFactory {
 		}
 		label += ">";
 		label += "<div class=\"";
-		label += getPriorityCss(status);
+		label += priorityCss;
 		label += "\">";
 		if (TBSelectionStatus.surplus == status) {
 			label += translator.translate("selection.status.surplus");
@@ -320,6 +336,10 @@ public class TBUIFactory {
 	
 	public static final String getPriorityLabelAsRow(Translator translator, TBSelectionStatus status, int sortOrder) {
 		return getPriorityLabelsAsRow(List.of(getPriorityLabel(translator, status, sortOrder, null)));
+	}
+	
+	public static final String getParticipantPriorityLabelAsRow(Translator translator, TBSelectionStatus status, int sortOrder) {
+		return getPriorityLabelsAsRow(List.of(getParticipantPriorityLabel(translator, status, sortOrder)));
 	}
 	
 	public static final String getPriorityLabelsAsRow(List<String> formatedLabels) {

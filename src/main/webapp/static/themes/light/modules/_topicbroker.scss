@@ -201,10 +201,11 @@
 .o_tb_priority_labels {
 	display: inline-grid;
 	grid-auto-flow: column;
-	grid-auto-columns: minmax(max-content, 1fr);
+	grid-auto-columns: max-content;
 	gap: 5px;
 	.o_tb_priority_label > div {
 		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
 	}
 }
 

@@ -196,7 +196,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		this.broker = broker;
 		periodEvaluator = new TBPeriodEvaluator(broker);
 		participant = topicBrokerService.getOrCreateParticipant(getIdentity(), broker, getIdentity());
-		statusRenderer = new TBSelectionStatusRenderer();
+		statusRenderer = new TBSelectionStatusRenderer(true);
 		formatter = Formatter.getInstance(getLocale());
 		executionPeriodAvailable = isExecutionPeriodAvailable(broker);
 		
@@ -518,7 +518,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				row.setSelectionSortOrder(selection.getSortOrder());
 				row.setEnrolled(selection.isEnrolled());
 				forgeStatus(row, maxEnrollments, numEnrollments);
-				row.setPriorityLabel(TBUIFactory.getPriorityLabelAsRow(getTranslator(), row.getStatus(), selection.getSortOrder()));
+				row.setPriorityLabel(TBUIFactory.getParticipantPriorityLabelAsRow(getTranslator(), row.getStatus(), selection.getSortOrder()));
 				forgeUpDown(row);
 				selectionRows.add(row);
 			}

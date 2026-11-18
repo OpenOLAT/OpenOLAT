@@ -108,7 +108,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		this.canEditSelections = canEditSelections;
 		this.canEditParticipant = canEditSelections && broker.getEnrollmentStartDate() == null;
 		
-		statusRenderer = new TBSelectionStatusRenderer();
+		statusRenderer = new TBSelectionStatusRenderer(false);
 		toolsSuffix = "_" + participant.getKey();
 		
 		initForm(ureq);

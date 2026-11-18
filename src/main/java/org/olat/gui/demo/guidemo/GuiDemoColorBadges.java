@@ -516,6 +516,7 @@ public class GuiDemoColorBadges {
 				new Sample("o_labeled_light o_qual_prev_data_collection_light", "Data collection", INACTIVE, TEXT),
 				new Sample("o_labeled_light o_qual_prev_blacklisted_light", "Excluded", INACTIVE, TEXT))));
 		groups.add(new Group("Topic broker priority", null, List.of(
+				new Sample("o_tb_priority_neutral", "Neutral", NEUTRAL, TEXT),
 				new Sample("o_tb_priority_selected", "Selected", NEUTRAL, TEXT),
 				new Sample("o_tb_priority_enrolled", "Enrolled", SUCCESS, SOLID),
 				new Sample("o_tb_priority_waiting", "Waiting list", WARNING, TEXT),

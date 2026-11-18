@@ -32,6 +32,12 @@ import org.olat.modules.topicbroker.ui.TBUIFactory;
  */
 public class TBSelectionStatusRenderer extends LabelCellRenderer {
 	
+	private final boolean participant;
+	
+	public TBSelectionStatusRenderer(boolean participant) {
+		this.participant = participant;
+	}
+	
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
 		if (val instanceof TBSelectionRow row) {
@@ -52,7 +58,9 @@ public class TBSelectionStatusRenderer extends LabelCellRenderer {
 	protected String getElementCssClass(Object val) {
 		if (val instanceof TBSelectionRow row) {
 			if (row.getStatus() != null) {
-				return TBUIFactory.getLabelLightCss(row.getStatus());
+				return participant
+						? TBUIFactory.getParticipantLabelLightCss(row.getStatus())
+						: TBUIFactory.getLabelLightCss(row.getStatus());
 			}
 		}
 		return null;
