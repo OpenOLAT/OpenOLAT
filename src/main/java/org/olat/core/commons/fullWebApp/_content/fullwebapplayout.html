@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="$r.getLanguageCode()">
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 ## SEO meta tags (robots, description, canonical, OG, JSON-LD)
 $r.render("seoHead")
 <meta name="generator" content="OpenOlat $buildversion - https://www.openolat.org">
@@ -192,16 +191,6 @@ jQuery(function() {
 $r.render("jsCssRawHtmlHeader", "pre-theme")
 ## 2) CSS theme inclusion, theme JavaScript, favicons and appicons
 $theme.renderHTMLHeaderElements()
-## 3) Insert IE specific class names
-<script>
-"use strict";
-jQuery(document).ready(function() {
-	// Detect IE below version 11
-	if (window.navigator.userAgent.indexOf('MSIE ') > 0) {
-		jQuery('body').addClass('o_browser_ie10');
-	}
-});
-</script>
 ## 5) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
 ## 6) Add user font size (id o_fontSize_css used to place on demand css)

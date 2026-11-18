@@ -133,7 +133,6 @@
 	overflow-x: auto;  
 	overflow-y: hidden;
 	/* allow scrolling of wrapped iframe on mobile devices */
-    -ms-overflow-style: -ms-autohiding-scrollbar;
     -webkit-overflow-scrolling: touch;	
 }
 
@@ -620,7 +619,6 @@
 .o_with_hyphens, %o_with_hyphens {	
 	-webkit-hyphens: auto;
 	-moz-hyphens: auto;
-	-ms-hyphens: auto;
 	hyphens: auto;
 }
 
@@ -696,7 +694,6 @@
 	position: relative; 
 	overflow-y: hidden;
 	overflow-x: auto;
-	-ms-overflow-style: -ms-autohiding-scrollbar;
 	-webkit-overflow-scrolling: touch;
 }
 

@@ -87,7 +87,6 @@
 	height: 50px;
 	-webkit-animation: spin 2s infinite ease-in;
 	-moz-animation: spin 2s infinite ease-in;
-	-ms-animation: spin 2s infinite ease-in;
 	-o-animation: spin 2s infinite ease-in;
 	animation: spin 2s infinite ease-in;
 	-webkit-animation-delay: 0.1s;
@@ -104,7 +103,6 @@
 	height: 50px;
 	-webkit-animation: spin 2s infinite ease-in;
 	-moz-animation: spin 2s infinite ease-in;
-	-ms-animation: spin 2s infinite ease-in;
 	-o-animation: spin 2s infinite ease-in;
 	animation: spin 2s infinite ease-in;
 	-webkit-animation-delay: 0.25s;
@@ -121,7 +119,6 @@
 	height: 50px;
 	-webkit-animation: spin 2s infinite ease-in;
 	-moz-animation: spin 2s infinite ease-in;
-	-ms-animation: spin 2s infinite ease-in;
 	-o-animation: spin 2s infinite ease-in;
 	animation: spin 2s infinite ease-in;
 	-webkit-animation-delay: 0.5s;
@@ -144,20 +141,6 @@
 }
 
 @-moz-keyframes spin {
-	0% {
-		transform: scale(1);
-	}
-
-	50% {
-		transform: scale(0.5);
-	}
-
-	100% {
-		transform: scale(1);
-	}
-}
-
-@-ms-keyframes spin {
 	0% {
 		transform: scale(1);
 	}

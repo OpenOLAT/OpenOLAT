@@ -14,7 +14,6 @@
 			// hidden scrollbar — steps are navigated with the wizard buttons,
 			// the active step is scrolled into the center via inline JS
 			scrollbar-width: none;          // Firefox
-			-ms-overflow-style: none;       // legacy Edge
 			&::-webkit-scrollbar { display: none; }
 		}
 

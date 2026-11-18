@@ -67,7 +67,6 @@ ul.sessionControl {
 	-moz-user-select: none;
 	-webkit-user-drag: none;
 	-webkit-user-select: none;
-	-ms-user-select: none;
 }
 	
 .o_group_colors {
@@ -148,7 +147,6 @@ ul.sessionControl {
 	user-select: none;
 	-webkit-touch-callout: none;
 	-moz-user-select: none;
-	-ms-user-select: none;
 	overflow: hidden;
 	
 	&.o_qti_hotspots_without_bg {
@@ -1258,7 +1256,6 @@ table.o_qti_item_kprim {
 	input[type="checkbox"] {
 		-webkit-appearance: radio;
 		-moz-appearance: radio;
-		-ms-appearance: radio;
 		appearance: radio;
 	}
 

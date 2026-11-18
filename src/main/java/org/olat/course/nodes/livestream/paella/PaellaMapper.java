@@ -70,7 +70,6 @@ public class PaellaMapper implements Mapper {
 		sb.append("<html>");
 		sb.append("<head>");
 		sb.append("<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">");
-		sb.append("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
 		sb.append("<style>");
 		sb.append("#player-container {");
 		sb.append("height: 90vh;");

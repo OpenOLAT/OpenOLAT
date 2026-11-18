@@ -350,16 +350,6 @@ body.o_dmz {
 	display: inline-block;
 }
 
-.o_old_browser {
-	display: none;
-}
-
-.o_browser_ie10  {
-	 .o_old_browser {
-		display: block;
-	}
-}
-
 /* Registration */
 .o_pw_otp_validation {
 	.o_sel_registration_otp {
