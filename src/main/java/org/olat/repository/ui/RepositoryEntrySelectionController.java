@@ -108,6 +108,7 @@ public class RepositoryEntrySelectionController extends BasicController {
 		configuration.setEmptyScreenDataForNoEntriesInView(referenceProvider.getEmptyScreenDataForNoEntriesInView());
 		configuration.setEnterSearchTermMessage(referenceProvider.getEnterSearchTermMessage());
 		configuration.setRedesignedSelectionDialog(true);
+		configuration.setRowSelect(true);
 		configuration.setImportRessources(false);
 		configuration.setCreateRessources(false);
 		if (multiSelect) {

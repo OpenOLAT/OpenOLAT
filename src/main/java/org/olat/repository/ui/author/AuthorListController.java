@@ -556,10 +556,13 @@ public class AuthorListController extends FormBasicController implements Activat
 			columnModelList.add(technicalTypeColumnModel);
 		}
 		
-		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer());
+		boolean rowSelectable = configuration.isRowSelect();
+		FlexiCellRenderer renderer = rowSelectable
+				? new TextFlexiCellRenderer()
+				: new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer());
 		columnModelList.add(new DefaultFlexiColumnModel(
-				configuration.isTemplatesMode() ? Cols.displayName.templateI18nKey() : Cols.displayName.i18nKey(), 
-				Cols.displayName.ordinal(), "select", true, OrderBy.displayname.name(), renderer));
+				configuration.isTemplatesMode() ? Cols.displayName.templateI18nKey() : Cols.displayName.i18nKey(),
+				Cols.displayName.ordinal(), rowSelectable ? null : "select", true, OrderBy.displayname.name(), renderer));
 		
 		if (!configuration.isRedesignedSelectionDialog()) {
 			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
