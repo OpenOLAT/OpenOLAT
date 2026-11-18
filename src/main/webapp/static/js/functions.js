@@ -503,6 +503,9 @@ function o_aexecute(command, parameters, opener) {
 		case "setbusinesspath":
 			o_info.businessPath = parameters["url"];
 			break;
+		case "pushstate":
+			o_pushState(null, document.title, parameters["url"]);
+			break;
 		case "setbodydataresource":
 			setBodyDataResource(parameters["restype"], parameters["resid"], parameters["repoentryid"]);
 			break;

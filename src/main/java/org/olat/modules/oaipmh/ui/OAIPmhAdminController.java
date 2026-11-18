@@ -95,7 +95,6 @@ public class OAIPmhAdminController extends FormBasicController {
 	private TextElement customSitemapTextEl;
 	private TextElement customIndexTextEl;
 	private TextElement seoOrganisationNameEl;
-	private TextElement seoKeywordsEl;
 	private MultipleSelectionElement licenseSelectionEl;
 
 	@Autowired
@@ -226,10 +225,6 @@ public class OAIPmhAdminController extends FormBasicController {
 		String defaultOrgName = organisationService.getDefaultOrganisation().getDisplayName();
 		seoOrganisationNameEl = uifactory.addTextElement("seo.organisation.name", 255, oaiPmhModule.getSeoOrganisationName(), searchEngineCont);
 		seoOrganisationNameEl.setPlaceholderText(defaultOrgName);
-
-		String defaultKeywords = translate("meta.keywords");
-		seoKeywordsEl = uifactory.addTextAreaElement("seo.keywords", "seo.keywords", 4000, 3, 60, false, false, oaiPmhModule.getSeoKeywords(), searchEngineCont);
-		seoKeywordsEl.setPlaceholderText(defaultKeywords);
 
 		String sitemapUrl = ResourceInfoDispatcher.getUrl("sitemap.xml");
 		String[] sitemapKeys = new String[]{
@@ -364,7 +359,6 @@ public class OAIPmhAdminController extends FormBasicController {
 	private void updateSearchEngineContainerVisibility() {
 		boolean seEnabled = oaiPmhModule.isSearchEngineEnabled();
 		seoOrganisationNameEl.setVisible(seEnabled);
-		seoKeywordsEl.setVisible(seEnabled);
 		searchEngineSitemapEl.setVisible(seEnabled);
 		searchEngineIndexnowEl.setVisible(seEnabled);
 		googleTextEl.setVisible(seEnabled);
@@ -417,7 +411,6 @@ public class OAIPmhAdminController extends FormBasicController {
 		}
 		if (searchEnginePublishEl.isOn()) {
 			oaiPmhModule.setSeoOrganisationName(seoOrganisationNameEl.getValue().trim());
-			oaiPmhModule.setSeoKeywords(seoKeywordsEl.getValue().trim());
 			oaiPmhModule.setSearchEngineBing(searchEngineIndexnowEl.isKeySelected(OAI_KEY_SEARCHENGINE_BING));
 			oaiPmhModule.setSearchEngineBingUrl(bingTextEl.getValue());
 			oaiPmhModule.setSearchEngineCustomSitemap(searchEngineSitemapEl.isKeySelected(OAI_KEY_SEARCHENGINE_CUSTOM_SITEMAP));

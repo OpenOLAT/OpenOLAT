@@ -46,6 +46,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.resource.Resourceable;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.CatalogFilter;
@@ -58,16 +59,19 @@ import org.olat.modules.catalog.CatalogLauncherRef;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogLauncherToOrganisation;
 import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.catalog.model.CatalogEntryImpl;
 import org.olat.modules.catalog.model.RepositoryEntryInfos;
 import org.olat.modules.creditpoint.CreditPointFormat;
 import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryModule;
@@ -132,6 +136,8 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
 	@PostConstruct
 	public void initHandlers() {
@@ -165,6 +171,48 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		return true;
 	}
 
+	@Override
+	public boolean isWebCatalogTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
+		if (taxonomyLevel == null
+				|| !(getCatalogLauncherHandler(TaxonomyLevelLauncherHandler.TYPE) instanceof TaxonomyLevelLauncherHandler handler)
+				|| !handler.isEnabled()) {
+			return false;
+		}
+		
+		CatalogLauncherSearchParams searchParams = new CatalogLauncherSearchParams();
+		searchParams.setWebEnabled(Boolean.TRUE);
+		return getCatalogLaunchers(searchParams).stream()
+				.filter(launcher -> TaxonomyLevelLauncherHandler.TYPE.equals(launcher.getType()))
+				.anyMatch(launcher -> handler.isInLauncher(launcher, taxonomyLevel));
+	}
+	
+	@Override
+	public VFSLeaf getWebCatalogImage(Long resourceKey) {
+		CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
+		searchParams.setWebPublish(true);
+		searchParams.setResourceKeys(List.of(resourceKey));
+		
+		List<RepositoryEntryInfos> entries = queries.loadRepositoryEntries(searchParams);
+		if (!entries.isEmpty()) {
+			return repositoryService.getIntroductionImage(entries.get(0).entry());
+		}
+		
+		if (curriculumModule.isEnabled()) {
+			List<CurriculumElement> elements = queries.loadCurriculumElements(searchParams);
+			if (!elements.isEmpty()) {
+				return curriculumService.getCurriculumElemenFile(elements.get(0), CurriculumElementFileType.teaserImage);
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public VFSLeaf getWebCatalogTaxonomyLevelImage(Long taxonomyLevelKey) {
+		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(() -> taxonomyLevelKey);
+		VFSLeaf image = taxonomyLevel == null? null: taxonomyService.getTeaserImage(taxonomyLevel);
+		return image != null && isWebCatalogTaxonomyLevel(taxonomyLevel)? image: null;
+	}
+	
 	@Override
 	public List<CatalogEntry> getCatalogEntries(CatalogEntrySearchParams searchParams) {
 		// RepositoryEntries

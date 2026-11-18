@@ -4,15 +4,11 @@
 <meta name="google" content="notranslate">
 #end
 #if($seo.metaDescription)
-<meta name="description" content="$r.escapeHtml($seo.metaDescription)">
+#set($metaDescription = $seo.metaDescription)
 #else
-<meta name="description" content="$r.translate("meta.description")">
+#set($metaDescription = $r.translate("meta.description"))
 #end
-#if($seo.metaKeywords)
-<meta name="keywords" content="$r.escapeHtml($seo.metaKeywords)">
-#else
-<meta name="keywords" content="$r.translate("meta.keywords")">
-#end
+<meta name="description" content="$r.escapeHtml($metaDescription)">
 #if($seo.canonicalUrl)
 <link rel="canonical" href="$r.escapeHtml($seo.canonicalUrl)">
 <meta property="og:type" content="website">
@@ -24,17 +20,13 @@
 <meta property="og:site_name" content="$r.translate("page.appname")">
 #end
 <meta property="og:locale" content="$r.getLanguageCode()">
-#if($seo.metaDescription)
-<meta property="og:description" content="$r.escapeHtml($seo.metaDescription)">
-#end
+<meta property="og:description" content="$r.escapeHtml($metaDescription)">
 #if($seo.ogImageUrl)
 <meta property="og:image" content="$r.escapeHtml($seo.ogImageUrl)">
 #end
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="$r.escapeHtml($windowTitle.getValue())">
-#if($seo.metaDescription)
-<meta name="twitter:description" content="$r.escapeHtml($seo.metaDescription)">
-#end
+<meta name="twitter:description" content="$r.escapeHtml($metaDescription)">
 #if($seo.ogImageUrl)
 <meta name="twitter:image" content="$r.escapeHtml($seo.ogImageUrl)">
 #end

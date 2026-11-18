@@ -60,6 +60,9 @@ public class Theme {
 	private static final String CUSTOM_MS_APPLICATION_CONFIG_FILENAM = "meta/msapplication-config.xml";
 	private static final String CUSTOM_EMAIL_CSS_FILENAME = "email.css";
 	private static final String THEME_CSS_FILENAME = "theme.css";
+	private static final String CUSTOM_SOCIAL_PREVIEW_JPG_FILENAME = "meta/socialpreview.jpg";
+	private static final String CUSTOM_SOCIAL_PREVIEW_PNG_FILENAME = "meta/socialpreview.png";
+
 	
 	private String identifyer;
 	private String baseURI;
@@ -67,6 +70,7 @@ public class Theme {
 	private String htmlHeaderElements;
 	private String emailCss;
 	private Palette palette;
+	private File socialPreviewImage;
 
 	/**
 	 * Theme is cached and shared with all sessions.
@@ -121,6 +125,10 @@ public class Theme {
 	public String getEmailCss() {
 		return emailCss;
 	}
+	
+	public File getSocialPreviewImage() {
+		return socialPreviewImage;
+	}
 
 	/**
 	 * @return The colour palette of the theme, read from the custom properties
@@ -149,6 +157,7 @@ public class Theme {
 		
 		this.emailCss = loadEmailCss();
 		this.palette = loadPalette();
+		this.socialPreviewImage = loadSocialPreviewImage();
 	}
 
 	
@@ -208,6 +217,16 @@ public class Theme {
 		}
 		
 		return sb.toString();
+	}
+	
+	private File loadSocialPreviewImage() {
+		File themeFolder = getThemeFolder();
+		File jpg = new File(themeFolder, CUSTOM_SOCIAL_PREVIEW_JPG_FILENAME);
+		if (jpg.exists()) {
+			return jpg;
+		}
+		File png = new File(themeFolder, CUSTOM_SOCIAL_PREVIEW_PNG_FILENAME);
+		return png.exists()? png: null;
 	}
 	
 	private String loadEmailCss() {

@@ -30,6 +30,13 @@ import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Config;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.repository.RepositoryModule;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +53,12 @@ public class CatalogV2ServiceTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
+	private TaxonomyLevelLauncherHandler taxonomyLevelLauncherHandler;
 	
 	@Autowired
 	private CatalogV2Service sut;
@@ -229,6 +242,83 @@ public class CatalogV2ServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.getCatalogFilter(lowermost).getSortOrder()).isEqualTo(lowermost.getSortOrder());
+	}
+	
+	@Test
+	public void shouldBeWebCatalogTaxonomyLevelOfLauncherTaxonomy() {
+		List<TaxonomyRef> previousTaxonomyRefs = repositoryModule.getTaxonomyRefs();
+		try {
+			Taxonomy taxonomy = taxonomyService.createTaxonomy(random(), random(), null, null);
+			TaxonomyLevel level = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+			Taxonomy otherTaxonomy = taxonomyService.createTaxonomy(random(), random(), null, null);
+			TaxonomyLevel otherLevel = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, otherTaxonomy);
+			repositoryModule.setTaxonomyRefs(List.of(taxonomy));
+			createTaxonomyLauncher(taxonomy.getKey(), null, true);
+			dbInstance.commitAndCloseSession();
+			
+			SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(sut.isWebCatalogTaxonomyLevel(level)).isTrue();
+			softly.assertThat(sut.isWebCatalogTaxonomyLevel(otherLevel)).isFalse();
+			softly.assertAll();
+		} finally {
+			repositoryModule.setTaxonomyRefs(previousTaxonomyRefs);
+		}
+	}
+	
+	@Test
+	public void shouldBeWebCatalogTaxonomyLevelBelowLauncherLevel() {
+		List<TaxonomyRef> previousTaxonomyRefs = repositoryModule.getTaxonomyRefs();
+		try {
+			Taxonomy taxonomy = taxonomyService.createTaxonomy(random(), random(), null, null);
+			TaxonomyLevel launcherLevel = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+			TaxonomyLevel child = taxonomyService.createTaxonomyLevel(random(), random(), null, null, launcherLevel, taxonomy);
+			TaxonomyLevel grandchild = taxonomyService.createTaxonomyLevel(random(), random(), null, null, child, taxonomy);
+			TaxonomyLevel sibling = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+			repositoryModule.setTaxonomyRefs(List.of(taxonomy));
+			createTaxonomyLauncher(null, launcherLevel.getKey(), true);
+			dbInstance.commitAndCloseSession();
+			
+			SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(sut.isWebCatalogTaxonomyLevel(child)).isTrue();
+			softly.assertThat(sut.isWebCatalogTaxonomyLevel(grandchild)).isTrue();
+			softly.assertThat(sut.isWebCatalogTaxonomyLevel(launcherLevel)).isFalse();
+			softly.assertThat(sut.isWebCatalogTaxonomyLevel(sibling)).isFalse();
+			softly.assertAll();
+		} finally {
+			repositoryModule.setTaxonomyRefs(previousTaxonomyRefs);
+		}
+	}
+	
+	@Test
+	public void shouldNotBeWebCatalogTaxonomyLevelOfInternalLauncher() {
+		List<TaxonomyRef> previousTaxonomyRefs = repositoryModule.getTaxonomyRefs();
+		try {
+			Taxonomy taxonomy = taxonomyService.createTaxonomy(random(), random(), null, null);
+			TaxonomyLevel level = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+			repositoryModule.setTaxonomyRefs(List.of(taxonomy));
+			createTaxonomyLauncher(taxonomy.getKey(), null, false);
+			dbInstance.commitAndCloseSession();
+			
+			assertThat(sut.isWebCatalogTaxonomyLevel(level)).isFalse();
+		} finally {
+			repositoryModule.setTaxonomyRefs(previousTaxonomyRefs);
+		}
+	}
+	
+	@Test
+	public void shouldNotBeWebCatalogTaxonomyLevelOfNull() {
+		assertThat(sut.isWebCatalogTaxonomyLevel(null)).isFalse();
+	}
+	
+	private void createTaxonomyLauncher(Long taxonomyKey, Long taxonomyLevelKey, boolean webEnabled) {
+		Config config = new Config();
+		config.setTaxonomyKey(taxonomyKey);
+		config.setTaxonomyLevelKey(taxonomyLevelKey);
+		CatalogLauncher launcher = sut.createCatalogLauncher(TaxonomyLevelLauncherHandler.TYPE, miniRandom());
+		launcher.setConfig(taxonomyLevelLauncherHandler.toXML(config));
+		launcher.setEnabled(true);
+		launcher.setWebEnabled(webEnabled);
+		sut.update(launcher);
 	}
 
 }

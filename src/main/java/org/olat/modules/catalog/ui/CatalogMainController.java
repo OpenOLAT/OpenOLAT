@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.fullWebApp.SeoJsonLdHelper;
+import org.olat.core.commons.fullWebApp.SeoMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -35,11 +37,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
@@ -47,6 +51,7 @@ import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogSecurityCallback;
 import org.olat.modules.catalog.CatalogSecurityCallbackFactory;
 import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.WebCatalogDispatcher;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Levels;
 import org.olat.modules.catalog.ui.admin.CatalogTaxonomyEditController;
@@ -145,7 +150,12 @@ public class CatalogMainController extends BasicController implements Activateab
 				entries = entries.subList(1, entries.size());
 				catalogRepositoryEntryListCtrl.activate(ureq, entries, state);
 			} else if (CatalogBCFactory.isTaxonomyLevelType(ores)) {
-				doActivateTaxonomy(ureq, ores.getResourceableId());
+				if (!doActivateTaxonomy(ureq, ores.getResourceableId())) {
+					stackPanel.popUpToRootController(ureq);
+					doOpenSearchHeader();
+				} else if (stackPanel.getLastController() instanceof CatalogEntryListController taxonomyListCtrl) {
+					taxonomyListCtrl.activate(ureq, entries.subList(1, entries.size()), state);
+				}
 			} else if (CatalogBCFactory.ORES_TYPE_TAXONOMY_ADMIN.equalsIgnoreCase(ores.getResourceableTypeName())) {
 				if (secCallback.canEditTaxonomy()) {
 					doOpenTaxonomyAdmin(ureq);
@@ -205,11 +215,14 @@ public class CatalogMainController extends BasicController implements Activateab
 				if (stackPanel.getLastController() == stackPanel.getRootController()) {
 					// Clicked on root breadcrumb
 					doOpenSearchHeader();
+					doPushStartPageUrl(ureq);
 				} else if (stackPanel.getLastController() instanceof CatalogEntryListController) {
 					// Clicked on taxonomy level in breadcrumb
 					TaxonomyLevel taxonomyLevel = ((CatalogEntryListController)stackPanel.getLastController()).getTaxonomyLevel();
 					if (taxonomyLevel != null) {
 						doOpenTaxonomyHeader(ureq, taxonomyLevel);
+					} else {
+						updateSeoMetadata(CatalogBCFactory.get(true).getSearchUrl());
 					}
 				}
 				
@@ -238,8 +251,11 @@ public class CatalogMainController extends BasicController implements Activateab
 		headerSearchCtrl.setHeaderOnly(null);
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 		
-		String windowTitle = translate("window.title.main");
+		String windowTitle = defaultSearchParams.isWebPublish()
+				? WebCatalogDispatcher.translateWithOrganisation(getWindow().getSeoMetadata(), getLocale(), "web.catalog.window.title.main")
+				: translate("window.title.main");
 		getWindow().setTitle(windowTitle);
+		updateSeoMetadata(WebCatalogDispatcher.getBaseUrl().toString());
 	}
 
 	private void doSearch(UserRequest ureq, String searchString, CatalogEntryState catalogEntryState) {
@@ -271,6 +287,7 @@ public class CatalogMainController extends BasicController implements Activateab
 			}
 		}
 		catalogRepositoryEntryListCtrl.search(searchString);
+		updateSeoMetadata(CatalogBCFactory.get(true).getSearchUrl());
 	}
 
 	private void doOpenTaxonomy(UserRequest ureq, Long taxonomyLevelKey, Collection<Long> eductaionalTypeKeys, Collection<String> resourceTypes) {
@@ -291,7 +308,7 @@ public class CatalogMainController extends BasicController implements Activateab
 	 * Open all taxonomy level microsites until the requested level.
 	 * It takes the first launcher which contains the requested taxonomy level.
 	 */
-	private void doActivateTaxonomy(UserRequest ureq, Long key) {
+	private boolean doActivateTaxonomy(UserRequest ureq, Long key) {
 		List<CatalogEntry> catalogEntries = catalogService.getCatalogEntries(defaultSearchParams);
 		for (CatalogLauncher catalogLauncher : launchersCtrl.getTaxonomyLevelCatalogLaunchers()) {
 			Levels levels = taxonomyLevelLauncherHandler.getTaxonomyLevels(catalogLauncher, key, catalogEntries);
@@ -300,10 +317,11 @@ public class CatalogMainController extends BasicController implements Activateab
 				if (taxonomyLevels != null) {
 					stackPanel.popUpToRootController(ureq);
 					taxonomyLevels.forEach(level -> doOpenTaxonomyLevel(ureq, level, levels.getEducationalTypeKeys(), levels.getResourceTypes()));
-					break;
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 	
 	private void popUpToTaxonomyCtrl() {
@@ -319,6 +337,36 @@ public class CatalogMainController extends BasicController implements Activateab
 		headerTaxonomyCtrl = new CatalogTaxonomyHeaderController(ureq, getWindowControl(), taxonomyLevel);
 		listenTo(headerTaxonomyCtrl);
 		mainVC.put("header", headerTaxonomyCtrl.getInitialComponent());
+		updateSeoMetadata(CatalogBCFactory.get(true).getTaxonomyLevelUrl(taxonomyLevel));
+		if (defaultSearchParams.isWebPublish()) {
+			SeoMetadata seo = getWindow().getSeoMetadata();
+			String description = SeoJsonLdHelper.plainText(TaxonomyUIFactory.translateDescription(getTranslator(), taxonomyLevel));
+			if (description != null) {
+				seo.setMetaDescription(description);
+			}
+			String imageUrl = WebCatalogDispatcher.getTaxonomyLevelImageUrl(taxonomyService.getTeaserImage(taxonomyLevel), taxonomyLevel.getKey());
+			if (imageUrl != null) {
+				seo.setOgImageUrl(imageUrl);
+			}
+		}
+	}
+	
+	/**
+	 * The start page of the web catalog has an empty business path. The history
+	 * ignores empty paths and would keep the URL of the page visited last.
+	 */
+	private void doPushStartPageUrl(UserRequest ureq) {
+		if (defaultSearchParams.isWebPublish()) {
+			ureq.getUserSession().removeFromHistory(BusinessControlFactory.getInstance().getEmptyBusinessControl());
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.pushState(WebappHelper.getServletContextPath() + "/" + WebCatalogDispatcher.PATH_CATALOG + "/"));
+		}
+	}
+	
+	private void updateSeoMetadata(String canonicalUrl) {
+		if (defaultSearchParams.isWebPublish()) {
+			SeoMetadata seo = getWindow().getSeoMetadata();
+			WebCatalogDispatcher.setSeoMetadata(seo, canonicalUrl, getLocale(), getWindow().getGuiTheme());
+		}
 	}
 	
 	private void doOpenTaxonomyList(UserRequest ureq, TaxonomyLevel taxonomyLevel, Collection<Long> educationalTypeKeys, Collection<String> resourceTypes) {

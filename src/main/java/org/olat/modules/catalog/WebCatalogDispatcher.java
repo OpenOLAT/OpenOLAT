@@ -19,10 +19,13 @@
  */
 package org.olat.modules.catalog;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +51,9 @@ import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.gui.themes.Theme;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -57,21 +63,16 @@ import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
-import org.olat.modules.catalog.manager.CatalogQueries;
 import org.olat.modules.catalog.manager.CatalogRobotsProvider;
-import org.olat.modules.catalog.model.RepositoryEntryInfos;
 import org.olat.modules.catalog.ui.WebCatalogMainController;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementFileType;
-import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.modules.curriculum.CurriculumService;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,6 +88,8 @@ public class WebCatalogDispatcher implements Dispatcher {
 	public static final String PATH_CATALOG = "catalog";
 	public static final String SITEMAP = "sitemap.xml";
 	public static final String PATH_IMAGE = "image";
+	private static final String PATH_MICROSITE = "Microsite";
+	private static final String PATH_THEME = "Theme";
 	private static final List<String> IMAGE_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif");
 	// Thumbnail instead of the original (uploads can be 5 MB and social networks limit the file size).
 	// 1140x760 is twice the recommended teaser format 570x380 and keeps the whole 3:2 image.
@@ -106,6 +109,33 @@ public class WebCatalogDispatcher implements Dispatcher {
 				.append("/");
 	}
 	
+	public static void setSeoMetadata(SeoMetadata seo, String canonicalUrl, Locale locale, Theme theme) {
+		seo.resetMetadata();
+		seo.setCanonicalUrl(canonicalUrl);
+		seo.setMetaDescription(translateWithOrganisation(seo, locale, "web.catalog.meta.description"));
+		File socialPreviewImage = theme.getSocialPreviewImage();
+		if (socialPreviewImage != null) {
+			seo.setOgImageUrl(getImageUrl(socialPreviewImage.lastModified(), PATH_THEME + "/0", socialPreviewImage.getName()));
+		}
+	}
+	
+	public static void setOfferMetaDescriptionFallback(SeoMetadata seo, String offerTitle, Locale locale) {
+		if (!StringHelper.containsNonWhitespace(seo.getMetaDescription())) {
+			seo.setMetaDescription(translateWithOrganisation(seo, locale, "web.catalog.offer.meta.description", offerTitle));
+		}
+	}
+	
+	public static String translateWithOrganisation(SeoMetadata seo, Locale locale, String i18nKey, String... args) {
+		Translator translator = Util.createPackageTranslator(WebCatalogMainController.class, locale);
+		String organisationName = seo.getMetaOrganisationName();
+		if (!StringHelper.containsNonWhitespace(organisationName)) {
+			return translator.translate(i18nKey + ".without.organisation", args);
+		}
+		String[] argsWithOrganisation = Arrays.copyOf(args, args.length + 1);
+		argsWithOrganisation[args.length] = organisationName;
+		return translator.translate(i18nKey, argsWithOrganisation);
+	}
+	
 	public static String getImageUrl(VFSLeaf image, Long resourceKey) {
 		return image == null ? null : getImageUrl(image.getLastModified(), resourceKey, image.getName());
 	}
@@ -114,6 +144,14 @@ public class WebCatalogDispatcher implements Dispatcher {
 	// image by its URL and update it only if the URL changes. It makes a changed teaser image
 	// get a new URL. dispatchImage() ignores it, so an old URL delivers the current image.
 	public static String getImageUrl(long lastModified, Long resourceKey, String filename) {
+		return getImageUrl(lastModified, resourceKey.toString(), filename);
+	}
+	
+	public static String getTaxonomyLevelImageUrl(VFSLeaf image, Long taxonomyLevelKey) {
+		return image == null ? null : getImageUrl(image.getLastModified(), PATH_MICROSITE + "/" + taxonomyLevelKey, image.getName());
+	}
+	
+	private static String getImageUrl(long lastModified, String key, String filename) {
 		String extension = FileUtils.getFileSuffix(filename);
 		if (!IMAGE_EXTENSIONS.contains(extension)) {
 			return null;
@@ -123,7 +161,7 @@ public class WebCatalogDispatcher implements Dispatcher {
 				.append("/")
 				.append(lastModified)
 				.append("/")
-				.append(resourceKey)
+				.append(key)
 				.append(".")
 				.append(extension)
 				.toString();
@@ -134,15 +172,11 @@ public class WebCatalogDispatcher implements Dispatcher {
 	@Autowired
 	private CatalogRobotsProvider robotsProvider;
 	@Autowired
-	private CatalogQueries catalogQueries;
-	@Autowired
-	private CurriculumModule curriculumModule;
-	@Autowired
-	private CurriculumService curriculumService;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private GUISettings guiSettings;
+	@Autowired
+	private CatalogV2Service catalogService;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -237,10 +271,10 @@ public class WebCatalogDispatcher implements Dispatcher {
 			WindowControl wControl = chiefController.getWindowControl();
 			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
 			SeoMetadata seo = w.getSeoMetadata();
-			seo.resetMetadata();
 			NewControllerFactory.getInstance().launch(ureq, wControl);
 			seo.setRobotsMetaContent("index, follow");
-			seo.setCanonicalUrl(WebCatalogDispatcher.getBaseUrl().append(restPart).toString());
+			setSeoMetadata(seo, getBaseUrl().toString(), ureq.getLocale(), w.getGuiTheme());
+			w.setTitle(translateWithOrganisation(seo, ureq.getLocale(), "web.catalog.window.title.main"));
 
 			String[] restParts = extractRestParts(restPart);
 			if (restParts.length > 0 && restParts.length % 2 == 0) {
@@ -307,25 +341,35 @@ public class WebCatalogDispatcher implements Dispatcher {
 	
 	private void dispatchImage(HttpServletRequest request, HttpServletResponse response, String restPart) {
 		String[] restParts = extractRestParts(restPart);
-		if (catalogModule.isWebPublishTemporarilyDisabled() || restParts.length != 3) {
+		String type = restParts.length == 4? restParts[2]: null;
+		if (catalogModule.isWebPublishTemporarilyDisabled()
+				|| (restParts.length != 3 && !PATH_MICROSITE.equals(type) && !PATH_THEME.equals(type))) {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
 		
-		String filename = restParts[2];
-		String resourceKey = FileUtils.getFileNameWithoutSuffix(filename);
-		if (!StringHelper.isLong(resourceKey) || !IMAGE_EXTENSIONS.contains(FileUtils.getFileSuffix(filename))) {
+		String filename = restParts[restParts.length - 1];
+		String key = FileUtils.getFileNameWithoutSuffix(filename);
+		if (!StringHelper.isLong(key) || !IMAGE_EXTENSIONS.contains(FileUtils.getFileSuffix(filename))) {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
 		
-		VFSLeaf image = loadImage(Long.valueOf(resourceKey));
+		VFSLeaf image;
+		if (PATH_MICROSITE.equals(type)) {
+			image = catalogService.getWebCatalogTaxonomyLevelImage(Long.valueOf(key));
+		} else if (PATH_THEME.equals(type)) {
+			File socialPreviewImage = guiSettings.getGuiTheme().getSocialPreviewImage();
+			image = socialPreviewImage == null? null: new LocalFileImpl(socialPreviewImage);
+		} else {
+			image = catalogService.getWebCatalogImage(Long.valueOf(key));
+		}
 		if (image == null) {
 			DispatcherModule.sendNotFound(request.getPathInfo(), response);
 			return;
 		}
 		
-		VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(image, IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT, false);
+		VFSLeaf thumbnail = PATH_THEME.equals(type)? null: vfsRepositoryService.getThumbnail(image, IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT, false);
 		MediaResource resource = new VFSMediaResource(thumbnail != null ? thumbnail : image, ServletUtil.CACHE_ONE_YEAR);
 		String contentType = resource.getContentType();
 		if (contentType == null || !contentType.contains(WebappHelper.getMimeType(filename))) {
@@ -334,24 +378,5 @@ public class WebCatalogDispatcher implements Dispatcher {
 		}
 		
 		ServletUtil.serveResource(request, response, resource);
-	}
-	
-	private VFSLeaf loadImage(Long resourceKey) {
-		CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
-		searchParams.setWebPublish(true);
-		searchParams.setResourceKeys(List.of(resourceKey));
-		
-		List<RepositoryEntryInfos> entries = catalogQueries.loadRepositoryEntries(searchParams);
-		if (!entries.isEmpty()) {
-			return repositoryService.getIntroductionImage(entries.get(0).entry());
-		}
-		
-		if (curriculumModule.isEnabled()) {
-			List<CurriculumElement> elements = catalogQueries.loadCurriculumElements(searchParams);
-			if (!elements.isEmpty()) {
-				return curriculumService.getCurriculumElemenFile(elements.get(0), CurriculumElementFileType.teaserImage);
-			}
-		}
-		return null;
 	}
 }

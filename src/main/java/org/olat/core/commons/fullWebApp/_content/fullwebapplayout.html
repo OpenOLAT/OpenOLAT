@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="$r.getLanguageCode()">
 <head>
+<meta charset="utf-8">
+## hide toolbar on ios with minimal-ui
+<meta name="viewport" content="width=device-width, initial-scale=1">
+## Page title
+<title>$r.escapeHtml($windowTitle.getValue())</title>
 ## SEO meta tags (robots, description, canonical, OG, JSON-LD)
 $r.render("seoHead")
 <meta name="generator" content="OpenOlat $buildversion - https://www.openolat.org">
 <meta name="dcterms.type" content="Interactive Resource">
-## hide toolbar on ios with minimal-ui
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <script>
 var o_info = new Object();
 o_info.initialPageLoadFinished = false;
@@ -203,8 +205,6 @@ $r.render("jsCssRawHtmlHeader", "post-theme")
 	#end
 </style>
 
-## Page title
-<title>$r.escapeHtml($windowTitle.getValue())</title>
 </head>
 
 <body onload="o_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end o_lang_$r.getLanguageCode() $pageSizeCss">

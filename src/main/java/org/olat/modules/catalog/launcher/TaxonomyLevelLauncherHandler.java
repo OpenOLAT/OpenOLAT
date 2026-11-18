@@ -210,6 +210,19 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		return null;
 	}
 
+	public boolean isInLauncher(CatalogLauncher catalogLauncher, TaxonomyLevel taxonomyLevel) {
+		Config config = fromXML(catalogLauncher.getConfig());
+		if (config == null) {
+			return false;
+		}
+		if (config.getTaxonomyKey() != null) {
+			return config.getTaxonomyKey().equals(taxonomyLevel.getTaxonomy().getKey());
+		}
+		return config.getTaxonomyLevelKey() != null
+				&& !config.getTaxonomyLevelKey().equals(taxonomyLevel.getKey())
+				&& taxonomyLevel.getMaterializedPathKeys().contains("/" + config.getTaxonomyLevelKey() + "/");
+	}
+	
 	/**
 	 * @return the list of TaxonomyLevel from the second to most level to the TaxonomyLevel of the key (if found)
 	 *         and the belonging restrictions.

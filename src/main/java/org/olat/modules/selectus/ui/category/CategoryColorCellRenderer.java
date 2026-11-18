@@ -38,11 +38,11 @@ public class CategoryColorCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		
-		if(cellValue instanceof String) {
-			String color = (String)cellValue;
-			if(StringHelper.containsNonWhitespace(color)) {
-				target.append("<span class='tag label label-info' style='background-color: ").append(color).append("'>").append(color).append("</span>");
+		if(cellValue instanceof String color) {
+			if(StringHelper.isCssColor(color)) {
+				target.append("<span class='tag label label-info' style='background-color: ").append(color).append("'>").appendHtmlEscaped(color).append("</span>");
+			} else {
+				target.append("<span class='tag label label-info'>").appendHtmlEscaped(color).append("</span>");
 			}
 		}
 	}
