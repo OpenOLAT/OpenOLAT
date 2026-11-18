@@ -141,7 +141,7 @@ public class CourseOptionsController extends FormBasicController {
 	private FooterModalController footerCmc;
 	private DialogBoxController folderRefAddWarnBox;
 	private DialogBoxController folderRefRemoveWarnBox;
-	private ReferencableEntriesSearchController folderSearchCtr;
+	private RepositoryEntrySelectionController folderSelectionCtrl;
 	private RepositoryEntrySelectionController glossarySelectionCtrl;
 	private BCCourseNodeEditChooseFolderForm folderSelectCtrl;
 
@@ -316,12 +316,15 @@ public class CourseOptionsController extends FormBasicController {
 			}
 			footerCmc.deactivate();
 			cleanUp();
-		} else if (source == folderSearchCtr) {
-			cmc.deactivate();
+		} else if (source == folderSelectionCtrl) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				doSelectSharedFolder(ureq, folderSearchCtr.getSelectedEntry());
-				markDirty();
+				RepositoryEntry selectedEntry = folderSelectionCtrl.getSelectedEntry();
+				if (selectedEntry != null) {
+					doSelectSharedFolder(ureq, selectedEntry);
+					markDirty();
+				}
 			}
+			footerCmc.deactivate();
 			cleanUp();
 		} else if(cmc == source || footerCmc == source) {
 			cleanUp();
@@ -331,13 +334,7 @@ public class CourseOptionsController extends FormBasicController {
 			}
 		} else if(source == folderRefAddWarnBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
-				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-						SharedFolderFileResource.TYPE_NAME, defaultOrganisations, translate("select"));
-				listenTo(folderSearchCtr);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSearchCtr.getInitialComponent());
-				listenTo(cmc);
-				cmc.activate();
+				doChooseSharedFolder(ureq);
 			}
 		} else if(source == folderSelectCtrl) {
 			if(event instanceof SelectFolderEvent) {
@@ -360,14 +357,14 @@ public class CourseOptionsController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(glossarySelectionCtrl);
+		removeAsListenerAndDispose(folderSelectionCtrl);
 		removeAsListenerAndDispose(footerCmc);
 		removeAsListenerAndDispose(folderSelectCtrl);
-		removeAsListenerAndDispose(folderSearchCtr);
 		removeAsListenerAndDispose(cmc);
 		glossarySelectionCtrl = null;
+		folderSelectionCtrl = null;
 		footerCmc = null;
 		folderSelectCtrl = null;
-		folderSearchCtr = null;
 		cmc = null;
 	}
 	
@@ -380,13 +377,7 @@ public class CourseOptionsController extends FormBasicController {
 			markDirty();
 		} else if (source == addFolderCommand) {
 			if(checkForFolderNodesAdd(ureq)) {
-				List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
-				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-						SharedFolderFileResource.TYPE_NAME, defaultOrganisations, translate("select"));
-				listenTo(folderSearchCtr);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSearchCtr.getInitialComponent());
-				listenTo(cmc);
-				cmc.activate();
+				doChooseSharedFolder(ureq);
 			}
 		} else if (source == removeFolderCommand) {
 			if(checkForFolderNodesRemove(ureq)){
@@ -653,6 +644,52 @@ public class CourseOptionsController extends FormBasicController {
 		removeGlossaryCommand.setVisible(false);
 	}
 	
+	private void doChooseSharedFolder(UserRequest ureq) {
+		if(guardModalController(folderSelectionCtrl)) return;
+
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
+		CourseNodeReferenceProvider referenceProvider = new SharedFolderReferenceProvider(repositoryService);
+		folderSelectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "course-sharedfolder-v1",
+				List.of(SharedFolderFileResource.TYPE_NAME), defaultOrganisations, referenceProvider);
+		listenTo(folderSelectionCtrl);
+
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), folderSelectionCtrl.getBodyComponent(),
+				folderSelectionCtrl.getFooterComponent(), translate("sf.changesfresource"));
+		listenTo(footerCmc);
+		footerCmc.activate();
+	}
+
+	private class SharedFolderReferenceProvider extends CourseNodeReferenceProvider {
+
+		public SharedFolderReferenceProvider(RepositoryService repositoryService) {
+			super(repositoryService, List.of(SharedFolderFileResource.TYPE_NAME), null, null, null, null);
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.sharedfolders");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-SHAREDFOLDER_icon",
+					translate("select.no.sharedfolder.yet"),
+					translate("select.no.sharedfolder.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-SHAREDFOLDER_icon",
+					translate("select.no.sharedfolders.in.view"),
+					translate("select.no.sharedfolders.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term.sharedfolder");
+		}
+	}
+
 	private void doSelectSharedFolder(UserRequest ureq, RepositoryEntry repoEntry) {
 		folderNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
 		folderNameEl.setUserObject(repoEntry);
