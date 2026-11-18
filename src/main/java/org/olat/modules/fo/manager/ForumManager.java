@@ -330,7 +330,7 @@ public class ForumManager {
 	}
 	
 	
-	public List<ForumThread> getForumThreads(Forum forum, Identity identity) {
+	public List<ForumThread> getForumThreads(Forum forum, Identity identity, Locale locale) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select msg ")
 		  .append(" , (select count(replies.key) from fomessage as replies")
@@ -368,7 +368,7 @@ public class ForumManager {
 			Number numOfMessagesLong = (Number)object[1];
 			Date lastModified = (Date)object[2];
 			int numOfMessages = numOfMessagesLong == null ? 1 : numOfMessagesLong.intValue() + 1;
-			String creator = userManager.getUserDisplayName(msg.getCreator());
+			String creator = userManager.getUserDisplayName(msg.getCreator(), locale);
 			ForumThread thread = new ForumThread(msg, creator, lastModified, numOfMessages);
 			
 			if(identity != null) {

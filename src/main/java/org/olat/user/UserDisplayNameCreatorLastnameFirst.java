@@ -19,6 +19,7 @@
 **/
 package org.olat.user;
 
+import java.util.Locale;
 
 /**
  * <h3>Description:</h3> This bean implements an alternative method to display
@@ -47,6 +48,11 @@ public class UserDisplayNameCreatorLastnameFirst extends UserDisplayNameCreator{
 	 */
 	@Override
 	protected String getDisplayName(String first, String last) {
+		return getDisplayName(first, last, null);
+	}
+
+	@Override
+	protected String getDisplayName(String first, String last, Locale locale) {
 		// expect null values to make it robust against NPE and remove whitespace
 		String combined = "";
 		if (last != null) {
@@ -59,7 +65,7 @@ public class UserDisplayNameCreatorLastnameFirst extends UserDisplayNameCreator{
 			combined = combined + first;
 		}
 		combined = combined.trim();
-		if (combined.length() == 0) combined = getUnknownUserDisplayName();
+		if (combined.length() == 0) combined = getUnknownUserDisplayName(locale);
 		return combined;
 	}
 }

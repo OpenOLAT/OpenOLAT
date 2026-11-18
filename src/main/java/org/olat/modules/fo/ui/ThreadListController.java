@@ -191,7 +191,7 @@ public class ThreadListController extends FormBasicController {
 	
 	public void loadModel() {
 		Identity identity = guestOnly ? null : getIdentity();
-		List<ForumThread> threads = forumManager.getForumThreads(forum, identity);
+		List<ForumThread> threads = forumManager.getForumThreads(forum, identity, getLocale());
 		if(!foCallback.mayEditMessageAsModerator()) {
 			for(Iterator<ForumThread> threadIt=threads.iterator(); threadIt.hasNext(); ) {
 				if(Status.getStatus(threadIt.next().getStatusCode()).isHidden()) {

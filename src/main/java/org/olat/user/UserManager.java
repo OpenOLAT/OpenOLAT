@@ -256,14 +256,34 @@ public abstract class UserManager {
 	 * @return
 	 */
 	public abstract String getUserDisplayName(User user);
-	
+
 	/**
-	 * 
+	 * Returns the users displayable name, e.g. "Firstname Lastname". If the user is
+	 * unknown (e.g. deleted), the placeholder text is translated in the given locale.
+	 *
+	 * @param user
+	 * @param locale
+	 * @return
+	 */
+	public abstract String getUserDisplayName(User user, Locale locale);
+
+	/**
+	 *
 	 * @param identity
 	 * @return
 	 */
 	public abstract String getUserDisplayName(Identity identity);
-	
+
+	/**
+	 * Returns the users displayable name, e.g. "Firstname Lastname". If the user is
+	 * unknown (e.g. deleted), the placeholder text is translated in the given locale.
+	 *
+	 * @param identity
+	 * @param locale
+	 * @return
+	 */
+	public abstract String getUserDisplayName(Identity identity, Locale locale);
+
 	public abstract String getUserDisplayName(IdentityRef identity);
 	
 	public abstract String getUserDisplayName(UserPropertiesRow row, List<UserPropertyHandler> userPropertyHandlers);

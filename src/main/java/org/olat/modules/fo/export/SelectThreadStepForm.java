@@ -153,7 +153,7 @@ public class SelectThreadStepForm extends StepFormBasicController {
 	
 	private boolean containsMessage(ForumThread row) {
 		Identity identity = guestOnly ? null : getIdentity();
-		List<ForumThread> threads = forumManager.getForumThreads(forum, identity);
+		List<ForumThread> threads = forumManager.getForumThreads(forum, identity, getLocale());
 		for (ForumThread forumThread : threads) {
 			if (row.getKey().equals(forumThread.getKey())) {
 				return true;
@@ -229,7 +229,7 @@ public class SelectThreadStepForm extends StepFormBasicController {
 		Identity identity = guestOnly ? null : getIdentity();
 		Message messageToMove = (Message)getFromRunContext(SendMailStepForm.MESSAGE_TO_MOVE);
 		messageToMove = messageToMove.getThreadtop() == null ? messageToMove : messageToMove.getThreadtop();
-		List<ForumThread> threads = forumManager.getForumThreads(forum, identity);
+		List<ForumThread> threads = forumManager.getForumThreads(forum, identity, getLocale());
 		if (!foCallback.mayEditMessageAsModerator()) {
 			for (Iterator<ForumThread> threadIt = threads.iterator(); threadIt.hasNext();) {
 				ForumThread next = threadIt.next();

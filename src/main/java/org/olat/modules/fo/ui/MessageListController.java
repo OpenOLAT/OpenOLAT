@@ -676,7 +676,7 @@ public class MessageListController extends BasicController implements GenericEve
 			mainVC.put("portrait_".concat(keyString), portrait.getInitialComponent());
 		  
 			// Add link with username that is clickable
-			String creatorFullName = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(creator));
+			String creatorFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(creator, getLocale()));
 			Link visitingCardLink = LinkFactory.createCustomLink("vc_".concat(keyString), "vc", creatorFullName, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
 			visitingCardLink.setUserObject(creator);
 			LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");

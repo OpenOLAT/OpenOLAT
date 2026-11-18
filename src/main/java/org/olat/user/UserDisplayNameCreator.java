@@ -20,6 +20,7 @@
 package org.olat.user;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.basesecurity.IdentityNames;
 import org.olat.core.id.User;
@@ -52,11 +53,15 @@ public class UserDisplayNameCreator {
 	 * @return
 	 */
 	public String getUserDisplayName(User user) {
-		if (user == null) return getUnknownUserDisplayName();
+		return getUserDisplayName(user, null);
+	}
+
+	public String getUserDisplayName(User user, Locale locale) {
+		if (user == null) return getUnknownUserDisplayName(locale);
 		// use first and lastname for display purpose
 		String first = user.getProperty(UserConstants.FIRSTNAME, null);
 		String last = user.getProperty(UserConstants.LASTNAME, null);
-		return getDisplayName(first, last);
+		return getDisplayName(first, last, locale);
 	}
 
 	public String getUserDisplayName(IdentityNames identity) {
@@ -70,14 +75,23 @@ public class UserDisplayNameCreator {
 	}
 	
 	protected String getDisplayName(String firstName, String lastName) {
+		return getDisplayName(firstName, lastName, null);
+	}
+
+	protected String getDisplayName(String firstName, String lastName, Locale locale) {
 		// expect null values to make it robust agains NPE and remove whitespace
 		String combined = (firstName == null? "" : firstName) + " " + (lastName == null? "" : lastName);
 		combined = combined.trim();
-		if (combined.length() == 0) combined = getUnknownUserDisplayName();
+		if (combined.length() == 0) combined = getUnknownUserDisplayName(locale);
 		return combined;
 	}
 
 	protected static String getUnknownUserDisplayName() {
-		return Util.createPackageTranslator(UserDisplayNameCreator.class, I18nModule.getDefaultLocale()).translate("user.unknown");
+		return getUnknownUserDisplayName(null);
+	}
+
+	protected static String getUnknownUserDisplayName(Locale locale) {
+		Locale translationLocale = locale != null ? locale : I18nModule.getDefaultLocale();
+		return Util.createPackageTranslator(UserDisplayNameCreator.class, translationLocale).translate("user.unknown");
 	}
 }

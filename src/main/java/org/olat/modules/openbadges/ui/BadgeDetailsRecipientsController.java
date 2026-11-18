@@ -280,7 +280,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 	}
 
 	private void doConfirmRevoke(UserRequest ureq, BadgeAssertion badgeAssertion) {
-		String recipientDisplayName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
+		String recipientDisplayName = userManager.getUserDisplayName(badgeAssertion.getRecipient(), getLocale());
 		String title = translate("confirm.revoke.issued.badge.title", recipientDisplayName);
 		String text = translate("confirm.revoke.issued.badge", recipientDisplayName);
 		confirmRevokeCtrl = activateOkCancelDialog(ureq, title, text, confirmRevokeCtrl);
@@ -383,7 +383,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		public Object getValueAt(Row row, int col) {
 			BadgeAssertion badgeAssertion = row.badgeAssertion();
 			return switch (Cols.values()[col]) {
-				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
+				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient(), translator.getLocale());
 				case status -> badgeAssertion;
 				case verification -> badgeAssertion.getBadgeClass().getVerificationMethod();
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());

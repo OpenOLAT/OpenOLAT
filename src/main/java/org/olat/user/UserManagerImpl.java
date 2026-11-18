@@ -491,6 +491,11 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 
 	@Override
 	public String getUserDisplayName(Identity identity) {
+		return getUserDisplayName(identity, null);
+	}
+
+	@Override
+	public String getUserDisplayName(Identity identity, Locale locale) {
 		if (userDisplayNameCreator == null || identity == null) return "";
 		String fullName;
 		try {
@@ -498,8 +503,13 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 					|| !Persistence.getPersistenceUtil().isLoaded(identity, "user")) {
 				identity = securityManager.loadIdentityByKey(identity.getKey());
 			}
-			fullName = getUserDisplayName(identity.getUser());
-			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+			User user = identity.getUser();
+			fullName = getUserDisplayName(user, locale);
+			if (hasDisplayableName(user)) {
+				// Only cache real names, never the locale-dependent "unknown user"
+				// placeholder, as the shared cache is not locale-aware.
+				updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+			}
 		} catch (Exception e) {
 			log.error("", e);
 			fullName = getUserDisplayName(identity == null ? null : identity.getKey());
@@ -509,8 +519,20 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 
 	@Override
 	public String getUserDisplayName(User user) {
+		return getUserDisplayName(user, null);
+	}
+
+	@Override
+	public String getUserDisplayName(User user, Locale locale) {
 		if (userDisplayNameCreator == null || user == null) return "";
-		return userDisplayNameCreator.getUserDisplayName(user);
+		return userDisplayNameCreator.getUserDisplayName(user, locale);
+	}
+
+	private boolean hasDisplayableName(User user) {
+		if (user == null) return false;
+		String first = user.getProperty(UserConstants.FIRSTNAME, null);
+		String last = user.getProperty(UserConstants.LASTNAME, null);
+		return StringHelper.containsNonWhitespace(first) || StringHelper.containsNonWhitespace(last);
 	}
 
 	@Override
