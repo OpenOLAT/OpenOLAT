@@ -338,6 +338,12 @@ class CurriculumElementResourceListController extends FormBasicController implem
 					}
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
+			} else if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				RepositoryEntry entry = selectionCtrl.getSelectedEntry();
+				if(entry != null) {
+					doAddRepositoryEntry(entry);
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
 			}
 			footerCmc.deactivate();
 			cleanUp();
@@ -419,10 +425,12 @@ class CurriculumElementResourceListController extends FormBasicController implem
 				? organisationService.getOrganisationDescendants(curriculum.getOrganisation(), true)
 				: List.of();
 
+		boolean multiSelect = curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 1;
+
 		CourseNodeReferenceProvider referenceProvider = new CurriculumCourseReferenceProvider(repositoryService);
 		selectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "curriculum-course-v1",
 				List.of("CourseModule"), null, null,
-				List.of(RepositoryEntryRuntimeType.curricular), true,
+				List.of(RepositoryEntryRuntimeType.curricular), multiSelect,
 				searchParams -> {
 					searchParams.setAdditionalManagerRoles(additionalRoles);
 					searchParams.setAdditionalOrganisationsAccess(additionalOrgs);
