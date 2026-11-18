@@ -53,6 +53,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -73,6 +74,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.course.config.ExternalToolVisibility;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.bc.BCCourseNodeConfigController;
 import org.olat.course.nodes.bc.BCCourseNodeEditChooseFolderForm;
@@ -92,6 +94,8 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.EmptyScreenData;
+import org.olat.repository.ui.RepositoryEntrySelectionController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
@@ -148,8 +152,9 @@ public class CourseToolbarController extends FormBasicController {
 	private MultipleSelectionElement[] externalToolVisibilityEls;
 
 	private CloseableModalController cmc;
+	private FooterModalController footerCmc;
 	private ReferencableEntriesSearchController blogSearchCtrl;
-	private ReferencableEntriesSearchController wikiSearchCtrl;
+	private RepositoryEntrySelectionController wikiSelectionCtrl;
 	private BCCourseNodeEditChooseFolderForm folderSelectCtrl;
 	
 	private LockResult lockEntry;
@@ -584,7 +589,7 @@ public class CourseToolbarController extends FormBasicController {
 		} else if (source == wikiEl) {
 			updateUI();
 		} else if (source == wikiSelectLink) {
-			doSelectWiki(ureq);
+			doChooseWiki(ureq);
 		} else if (source == documentsEl) {
 			updateDocumentsUI();
 		} else if (source == documentsTargetEl) {
@@ -718,15 +723,17 @@ public class CourseToolbarController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == wikiSearchCtrl) {
+		} else if (source == wikiSelectionCtrl) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				RepositoryEntry re = wikiSearchCtrl.getSelectedEntry();
+				RepositoryEntry re = wikiSelectionCtrl.getSelectedEntry();
 				if (re != null) {
 					wikiEntry = re;
 					updateUI();
 				}
 			}
-			cmc.deactivate();
+			footerCmc.deactivate();
+			cleanUp();
+		} else if(footerCmc == source) {
 			cleanUp();
 		}  else if(source == folderSelectCtrl) {
 			if(event instanceof SelectFolderEvent) {
@@ -743,10 +750,12 @@ public class CourseToolbarController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(blogSearchCtrl);
-		removeAsListenerAndDispose(wikiSearchCtrl);
+		removeAsListenerAndDispose(wikiSelectionCtrl);
+		removeAsListenerAndDispose(footerCmc);
 		removeAsListenerAndDispose(cmc);
 		blogSearchCtrl = null;
-		wikiSearchCtrl = null;
+		wikiSelectionCtrl = null;
+		footerCmc = null;
 		cmc = null;
 	}
 
@@ -1182,14 +1191,50 @@ public class CourseToolbarController extends FormBasicController {
 		}
 	}
 
-	private void doSelectWiki(UserRequest ureq) {
+	private void doChooseWiki(UserRequest ureq) {
+		if(guardModalController(wikiSelectionCtrl)) return;
+
 		List<Organisation> defaultOrgnisations = repositoryService.getOrganisations(entry);
-		wikiSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, WikiResource.TYPE_NAME,
-				defaultOrgnisations, translate("wiki.select.title"));
-		listenTo(wikiSearchCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				wikiSearchCtrl.getInitialComponent(), true, translate("wiki.select.title"));
-		cmc.activate();
+		CourseNodeReferenceProvider referenceProvider = new WikiReferenceProvider(repositoryService);
+		wikiSelectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "course-toolbar-wiki-v1",
+				List.of(WikiResource.TYPE_NAME), defaultOrgnisations, referenceProvider);
+		listenTo(wikiSelectionCtrl);
+
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), wikiSelectionCtrl.getBodyComponent(),
+				wikiSelectionCtrl.getFooterComponent(), translate("wiki.select.title"));
+		listenTo(footerCmc);
+		footerCmc.activate();
+	}
+
+	private class WikiReferenceProvider extends CourseNodeReferenceProvider {
+
+		public WikiReferenceProvider(RepositoryService repositoryService) {
+			super(repositoryService, List.of(WikiResource.TYPE_NAME), null, null, null, null);
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.wikis");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-WIKI_icon",
+					translate("select.no.wiki.yet"),
+					translate("select.no.wiki.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-WIKI_icon",
+					translate("select.no.wikis.in.view"),
+					translate("select.no.wikis.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term.wiki");
+		}
 	}
 
 	private void doUpdateWikiReference(ICourse course, boolean wikiSelected) {
