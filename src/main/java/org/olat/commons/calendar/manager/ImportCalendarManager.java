@@ -39,9 +39,9 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
@@ -56,6 +56,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.httpclient.CancellingInputStream;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -91,9 +92,10 @@ public class ImportCalendarManager {
 
 	public KalendarRenderWrapper importCalendar(Identity identity, String calendarName, String type, String url) throws IOException {
 		File tmpFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID() + ".ics");
+		HttpGet get = new HttpGet(url);
 		try (CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(new HttpGet(url));
-				InputStream in = response.getEntity().getContent()) {
+				ClassicHttpResponse response = client.executeOpen(null, get, null);
+				InputStream in = CancellingInputStream.content(response, get)) {
 			Files.copy(in, tmpFile.toPath());
 		} catch(IOException e) {
 			log.error("Cannot copy {}", tmpFile, e);
@@ -230,9 +232,10 @@ public class ImportCalendarManager {
 	 * @param calId
 	 */
 	private void reloadCalendarFromUrl(String importUrl, String calType, String calId, KalendarEventFilter filter) {
+		HttpGet get = new HttpGet(importUrl);
 		try(CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
-				InputStream in = response.getEntity().getContent()) {
+				ClassicHttpResponse response = client.executeOpen(null, get, null);
+				InputStream in = CancellingInputStream.content(response, get)) {
 			String targetId = "-" + CalendarManager.TYPE_USER + "-" + calId;
 			Kalendar kalendar = calendarManager.buildKalendarFrom(in, calType, calId);
 			Collection<KalendarEvent> events = kalendar.getEvents();

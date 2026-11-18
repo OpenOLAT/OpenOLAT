@@ -22,10 +22,9 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText.plugin
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
@@ -71,18 +70,20 @@ public class TinyDispatcher implements Dispatcher {
 				get.addHeader("Accept", "application/json");
 				get.addHeader("Content-type", "application/json");
 
-				HttpResponse response = httpClient.execute(get);
-				int status = response.getStatusLine().getStatusCode();
-				if(status == 200) {//created
-					String content = EntityUtils.toString(response.getEntity());
-					JSONObject jsonPayload = new JSONObject(content);
-					JSONObject object = new JSONObject();
-					object.put("width", jsonPayload.optInt("width"));
-					object.put("height", jsonPayload.optInt("height"));
-					object.write(httpResponse.getWriter());
-				} else {
-					httpResponse.setStatus(status);
-				}
+				httpClient.execute(get, response -> {
+					int status = response.getCode();
+					if(status == 200) {//created
+						String content = EntityUtils.toString(response.getEntity());
+						JSONObject jsonPayload = new JSONObject(content);
+						JSONObject object = new JSONObject();
+						object.put("width", jsonPayload.optInt("width"));
+						object.put("height", jsonPayload.optInt("height"));
+						object.write(httpResponse.getWriter());
+					} else {
+						httpResponse.setStatus(status);
+					}
+					return null;
+				});
 			} catch(Exception e) {
 				log.error("", e);
 			}

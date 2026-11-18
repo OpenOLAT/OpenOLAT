@@ -20,19 +20,19 @@
 package org.olat.core.commons.services.doceditor.onlyoffice.manager;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeConversionService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
@@ -174,16 +174,18 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 		request.setEntity(requestEntity);
 
 		ConversionResult conversionResult = null;
-		try (CloseableHttpClient client = httpClientService.createHttpClient(OnlyOfficeService.PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of create thumbnail request: {}", statusCode);
-			
-			if (statusCode == HttpStatus.SC_OK) {
-				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-				log.debug("Conversion response: {}", json);
-				conversionResult = objectMapper.readValue(json, ConversionResult.class);
-			}
+		try (CloseableHttpClient client = httpClientService.createHttpClient(OnlyOfficeService.PROTECTION_PROFILE)) {
+			conversionResult = client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of create thumbnail request: {}", statusCode);
+				
+				if (statusCode == HttpStatus.SC_OK) {
+					String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					log.debug("Conversion response: {}", json);
+					return objectMapper.readValue(json, ConversionResult.class);
+				}
+				return null;
+			});
 		} catch (Exception e) {
 			log.error("Create thumbnail request error.", e);
 		}
@@ -201,14 +203,15 @@ public class OnlyOfficeConversionServiceImpl implements OnlyOfficeConversionServ
 		boolean thumbnailCreated = false;
 		
 		HttpGet downLoadRequest = new HttpGet(fileUrl);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(OnlyOfficeService.PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(downLoadRequest);) {
-			if (httpResponse.getStatusLine().getStatusCode() == 200) {
-				InputStream content = httpResponse.getEntity().getContent();
-				thumbnailCreated = VFSManager.copyContent(content, thumbnailLeaf, null);
-			} else {
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(OnlyOfficeService.PROTECTION_PROFILE)) {
+			thumbnailCreated = httpClient.execute(downLoadRequest, httpResponse -> {
+				if (httpResponse.getCode() == 200) {
+					InputStream content = httpResponse.getEntity().getContent();
+					return Boolean.valueOf(VFSManager.copyContent(content, thumbnailLeaf, null));
+				}
 				log.warn("Get thumbnail from ONLYOFICE failed. URL: {}", fileUrl);
-			}
+				return Boolean.FALSE;
+			}).booleanValue();
 		} catch (Exception e) {
 			log.error("Get thumbnail from ONLYOFICE failed. URL: {}", fileUrl, e);
 		}

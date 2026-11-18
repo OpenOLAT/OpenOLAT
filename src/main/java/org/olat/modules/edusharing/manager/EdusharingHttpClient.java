@@ -25,10 +25,9 @@ import static org.olat.modules.edusharing.EdusharingModule.PROTECTION_PROFILE;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -69,24 +68,29 @@ class EdusharingHttpClient {
 		String url = edusharingModule.getBaseUrl() + "metadata?format=repository";
 		HttpGet request = new HttpGet(url);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				Properties props = new Properties();
-				props.loadFromXML(httpResponse.getEntity().getContent());
-				if (log.isDebugEnabled()) log.debug("edu-sharing metadata imported: " + props.toString());
-				return new EdusharingPropertiesImpl(props);
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			Properties props = httpClient.execute(request, httpResponse -> {
+				int statusCode = httpResponse.getCode();
+				if (statusCode == 200) {
+					Properties loadedProps = new Properties();
+					loadedProps.loadFromXML(httpResponse.getEntity().getContent());
+					return loadedProps;
+				}
+				logUnsuccessful(httpResponse, url);
+				return null;
+			});
+			if (props == null) {
+				throw new EdusharingException();
 			}
-			logUnsuccessful(httpResponse, url);
-			throw new EdusharingException();
+			if (log.isDebugEnabled()) log.debug("edu-sharing metadata imported: " + props.toString());
+			return new EdusharingPropertiesImpl(props);
 		} catch(Exception e) {
 			log.error("", e);
 			throw new EdusharingException(e);
 		}
 	}
 
-	EdusharingResponse getPreview(GetPreviewParameter parameter) throws ClientProtocolException, IOException {
+	EdusharingResponse getPreview(GetPreviewParameter parameter) throws IOException {
 		String url = new StringBuilder()
 				.append(edusharingModule.getBaseUrl())
 				.append("preview")
@@ -98,7 +102,7 @@ class EdusharingHttpClient {
 		return getEdusharingResponse(url);
 	}
 	
-	EdusharingResponse getRendered(GetRenderedParameter parameter) throws ClientProtocolException, IOException {
+	EdusharingResponse getRendered(GetRenderedParameter parameter) throws IOException {
 		String url = getRenderUrl(parameter);
 
 		return getEdusharingResponse(url);
@@ -136,19 +140,19 @@ class EdusharingHttpClient {
 		return sb.toString();
 	}
 
-	private EdusharingResponse getEdusharingResponse(String url) throws IOException, ClientProtocolException {
+	private EdusharingResponse getEdusharingResponse(String url) throws IOException {
 		log.debug("edu-sharing: get from " + url);
 		HttpGet request = new HttpGet(url);
 		CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-		CloseableHttpResponse httpResponse = httpClient.execute(request);
+		ClassicHttpResponse httpResponse = httpClient.executeOpen(null, request, null);
 		logUnsuccessful(httpResponse, url);
-		return new EdusharingHttpResponse(httpClient, httpResponse);
+		return new EdusharingHttpResponse(httpClient, request, httpResponse);
 	}
 
-	private void logUnsuccessful(CloseableHttpResponse httpResponse, String url) {
-		if (httpResponse.getStatusLine().getStatusCode() != 200) {
-			log.warn("edu-sharing: got http status " + httpResponse.getStatusLine().getStatusCode() + "/"
-					+ httpResponse.getStatusLine().getReasonPhrase() + ". URL: " + url);
+	private void logUnsuccessful(ClassicHttpResponse httpResponse, String url) {
+		if (httpResponse.getCode() != 200) {
+			log.warn("edu-sharing: got http status " + httpResponse.getCode() + "/"
+					+ httpResponse.getReasonPhrase() + ". URL: " + url);
 		}
 	}
 

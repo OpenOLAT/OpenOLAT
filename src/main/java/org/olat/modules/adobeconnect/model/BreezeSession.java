@@ -19,7 +19,7 @@
  */
 package org.olat.modules.adobeconnect.model;
 
-import org.apache.http.Header;
+import org.apache.hc.core5.http.Header;
 import org.olat.modules.adobeconnect.manager.AbstractAdobeConnectProvider;
 
 /**

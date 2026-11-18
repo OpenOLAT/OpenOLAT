@@ -22,13 +22,13 @@ package org.olat.modules.edubase.manager;
 
 import java.io.EOFException;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.id.Identity;
@@ -183,9 +183,9 @@ public class EdubaseManagerImpl implements EdubaseManager {
 		BookDetails infoReponse = new BookDetailsImpl();
 
 		String url = String.format(edubaseModule.getInfoverUrl(), bookId);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
-				CloseableHttpResponse httpResponse = httpClient.execute(new HttpGet(url));) {
-			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
+			String json = httpClient.execute(new HttpGet(url),
+					httpResponse -> EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8));
 			ObjectMapper objectMapper = new ObjectMapper();
 			infoReponse = objectMapper.readValue(json, BookDetailsImpl.class);
 		} catch (SocketTimeoutException socketTimeoutException) {

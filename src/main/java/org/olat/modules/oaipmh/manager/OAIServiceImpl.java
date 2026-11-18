@@ -32,15 +32,12 @@ import java.util.UUID;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.core.commons.services.robots.RobotsProvider;
@@ -181,7 +178,7 @@ public class OAIServiceImpl implements OAIService, RobotsProvider, SitemapProvid
 	@Override
 	public Map<String, Integer> propagateSearchEngines(List<String> searchEngineUrls) {
 		List<RepositoryEntry> repositoryEntries = repositoryService.loadRepositoryForMetadata(RepositoryEntryStatusEnum.published);
-		HttpResponse response = null;
+		Integer statusCode = null;
 		List<String> urlList = new ArrayList<>();
 		JSONObject json = null;
 		Map<String, Integer> searchEngineToResponseCode = new HashMap<>();
@@ -207,7 +204,7 @@ public class OAIServiceImpl implements OAIService, RobotsProvider, SitemapProvid
 					String sitemapUrlEncoded = URLEncoder.encode(ResourceInfoDispatcher.getUrl("sitemap.xml"));
 					url = String.format(url, sitemapUrlEncoded);
 					HttpGet getRequest = new HttpGet(url);
-					response = httpClient.execute(getRequest);
+					statusCode = httpClient.execute(getRequest, response -> response.getCode());
 				} else if (url.contains("indexnow")) {
 					// 2) Submit list to indexnow capable search engines
 					HttpPost postRequest = new HttpPost(url);
@@ -215,16 +212,13 @@ public class OAIServiceImpl implements OAIService, RobotsProvider, SitemapProvid
 						// build only once
 						json = buildIndexNowPostJson(urlList);
 					}
-					StringEntity postParams = new StringEntity(json.toString());
-					postParams.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-					postParams.setContentEncoding("UTF-8");
+					StringEntity postParams = new StringEntity(json.toString(), ContentType.APPLICATION_JSON);
 					postRequest.setEntity(postParams);
-					response = httpClient.execute(postRequest);
+					statusCode = httpClient.execute(postRequest, response -> response.getCode());
 				}
-				if (response != null) {
-					// Ensures that the entity content is fully consumed and the content stream, if exists, is closed.
-					EntityUtils.consume(response.getEntity());
-					searchEngineToResponseCode.put(new URI(url).getHost(), response.getStatusLine().getStatusCode());
+				if (statusCode != null) {
+					// The response handler ensures that the entity content is fully consumed and the content stream is closed.
+					searchEngineToResponseCode.put(new URI(url).getHost(), statusCode);
 				}
 			} catch (Exception e) {
 				searchEngineToResponseCode.clear();

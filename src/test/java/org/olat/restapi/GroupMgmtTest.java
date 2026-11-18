@@ -49,8 +49,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +61,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.ConnectionUtilities.NameValuePair;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
@@ -92,9 +89,6 @@ import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * 
  * Description:<br>
@@ -105,8 +99,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class GroupMgmtTest extends OlatRestTestCase {
-	
-	private static final Logger log = Tracing.createLoggerFor(GroupMgmtTest.class);
 	
 	private Identity owner1, owner2, owner3, part1, part2, part3;
 	private BusinessGroup g1, g2;
@@ -914,35 +906,5 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		
 		assertFalse(found);
 		conn.close();
-	}
-	
-	protected List<UserVO> parseUserArray(HttpEntity body) {
-		try(InputStream in=body.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<UserVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	protected List<GroupVO> parseGroupArray(HttpEntity body) {
-		try(InputStream in=body.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<GroupVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
-	}
-	
-	protected List<MessageVO> parseMessageArray(HttpEntity body) {
-		try(InputStream in=body.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<MessageVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
 	}
 }

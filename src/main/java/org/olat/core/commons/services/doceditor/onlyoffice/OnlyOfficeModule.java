@@ -26,8 +26,9 @@ import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -373,13 +374,19 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		return httpSocketTimeout;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public HttpClientBuilder httpClientBuilder() {
-		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(getHttpConnectTimeout())
-				.setConnectionRequestTimeout(getHttpConnectRequestTimeout())
-				.setSocketTimeout(getHttpSocketTimeout())
-				.build();
-		return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig);
+		RequestConfig.Builder requestConfig = RequestConfig.custom();
+		if(getHttpConnectTimeout() >= 0) {
+			requestConfig.setConnectTimeout(Timeout.ofMilliseconds(getHttpConnectTimeout()));
+		}
+		if(getHttpConnectRequestTimeout() >= 0) {
+			requestConfig.setConnectionRequestTimeout(Timeout.ofMilliseconds(getHttpConnectRequestTimeout()));
+		}
+		if(getHttpSocketTimeout() >= 0) {
+			requestConfig.setResponseTimeout(Timeout.ofMilliseconds(getHttpSocketTimeout()));
+		}
+		return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig.build());
 	}
 
 }

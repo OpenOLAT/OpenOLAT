@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.manager;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -37,13 +38,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
@@ -1391,11 +1392,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		
 		try(CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder(PROTECTION_PROFILE)
 				.disableAutomaticRetries()
-				.build();
-				CloseableHttpResponse response = httpClient.execute(post)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			return BigBlueButtonUtils.getDocumentFromEntity(response.getEntity());
+				.build()) {
+			return httpClient.execute(post, response -> getDocumentFromResponse(response, uri));
 		} catch(Exception e) {
 			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.unkown));
 			log.error("Cannot send: {}", uri, e);
@@ -1408,15 +1406,24 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		HttpGet get = new HttpGet(uri);
 		try(CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder(PROTECTION_PROFILE)
 				.disableAutomaticRetries()
-				.build();
-				CloseableHttpResponse response = httpClient.execute(get)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			return BigBlueButtonUtils.getDocumentFromEntity(response.getEntity());
+				.build()) {
+			return httpClient.execute(get, response -> getDocumentFromResponse(response, uri));
 		} catch(Exception e) {
 			errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.unkown));
 			log.error("Cannot send: {}", uri, e);
 			return null;
+		}
+	}
+	
+	private Document getDocumentFromResponse(ClassicHttpResponse response, URI uri) throws IOException {
+		int statusCode = response.getCode();
+		log.debug("Status code of: {} {}", uri, statusCode);
+		try {
+			return BigBlueButtonUtils.getDocumentFromEntity(response.getEntity());
+		} catch(IOException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new IOException(e);
 		}
 	}
 	

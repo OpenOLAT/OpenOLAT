@@ -28,9 +28,9 @@ package org.olat.commons.calendar.manager;
 import java.io.InputStream;
 import java.util.List;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.ImportedToCalendar;
@@ -40,6 +40,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.crypto.RandomUtils;
+import org.olat.core.util.httpclient.CancellingInputStream;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
@@ -85,9 +86,10 @@ public class ImportCalendarJob extends JobWithDB {
 			String id = importedToCalendar.getToCalendarId();
 			String importUrl = importedToCalendar.getUrl();
 			if(check || importToCalendarManager.check(importedToCalendar)) {
+				HttpGet get = new HttpGet(importUrl);
 				try (CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
-						CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
-						InputStream in = response.getEntity().getContent()) {
+						ClassicHttpResponse response = client.executeOpen(null, get, null);
+						InputStream in = CancellingInputStream.content(response, get)) {
 					Kalendar cal = calendarManager.getCalendar(type, id);
 					if (calendarManager.synchronizeCalendarFrom(in, importUrl, cal)) {
 						log.info(Tracing.M_AUDIT, "Updated successfully calendar: {} / {}", type, id);

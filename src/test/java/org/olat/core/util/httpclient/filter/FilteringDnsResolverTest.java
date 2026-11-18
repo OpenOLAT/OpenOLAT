@@ -20,24 +20,28 @@
 package org.olat.core.util.httpclient.filter;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Set;
 
-import org.apache.http.conn.DnsResolver;
+import org.apache.hc.client5.http.DnsResolver;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Checks the SSRF mitigation of the HTTP clients.
+ * Checks the DNS resolver of the SSRF mitigation for Apache HttpClient 5. The
+ * connection operator of HttpClient 5 calls {@code resolve(host, port)}, both
+ * methods are checked.
  *
- * Initial date: 11 Aug 2026<br>
+ * Initial date: 17 nov. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class FilteringDnsResolverTest {
 
 	private static final InetAddressFilter externalOnly = InetAddressFilter.externalAddresses();
-	
+
 	@Test
 	public void internalAddressesAreFiltered() throws UnknownHostException {
 		String[] addresses = new String[] {
@@ -73,12 +77,24 @@ public class FilteringDnsResolverTest {
 	public void resolverRejectsInternalHost() {
 		DnsResolver resolver = new FilteringDnsResolver(dns("10.0.0.1"), externalOnly, Set.of());
 		Assert.assertThrows(FilteredHostException.class, () -> resolver.resolve("internal.example.org"));
+		Assert.assertThrows(FilteredHostException.class, () -> resolver.resolve("internal.example.org", 80));
+	}
+
+	@Test
+	public void resolverRejectsCloudMetadataHost() {
+		DnsResolver resolver = new FilteringDnsResolver(dns("169.254.169.254"), externalOnly, Set.of());
+		Assert.assertThrows(FilteredHostException.class, () -> resolver.resolve("metadata.example.org", 80));
 	}
 
 	@Test
 	public void resolverAcceptsPublicHost() throws UnknownHostException {
 		DnsResolver resolver = new FilteringDnsResolver(dns("8.8.8.8"), externalOnly, Set.of());
 		Assert.assertEquals(1, resolver.resolve("public.example.org").length);
+
+		List<InetSocketAddress> addresses = resolver.resolve("public.example.org", 443);
+		Assert.assertEquals(1, addresses.size());
+		Assert.assertEquals("8.8.8.8", addresses.get(0).getAddress().getHostAddress());
+		Assert.assertEquals(443, addresses.get(0).getPort());
 	}
 
 	/**
@@ -89,6 +105,7 @@ public class FilteringDnsResolverTest {
 	public void resolverRejectsPartiallyInternalHost() {
 		DnsResolver resolver = new FilteringDnsResolver(dns("8.8.8.8", "127.0.0.1"), externalOnly, Set.of());
 		Assert.assertThrows(FilteredHostException.class, () -> resolver.resolve("mixed.example.org"));
+		Assert.assertThrows(FilteredHostException.class, () -> resolver.resolve("mixed.example.org", 80));
 	}
 
 	/**
@@ -97,19 +114,49 @@ public class FilteringDnsResolverTest {
 	 */
 	@Test
 	public void resolverAcceptsExemptedProxy() throws UnknownHostException {
-		DnsResolver resolver = new FilteringDnsResolver(dns("10.0.0.1"), externalOnly, Set.of("proxy.local"));
+		DnsResolver resolver = new FilteringDnsResolver(dns("10.0.0.1"), externalOnly, Set.of("Proxy.Local"));
 		Assert.assertEquals(1, resolver.resolve("proxy.local").length);
-		Assert.assertThrows(FilteredHostException.class, () -> resolver.resolve("internal.example.org"));
+		Assert.assertEquals(1, resolver.resolve("PROXY.local", 3128).size());
+		Assert.assertThrows(FilteredHostException.class, () -> resolver.resolve("internal.example.org", 80));
+	}
+
+	/**
+	 * An unresolved address would be resolved later by the socket itself, without
+	 * any check.
+	 */
+	@Test
+	public void resolverRejectsUnresolvedAddress() {
+		DnsResolver delegate = new DnsResolver() {
+			@Override
+			public InetAddress[] resolve(String host) {
+				return null;
+			}
+
+			@Override
+			public String resolveCanonicalHostname(String host) {
+				return host;
+			}
+		};
+		DnsResolver resolver = new FilteringDnsResolver(delegate, externalOnly, Set.of());
+		UnknownHostException e = Assert.assertThrows(UnknownHostException.class, () -> resolver.resolve("unresolved.example.org", 80));
+		Assert.assertFalse(e instanceof FilteredHostException);
 	}
 
 	private DnsResolver dns(String... addresses) {
-		return host -> {
-			InetAddress[] resolved = new InetAddress[addresses.length];
-			for(int i=addresses.length; i-->0; ) {
-				resolved[i] = InetAddress.getByName(addresses[i]);
+		return new DnsResolver() {
+			@Override
+			public InetAddress[] resolve(String host) throws UnknownHostException {
+				InetAddress[] resolved = new InetAddress[addresses.length];
+				for(int i=addresses.length; i-->0; ) {
+					resolved[i] = InetAddress.getByName(addresses[i]);
+				}
+				return resolved;
 			}
-			return resolved;
+
+			@Override
+			public String resolveCanonicalHostname(String host) {
+				return host;
+			}
 		};
 	}
-
 }

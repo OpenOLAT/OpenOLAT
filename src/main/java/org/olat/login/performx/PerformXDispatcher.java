@@ -27,12 +27,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.MediaType;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -195,10 +193,10 @@ public class PerformXDispatcher implements Dispatcher {
 			String authorization64 = StringHelper.encodeBase64(authorization.getBytes());
 			validateTokenRequest.addHeader("Authorization", "Basic " + authorization64);
 
-			HttpResponse response = httpclient.execute(validateTokenRequest);
-			HttpEntity entity = response.getEntity();
-			int statusCode = response.getStatusLine().getStatusCode();
-			String returnContent = EntityUtils.toString(entity);
+			StatusContent response = httpclient.execute(validateTokenRequest,
+					r -> new StatusContent(r.getCode(), EntityUtils.toString(r.getEntity())));
+			int statusCode = response.statusCode();
+			String returnContent = response.content();
 			if(statusCode == 200) {
 				return getValidateTokenData(returnContent);
 			}
@@ -221,5 +219,9 @@ public class PerformXDispatcher implements Dispatcher {
 			log.error("", e);
 			return false;
 		}
+	}
+	
+	private record StatusContent(int statusCode, String content) {
+		//
 	}
 }

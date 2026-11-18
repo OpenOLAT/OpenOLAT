@@ -26,11 +26,9 @@ import java.util.List;
 
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.Header;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.core.id.Identity;
@@ -133,15 +131,15 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		URI uri = builder.build();
 		BreezeSession session = null;
 		HttpGet getInfo = new HttpGet(uri);
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-			CloseableHttpResponse response = httpClient.execute(getInfo)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {
-				Header header = response.getFirstHeader("Set-Cookie");
-				session = BreezeSession.valueOf(header);
-			} else {
-				EntityUtils.consume(response.getEntity());
-			}
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			session = httpClient.execute(getInfo, response -> {
+				int statusCode = response.getCode();
+				if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {
+					Header header = response.getFirstHeader("Set-Cookie");
+					return BreezeSession.valueOf(header);
+				}
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("", e);
 		}

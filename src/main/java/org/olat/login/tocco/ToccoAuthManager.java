@@ -19,18 +19,19 @@
  */
 package org.olat.login.tocco;
 
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -90,19 +91,21 @@ public class ToccoAuthManager implements AuthenticationSPI {
 	public Identity authenticate(String login, String password, AuthenticationStatus status) {
 		try(CloseableHttpClient httpclient = httpClientService.createThreadSafeHttpClient(false, ProtectionProfile.CONFIGURED)) {
 			String serverUrl = toccoLoginModule.getToccoServerUrl();
-			URL loginUri = new URL(serverUrl);
+			URL loginUri = new URI(serverUrl).toURL();
 			HttpPost loginPost = new HttpPost(loginUri.toURI());
 			
 			List<NameValuePair> pairList = new ArrayList<>();
 			pairList.add(new BasicNameValuePair("username", login));
 			pairList.add(new BasicNameValuePair("password", password));
-			HttpEntity myEntity = new UrlEncodedFormEntity(pairList, "UTF-8");
+			HttpEntity myEntity = new UrlEncodedFormEntity(pairList, StandardCharsets.UTF_8);
 			loginPost.setEntity(myEntity);
 
-			HttpResponse response = httpclient.execute(loginPost);
-			int statusCode = response.getStatusLine().getStatusCode();
-			String content = EntityUtils.toString(response.getEntity());
-			if(checkResponse(statusCode, content)) {
+			Boolean ok = httpclient.execute(loginPost, response -> {
+				int statusCode = response.getCode();
+				String content = EntityUtils.toString(response.getEntity());
+				return Boolean.valueOf(checkResponse(statusCode, content));
+			});
+			if(ok.booleanValue()) {
 				Authentication authentication = securityManager
 						.findAuthenticationByAuthusername(login, ToccoLoginModule.TOCCO_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 				if(authentication != null) {

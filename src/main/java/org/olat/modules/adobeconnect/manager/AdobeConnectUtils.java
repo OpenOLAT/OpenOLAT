@@ -30,10 +30,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -68,7 +68,7 @@ public class AdobeConnectUtils {
 		}
 	}
 	
-	protected static BreezeSession getBreezeSessionIfOk(HttpResponse response, BreezeSession infoSession) {
+	protected static BreezeSession getBreezeSessionIfOk(ClassicHttpResponse response, BreezeSession infoSession) {
 		BreezeSession session = null;
 		try {
 			HttpEntity entity = response.getEntity();
@@ -94,7 +94,7 @@ public class AdobeConnectUtils {
 		return session;
 	}
 	
-	protected static BreezeSession getBreezeSession(HttpResponse response) {
+	protected static BreezeSession getBreezeSession(ClassicHttpResponse response) {
 		BreezeSession session = null;
 		try {
 			Header header = response.getFirstHeader("Set-Cookie");
@@ -112,7 +112,7 @@ public class AdobeConnectUtils {
 		return session;
 	}
 	
-	protected static BreezeSession getBreezeSessionFromXml(HttpResponse response) {
+	protected static BreezeSession getBreezeSessionFromXml(ClassicHttpResponse response) {
 		BreezeSession session = null;
 		try {
 			Document doc = getDocumentFromEntity(response.getEntity());

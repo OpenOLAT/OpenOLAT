@@ -23,8 +23,6 @@
 * under the Apache 2.0 license as the original file.
 * <p>
 */
-
-
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
@@ -46,14 +44,11 @@ import java.util.UUID;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.ConnectionUtilities.NameValuePair;
 import org.olat.course.CourseFactory;
@@ -76,12 +71,7 @@ import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class CoursesTest extends OlatRestTestCase {
-
-	private static final Logger log = Tracing.createLoggerFor(CoursesTest.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -725,15 +715,5 @@ public class CoursesTest extends OlatRestTestCase {
 		Assert.assertEquals(educationalType, re.getEducationalType());
 		conn.close();
 
-	}
-
-	protected List<CourseVO> parseCourseArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			return mapper.readValue(in, new TypeReference<List<CourseVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
 	}
 }

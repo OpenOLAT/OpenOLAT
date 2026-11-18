@@ -24,10 +24,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.admin.user.imp.TransientIdentity;
@@ -224,8 +223,7 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 	public JSONObject loadDiscoveryUrl(String url) {
 		try(CloseableHttpClient httpClient=httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
 			HttpGet get = new HttpGet(new URL(url).toURI());
-			HttpResponse response = httpClient.execute(get);
-			String content = EntityUtils.toString(response.getEntity());
+			String content = httpClient.execute(get, response -> EntityUtils.toString(response.getEntity()));
 			return new JSONObject(content);
 		} catch(Exception e) {
 			log.error("", e);

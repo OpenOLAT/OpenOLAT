@@ -50,15 +50,14 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.io.FileChannelWrapper;
@@ -1327,9 +1326,11 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "image/jpg");
 		
-		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, PROTECTION_PROFILE);
-				CloseableHttpResponse response = httpClient.execute(get)) {
-			download(response, posterFile);	
+		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, PROTECTION_PROFILE)) {
+			httpClient.execute(get, response -> {
+				download(get, response, posterFile);
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -1360,9 +1361,11 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Accept", "video/mp4");
 		
-		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, PROTECTION_PROFILE);
-				CloseableHttpResponse response = httpClient.execute(get)) {
-			download(response, videoFile);	
+		try(CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, PROTECTION_PROFILE)) {
+			httpClient.execute(get, response -> {
+				download(get, response, videoFile);
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -1371,11 +1374,18 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		return videoFile;
 	}
 
-	private void download(CloseableHttpResponse response, VFSLeaf file) {
-		try(InputStream in=response.getEntity().getContent();
-				OutputStream out=file.getOutputStream(false)) {
-			FileUtils.copy(in, out);
+	/**
+	 * The request is cancelled if the body cannot be fully copied, closing the
+	 * response would otherwise read the rest of the body (HttpClient 5).
+	 */
+	private void download(HttpGet request, ClassicHttpResponse response, VFSLeaf file) {
+		try(OutputStream out=file.getOutputStream(false);
+				InputStream in=response.getEntity().getContent()) {
+			if(!FileUtils.copy(in, out)) {
+				request.cancel();
+			}
 		} catch(Exception e) {
+			request.cancel();
 			log.error("", e);
 		}	
 	}
@@ -1943,22 +1953,27 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		String thumbnailFileName = null;
 
 		HttpGet downLoadRequest = new HttpGet(thumbnailUrl);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-			 CloseableHttpResponse httpResponse = httpClient.execute(downLoadRequest);) {
-			if (httpResponse.getStatusLine().getStatusCode() == 200) {
-				HttpEntity httpEntity = httpResponse.getEntity();
-				String extension = getExtension(httpEntity.getContentType(), thumbnailUrl);
-				if (StringHelper.containsNonWhitespace(extension)) {
-					String targetFileName = FILENAME_THUMBNAIL_PREFIX + targetUuid + "." + extension;
-					VFSLeaf targetLeaf = targetContainer.createChildLeaf(targetFileName);
-					InputStream content = httpEntity.getContent();
-					if (VFSManager.copyContent(content, targetLeaf, null)) {
-						thumbnailFileName = targetFileName;
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			thumbnailFileName = httpClient.execute(downLoadRequest, httpResponse -> {
+				if (httpResponse.getCode() == 200) {
+					HttpEntity httpEntity = httpResponse.getEntity();
+					String extension = getExtension(httpEntity.getContentType(), thumbnailUrl);
+					if (StringHelper.containsNonWhitespace(extension)) {
+						String targetFileName = FILENAME_THUMBNAIL_PREFIX + targetUuid + "." + extension;
+						VFSLeaf targetLeaf = targetContainer.createChildLeaf(targetFileName);
+						// Shield the stream: copyContent closes it, and closing it would read the rest of the body
+						InputStream content = CloseShieldInputStream.wrap(httpEntity.getContent());
+						if (VFSManager.copyContent(content, targetLeaf, null)) {
+							return targetFileName;
+						}
 					}
+				} else {
+					log.warn("Oembed service did not return thumbnail for url '{}'", thumbnailUrl);
 				}
-			} else {
-				log.warn("Oembed service did not return thumbnail for url '{}'", thumbnailUrl);
-			}
+				// Body not (fully) read, don't let the client read the rest of it
+				downLoadRequest.cancel();
+				return null;
+			});
 		} catch (Exception e) {
 			log.error("Oembed service did not return thumbnail for url '{}'", thumbnailUrl, e);
 		}
@@ -1966,12 +1981,11 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		return thumbnailFileName;
 	}
 
-	private String getExtension(Header contentType, String thumbnailUrl) {
+	private String getExtension(String contentType, String thumbnailUrl) {
 		if (contentType == null) {
 			return null;
 		}
-		String contentTypeValue = contentType.getValue();
-		String contentTypeSuffix = getExtensionFromContentType(contentTypeValue);
+		String contentTypeSuffix = getExtensionFromContentType(contentType);
 		if (StringHelper.containsNonWhitespace(contentTypeSuffix)) {
 			return contentTypeSuffix;
 		}
@@ -1994,15 +2008,18 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	private JSONObject getOembedJson(String oembedUrl) {
 		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
 			HttpGet get = new HttpGet(oembedUrl);
-			HttpResponse response = httpClient.execute(get);
-			int status = response.getStatusLine().getStatusCode();
-			if (status == 200) {
-				String content = EntityUtils.toString(response.getEntity());
-				return new JSONObject(content);
-			} else {
-				log.info("Oembed service returned status {} for url '{}'", status, oembedUrl);
-				return null;
-			}
+			return httpClient.execute(get, response -> {
+				int status = response.getCode();
+				if (status == 200) {
+					String content = EntityUtils.toString(response.getEntity());
+					return new JSONObject(content);
+				} else {
+					log.info("Oembed service returned status {} for url '{}'", status, oembedUrl);
+					// Don't read the body of the error
+					get.cancel();
+					return null;
+				}
+			});
 		} catch (Exception e) {
 			log.error("", e);
 			return null;

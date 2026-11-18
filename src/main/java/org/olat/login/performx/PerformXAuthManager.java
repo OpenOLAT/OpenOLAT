@@ -28,12 +28,10 @@ import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -130,11 +128,11 @@ public class PerformXAuthManager implements AuthenticationSPI {
 			HttpGet httpget = new HttpGet(uri);
 			httpget.addHeader("Accept", MediaType.APPLICATION_JSON);
 			//httpget.addHeader("Accept-Language", "de");
-			HttpResponse response = httpclient.execute(httpget);
+			StatusContent response = httpclient.execute(httpget,
+					r -> new StatusContent(r.getCode(), EntityUtils.toString(r.getEntity())));
 
-			HttpEntity entity = response.getEntity();
-			int statusCode = response.getStatusLine().getStatusCode();
-			String content = EntityUtils.toString(entity);
+			int statusCode = response.statusCode();
+			String content = response.content();
 			if(statusCode == 200) {
 				String token = extractToken(content);
 				if(StringHelper.containsNonWhitespace(token)) {
@@ -191,6 +189,11 @@ public class PerformXAuthManager implements AuthenticationSPI {
 
 	@Override
 	public void upgradePassword(Identity identity, String login, String password) {
+		//
+	}
+	
+
+	private record StatusContent(int statusCode, String content) {
 		//
 	}
 }

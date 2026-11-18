@@ -43,7 +43,6 @@ import java.util.List;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
@@ -81,7 +80,6 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	
 	/**
 	 * Test if a session cookie is created
-	 * @throws HttpException
 	 * @throws IOException
 	 */
 	@Test
@@ -98,7 +96,6 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	
 	/**
 	 * Test if a token is created and send as header
-	 * @throws HttpException
 	 * @throws IOException
 	 */
 	@Test
@@ -136,7 +133,6 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	
 	/**
 	 * Test if the token survive several requests
-	 * @throws HttpException
 	 * @throws IOException
 	 */
 	@Test
@@ -194,7 +190,6 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	
 	/**
 	 * Test if the token survive several requests
-	 * @throws HttpException
 	 * @throws IOException
 	 */
 	@Test

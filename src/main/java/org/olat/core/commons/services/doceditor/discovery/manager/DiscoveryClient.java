@@ -19,11 +19,10 @@
  */
 package org.olat.core.commons.services.doceditor.discovery.manager;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.discovery.Discovery;
 import org.olat.core.commons.services.doceditor.discovery.model.DiscoveryImpl;
@@ -53,15 +52,17 @@ class DiscoveryClient {
 	
 	Discovery getDiscovery(String discoveryUrl) {
 		HttpGet request = new HttpGet(discoveryUrl);
-		try (CloseableHttpClient httpClient = HttpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			if (statusCode == 200) {
-				HttpEntity entity = httpResponse.getEntity();
-				String xml = EntityUtils.toString(entity);
-				return DiscoveryXStream.fromXml(xml, DiscoveryImpl.class);
-			}
-			log.warn("Fetching document editor discovery file return with status " + statusCode + ". URL: " + discoveryUrl);
+		try (CloseableHttpClient httpClient = HttpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
+			return httpClient.execute(request, httpResponse -> {
+				int statusCode = httpResponse.getCode();
+				if (statusCode == 200) {
+					HttpEntity entity = httpResponse.getEntity();
+					String xml = EntityUtils.toString(entity);
+					return DiscoveryXStream.fromXml(xml, DiscoveryImpl.class);
+				}
+				log.warn("Fetching document editor discovery file return with status " + statusCode + ". URL: " + discoveryUrl);
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("Error while fetching document editor discovery file. URL: " + discoveryUrl, e);
 		}

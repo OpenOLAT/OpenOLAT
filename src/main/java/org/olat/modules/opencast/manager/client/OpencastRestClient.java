@@ -20,16 +20,16 @@
 package org.olat.modules.opencast.manager.client;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.net.URIBuilder;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -69,15 +69,17 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of: {} {}", uri, statusCode);
 			
-			if (statusCode == HttpStatus.SC_OK) {
-				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-				return objectMapper.readValue(json, Api.class);
-			}
+				if (statusCode == HttpStatus.SC_OK) {
+					String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					return objectMapper.readValue(json, Api.class);
+				}
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
 		}
@@ -89,14 +91,16 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_OK) {
-				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-				return objectMapper.readValue(json, Event.class);
-			}
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of: {} {}", uri, statusCode);
+				if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_OK) {
+					String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					return objectMapper.readValue(json, Event.class);
+				}
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
 		}
@@ -104,7 +108,7 @@ public class OpencastRestClient {
 	}
 	
 	public Event[] getEvents(GetEventsParams params) {
-		URI uri;
+		URI builtUri;
 		try {
 			URIBuilder builder = new URIBuilder(opencastModule.getApiUrl() + "/events");
 			String filterParam = params.getFilterParam();
@@ -115,23 +119,26 @@ public class OpencastRestClient {
 			if (StringHelper.containsNonWhitespace(sortParam)) {
 				builder.addParameter("sort", sortParam);
 			}
-			uri = builder.build();
+			builtUri = builder.build();
 		} catch (Exception e) {
 			log.error("Cannot get Opencast events.", e);
 			return NO_EVENTS;
 		}
 
+		URI uri = builtUri;
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request, params.getAuthDelegate());
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			if (statusCode == HttpStatus.SC_OK) {
-				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-				return objectMapper.readValue(json, Event[].class);
-			}
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of: {} {}", uri, statusCode);
+				if (statusCode == HttpStatus.SC_OK) {
+					String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					return objectMapper.readValue(json, Event[].class);
+				}
+				return NO_EVENTS;
+			});
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
 		}
@@ -153,13 +160,15 @@ public class OpencastRestClient {
 		HttpDelete request = new HttpDelete(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_ACCEPTED || statusCode == HttpStatus.SC_OK) {
-				return true;
-			}
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of: {} {}", uri, statusCode);
+				if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_ACCEPTED || statusCode == HttpStatus.SC_OK) {
+					return true;
+				}
+				return false;
+			});
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
 		}
@@ -171,14 +180,16 @@ public class OpencastRestClient {
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_OK) {
-				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-				return objectMapper.readValue(json, Series.class);
-			}
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of: {} {}", uri, statusCode);
+				if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_OK) {
+					String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					return objectMapper.readValue(json, Series.class);
+				}
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
 		}
@@ -186,7 +197,7 @@ public class OpencastRestClient {
 	}
 	
 	public Series[] getSeries(GetSeriesParams params) {
-		URI uri;
+		URI builtUri;
 		try {
 			URIBuilder builder = new URIBuilder(opencastModule.getApiUrl() + "/series");
 			String filterParam = params.getFilterParam();
@@ -197,23 +208,26 @@ public class OpencastRestClient {
 			if (StringHelper.containsNonWhitespace(sortParam)) {
 				builder.addParameter("sort", sortParam);
 			}
-			uri = builder.build();
+			builtUri = builder.build();
 		} catch (Exception e) {
 			log.error("Cannot get Opencast series.", e);
 			return NO_SERIES;
 		}
 
+		URI uri = builtUri;
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request, params.getAuthDelegate());
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			if (statusCode == HttpStatus.SC_OK) {
-				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-				return objectMapper.readValue(json, Series[].class);
-			}
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of: {} {}", uri, statusCode);
+				if (statusCode == HttpStatus.SC_OK) {
+					String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					return objectMapper.readValue(json, Series[].class);
+				}
+				return NO_SERIES;
+			});
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
 		}
@@ -221,9 +235,9 @@ public class OpencastRestClient {
 	}
 	
 	public boolean isEpisodeExisting(String identifier) {
-		URI uri;
+		URI builtUri;
 		try {
-			uri = new URIBuilder(opencastModule.getApiPresentationUrl() + "/episode.json")
+			builtUri = new URIBuilder(opencastModule.getApiPresentationUrl() + "/episode.json")
 				.addParameter("id", identifier)
 				.build();
 		} catch (Exception e) {
@@ -231,18 +245,21 @@ public class OpencastRestClient {
 			return false;
 		}
 		
+		URI uri = builtUri;
 		HttpGet request = new HttpGet(uri);
 		decorateRequest(request);
 		
-		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			if (statusCode == HttpStatus.SC_OK) {
-				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-				SearchResult result = objectMapper.readValue(json, SearchResult.class);
-				return result.getTotal() > 0;
-			}
+		try(CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of: {} {}", uri, statusCode);
+				if (statusCode == HttpStatus.SC_OK) {
+					String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					SearchResult result = objectMapper.readValue(json, SearchResult.class);
+					return result.getTotal() > 0;
+				}
+				return false;
+			});
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
 		}
@@ -258,7 +275,7 @@ public class OpencastRestClient {
 		}
 	}
 
-	private void decorateRequest(HttpRequestBase request) {
+	private void decorateRequest(HttpUriRequestBase request) {
 		request.setHeader(HttpHeaders.AUTHORIZATION, opencastModule.getApiAuthorizationHeader());
 	}
 }

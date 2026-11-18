@@ -21,23 +21,24 @@ package org.olat.core.commons.services.ai.manager;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.http.Header;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.util.Timeout;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.ai.AiModule;
 import org.olat.core.util.httpclient.HttpClientModule;
@@ -62,7 +63,7 @@ import dev.langchain4j.http.client.sse.ServerSentEventParser;
  * {@link LangChain4jHttpClientBuilder#readTimeout(Duration)} — the LangChain4j
  * ChatModel builders translate their {@code .timeout(Duration)} value into
  * that call, and it is then applied as a per-request
- * {@link RequestConfig#getSocketTimeout()} override so only calls that
+ * {@link RequestConfig#getResponseTimeout()} override so only calls that
  * explicitly raise the ceiling wait longer than the global default. Essay
  * generation, for example, overrides this to 3 minutes.
  *
@@ -85,24 +86,24 @@ public class LangChain4jHttpClient implements HttpClient {
 
 	@Override
 	public SuccessfulHttpResponse execute(HttpRequest request) throws HttpException {
-		HttpUriRequest apacheRequest = toApacheRequest(request);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(AiModule.PROTECTION_PROFILE);
-				CloseableHttpResponse response = httpClient.execute(apacheRequest)) {
+		HttpUriRequestBase apacheRequest = toApacheRequest(request);
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(AiModule.PROTECTION_PROFILE)) {
+			return httpClient.execute(apacheRequest, response -> {
+				int statusCode = response.getCode();
+				String body = response.getEntity() != null
+						? EntityUtils.toString(response.getEntity()) : null;
 
-			int statusCode = response.getStatusLine().getStatusCode();
-			String body = response.getEntity() != null
-					? EntityUtils.toString(response.getEntity()) : null;
+				if (statusCode < 200 || statusCode >= 300) {
+					throw new HttpException(statusCode, body);
+				}
 
-			if (statusCode < 200 || statusCode >= 300) {
-				throw new HttpException(statusCode, body);
-			}
-
-			Map<String, List<String>> headers = extractHeaders(response);
-			return SuccessfulHttpResponse.builder()
-					.statusCode(statusCode)
-					.headers(headers)
-					.body(body)
-					.build();
+				Map<String, List<String>> headers = extractHeaders(response);
+				return SuccessfulHttpResponse.builder()
+						.statusCode(statusCode)
+						.headers(headers)
+						.body(body)
+						.build();
+			});
 		} catch (HttpException e) {
 			throw e;
 		} catch (IOException e) {
@@ -112,12 +113,12 @@ public class LangChain4jHttpClient implements HttpClient {
 
 	@Override
 	public void execute(HttpRequest request, ServerSentEventParser parser, ServerSentEventListener listener) {
-		HttpUriRequest apacheRequest = toApacheRequest(request);
+		HttpUriRequestBase apacheRequest = toApacheRequest(request);
 		CompletableFuture.runAsync(() -> {
 			try (CloseableHttpClient httpClient = httpClientService.createHttpClient(AiModule.PROTECTION_PROFILE);
-					CloseableHttpResponse response = httpClient.execute(apacheRequest)) {
+					ClassicHttpResponse response = httpClient.executeOpen(null, apacheRequest, null)) {
 
-				int statusCode = response.getStatusLine().getStatusCode();
+				int statusCode = response.getCode();
 				if (statusCode < 200 || statusCode >= 300) {
 					String body = response.getEntity() != null
 							? EntityUtils.toString(response.getEntity()) : null;
@@ -145,12 +146,12 @@ public class LangChain4jHttpClient implements HttpClient {
 		});
 	}
 
-	private HttpUriRequest toApacheRequest(HttpRequest request) {
-		HttpRequestBase apacheRequest;
+	private HttpUriRequestBase toApacheRequest(HttpRequest request) {
+		HttpUriRequestBase apacheRequest;
 		if (request.method() == HttpMethod.POST) {
 			HttpPost post = new HttpPost(request.url());
 			if (request.body() != null) {
-				post.setEntity(new StringEntity(request.body(), "UTF-8"));
+				post.setEntity(new StringEntity(request.body(), StandardCharsets.UTF_8));
 			}
 			apacheRequest = post;
 		} else if (request.method() == HttpMethod.DELETE) {
@@ -171,19 +172,20 @@ public class LangChain4jHttpClient implements HttpClient {
 			// so the global HTTP defaults stay in effect for connect and
 			// connection-request timings.
 			HttpClientModule httpClientModule = CoreSpringFactory.getImpl(HttpClientModule.class);
-			RequestConfig perRequestConfig = RequestConfig.custom()
-					.setConnectTimeout(httpClientModule.getHttpConnectTimeout())
-					.setConnectionRequestTimeout(httpClientModule.getHttpConnectRequestTimeout())
-					.setSocketTimeout((int) readTimeout.toMillis())
-					.build();
-			apacheRequest.setConfig(perRequestConfig);
+			// The connect timeout is set by the connection manager of the client.
+			RequestConfig.Builder perRequestConfig = RequestConfig.custom()
+					.setResponseTimeout(Timeout.ofMilliseconds(readTimeout.toMillis()));
+			if (httpClientModule.getHttpConnectRequestTimeout() >= 0) {
+				perRequestConfig.setConnectionRequestTimeout(Timeout.ofMilliseconds(httpClientModule.getHttpConnectRequestTimeout()));
+			}
+			apacheRequest.setConfig(perRequestConfig.build());
 		}
 		return apacheRequest;
 	}
 
-	private Map<String, List<String>> extractHeaders(CloseableHttpResponse response) {
+	private Map<String, List<String>> extractHeaders(ClassicHttpResponse response) {
 		Map<String, List<String>> headers = new HashMap<>();
-		for (Header header : response.getAllHeaders()) {
+		for (Header header : response.getHeaders()) {
 			headers.put(header.getName(), List.of(header.getValue()));
 		}
 		return headers;

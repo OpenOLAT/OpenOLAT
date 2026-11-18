@@ -35,15 +35,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.message.StatusLine;
+import org.apache.hc.core5.net.URIBuilder;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
@@ -156,13 +156,14 @@ public class SystemRegistrationManager implements InitializingBean {
 			uriBuilder.addParameters(nvps);
 
 			HttpGet getCall = new HttpGet(uriBuilder.build());
-			HttpResponse response = client.execute(getCall);
-			String resp = null;
-			if(response.getStatusLine().getStatusCode() == 200){
-				resp = EntityUtils.toString(response.getEntity());
-				String[] split = resp.split(",");
-				csvCoordinates = split[2]+","+split[3];
-			}
+			csvCoordinates = client.execute(getCall, response -> {
+				if(response.getCode() == 200){
+					String resp = EntityUtils.toString(response.getEntity());
+					String[] split = resp.split(",");
+					return split[2]+","+split[3];
+				}
+				return null;
+			});
 		} catch (Exception e) {
 			//
 		}
@@ -182,8 +183,6 @@ public class SystemRegistrationManager implements InitializingBean {
 	 * nothing will be sent.
 	 */
 	protected void sendRegistrationData() {
-		HttpPut method = null;
-
 		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED)) {
 			// Do it optimistic and try to generate the XML message. If the message
 			// doesn't contain anything, the user does not want to register this
@@ -207,29 +206,28 @@ public class SystemRegistrationManager implements InitializingBean {
 			builder.queryParam("product", PRODUCT);
 
 			String url = builder.build().toString();
-			method = new HttpPut(url);
-			HttpResponse response = client.execute(method);
-			int status = response.getStatusLine().getStatusCode();
-			if(status == HttpStatus.SC_CREATED) {
-				log.info("Successfully registered OpenOlat installation on openolat.org server, thank you for your support!");
-				String registrationKey = EntityUtils.toString(response.getEntity());
-				registrationModule.setSecretKey(registrationKey);
-			} else if (status == HttpStatus.SC_NOT_MODIFIED || status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED) {
-				log.info("Successfully registered OpenOlat installation on openolat.org server, thank you for your support!");
-			} else if (status == HttpStatus.SC_NOT_FOUND) {
-				log.error("Registration server not found: {}", response.getStatusLine());
-			} else if(status == HttpStatus.SC_NO_CONTENT){
-				log.info(response.getStatusLine().toString() + " " + EntityUtils.toString(response.getEntity()));
-			} else {
-				log.error("Unexpected HTTP Status: {}  during registration call", response.getStatusLine().toString());
-			}
+			HttpPut method = new HttpPut(url);
+			client.execute(method, response -> {
+				int status = response.getCode();
+				if(status == HttpStatus.SC_CREATED) {
+					log.info("Successfully registered OpenOlat installation on openolat.org server, thank you for your support!");
+					String registrationKey = EntityUtils.toString(response.getEntity());
+					registrationModule.setSecretKey(registrationKey);
+				} else if (status == HttpStatus.SC_NOT_MODIFIED || status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED) {
+					log.info("Successfully registered OpenOlat installation on openolat.org server, thank you for your support!");
+				} else if (status == HttpStatus.SC_NOT_FOUND) {
+					log.error("Registration server not found: {}", new StatusLine(response));
+				} else if(status == HttpStatus.SC_NO_CONTENT){
+					log.info(new StatusLine(response).toString() + " " + EntityUtils.toString(response.getEntity()));
+				} else {
+					log.error("Unexpected HTTP Status: {}  during registration call", new StatusLine(response).toString());
+				}
+				return null;
+			});
 		} catch (Exception e) {
 			log.error("Unexpected exception during registration call", e);
 		} finally {
 			database.commitAndCloseSession();
-			if(method != null) {
-				method.releaseConnection();
-			}
 		}
 	}
 

@@ -30,9 +30,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -193,9 +192,9 @@ public class TUConfigForm extends FormBasicController {
 			} else if (url.getHost().startsWith(Settings.getServerDomainName())) {
 				thost.setWarningKey("error.internal");
 			} else if(selectables.isOneSelected() && OPTION_TUNNEL_THROUGH_OLAT_IFRAME.equals(selectables.getSelectedKey())) {
-				try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
-						CloseableHttpResponse response = client.execute(new HttpHead(url.toURI()))) {	
+				try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED)) {
 					// Do nothing, it's only head
+					client.execute(new HttpHead(url.toURI()), response -> null);
 				} catch(IOException e) {
 					getLogger().error("Cannot load {}", url, e);
 					thost.setErrorKey("TUConfigForm.unreachableurl");

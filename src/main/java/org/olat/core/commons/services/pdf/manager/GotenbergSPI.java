@@ -21,11 +21,11 @@ package org.olat.core.commons.services.pdf.manager;
 
 import java.io.OutputStream;
 
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.ui.GotenbergSettingsController;
@@ -106,8 +106,8 @@ public class GotenbergSPI extends AbstractPdfSPI {
 			sb.append("forms/chromium/convert/url");
 			HttpPost post = new HttpPost(sb.toString());
 			
-			RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setCookieSpec(CookieSpecs.DEFAULT)
+			RequestConfig config = RequestConfig.custom()
+				.setCookieSpec(StandardCookieSpec.RELAXED)
 				.build();
 			post.setConfig(config);
 			post.addHeader("Accept", "application/pdf");

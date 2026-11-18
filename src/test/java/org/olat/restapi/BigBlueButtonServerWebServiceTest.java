@@ -33,20 +33,14 @@ import java.util.UUID;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.Tracing;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.restapi.BigBlueButtonServerVO;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -55,8 +49,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public class BigBlueButtonServerWebServiceTest extends OlatRestTestCase {
-	
-	private static final Logger log = Tracing.createLoggerFor(BigBlueButtonServerWebServiceTest.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -195,15 +187,4 @@ public class BigBlueButtonServerWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(12.5d, savedVo.getCapacityFactory().doubleValue(), 0.0001);	
 		conn.close();
 	}
-	
-	protected List<BigBlueButtonServerVO> parseCourseArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			return mapper.readValue(in, new TypeReference<List<BigBlueButtonServerVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
-	}
-
 }

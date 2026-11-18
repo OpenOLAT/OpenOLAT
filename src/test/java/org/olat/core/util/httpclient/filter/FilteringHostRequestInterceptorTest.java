@@ -22,20 +22,22 @@ package org.olat.core.util.httpclient.filter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
 import java.util.Set;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.protocol.HttpCoreContext;
+import org.apache.hc.client5.http.HttpRoute;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.message.BasicHttpRequest;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Checks the last line of defense of the SSRF mitigation, the interceptor which
- * validates the target host of a request which was not resolved by OpenOlat itself.
+ * Checks the request interceptor of the SSRF mitigation for Apache HttpClient 5,
+ * which validates the target host of a request not resolved by OpenOlat itself.
  *
- * Initial date: 13 août 2026<br>
+ * Initial date: 17 nov. 2026<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
@@ -51,10 +53,11 @@ public class FilteringHostRequestInterceptorTest {
 		String[] addresses = new String[] {
 				"127.0.0.1", "10.1.2.3", "172.16.5.5", "192.168.1.1",
 				"169.254.169.254",	// Cloud metadata service
-				"100.64.1.1"
+				"100.64.1.1",
+				"0.0.0.0"			// This network, a literal for HttpClient 5 (not for HttpClient 4)
 			};
 		for(String address:addresses) {
-			HttpHost target = new HttpHost(address);
+			HttpHost target = host(address);
 			Assert.assertThrows(address, FilteredHostException.class, () -> process(interceptor, target));
 		}
 	}
@@ -63,7 +66,7 @@ public class FilteringHostRequestInterceptorTest {
 	public void literalInternalIpv6AddressesAreRejected() {
 		String[] addresses = new String[] { "::1", "[::1]", "fd00::1", "[fe80::1]" };
 		for(String address:addresses) {
-			HttpHost target = new HttpHost(address);
+			HttpHost target = host(address);
 			Assert.assertThrows(address, FilteredHostException.class, () -> process(interceptor, target));
 		}
 	}
@@ -72,7 +75,7 @@ public class FilteringHostRequestInterceptorTest {
 	public void literalPublicAddressesAreAccepted() throws IOException {
 		String[] addresses = new String[] { "8.8.8.8", "1.1.1.1", "2606:4700:4700::1111", "[2606:4700:4700::1111]" };
 		for(String address:addresses) {
-			process(interceptor, new HttpHost(address));
+			process(interceptor, host(address));
 		}
 	}
 
@@ -82,8 +85,8 @@ public class FilteringHostRequestInterceptorTest {
 	 */
 	@Test
 	public void hostNamesAreLeftToTheDnsResolver() throws IOException {
-		process(interceptor, new HttpHost("localhost"));
-		process(interceptor, new HttpHost("internal.example.org"));
+		process(interceptor, host("localhost"));
+		process(interceptor, host("internal.example.org"));
 	}
 
 	/**
@@ -95,47 +98,46 @@ public class FilteringHostRequestInterceptorTest {
 	@Test
 	public void nonCanonicalLiteralAddressesAreLeftToTheDnsResolver() throws IOException {
 		String[] addresses = new String[] {
-				"0.0.0.0",				// This network
 				"2130706433",			// Decimal 127.0.0.1
 				"127.1",				// Short form of 127.0.0.1
 				"0177.0.0.1",			// Octal
 				"::ffff:127.0.0.1"		// IPv4 mapped IPv6
 			};
 		for(String address:addresses) {
-			process(interceptor, new HttpHost(address));
+			process(interceptor, host(address));
 		}
 	}
 
 	/**
-	 * A host which was already resolved, typically because the route was built from an
-	 * {@link InetAddress}, carries its address and can be checked here.
+	 * A route which was built from an {@link InetAddress} carries its address
+	 * and can be checked here.
 	 */
 	@Test
-	public void resolvedHostWithInternalAddressIsRejected() throws UnknownHostException {
-		HttpHost target = new HttpHost(InetAddress.getByName("10.0.0.1"), "internal.example.org", -1, "http");
+	public void resolvedRouteWithInternalAddressIsRejected() throws UnknownHostException {
+		HttpHost target = new HttpHost("http", InetAddress.getByName("10.0.0.1"), "internal.example.org", 80);
 		FilteredHostException e = Assert.assertThrows(FilteredHostException.class, () -> process(interceptor, target));
 		Assert.assertEquals("internal.example.org", e.getHost());
 		Assert.assertEquals("10.0.0.1", e.getAddress().getHostAddress());
 	}
 
 	@Test
-	public void resolvedHostWithPublicAddressIsAccepted() throws IOException {
-		HttpHost target = new HttpHost(InetAddress.getByName("8.8.8.8"), "public.example.org", -1, "https");
+	public void resolvedRouteWithPublicAddressIsAccepted() throws IOException {
+		HttpHost target = new HttpHost("https", InetAddress.getByName("8.8.8.8"), "public.example.org", 443);
 		process(interceptor, target);
 	}
 
 	@Test
 	public void httpAndHttpsSchemesAreAccepted() throws IOException {
-		process(interceptor, new HttpHost("8.8.8.8", 80, "http"));
-		process(interceptor, new HttpHost("8.8.8.8", 443, "https"));
-		process(interceptor, new HttpHost("8.8.8.8", 443, "HTTPS"));
+		process(interceptor, new HttpHost("http", "8.8.8.8", 80));
+		process(interceptor, new HttpHost("https", "8.8.8.8", 443));
+		process(interceptor, new HttpHost("HTTPS", "8.8.8.8", 443));
 	}
 
 	@Test
 	public void otherSchemesAreRejected() {
 		String[] schemes = new String[] { "file", "ftp", "gopher", "jar" };
 		for(String scheme:schemes) {
-			HttpHost target = new HttpHost("public.example.org", -1, scheme);
+			HttpHost target = new HttpHost(scheme, "public.example.org", 80);
 			Assert.assertThrows(scheme, FilteredHostException.class, () -> process(interceptor, target));
 		}
 	}
@@ -148,50 +150,49 @@ public class FilteringHostRequestInterceptorTest {
 	public void exemptedHostDoesNotBypassTheSchemeCheck() {
 		FilteringHostRequestInterceptor exempting
 			= new FilteringHostRequestInterceptor(externalOnly, Set.of("trust.example.org"));
-		HttpHost target = new HttpHost("trust.example.org", -1, "file");
+		HttpHost target = new HttpHost("file", "trust.example.org", 80);
 		Assert.assertThrows(FilteredHostException.class, () -> process(exempting, target));
 	}
 
 	@Test
-	public void exemptedHostIsAccepted() throws IOException {
-		FilteringHostRequestInterceptor exempting
-			= new FilteringHostRequestInterceptor(externalOnly, Set.of("trust.example.org"));
-		process(exempting, new HttpHost(InetAddress.getByName("10.0.0.1"), "trust.example.org", -1, "http"));
-
-		HttpHost target = new HttpHost(InetAddress.getByName("10.0.0.1"), "other.example.org", -1, "http");
-		Assert.assertThrows(FilteredHostException.class, () -> process(exempting, target));
-	}
-
-	/**
-	 * Host names are compared case insensitively, the ones from the configuration as
-	 * well as the ones of the requests.
-	 */
-	@Test
-	public void exemptedHostIsCaseInsensitive() throws IOException {
+	public void exemptedHostIsAcceptedCaseInsensitive() throws IOException {
 		FilteringHostRequestInterceptor exempting
 			= new FilteringHostRequestInterceptor(externalOnly, Set.of("Trust.Example.Org"));
-		process(exempting, new HttpHost(InetAddress.getByName("10.0.0.1"), "TRUST.EXAMPLE.ORG", -1, "http"));
+		process(exempting, new HttpHost("http", InetAddress.getByName("10.0.0.1"), "TRUST.EXAMPLE.ORG", 80));
+
+		HttpHost target = new HttpHost("http", InetAddress.getByName("10.0.0.1"), "other.example.org", 80);
+		Assert.assertThrows(FilteredHostException.class, () -> process(exempting, target));
 	}
 
 	@Test
 	public void exemptedLiteralAddressIsAccepted() throws IOException {
 		FilteringHostRequestInterceptor exempting
 			= new FilteringHostRequestInterceptor(externalOnly, Set.of("127.0.0.1"));
-		process(exempting, new HttpHost("127.0.0.1"));
+		process(exempting, host("127.0.0.1"));
 
-		Assert.assertThrows(FilteredHostException.class, () -> process(exempting, new HttpHost("10.0.0.1")));
+		Assert.assertThrows(FilteredHostException.class, () -> process(exempting, host("10.0.0.1")));
 	}
 
-	/**
-	 * The addresses of the allow list are accepted although they are not public.
-	 */
 	@Test
 	public void allowedAddressesAreAccepted() throws IOException {
 		FilteringHostRequestInterceptor allowing
 			= new FilteringHostRequestInterceptor(externalOnly.or("10.0.0.0/8"), Set.of());
-		process(allowing, new HttpHost("10.1.2.3"));
+		process(allowing, host("10.1.2.3"));
 
-		Assert.assertThrows(FilteredHostException.class, () -> process(allowing, new HttpHost("192.168.1.1")));
+		Assert.assertThrows(FilteredHostException.class, () -> process(allowing, host("192.168.1.1")));
+	}
+
+	/**
+	 * HttpClient 5 can connect through a Unix domain socket, a local endpoint
+	 * which bypasses the DNS resolver.
+	 */
+	@Test
+	public void unixDomainSocketIsRejected() {
+		HttpHost target = new HttpHost("http", "public.example.org", 80);
+		HttpClientContext context = HttpClientContext.create();
+		context.setRoute(new HttpRoute(target, Path.of("/var/run/docker.sock")));
+		HttpRequest request = new BasicHttpRequest("GET", target, "/containers/json");
+		Assert.assertThrows(FilteredHostException.class, () -> interceptor.process(request, null, context));
 	}
 
 	/**
@@ -200,15 +201,22 @@ public class FilteringHostRequestInterceptorTest {
 	 */
 	@Test
 	public void missingTargetHostIsIgnored() throws IOException {
-		HttpRequest request = new HttpGet("http://public.example.org/feed.xml");
-		interceptor.process(request, HttpCoreContext.create());
+		HttpRequest request = new BasicHttpRequest("GET", "/feed.xml");
+		interceptor.process(request, null, HttpClientContext.create());
 	}
 
+	private static HttpHost host(String hostName) {
+		return new HttpHost("http", hostName, 80);
+	}
+
+	/**
+	 * Simulates the state of the request when the interceptors are called: the
+	 * request has a scheme and an authority, the context holds the route.
+	 */
 	private void process(FilteringHostRequestInterceptor hostInterceptor, HttpHost target) throws IOException {
-		HttpCoreContext context = HttpCoreContext.create();
-		context.setTargetHost(target);
-		HttpRequest request = new HttpGet("/feed.xml");
-		hostInterceptor.process(request, context);
+		HttpClientContext context = HttpClientContext.create();
+		context.setRoute(new HttpRoute(target));
+		HttpRequest request = new BasicHttpRequest("GET", target, "/feed.xml");
+		hostInterceptor.process(request, null, context);
 	}
-
 }

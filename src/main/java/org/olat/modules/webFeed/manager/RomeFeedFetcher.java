@@ -21,18 +21,19 @@ package org.olat.modules.webFeed.manager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.CancellingInputStream;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.httpclient.ProtectionProfile;
 import org.olat.modules.webFeed.Enclosure;
@@ -142,16 +143,16 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 	}
 	
 	private SyndFeed getSyndFeed(String feedURL) throws IOException, IllegalArgumentException, FeedException {
+		HttpGet request = new HttpGet(feedURL);
 		try(CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
-				CloseableHttpResponse response = client.execute(new HttpGet(feedURL))) {
-			int statusCode = response.getStatusLine().getStatusCode();
+				ClassicHttpResponse response = client.executeOpen(null, request, null);
+				// The parser stops at the end of the document, don't read the rest of the body
+				InputStream in = CancellingInputStream.content(response, request)) {
+			int statusCode = response.getCode();
 			log.debug("Status code of: {} {}", feedURL, statusCode);
-			if (statusCode == HttpStatus.SC_OK) {
-				HttpEntity entity = response.getEntity();
-				if (entity != null) {
-					try (XmlReader xmlReader = new XmlReader(entity.getContent())) {
-						return syndFeedInput.build(xmlReader);
-					}
+			if (statusCode == HttpStatus.SC_OK && response.getEntity() != null) {
+				try (XmlReader xmlReader = new XmlReader(in)) {
+					return syndFeedInput.build(xmlReader);
 				}
 			}
 		}

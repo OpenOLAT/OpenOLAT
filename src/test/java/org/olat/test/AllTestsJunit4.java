@@ -67,6 +67,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.http.OriginValidatorRequestTest.class,
 	org.olat.core.util.httpclient.filter.FilteringDnsResolverTest.class,
 	org.olat.core.util.httpclient.filter.FilteringHostRequestInterceptorTest.class,
+	org.olat.core.util.httpclient.HttpClientServiceTest.class,
 	org.olat.core.util.sort.AlphaNumericalComparatorTest.class,
 	org.olat.core.helpers.SettingsTest.class,
 	org.olat.core.util.coordinate.LockEntryTest.class,

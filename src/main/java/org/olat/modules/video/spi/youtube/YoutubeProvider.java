@@ -23,10 +23,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -118,16 +117,17 @@ public class YoutubeProvider extends AbstractSpringModule implements ConfigOnOff
 		
 		YoutubeMetadata data = null;		
 		HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
-		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.CONFIGURED);
-				CloseableHttpResponse response = client.execute(get)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			if(statusCode == 200) {
-				String content = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-				data = parseMetadata(content, videoId);
-			} else {
+		try(CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.CONFIGURED)) {
+			data = client.execute(get, response -> {
+				int statusCode = response.getCode();
+				if(statusCode == 200) {
+					String content = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					return parseMetadata(content, videoId);
+				}
 				String msg = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 				log.error("Cannot retrieve Youtube Video Metadata: error: {} message: {}", Integer.valueOf(statusCode), msg);
-			}
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("", e);
 		}

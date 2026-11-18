@@ -27,7 +27,6 @@
 package org.olat.core.gui.media;
 
 import java.io.BufferedInputStream;
-import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
@@ -39,8 +38,12 @@ import java.util.Set;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
+import org.apache.hc.core5.concurrent.Cancellable;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.io.CloseMode;
+import org.apache.hc.core5.io.ModalCloseable;
+import org.olat.core.util.httpclient.CancellingInputStream;
 
 /**
  * The cache control is set to one hour.
@@ -51,13 +54,17 @@ public class HttpRequestMediaResource implements MediaResource {
 	
 	private static final Set<String> headersToCopy = Set.of("accept-ranges",  "www-authenticate", "content-range", "content-length");
 
-	private final HttpResponse response;
+	private final ClassicHttpResponse response;
+	private final Cancellable request;
+	private boolean fullyStreamed = false;
 
 	/**
-	 * @param response The response to proxy
+	 * @param response The response to proxy (closed by release() or prepare())
+	 * @param request The request of the response, cancelled if the body is not fully streamed (can be null)
 	 */
-	public HttpRequestMediaResource(HttpResponse response) {
+	public HttpRequestMediaResource(ClassicHttpResponse response, Cancellable request) {
 		this.response = response;
+		this.request = request;
 	}
 	
 	@Override
@@ -106,9 +113,7 @@ public class HttpRequestMediaResource implements MediaResource {
 
 	@Override
 	public void release() {
-		if(response instanceof Closeable) {
-			IOUtils.closeQuietly((Closeable)response);
-		}
+		closeResponse();
 	}
 	
 	@Override
@@ -124,7 +129,7 @@ public class HttpRequestMediaResource implements MediaResource {
 			}
 		}
 		
-		for(Header header:response.getAllHeaders()) {
+		for(Header header:response.getHeaders()) {
 			String name = header.getName();
 			if(headersToCopy.contains(name.toLowerCase())) {
 				hres.setHeader(name, header.getValue());
@@ -132,15 +137,36 @@ public class HttpRequestMediaResource implements MediaResource {
 		}
 		
 		int bufferSize = hres.getBufferSize();
-		try(InputStream in = response.getEntity().getContent();
+		// If the browser aborts, closing the stream must not read the rest of the body
+		try(InputStream in = request == null ? response.getEntity().getContent() : CancellingInputStream.content(response, request);
 				InputStream bis = new BufferedInputStream(in, bufferSize);
 				OutputStream out = hres.getOutputStream()) {
 			IOUtils.copyLarge(bis, out, new byte[bufferSize]);
+			fullyStreamed = true;
 		} catch(Exception e) {
 			ServletUtil.handleIOException("client browser probably abort when serving media resource", e);
 		} finally {
-			if(response instanceof Closeable) {
-				IOUtils.closeQuietly((Closeable)response);
+			closeResponse();
+		}
+	}
+
+	/**
+	 * HttpClient 5 reads the rest of the body when a response is closed
+	 * gracefully. If the body was not fully streamed, cancel the request
+	 * and close the response without draining the rest of the content
+	 * (same behavior as HttpClient 4.x).
+	 */
+	private void closeResponse() {
+		if(fullyStreamed) {
+			IOUtils.closeQuietly(response);
+		} else {
+			if(request != null) {
+				request.cancel();
+			}
+			if(response instanceof ModalCloseable closeable) {
+				closeable.close(CloseMode.IMMEDIATE);
+			} else {
+				IOUtils.closeQuietly(response);
 			}
 		}
 	}

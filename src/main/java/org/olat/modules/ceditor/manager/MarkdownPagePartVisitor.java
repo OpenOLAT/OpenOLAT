@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.manager;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -31,9 +32,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.commonmark.ext.gfm.tables.TableBlock;
 import org.commonmark.ext.gfm.tables.TableBody;
@@ -821,37 +821,45 @@ public class MarkdownPagePartVisitor extends AbstractVisitor {
 			String suffix = filename.contains(".") ? filename.substring(filename.lastIndexOf('.')) : ".png";
 
 			HttpGet get = new HttpGet(uri);
-			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED);
-					CloseableHttpResponse response = httpClient.execute(get)) {
+			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.USER_PROVIDED)) {
+				return httpClient.execute(get, response -> {
+					int statusCode = response.getCode();
+					if (statusCode != 200) {
+						// Don't read the error body
+						get.cancel();
+						warnings.add("import.markdown.warn.image.download.http\t" + statusCode + "\t" + StringHelper.escapeHtml(url));
+						return null;
+					}
 
-				int statusCode = response.getStatusLine().getStatusCode();
-				if (statusCode != 200) {
-					warnings.add("import.markdown.warn.image.download.http\t" + statusCode + "\t" + StringHelper.escapeHtml(url));
-					return null;
-				}
-
-				Path tempFile = Files.createTempFile("md_img_", suffix);
-				try (InputStream in = response.getEntity().getContent()) {
-					// Enforce size limit to prevent disk exhaustion
-					long bytesWritten = 0;
-					byte[] buffer = new byte[8192];
-					try (var out = Files.newOutputStream(tempFile)) {
-						int read;
-						while ((read = in.read(buffer)) != -1) {
-							bytesWritten += read;
-							if (bytesWritten > MAX_DOWNLOAD_BYTES) {
-								Files.deleteIfExists(tempFile);
-								warnings.add("import.markdown.warn.image.download.toolarge\t" + (MAX_DOWNLOAD_BYTES / (1024 * 1024)) + "\t" + StringHelper.escapeHtml(url));
-								return null;
+					Path tempFile = Files.createTempFile("md_img_", suffix);
+					try (InputStream in = response.getEntity().getContent()) {
+						// Enforce size limit to prevent disk exhaustion
+						long bytesWritten = 0;
+						byte[] buffer = new byte[8192];
+						try (var out = Files.newOutputStream(tempFile)) {
+							int read;
+							while ((read = in.read(buffer)) != -1) {
+								bytesWritten += read;
+								if (bytesWritten > MAX_DOWNLOAD_BYTES) {
+									// Abort the connection, closing the stream would read the rest of the content
+									get.cancel();
+									Files.deleteIfExists(tempFile);
+									warnings.add("import.markdown.warn.image.download.toolarge\t" + (MAX_DOWNLOAD_BYTES / (1024 * 1024)) + "\t" + StringHelper.escapeHtml(url));
+									return null;
+								}
+								out.write(buffer, 0, read);
 							}
-							out.write(buffer, 0, read);
+						} catch (IOException e) {
+							// Partial read, don't read the rest of the content
+							get.cancel();
+							throw e;
 						}
 					}
-				}
 
-				File downloaded = tempFile.toFile();
-				downloaded.deleteOnExit();
-				return downloaded;
+					File downloaded = tempFile.toFile();
+					downloaded.deleteOnExit();
+					return downloaded;
+				});
 			}
 		} catch (Exception e) {
 			log.warn("Failed to download remote image: {}", url, e);

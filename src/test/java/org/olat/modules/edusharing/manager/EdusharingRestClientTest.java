@@ -22,6 +22,7 @@ package org.olat.modules.edusharing.manager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,20 +30,21 @@ import static org.mockito.Mockito.when;
 import static org.olat.modules.edusharing.EdusharingModule.PROTECTION_PROFILE;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
-import org.apache.http.HttpVersion;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicStatusLine;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
 import org.olat.core.id.Identity;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.edusharing.EdusharingModule;
@@ -83,9 +85,9 @@ public class EdusharingRestClientTest {
 	@Mock
 	private CloseableHttpClient httpClientMock;
 	@Mock
-	private CloseableHttpResponse httpResponseMock;
+	private ClassicHttpResponse httpResponseMock;
 	@Mock
-	private CloseableHttpResponse aboutResponseMock;
+	private ClassicHttpResponse aboutResponseMock;
 	
 	@InjectMocks
 	private EdusharingRestClient sut;
@@ -97,10 +99,11 @@ public class EdusharingRestClientTest {
 		when(edusharingSecurityServiceMock.createSignature(any(), any())).thenAnswer(invocation ->
 				new EdusharingSignatureImpl("openolat", "123", "openolat123", "sig", invocation.getArgument(1)));
 		when(httpClientServiceMock.createHttpClient(PROTECTION_PROFILE)).thenReturn(httpClientMock);
-		when(httpClientMock.execute(any(HttpUriRequest.class))).thenAnswer(invocation ->
-				isAbout(invocation.getArgument(0, HttpUriRequest.class))? aboutResponseMock: httpResponseMock);
-		when(httpResponseMock.getStatusLine()).thenReturn(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "OK"));
-		when(aboutResponseMock.getStatusLine()).thenReturn(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "OK"));
+		doAnswer(this::handleResponse).when(httpClientMock).execute(any(ClassicHttpRequest.class), anyHandler());
+		when(httpResponseMock.getCode()).thenReturn(200);
+		when(httpResponseMock.getReasonPhrase()).thenReturn("OK");
+		when(aboutResponseMock.getCode()).thenReturn(200);
+		when(aboutResponseMock.getReasonPhrase()).thenReturn("OK");
 		when(aboutResponseMock.getEntity()).thenReturn(new StringEntity(ABOUT_9));
 	}
 	
@@ -126,7 +129,7 @@ public class EdusharingRestClientTest {
 		sut.deleteUsage(ticket, new NodeIdentifierImpl("repo", "node"), "usage");
 		
 		verify(edusharingSecurityServiceMock).createSignature("nodeusage", EdusharingSecurityService.SIGNATURE_SHA1);
-		HttpUriRequest request = executedRequest();
+		ClassicHttpRequest request = executedRequest();
 		assertLegacySignatureHeaders(request);
 		assertThat(request.getFirstHeader("Authorization").getValue()).isEqualTo("EDU-TICKET t");
 	}
@@ -140,7 +143,7 @@ public class EdusharingRestClientTest {
 		sut.deleteUsage(ticket, new NodeIdentifierImpl("repo", "node"), "usage");
 		
 		verify(edusharingSecurityServiceMock).createSignature("nodeusage", EdusharingSecurityService.SIGNATURE_SHA512);
-		HttpUriRequest request = executedRequest();
+		ClassicHttpRequest request = executedRequest();
 		assertThat(request.getFirstHeader("X-Edu-App-Id").getValue()).isEqualTo("openolat");
 		assertThat(request.getFirstHeader("X-Edu-App-SignedAlg").getValue()).isEqualTo("SHA512withRSA");
 	}
@@ -149,7 +152,7 @@ public class EdusharingRestClientTest {
 	public void shouldDetectEdusharing9() throws Exception {
 		assertThat(sut.getAbout().getVersion().getRepository()).isEqualTo("9.1");
 		assertThat(sut.getSignatureAlgorithm()).isEqualTo(EdusharingSecurityService.SIGNATURE_SHA1);
-		assertThat(executedRequests().get(0).getURI()).hasToString("https://repo.example.org/edu-sharing/rest/_about");
+		assertThat(executedRequests().get(0).getUri()).hasToString("https://repo.example.org/edu-sharing/rest/_about");
 	}
 	
 	@Test
@@ -167,26 +170,29 @@ public class EdusharingRestClientTest {
 		sut.getSignatureAlgorithm();
 		sut.getSignatureAlgorithm();
 		
-		verify(httpClientMock, times(1)).execute(any(HttpUriRequest.class));
+		verify(httpClientMock, times(1)).execute(any(ClassicHttpRequest.class), anyHandler());
 	}
 	
 	@Test
 	public void shouldNotCacheFailedDetection() throws Exception {
-		when(httpClientMock.execute(any(HttpUriRequest.class))).thenThrow(new IOException()).thenReturn(aboutResponseMock);
+		doAnswer(invocation -> { throw new IOException(); })
+				.doAnswer(this::handleResponse)
+				.when(httpClientMock).execute(any(ClassicHttpRequest.class), anyHandler());
 		when(aboutResponseMock.getEntity()).thenReturn(new StringEntity(ABOUT_10));
 		
 		assertThat(sut.getSignatureAlgorithm()).isEqualTo(EdusharingSecurityService.SIGNATURE_SHA1);
 		assertThat(sut.getSignatureAlgorithm()).isEqualTo(EdusharingSecurityService.SIGNATURE_SHA1);
-		verify(httpClientMock, times(1)).execute(any(HttpUriRequest.class));
+		verify(httpClientMock, times(1)).execute(any(ClassicHttpRequest.class), anyHandler());
 		
 		sut.aboutRetryPauseMillis = 0;
 		assertThat(sut.getSignatureAlgorithm()).isEqualTo(EdusharingSecurityService.SIGNATURE_SHA512);
-		verify(httpClientMock, times(2)).execute(any(HttpUriRequest.class));
+		verify(httpClientMock, times(2)).execute(any(ClassicHttpRequest.class), anyHandler());
 	}
 	
 	@Test
 	public void shouldNotDetectOnHttpError() throws Exception {
-		when(aboutResponseMock.getStatusLine()).thenReturn(new BasicStatusLine(HttpVersion.HTTP_1_1, 503, "Service Unavailable"));
+		when(aboutResponseMock.getCode()).thenReturn(503);
+		when(aboutResponseMock.getReasonPhrase()).thenReturn("Service Unavailable");
 		when(aboutResponseMock.getEntity()).thenReturn(new StringEntity(""));
 		
 		assertThat(sut.getAbout()).isNull();
@@ -203,23 +209,42 @@ public class EdusharingRestClientTest {
 		assertThat(sut.getSignatureAlgorithm()).isEqualTo(EdusharingSecurityService.SIGNATURE_SHA512);
 	}
 	
-	private boolean isAbout(HttpUriRequest request) {
-		return request.getURI().getPath().endsWith("/rest/_about");
+	/**
+	 * Calls the response handler passed to the client with the mocked response
+	 * matching the request, as the real client does.
+	 */
+	private Object handleResponse(InvocationOnMock invocation) throws Exception {
+		ClassicHttpRequest request = invocation.getArgument(0, ClassicHttpRequest.class);
+		HttpClientResponseHandler<?> handler = invocation.getArgument(1, HttpClientResponseHandler.class);
+		return handler.handleResponse(isAbout(request)? aboutResponseMock: httpResponseMock);
 	}
 	
-	private List<HttpUriRequest> executedRequests() throws Exception {
-		ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
-		verify(httpClientMock, atLeastOnce()).execute(captor.capture());
+	@SuppressWarnings("unchecked")
+	private static HttpClientResponseHandler<Object> anyHandler() {
+		return any(HttpClientResponseHandler.class);
+	}
+	
+	private boolean isAbout(ClassicHttpRequest request) {
+		try {
+			return request.getUri().getPath().endsWith("/rest/_about");
+		} catch (URISyntaxException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+	
+	private List<ClassicHttpRequest> executedRequests() throws Exception {
+		ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+		verify(httpClientMock, atLeastOnce()).execute(captor.capture(), anyHandler());
 		return captor.getAllValues();
 	}
 	
-	private HttpUriRequest executedRequest() throws Exception {
-		List<HttpUriRequest> requests = executedRequests().stream().filter(request -> !isAbout(request)).toList();
+	private ClassicHttpRequest executedRequest() throws Exception {
+		List<ClassicHttpRequest> requests = executedRequests().stream().filter(request -> !isAbout(request)).toList();
 		assertThat(requests).hasSize(1);
 		return requests.get(0);
 	}
 	
-	private void assertLegacySignatureHeaders(HttpUriRequest request) {
+	private void assertLegacySignatureHeaders(ClassicHttpRequest request) {
 		assertThat(request.getFirstHeader("X-Edu-App-Id").getValue()).isEqualTo("openolat");
 		assertThat(request.getFirstHeader("X-Edu-App-Sig").getValue()).isEqualTo("sig");
 		assertThat(request.getFirstHeader("X-Edu-App-Signed").getValue()).isEqualTo("openolat123");

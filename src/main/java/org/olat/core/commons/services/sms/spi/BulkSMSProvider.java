@@ -19,14 +19,13 @@
  */
 package org.olat.core.commons.services.sms.spi;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.core.commons.services.sms.MessagesSPI;
@@ -141,15 +140,16 @@ public class BulkSMSProvider extends AbstractSpringModule implements MessagesSPI
 		HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
 		send.setEntity(smsEntity);
 		
-		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
-				CloseableHttpResponse response = httpclient.execute(send)) {
-			int returnCode = response.getStatusLine().getStatusCode();
-			String responseString = EntityUtils.toString(response.getEntity());
-			if(returnCode == 200 || returnCode == 201) {
-				return true;
-			}
-			log.error("WebSMS return an error code {}: {}", returnCode, responseString);
-			return false;
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
+			return httpclient.execute(send, response -> {
+				int returnCode = response.getCode();
+				String responseString = EntityUtils.toString(response.getEntity());
+				if(returnCode == 200 || returnCode == 201) {
+					return Boolean.TRUE;
+				}
+				log.error("WebSMS return an error code {}: {}", returnCode, responseString);
+				return Boolean.FALSE;
+			}).booleanValue();
 		} catch(Exception e) {
 			log.error("", e);
 			return false;

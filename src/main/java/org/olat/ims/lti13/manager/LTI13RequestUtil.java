@@ -23,16 +23,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
@@ -98,7 +97,7 @@ public class LTI13RequestUtil {
 		return push(post, accessToken, contentType, payload);
 	}
 
-	public static String push(HttpEntityEnclosingRequestBase method, String accessToken, String contentType, Object payload) throws Exception {
+	public static String push(HttpUriRequestBase method, String accessToken, String contentType, Object payload) throws Exception {
 	
 		method.addHeader("Authorization", "Bearer " + accessToken);
 		ContentType cType = ContentType.create(contentType);
@@ -110,14 +109,15 @@ public class LTI13RequestUtil {
 		try(CloseableHttpClient httpClient = CoreSpringFactory.getImpl(HttpClientService.class)
 				.createHttpClientBuilder(LTIManager.PROTECTION_PROFILE)
 				.disableAutomaticRetries()
-				.build();
-				CloseableHttpResponse response = httpClient.execute(method)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			String message = response.getStatusLine().getReasonPhrase();
-			log.debug("Status code of: {} {} {}", statusCode, message, method.getURI());
-			return EntityUtils.toString(response.getEntity());
+				.build()) {
+			return httpClient.execute(method, response -> {
+				int statusCode = response.getCode();
+				String message = response.getReasonPhrase();
+				log.debug("Status code of: {} {} {}", statusCode, message, uriToString(method));
+				return EntityUtils.toString(response.getEntity());
+			});
 		} catch(Exception e) {
-			log.error("Cannot send: {}", method.getURI(), e);
+			log.error("Cannot send: {}", uriToString(method), e);
 			return null;
 		}
 	}
@@ -131,16 +131,24 @@ public class LTI13RequestUtil {
 		try(CloseableHttpClient httpClient = CoreSpringFactory.getImpl(HttpClientService.class)
 				.createHttpClientBuilder(LTIManager.PROTECTION_PROFILE)
 				.disableAutomaticRetries()
-				.build();
-				CloseableHttpResponse response = httpClient.execute(get)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			String message = response.getStatusLine().getReasonPhrase();
-			log.debug("Status code of: {} {} {}", statusCode, message, get.getURI());
-			return EntityUtils.toString(response.getEntity());
+				.build()) {
+			return httpClient.execute(get, response -> {
+				int statusCode = response.getCode();
+				String message = response.getReasonPhrase();
+				log.debug("Status code of: {} {} {}", statusCode, message, uri);
+				return EntityUtils.toString(response.getEntity());
+			});
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
 			return null;
 		}
 	}
 
+	private static String uriToString(HttpUriRequestBase method) {
+		try {
+			return method.getUri().toString();
+		} catch (URISyntaxException e) {
+			return method.getRequestUri();
+		}
+	}
 }

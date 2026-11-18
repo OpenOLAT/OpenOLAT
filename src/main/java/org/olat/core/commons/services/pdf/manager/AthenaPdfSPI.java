@@ -21,10 +21,10 @@ package org.olat.core.commons.services.pdf.manager;
 
 import java.io.OutputStream;
 
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.ui.AthenaPdfSettingsController;
@@ -127,8 +127,8 @@ public class AthenaPdfSPI extends AbstractPdfSPI {
 			String uri = sb.toString();
 			HttpGet get = new HttpGet(uri);
 	
-			RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setCookieSpec(CookieSpecs.DEFAULT)
+			RequestConfig config = RequestConfig.custom()
+				.setCookieSpec(StandardCookieSpec.RELAXED)
 				.build();
 			get.setConfig(config);
 			get.addHeader("Accept", "application/pdf");

@@ -29,11 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.Header;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -168,16 +166,17 @@ public class ExternalSiteAdminController extends FormBasicController {
 		boolean isAllowed = false;
 		HttpPost request = new HttpPost(urlEl.getValue());
 
-		try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
-			 CloseableHttpResponse response = client.execute(request)) {
-			if (response != null) {
+		try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED)) {
+			isAllowed = client.execute(request, response -> {
+				// Only the headers are needed, abort the connection instead of reading the content
+				request.cancel();
 				// check as first instance if CSP contains frame-ancestor which allows iFrame
 				// The frame-ancestors directive provides the following settings:
 				// Self: Only allows the page to be loaded in an iFrame from within the same domain.
 				// None: Does not allow the page to be loaded in an iFrame at all.
 				// URI : If specific domains are specified, the CSP header will only allow the page to be loaded in iFrame on the specified domains.
 				List<Header> cspList = Arrays.stream(response.getHeaders("Content-Security-Policy")).filter(csp -> csp.getValue().toLowerCase().contains("frame-ancestors")).toList();
-				isAllowed = cspList.isEmpty() || cspList.stream().anyMatch(csp -> csp.getValue().toLowerCase().contains(Settings.getServerDomainName()));
+				boolean allowed = cspList.isEmpty() || cspList.stream().anyMatch(csp -> csp.getValue().toLowerCase().contains(Settings.getServerDomainName()));
 				// Check if response header has X-Frame-Options following options:
 				// SAMEORIGIN:
 				// This directive allows the page to be loaded in a frame on the same origin as the page itself.
@@ -187,14 +186,12 @@ public class ExternalSiteAdminController extends FormBasicController {
 				// if no x-frame-options at all: is allowed
 				// if x-frame-option "deny" is not present AND either sameorigin is not present OR if present
 				// then the externalUrl must contain the current domainName -> only then it is allowed
-				isAllowed &= xFrameOptionsList.isEmpty()
+				allowed &= xFrameOptionsList.isEmpty()
 						|| (xFrameOptionsList.stream().noneMatch(l -> l.getValue().toLowerCase().contains("deny"))
 						&& (xFrameOptionsList.stream().noneMatch(x -> x.getValue().toLowerCase().contains("sameorigin"))
 							|| xFrameOptionsList.stream().anyMatch(l -> l.getValue().toLowerCase().contains("sameorigin")) && isExternalUrlSameOrigin(urlEl.getValue())));
-
-				// Ensures that the entity content is fully consumed and the content stream, if exists, is closed.
-				EntityUtils.consume(response.getEntity());
-			}
+				return Boolean.valueOf(allowed);
+			}).booleanValue();
 		} catch (IOException e) {
 			log.error("Error creating iFrame Request.", e);
 		}

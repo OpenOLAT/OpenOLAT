@@ -21,6 +21,7 @@ package org.olat.course.nodes.tu;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -29,18 +30,20 @@ import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.io.CloseMode;
+import org.apache.hc.core5.io.ModalCloseable;
+import org.apache.hc.core5.net.URIBuilder;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
@@ -91,7 +94,7 @@ public class TunnelMapper implements Mapper {
 	public MediaResource handle(String relPath, HttpServletRequest hreq) {
 		String method = hreq.getMethod();
 		String uri = relPath;
-		HttpUriRequest meth = null;
+		HttpUriRequestBase meth = null;
 		
 		try {
 			URIBuilder builder = new URIBuilder();
@@ -123,7 +126,7 @@ public class TunnelMapper implements Mapper {
 					}
 				}
 
-				HttpEntity entity = new UrlEncodedFormEntity(pairs, "UTF-8");
+				HttpEntity entity = new UrlEncodedFormEntity(pairs, StandardCharsets.UTF_8);
 				pmeth.setEntity(entity);
 				meth = pmeth;
 			} else {
@@ -150,20 +153,26 @@ public class TunnelMapper implements Mapper {
 				} 
 			}
 
-			HttpResponse response = httpClient.execute(meth);
+			// The response is streamed later and closed by HttpRequestMediaResource.release()
+			ClassicHttpResponse response = httpClient.executeOpen(null, meth, null);
 			if (response == null) {
 				// error
 				return new NotFoundMediaResource();
 			}
 
-			// get or post successfully
-			Header responseHeader = response.getFirstHeader("Content-Type");
-			if (responseHeader == null) {
-				// error
-				EntityUtils.consumeQuietly(response.getEntity());
-				return new NotFoundMediaResource();
+			try {
+				// get or post successfully
+				Header responseHeader = response.getFirstHeader("Content-Type");
+				if (responseHeader == null) {
+					// error, don't read the body
+					closeImmediately(meth, response);
+					return new NotFoundMediaResource();
+				}
+				return new HttpRequestMediaResource(response, meth);
+			} catch (RuntimeException e) {
+				closeImmediately(meth, response);
+				throw e;
 			}
-			return new HttpRequestMediaResource(response);
 		} catch (ClientProtocolException | URISyntaxException e) {
 			log.error("", e);
 			return createMediaResourceWithError(e);
@@ -171,8 +180,32 @@ public class TunnelMapper implements Mapper {
 			log.error("", e);
 			return createMediaResourceWithErrorNoInfos();
 		} catch (IOException e) {
-			log.error("Error loading URI: {}", (meth == null ? "???" : meth.getURI()), e);
+			log.error("Error loading URI: {}", getUri(meth), e);
 			return createMediaResourceWithError(e);
+		}
+	}
+	
+	/**
+	 * Cancel the request and close the response without reading the rest
+	 * of the body (HttpClient 5 drains the body on a graceful close).
+	 */
+	private static void closeImmediately(HttpUriRequestBase meth, ClassicHttpResponse response) {
+		meth.cancel();
+		if(response instanceof ModalCloseable closeable) {
+			closeable.close(CloseMode.IMMEDIATE);
+		} else {
+			IOUtils.closeQuietly(response);
+		}
+	}
+	
+	private static String getUri(HttpUriRequestBase meth) {
+		if(meth == null) {
+			return "???";
+		}
+		try {
+			return meth.getUri().toString();
+		} catch (URISyntaxException e) {
+			return meth.getRequestUri();
 		}
 	}
 	

@@ -44,11 +44,12 @@ import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
+import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -378,17 +379,16 @@ public class TranscodingDeliveryDispatcherTest {
 
 	private void stubHttpGet(int statusCode, java.util.function.Supplier<InputStream> contentSupplier) {
 		CloseableHttpClient httpClientMock = Mockito.mock(CloseableHttpClient.class);
-		CloseableHttpResponse httpResponseMock = Mockito.mock(CloseableHttpResponse.class);
-		StatusLine statusLineMock = Mockito.mock(StatusLine.class);
-		HttpEntity httpEntityMock = Mockito.mock(HttpEntity.class);
 
 		try {
 			when(httpClientServiceMock.createHttpClient(any(ProtectionProfile.class))).thenReturn(httpClientMock);
-			when(httpClientMock.execute(any(HttpGet.class))).thenReturn(httpResponseMock);
-			when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-			when(statusLineMock.getStatusCode()).thenReturn(statusCode);
-			when(httpResponseMock.getEntity()).thenReturn(httpEntityMock);
-			when(httpEntityMock.getContent()).thenAnswer(invocation -> contentSupplier.get());
+			when(httpClientMock.execute(any(HttpGet.class), any(HttpClientResponseHandler.class))).thenAnswer(invocation -> {
+				HttpClientResponseHandler<?> handler = invocation.getArgument(1);
+				try (BasicClassicHttpResponse httpResponse = new BasicClassicHttpResponse(statusCode)) {
+					httpResponse.setEntity(new BasicHttpEntity(contentSupplier.get(), ContentType.APPLICATION_OCTET_STREAM));
+					return handler.handleResponse(httpResponse);
+				}
+			});
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}

@@ -21,17 +21,20 @@ package org.olat.modules.edusharing.manager;
 
 import static org.olat.modules.edusharing.EdusharingModule.PROTECTION_PROFILE;
 
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import java.nio.charset.StandardCharsets;
+
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -102,26 +105,27 @@ public class EdusharingRestClient {
 	private About loadAbout() {
 		String url = edusharingModule.getBaseUrl() + "rest/_about";
 		HttpGet request = new HttpGet(url);
-		request.setConfig(RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(ABOUT_TIMEOUT_MILLIS)
-				.setConnectionRequestTimeout(ABOUT_TIMEOUT_MILLIS)
-				.setSocketTimeout(ABOUT_TIMEOUT_MILLIS)
+		request.setConfig(RequestConfig.custom()
+				.setConnectionRequestTimeout(Timeout.ofMilliseconds(ABOUT_TIMEOUT_MILLIS))
+				.setResponseTimeout(Timeout.ofMilliseconds(ABOUT_TIMEOUT_MILLIS))
 				.build());
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
-			log.debug("edu-sharing rest getAbout response: {}", json);
-			
-			if (statusCode == HttpStatus.SC_OK) {
-				About loaded = objectMapper.readValue(json, About.class);
-				log.info("edu-sharing repository detected. url={}, version={}, signature algorithms={}", url,
-						loaded.getVersion() != null? loaded.getVersion().getRepository(): null,
-						loaded.getSignatureAlgorithms());
-				return loaded;
-			}
-			logUnsuccessful(httpResponse, url, json);
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return httpClient.execute(request, httpResponse -> {
+				int statusCode = httpResponse.getCode();
+				String json = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+				log.debug("edu-sharing rest getAbout response: {}", json);
+				
+				if (statusCode == HttpStatus.SC_OK) {
+					About loaded = objectMapper.readValue(json, About.class);
+					log.info("edu-sharing repository detected. url={}, version={}, signature algorithms={}", url,
+							loaded.getVersion() != null? loaded.getVersion().getRepository(): null,
+							loaded.getSignatureAlgorithms());
+					return loaded;
+				}
+				logUnsuccessful(httpResponse, url, json);
+				return null;
+			});
 		} catch(Exception e) {
 			log.warn("edu-sharing repository detection failed. url={}, error={}", url, e.getMessage());
 		}
@@ -140,18 +144,19 @@ public class EdusharingRestClient {
 		StringEntity stringEntity = new StringEntity(userProfileJson, ContentType.APPLICATION_JSON);
 		request.setEntity(stringEntity);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
-			log.debug("edu-sharing rest createTicket response: {}", json);
-			
-			if (statusCode == HttpStatus.SC_OK) {
-				JsonNode jsonNode = objectMapper.readTree(json);
-				return jsonNode.get("ticket").asText();
-			}
-			logUnsuccessful(httpResponse, url, json);
-			throw new EdusharingException();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return httpClient.execute(request, httpResponse -> {
+				int statusCode = httpResponse.getCode();
+				String json = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+				log.debug("edu-sharing rest createTicket response: {}", json);
+				
+				if (statusCode == HttpStatus.SC_OK) {
+					JsonNode jsonNode = objectMapper.readTree(json);
+					return jsonNode.get("ticket").asText();
+				}
+				logUnsuccessful(httpResponse, url, json);
+				throw new EdusharingException();
+			});
 		} catch(Exception e) {
 			log.error("", e);
 			throw new EdusharingException(e);
@@ -163,20 +168,18 @@ public class EdusharingRestClient {
 		HttpGet request = new HttpGet(url);
 		decorateTicket(request, ticket);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
-			log.debug("edu-sharing rest validateTicket response: {}", json);
-			
-			if (statusCode == HttpStatus.SC_OK) {
-				return true;
-			}
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return httpClient.execute(request, httpResponse -> {
+				int statusCode = httpResponse.getCode();
+				String json = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+				log.debug("edu-sharing rest validateTicket response: {}", json);
+				
+				return Boolean.valueOf(statusCode == HttpStatus.SC_OK);
+			}).booleanValue();
 		} catch(Exception e) {
 			log.error("", e);
 			throw new EdusharingException(e);
 		}
-		return false;
 	}
 
 	public void createUsage(Ticket ticket, CreateUsageParameter parameter) {
@@ -197,20 +200,20 @@ public class EdusharingRestClient {
 		StringEntity stringEntity = new StringEntity(json, ContentType.APPLICATION_JSON);
 		request.setEntity(stringEntity);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
-			log.debug("edu-sharing rest createUsage response: {}", json);
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			httpClient.execute(request, httpResponse -> {
+				int statusCode = httpResponse.getCode();
+				String responseJson = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+				log.debug("edu-sharing rest createUsage response: {}", responseJson);
+				
+				if (statusCode == HttpStatus.SC_OK) {
+					return null;
+				}
+				logUnsuccessful(httpResponse, url, responseJson);
+				throw new EdusharingException();
+			});
 			
-			if (statusCode == HttpStatus.SC_OK) {
-				
-				getUsages( ticket, parameter.getNodeIdentifier());
-				
-				return;
-			}
-			logUnsuccessful(httpResponse, url, json);
-			throw new EdusharingException();
+			getUsages( ticket, parameter.getNodeIdentifier());
 		} catch(Exception e) {
 			log.error("", e);
 			throw new EdusharingException(e);
@@ -223,17 +226,18 @@ public class EdusharingRestClient {
 		decorateSignature(request, ticket.getTooken());
 		decorateTicket(request, ticket);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
-			log.debug("edu-sharing rest getUsages response: {}", json);
-
-			if (statusCode == HttpStatus.SC_OK) {
-				return objectMapper.readValue(json, Usages.class);
-			}
-			logUnsuccessful(httpResponse, url, json);
-			throw new EdusharingException();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			return httpClient.execute(request, httpResponse -> {
+				int statusCode = httpResponse.getCode();
+				String json = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+				log.debug("edu-sharing rest getUsages response: {}", json);
+	
+				if (statusCode == HttpStatus.SC_OK) {
+					return objectMapper.readValue(json, Usages.class);
+				}
+				logUnsuccessful(httpResponse, url, json);
+				throw new EdusharingException();
+			});
 		} catch(Exception e) {
 			log.error("", e);
 			throw new EdusharingException(e);
@@ -246,15 +250,16 @@ public class EdusharingRestClient {
 		decorateSignature(request, nodeIdentifier.getNodeId() + usageId);
 		decorateTicket(request, ticket);
 		
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			
-			if (statusCode == HttpStatus.SC_OK) {
-				return;
-			}
-			logUnsuccessful(httpResponse, url, null);
-			throw new EdusharingException();
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			httpClient.execute(request, httpResponse -> {
+				int statusCode = httpResponse.getCode();
+				
+				if (statusCode == HttpStatus.SC_OK) {
+					return null;
+				}
+				logUnsuccessful(httpResponse, url, null);
+				throw new EdusharingException();
+			});
 		} catch(Exception e) {
 			log.error("", e);
 			throw new EdusharingException(e);
@@ -276,11 +281,11 @@ public class EdusharingRestClient {
 		request.setHeader("Authorization", "EDU-TICKET " + ticket.getTooken());
 	}
 	
-	private void logUnsuccessful(CloseableHttpResponse httpResponse, String url, String json) {
-		if (httpResponse.getStatusLine().getStatusCode() != 200) {
+	private void logUnsuccessful(ClassicHttpResponse httpResponse, String url, String json) {
+		if (httpResponse.getCode() != 200) {
 			log.warn("edu-sharing rest error. status={}, message={}, url={}, json={}",
-					httpResponse.getStatusLine().getStatusCode(),
-					httpResponse.getStatusLine().getReasonPhrase(),
+					httpResponse.getCode(),
+					httpResponse.getReasonPhrase(),
 					url,
 					json);
 		}

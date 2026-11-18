@@ -25,11 +25,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfSPI;
@@ -104,20 +103,23 @@ public abstract class AbstractPdfSPI extends AbstractSpringModule implements Pdf
 	
 	protected abstract void render(String key, String rootFilename, PdfOutputOptions options, OutputStream out);
 	
-	protected final void executeRequest(CloseableHttpClient httpclient, HttpRequestBase request, OutputStream out) {
-		try(CloseableHttpResponse response = httpclient.execute(request)) {
-			if(response.getStatusLine().getStatusCode() == 200) {
-				copyResponse(response, out);
-			} else {
-				log.error("Cannot renderer PDF: {}", response.getStatusLine().getStatusCode());
-				EntityUtils.consume(response.getEntity());
-			}
+	protected final void executeRequest(CloseableHttpClient httpclient, HttpUriRequestBase request, OutputStream out) {
+		try {
+			httpclient.execute(request, response -> {
+				if(response.getCode() == 200) {
+					copyResponse(response, out);
+				} else {
+					log.error("Cannot renderer PDF: {}", response.getCode());
+					EntityUtils.consume(response.getEntity());
+				}
+				return null;
+			});
 		} catch(IOException e) {
 			log.error("", e);
 		}
 	}
 	
-	private void copyResponse(HttpResponse response, OutputStream out) {
+	private void copyResponse(ClassicHttpResponse response, OutputStream out) {
 		try(InputStream in=response.getEntity().getContent()) {
 			FileUtils.cpio(in, out, "pdfd");
 		} catch(IOException e) {

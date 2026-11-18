@@ -42,9 +42,8 @@ import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.JupyterManager;
 import org.olat.repository.RepositoryEntry;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -201,9 +200,8 @@ public class JupyterHubConfigTabController extends FormBasicController {
 		try {
 			String url = String.format(jupyterHub.getImageCheckingServiceUrl(), image);
 			HttpGet httpGet = new HttpGet(url);
-			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, JupyterManager.PROTECTION_PROFILE);
-				 CloseableHttpResponse response = httpClient.execute(httpGet)) {
-				int statusCode = response.getStatusLine().getStatusCode();
+			try (CloseableHttpClient httpClient = httpClientService.createThreadSafeHttpClient(true, JupyterManager.PROTECTION_PROFILE)) {
+				int statusCode = httpClient.execute(httpGet, response -> response.getCode());
 				if (statusCode >= 200 && statusCode < 300) {
 					getWindowControl().setInfo(translate("form.image.info.exists", image));
 				} else if (statusCode == 404) {

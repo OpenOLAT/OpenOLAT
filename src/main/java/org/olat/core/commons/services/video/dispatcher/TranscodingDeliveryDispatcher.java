@@ -39,9 +39,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
@@ -681,20 +680,30 @@ public class TranscodingDeliveryDispatcher implements Dispatcher {
 		File tmpFile = File.createTempFile(".transcoder-download-", ".tmp", targetFile.getAbsoluteFile().getParentFile());
 		try {
 			HttpGet get = new HttpGet(url);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(TranscoderHelper.PROTECTION_PROFILE);
-				 CloseableHttpResponse httpResponse = httpClient.execute(get)) {
-				int statusCode = httpResponse.getStatusLine().getStatusCode();
-				if (statusCode != HttpServletResponse.SC_OK) {
-					log.warn("File download: [url={}, statusCode={}]", url, statusCode);
-					throw new IOException("Failed to download");
-				} else {
-					log.debug("File download: [url={}, statusCode={}]", url, statusCode);
-				}
+			try (CloseableHttpClient httpClient = httpClientService.createHttpClient(TranscoderHelper.PROTECTION_PROFILE)) {
+				httpClient.execute(get, httpResponse -> {
+					int statusCode = httpResponse.getCode();
+					if (statusCode != HttpServletResponse.SC_OK) {
+						log.warn("File download: [url={}, statusCode={}]", url, statusCode);
+						get.cancel();
+						throw new IOException("Failed to download");
+					} else {
+						log.debug("File download: [url={}, statusCode={}]", url, statusCode);
+					}
 
-				try (InputStream inputStream = httpResponse.getEntity().getContent();
-					 OutputStream outputStream = new FileOutputStream(tmpFile)) {
-					copyWithLimit(inputStream, outputStream, maxSizeBytes, url);
-				}
+					try (InputStream inputStream = httpResponse.getEntity().getContent();
+						 OutputStream outputStream = new FileOutputStream(tmpFile)) {
+						try {
+							copyWithLimit(inputStream, outputStream, maxSizeBytes, url);
+						} catch (IOException e) {
+							// HttpClient 5 reads the rest of the body when the stream is closed, abort
+							// the connection first to really stop the download (OO-9999, WP4 H7)
+							get.cancel();
+							throw e;
+						}
+					}
+					return null;
+				});
 			}
 			Files.move(tmpFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} finally {

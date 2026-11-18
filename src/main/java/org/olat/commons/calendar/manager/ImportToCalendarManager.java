@@ -34,9 +34,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.calendar.CalendarManager;
@@ -47,6 +47,7 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.httpclient.CancellingInputStream;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -106,9 +107,10 @@ public class ImportToCalendarManager {
 		String id = importedToCalendar.getToCalendarId();
 		String importUrl = importedToCalendar.getUrl();
 		
+		HttpGet get = new HttpGet(importUrl);
 		try (CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
-				InputStream in = response.getEntity().getContent()) {
+				ClassicHttpResponse response = client.executeOpen(null, get, null);
+				InputStream in = CancellingInputStream.content(response, get)) {
 			Kalendar importedKalendar = calendarManager.buildKalendarFrom(in, "TEMP", UUID.randomUUID().toString());
 			List<KalendarEvent> importedEvents = importedKalendar.getEvents();
 			Set<String>  importedEventsIds = importedEvents.stream().map(KalendarEvent::getID).collect(Collectors.toSet());
@@ -129,9 +131,10 @@ public class ImportToCalendarManager {
 		String id = importedToCalendar.getToCalendarId();
 		String importUrl = importedToCalendar.getUrl();
 		
+		HttpGet get = new HttpGet(importUrl);
 		try (CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
-				InputStream in = response.getEntity().getContent()) {
+				ClassicHttpResponse response = client.executeOpen(null, get, null);
+				InputStream in = CancellingInputStream.content(response, get)) {
 			Kalendar importedKalendar = calendarManager.buildKalendarFrom(in, "TEMP", UUID.randomUUID().toString());
 			List<KalendarEvent> importedEvents = importedKalendar.getEvents();
 			Set<String>  importedEventsIds = importedEvents.stream().map(KalendarEvent::getID).collect(Collectors.toSet());
@@ -195,9 +198,10 @@ public class ImportToCalendarManager {
 	 * @return
 	 */
 	public boolean importCalendarIn(Kalendar cal, String importUrl) {
+		HttpGet get = new HttpGet(importUrl);
 		try(CloseableHttpClient client = httpClientService.createHttpClient(CalendarManager.PROTECTION_PROFILE);
-				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
-				InputStream in = response.getEntity().getContent()) {
+				ClassicHttpResponse response = client.executeOpen(null, get, null);
+				InputStream in = CancellingInputStream.content(response, get)) {
 			Kalendar importedCal = calendarManager.buildKalendarFrom(in, cal.getType(), cal.getCalendarID());
 			boolean imported = calendarManager.updateCalendar(cal, importedCal);
 			if(imported) {

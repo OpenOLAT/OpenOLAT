@@ -31,11 +31,10 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -231,17 +230,20 @@ public class OpenBadgesVerificationController extends FormBasicController {
     
     private CryptographicKey loadPublicKey(String publicKeyUrl, StringBuilder sb) {
         HttpGet httpGet = new HttpGet(publicKeyUrl);
-        try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
-             CloseableHttpResponse response = httpClient.execute(httpGet)) {
-            int status = response.getStatusLine().getStatusCode();
-            if (status < 200 || status > 299) {
-                sb.append("&bull; publicKeyString: invalid HTTP status ").append(status).append("<br>");
-                return null;
-            }
-            HttpEntity entity = response.getEntity();
-            String jsonString = EntityUtils.toString(entity);
-            JSONObject jsonObject = new JSONObject(jsonString);
-            return new CryptographicKey(jsonObject);
+        try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED)) {
+            return httpClient.execute(httpGet, response -> {
+                int status = response.getCode();
+                if (status < 200 || status > 299) {
+                    sb.append("&bull; publicKeyString: invalid HTTP status ").append(status).append("<br>");
+                    // User provided URL: don't read the body of the error
+                    httpGet.cancel();
+                    return null;
+                }
+                HttpEntity entity = response.getEntity();
+                String jsonString = EntityUtils.toString(entity);
+                JSONObject jsonObject = new JSONObject(jsonString);
+                return new CryptographicKey(jsonObject);
+            });
         } catch (IOException e) {
             return null;
         }

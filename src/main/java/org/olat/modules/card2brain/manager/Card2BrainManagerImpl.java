@@ -21,12 +21,11 @@ package org.olat.modules.card2brain.manager;
 
 import java.util.Map;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
@@ -77,9 +76,8 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 			log.warn("card2brain alias with illegal characters: {}", url);
 			return false;
 		}
-		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
-				CloseableHttpResponse response = httpclient.execute(request);) {
-			setOfFlashcardExists = isSetOfFlashcardExisting(response);
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
+			setOfFlashcardExists = httpclient.execute(request, this::isSetOfFlashcardExisting).booleanValue();
 		} catch(Exception e) {
 			log.warn("", e);
 		}
@@ -93,11 +91,11 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 	 * @param response the http response
 	 * @return true if it is existing
 	 */
-	protected boolean isSetOfFlashcardExisting(HttpResponse response) {
+	protected boolean isSetOfFlashcardExisting(ClassicHttpResponse response) {
 		boolean isSetOfFlashcardExisting = false;
 		// The response of a non existent set of flashcards returns with an empty body
 		try {
-			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK && EntityUtils.toByteArray(response.getEntity()).length > 0) {
+			if (response.getCode() == HttpStatus.SC_OK && EntityUtils.toByteArray(response.getEntity()).length > 0) {
 				isSetOfFlashcardExisting = true;
 			}
 		} catch (Exception e) {

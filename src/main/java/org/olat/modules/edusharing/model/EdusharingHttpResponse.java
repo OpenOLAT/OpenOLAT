@@ -19,12 +19,14 @@
  */
 package org.olat.modules.edusharing.model;
 
+import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
 import org.olat.modules.edusharing.EdusharingException;
 import org.olat.modules.edusharing.EdusharingResponse;
 
@@ -38,14 +40,16 @@ public class EdusharingHttpResponse implements EdusharingResponse {
 	
 	private final int status;
 	private final CloseableHttpClient httpClient;
-	private final CloseableHttpResponse httpResponse;
+	private final HttpUriRequestBase httpRequest;
+	private final ClassicHttpResponse httpResponse;
 	private final HttpEntity httpEntity;
 
-	public EdusharingHttpResponse(CloseableHttpClient httpClient, CloseableHttpResponse httpResponse) {
+	public EdusharingHttpResponse(CloseableHttpClient httpClient, HttpUriRequestBase httpRequest, ClassicHttpResponse httpResponse) {
 		this.httpClient = httpClient;
+		this.httpRequest = httpRequest;
 		this.httpResponse = httpResponse;
 		this.httpEntity = httpResponse.getEntity();
-		this.status = httpResponse.getStatusLine().getStatusCode();
+		this.status = httpResponse.getCode();
 	}
 
 	@Override
@@ -74,14 +78,25 @@ public class EdusharingHttpResponse implements EdusharingResponse {
 
 	@Override
 	public String getMimeType() {
-		ContentType contentType = ContentType.getOrDefault(httpEntity);
+		ContentType contentType = httpEntity == null ? null : ContentType.parseLenient(httpEntity.getContentType());
+		if (contentType == null) {
+			contentType = ContentType.DEFAULT_TEXT;
+		}
 		return contentType.getMimeType();
 	}
 
 	@Override
 	public void close() throws Exception {
-		httpResponse.close();
-		httpClient.close();
+		// Abort the connection if the content was not fully read. Else closing
+		// the response reads the rest of the content (HttpClient 5).
+		httpRequest.cancel();
+		try {
+			httpResponse.close();
+		} catch (IOException e) {
+			// Expected if the connection was aborted above
+		} finally {
+			httpClient.close();
+		}
 	}
 
 }

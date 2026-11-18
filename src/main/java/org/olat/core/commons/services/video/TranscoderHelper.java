@@ -47,14 +47,13 @@ import org.olat.modules.video.VideoModule;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -92,26 +91,28 @@ public class TranscoderHelper {
 			post.setHeader("Accept", "application/json");
 			post.setEntity(stringEntity);
 
-			try (CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				 CloseableHttpResponse response = client.execute(post)) {
-				int statusCode = response.getStatusLine().getStatusCode();
-				log.debug("Post job {} status code: {}", transcoderJob.getUuid(), statusCode);
+			try (CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+				client.execute(post, response -> {
+					int statusCode = response.getCode();
+					log.debug("Post job {} status code: {}", transcoderJob.getUuid(), statusCode);
 
-				if (statusCode == HttpStatus.SC_OK) {
-					String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-					log.debug("Post job {} reply JSON: {}", transcoderJob.getUuid(), json);
-					TranscoderJobPostReply conversionReply = objectMapper.readValue(json, TranscoderJobPostReply.class);
-					if ("received".equalsIgnoreCase(conversionReply.getStatus())) {
-						log.debug("Post job {} reply: {}", transcoderJob.getUuid(), conversionReply.getStatus());
-						statusUpdater.accept(VFSMetadata.TRANSCODING_STATUS_STARTED);
+					if (statusCode == HttpStatus.SC_OK) {
+						String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+						log.debug("Post job {} reply JSON: {}", transcoderJob.getUuid(), json);
+						TranscoderJobPostReply conversionReply = objectMapper.readValue(json, TranscoderJobPostReply.class);
+						if ("received".equalsIgnoreCase(conversionReply.getStatus())) {
+							log.debug("Post job {} reply: {}", transcoderJob.getUuid(), conversionReply.getStatus());
+							statusUpdater.accept(VFSMetadata.TRANSCODING_STATUS_STARTED);
+						} else {
+							log.warn("Post job {} reply: {}", transcoderJob.getUuid(), conversionReply.getStatus());
+							statusUpdater.accept(VFSMetadata.TRANSCODING_STATUS_ERROR);
+						}
 					} else {
-						log.warn("Post job {} reply: {}", transcoderJob.getUuid(), conversionReply.getStatus());
-						statusUpdater.accept(VFSMetadata.TRANSCODING_STATUS_ERROR);
+						log.warn("Post job {} failed with status code {}", transcoderJob.getUuid(), statusCode);
+						statusUpdater.accept( VFSMetadata.TRANSCODING_STATUS_ERROR);
 					}
-				} else {
-					log.warn("Post job {} failed with status code {}", transcoderJob.getUuid(), statusCode);
-					statusUpdater.accept( VFSMetadata.TRANSCODING_STATUS_ERROR);
-				}
+					return null;
+				});
 			} catch (Exception e) {
 				log.warn("Failed to post job: [url='{}', referenceId={}]: {}", url, transcoderJob.getReferenceId(), e);
 			}
@@ -124,19 +125,21 @@ public class TranscoderHelper {
 		HttpDelete delete = new HttpDelete(url);
 		delete.setHeader("Accept", "application/json");
 
-		try (CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE);
-			 CloseableHttpResponse response = client.execute(delete)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Delete generated: [url={},  statusCode={}]", url, statusCode);
+		try (CloseableHttpClient client = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			client.execute(delete, response -> {
+				int statusCode = response.getCode();
+				log.debug("Delete generated: [url={},  statusCode={}]", url, statusCode);
 
-			if (statusCode == HttpStatus.SC_OK) {
-				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
-				log.debug("Delete generated reply: [json='{}']", json);
-				TranscoderDeleteGeneratedReply reply = objectMapper.readValue(json, TranscoderDeleteGeneratedReply.class);
-				log.debug("Delete generated reply: [deleted='{}']", String.join(", ", reply.getDeleted()));
-			} else {
-				log.warn("Delete generated error: [url={}, statusCode={}]", url, statusCode);
-			}
+				if (statusCode == HttpStatus.SC_OK) {
+					String json = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+					log.debug("Delete generated reply: [json='{}']", json);
+					TranscoderDeleteGeneratedReply reply = objectMapper.readValue(json, TranscoderDeleteGeneratedReply.class);
+					log.debug("Delete generated reply: [deleted='{}']", String.join(", ", reply.getDeleted()));
+				} else {
+					log.warn("Delete generated error: [url={}, statusCode={}]", url, statusCode);
+				}
+				return null;
+			});
 		} catch (Exception e) {
 			log.warn("Delete generated exception: [url={}]: {}", url, e);
 		}

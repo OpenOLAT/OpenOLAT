@@ -24,16 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.User;
@@ -347,7 +346,7 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
             post.addHeader("Accept-Language", "en-GB,en-US;q=0.9,en;q=0.8,it;q=0.7");
             post.addHeader("Content-Type", "application/x-www-form-urlencoded");
             post.addHeader("Referer", lti13Module.getPlatformIss());
-            for (Header header : post.getAllHeaders()) {
+            for (Header header : post.getHeaders()) {
                 log.debug("Header: {} = {}", header.getName(), header.getValue());
             }
 
@@ -408,17 +407,20 @@ public class ZoomManagerImpl implements ZoomManager, DeletableGroupData, Reposit
     }
 
     private ZoomConnectionResponse execute(HttpUriRequest request) {
-        try (CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
-             CloseableHttpResponse response = httpClient.execute(request)) {
-            int status = response.getStatusLine().getStatusCode();
-            HttpEntity entity = response.getEntity();
-            String content;
-            if (entity == null) {
-                content = "";
-            } else {
-                content = EntityUtils.toString(entity);
-            }
-            return new ZoomConnectionResponse(status, content);
+        // Redirects of the POST must not be followed (HttpClient 4 did not follow them)
+        try (CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder(ProtectionProfile.CONFIGURED)
+                .disableRedirectHandling().build()) {
+            return httpClient.execute(request, response -> {
+                int status = response.getCode();
+                HttpEntity entity = response.getEntity();
+                String content;
+                if (entity == null) {
+                    content = "";
+                } else {
+                    content = EntityUtils.toString(entity);
+                }
+                return new ZoomConnectionResponse(status, content);
+            });
         } catch(IOException e) {
             log.error(e);
             return new ZoomConnectionResponse(500, null);

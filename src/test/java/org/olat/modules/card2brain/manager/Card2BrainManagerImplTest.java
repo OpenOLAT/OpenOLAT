@@ -32,8 +32,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -62,7 +62,7 @@ public class Card2BrainManagerImplTest {
     LTIManager ltiManagerMock;
     
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    HttpResponse httpResponseMock;
+    ClassicHttpResponse httpResponseMock;
     
     @Mock
     ObjectMapper objectMapperMock;
@@ -70,7 +70,7 @@ public class Card2BrainManagerImplTest {
 	@Test
     public void isSetOfFlashcardExisting() throws UnsupportedEncodingException {
     	// prepare
-		when(httpResponseMock.getStatusLine().getStatusCode()).thenReturn(200);
+		when(httpResponseMock.getCode()).thenReturn(200);
 		when(httpResponseMock.getEntity()).thenReturn(new StringEntity("content"));
     	
     	// test
@@ -80,7 +80,7 @@ public class Card2BrainManagerImplTest {
 	@Test
     public void isSetOfFlashcardExisting_Status400() throws UnsupportedEncodingException {
 		// prepare
-		when(httpResponseMock.getStatusLine().getStatusCode()).thenReturn(400);
+		when(httpResponseMock.getCode()).thenReturn(400);
 		when(httpResponseMock.getEntity()).thenReturn(new StringEntity("content"));
 	
 		// test
@@ -90,7 +90,7 @@ public class Card2BrainManagerImplTest {
 	@Test
     public void isSetOfFlashcardExisting_content0() throws UnsupportedEncodingException {
 		// prepare
-		when(httpResponseMock.getStatusLine().getStatusCode()).thenReturn(200);
+		when(httpResponseMock.getCode()).thenReturn(200);
 		when(httpResponseMock.getEntity()).thenReturn(new StringEntity(""));
     	
     	// test
@@ -100,7 +100,7 @@ public class Card2BrainManagerImplTest {
 	@Test
     public void isSetOfFlashcardExisting_Exception() throws IllegalStateException, IOException {
 		// prepare
-		when(httpResponseMock.getStatusLine().getStatusCode()).thenReturn(200);
+		when(httpResponseMock.getCode()).thenReturn(200);
 		when(httpResponseMock.getEntity().getContent()).thenThrow(new IllegalStateException());
     	
     	// test

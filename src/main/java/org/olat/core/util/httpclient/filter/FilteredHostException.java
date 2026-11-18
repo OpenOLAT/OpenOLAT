@@ -27,7 +27,7 @@ import java.net.UnknownHostException;
  * it resolves to an address which is not allowed to be called (SSRF mitigation).
  * <p>
  * Extends {@link UnknownHostException} so that it can be thrown from a
- * {@link org.apache.http.conn.DnsResolver} and travels through the Apache HttpClient
+ * {@link org.apache.hc.client5.http.DnsResolver} and travels through the Apache HttpClient
  * stack like any other resolution failure.
  *
  * Initial date: 11 Aug 2026<br>

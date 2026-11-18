@@ -30,13 +30,12 @@ import java.util.stream.Collectors;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.basesecurity.Authentication;
@@ -355,8 +354,7 @@ public class LTIManagerImpl implements LTIManager {
 			HttpPost request = new HttpPost(url);
 			HttpEntity postParams = new UrlEncodedFormEntity(urlParameters);
 			request.setEntity(postParams);
-			HttpResponse httpResponse = httpclient.execute(request);
-			content = IOUtils.toString(httpResponse.getEntity().getContent());
+			content = httpclient.execute(request, httpResponse -> IOUtils.toString(httpResponse.getEntity().getContent()));
 		} catch (Exception e) {
 			log.error("", e);
 		}

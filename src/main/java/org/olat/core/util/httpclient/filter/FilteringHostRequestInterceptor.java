@@ -27,32 +27,29 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.conn.util.InetAddressUtils;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpCoreContext;
+import org.apache.hc.client5.http.RouteInfo;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.net.InetAddressUtils;
+import org.apache.hc.core5.net.URIAuthority;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
- * Validates the target host of a request before it is sent.
+ * Request interceptor for Apache HttpClient 5 which validates the scheme and the
+ * target of every request, redirects included (SSRF mitigation).
  * <p>
- * The {@link FilteringDnsResolver} is the primary defense, but it is only consulted
- * when OpenOlat resolves the host itself. This interceptor covers the two cases where
- * this does not happen:
- * <ul>
- * <li>the request goes through a forward proxy, which resolves the target host on our
- * behalf</li>
- * <li>the target is a literal IP address carried in an already resolved
- * {@link HttpHost}</li>
- * </ul>
- * Only literal IP addresses are checked here. Host names are left to the DNS resolver
- * because resolving them a second time would be both redundant and racy.
+ * It covers the cases which the {@link FilteringDnsResolver} doesn't see: literal
+ * IP addresses, routes built from an already resolved {@link InetAddress},
+ * requests sent through a proxy, where the target is resolved by the proxy, and
+ * routes through a Unix domain socket.
  *
- * Initial date: 11 Aug 2026<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 17 nov. 2026<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class FilteringHostRequestInterceptor implements HttpRequestInterceptor {
@@ -74,28 +71,45 @@ public class FilteringHostRequestInterceptor implements HttpRequestInterceptor {
 	}
 
 	@Override
-	public void process(HttpRequest request, HttpContext context) throws IOException {
-		HttpHost target = HttpCoreContext.adapt(context).getTargetHost();
-		if(target == null) {
+	public void process(HttpRequest request, EntityDetails entity, HttpContext context) throws IOException {
+		RouteInfo route = context == null ? null : HttpClientContext.castOrCreate(context).getHttpRoute();
+		HttpHost routeTarget = route == null ? null : route.getTargetHost();
+		// A Unix domain socket is a local endpoint which bypasses the DNS resolver
+		if(route != null && route.getUnixDomainSocket() != null) {
+			log.warn("Blocked outgoing request through the Unix domain socket {}", route.getUnixDomainSocket());
+			throw new FilteredHostException(route.getUnixDomainSocket().toString(), null);
+		}
+
+		String scheme = request.getScheme();
+		URIAuthority authority = request.getAuthority();
+		if(scheme == null && routeTarget != null) {
+			scheme = routeTarget.getSchemeName();
+		}
+		String hostName = authority != null ? authority.getHostName()
+				: (routeTarget != null ? routeTarget.getHostName() : null);
+		if(hostName == null) {
 			return;
 		}
 
-		String scheme = target.getSchemeName();
 		if(scheme != null && !ALLOWED_SCHEMES.contains(scheme.toLowerCase(Locale.ROOT))) {
-			throw new FilteredHostException(target.toHostString(), null);
+			throw new FilteredHostException(hostName, null);
 		}
-		
-		if(target.getHostName() != null && exemptedHosts.contains(target.getHostName().toLowerCase(Locale.ROOT))) {
+
+		if(exemptedHosts.contains(hostName.toLowerCase(Locale.ROOT))) {
 			return;
 		}
 
-		InetAddress address = target.getAddress();
+		InetAddress address = null;
+		if(routeTarget != null && routeTarget.getAddress() != null
+				&& hostName.equalsIgnoreCase(routeTarget.getHostName())) {
+			address = routeTarget.getAddress();
+		}
 		if(address == null) {
-			address = literalAddress(target.getHostName());
+			address = literalAddress(hostName);
 		}
 		if(address != null && !filter.matches(address)) {
 			log.warn("Blocked outgoing request to the filtered address {}", address.getHostAddress());
-			throw new FilteredHostException(target.getHostName(), address);
+			throw new FilteredHostException(hostName, address);
 		}
 	}
 
@@ -105,15 +119,11 @@ public class FilteringHostRequestInterceptor implements HttpRequestInterceptor {
 	 * which has to be resolved
 	 */
 	private InetAddress literalAddress(String hostName) {
-		if(hostName == null) {
-			return null;
-		}
-
 		String candidate = hostName;
 		if(candidate.startsWith("[") && candidate.endsWith("]")) {
 			candidate = candidate.substring(1, candidate.length() - 1);
 		}
-		if(!InetAddressUtils.isIPv4Address(candidate) && !InetAddressUtils.isIPv6Address(candidate)) {
+		if(!InetAddressUtils.isIPv4(candidate) && !InetAddressUtils.isIPv6(candidate)) {
 			return null;
 		}
 
@@ -123,5 +133,4 @@ public class FilteringHostRequestInterceptor implements HttpRequestInterceptor {
 			return null;// Cannot happen with a literal address
 		}
 	}
-
 }

@@ -24,30 +24,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.RedirectStrategy;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.DnsResolver;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.util.Timeout;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.filter.FilteringDnsResolver;
@@ -57,6 +44,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * The factory of all the outgoing HTTP clients of OpenOlat (Apache HttpClient 5).
+ * <p>
+ * The builders always come with their own connection manager. In HttpClient 5,
+ * the DNS resolver of the SSRF protection and the connect / socket timeouts are
+ * settings of the connection manager, there is no way to set them on the builder.
  * 
  * Initial Date: 21.03.2007 <br>
  * 
@@ -78,22 +70,7 @@ public class HttpClientServicempl implements HttpClientService {
 	@Override
 	public HttpClientBuilder createHttpClientBuilder(String host, int port, String user, String password, ProtectionProfile profile) {
 		dbInstance.commit();// free connection
-		
-		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setConnectTimeout(httpClientModule.getHttpConnectTimeout())
-				.setConnectionRequestTimeout(httpClientModule.getHttpConnectRequestTimeout())
-				.setSocketTimeout(httpClientModule.getHttpSocketTimeout())
-				.build();
-		HttpClientBuilder builder = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig);
-
-		setProxyAndCredentials(builder, host, port, user, password);
-		if(isSsrfProtectionActive(profile)) {
-			// Only effective as long as no connection manager is set on the builder
-			builder.setDnsResolver(createDnsResolver())
-				.addInterceptorFirst(createHostRequestInterceptor());
-		}
-
-		return builder;
+		return createBuilder(host, port, user, password, isSsrfProtectionActive(profile));
 	}
 
 	@Override
@@ -106,40 +83,60 @@ public class HttpClientServicempl implements HttpClientService {
 		return createThreadSafeHttpClient(null, -1, null, null, redirect, profile);
 	}
 
+	/**
+	 * The default redirect strategy of HttpClient 5 follows the redirects of every
+	 * method, as the {@code LaxRedirectStrategy} of HttpClient 4 did.
+	 */
 	@Override
 	public CloseableHttpClient createThreadSafeHttpClient(String host, int port, String user, String password, boolean redirect, ProtectionProfile profile) {
 		dbInstance.commit();// free connection
 		
-		boolean filtered = isSsrfProtectionActive(profile);
-		PoolingHttpClientConnectionManager cm = filtered
-				? new PoolingHttpClientConnectionManager(socketFactoryRegistry(), createDnsResolver())
-				: new PoolingHttpClientConnectionManager();
-		SocketConfig.Builder socketConfigBuilder = SocketConfig.copy(SocketConfig.DEFAULT);
-		socketConfigBuilder.setSoTimeout(httpClientModule.getHttpSocketTimeout());
-		cm.setDefaultSocketConfig(socketConfigBuilder.build());
-
-		HttpClientBuilder clientBuilder = HttpClientBuilder.create()
-				.setConnectionManager(cm).setMaxConnTotal(10)
+		HttpClientBuilder builder = createBuilder(host, port, user, password, isSsrfProtectionActive(profile))
 				.setDefaultCookieStore(new BasicCookieStore());
-		if(redirect) {
-			clientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
-		} else {
-			clientBuilder.setRedirectStrategy(new NoRedirectStrategy());
+		if(!redirect) {
+			builder.disableRedirectHandling();
+		}
+		return builder.build();
+	}
+	
+	private HttpClientBuilder createBuilder(String host, int port, String user, String password, boolean ssrfProtection) {
+		ConnectionConfig.Builder connectionConfig = ConnectionConfig.custom();
+		if(httpClientModule.getHttpConnectTimeout() >= 0) {
+			connectionConfig.setConnectTimeout(Timeout.ofMilliseconds(httpClientModule.getHttpConnectTimeout()));
+		}
+		if(httpClientModule.getHttpSocketTimeout() >= 0) {
+			connectionConfig.setSocketTimeout(Timeout.ofMilliseconds(httpClientModule.getHttpSocketTimeout()));
+		}
+		
+		PoolingHttpClientConnectionManagerBuilder cmBuilder = PoolingHttpClientConnectionManagerBuilder.create()
+				.setDefaultConnectionConfig(connectionConfig.build());
+		if(ssrfProtection) {
+			cmBuilder.setDnsResolver(createDnsResolver());
+		}
+		
+		RequestConfig.Builder requestConfig = RequestConfig.custom();
+		if(httpClientModule.getHttpConnectRequestTimeout() >= 0) {
+			requestConfig.setConnectionRequestTimeout(Timeout.ofMilliseconds(httpClientModule.getHttpConnectRequestTimeout()));
+		}
+		if(httpClientModule.getHttpSocketTimeout() >= 0) {
+			requestConfig.setResponseTimeout(Timeout.ofMilliseconds(httpClientModule.getHttpSocketTimeout()));
 		}
 
-		setProxyAndCredentials(clientBuilder, host, port, user, password);
-		if(filtered) {
-			clientBuilder.addInterceptorFirst(createHostRequestInterceptor());
+		HttpClientBuilder builder = HttpClientBuilder.create()
+				.setConnectionManager(cmBuilder.build())
+				.setDefaultRequestConfig(requestConfig.build());
+		setProxyAndCredentials(builder, host, port, user, password);
+		if(ssrfProtection) {
+			builder.addRequestInterceptorFirst(createHostRequestInterceptor());
 		}
-
-		return clientBuilder.build();
+		return builder;
 	}
 
 	private boolean isSsrfProtectionActive(ProtectionProfile profile) {
 		return profile == ProtectionProfile.USER_PROVIDED && httpClientModule.isSsrfProtectionEnabled();
 	}
 	
-	private HttpRequestInterceptor createHostRequestInterceptor() {
+	private FilteringHostRequestInterceptor createHostRequestInterceptor() {
 		return new FilteringHostRequestInterceptor(createSsrfAddressFilter(), httpClientModule.getSsrfAllowedHostsList());
 	}
 
@@ -150,21 +147,13 @@ public class HttpClientServicempl implements HttpClientService {
 	 *
 	 * @return A DNS resolver which rejects the filtered addresses
 	 */
-	private DnsResolver createDnsResolver() {
-		InetAddressFilter filter = createSsrfAddressFilter();
+	private FilteringDnsResolver createDnsResolver() {
 		Set<String> exemptedHosts = new HashSet<>(httpClientModule.getSsrfAllowedHostsList());
 		// The proxy itself is typically an internal host, its address must not be filtered
 		if(StringHelper.containsNonWhitespace(httpClientModule.getHttpProxyUrl())) {
 			exemptedHosts.add(httpClientModule.getHttpProxyUrl());
 		}
-		return new FilteringDnsResolver(filter, exemptedHosts);
-	}
-
-	private static Registry<ConnectionSocketFactory> socketFactoryRegistry() {
-		return RegistryBuilder.<ConnectionSocketFactory>create()
-				.register("http", PlainConnectionSocketFactory.getSocketFactory())
-				.register("https", SSLConnectionSocketFactory.getSocketFactory())
-				.build();
+		return new FilteringDnsResolver(createSsrfAddressFilter(), exemptedHosts);
 	}
 	
 	private InetAddressFilter createSsrfAddressFilter() {
@@ -176,20 +165,21 @@ public class HttpClientServicempl implements HttpClientService {
 		return filter;
 	}
 
-	private void setProxyAndCredentials(HttpClientBuilder builder, String host, int port, String user,
-			String password) {
-		CredentialsProvider credentialsProvider = null;
-		if (StringHelper.containsNonWhitespace(httpClientModule.getHttpProxyUrl())) {
-			HttpHost proxy = new HttpHost(httpClientModule.getHttpProxyUrl(), httpClientModule.getHttpProxyPort());
-			builder.setProxy(proxy);
+	private void setProxyAndCredentials(HttpClientBuilder builder, String host, int port, String user, String password) {
+		BasicCredentialsProvider credentialsProvider = null;
+		String proxyHost = httpClientModule.getHttpProxyUrl();
+		if (StringHelper.containsNonWhitespace(proxyHost)) {
+			int proxyPort = httpClientModule.getHttpProxyPort();
+			HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+			// The route planner takes precedence over setProxy()
 			builder.setRoutePlanner(new ProxyRoutePlanner(proxy, httpClientModule.getHttpProxyExclusionUrls()));
 			
-			if (StringHelper.containsNonWhitespace(httpClientModule.getHttpProxyUser()) && StringHelper.containsNonWhitespace(httpClientModule.getHttpProxyPwd())) {
+			String proxyUser = httpClientModule.getHttpProxyUser();
+			String proxyPassword = httpClientModule.getHttpProxyPwd();
+			if (StringHelper.containsNonWhitespace(proxyUser) && StringHelper.containsNonWhitespace(proxyPassword)) {
 				credentialsProvider = new BasicCredentialsProvider();
-				credentialsProvider.setCredentials(
-						new AuthScope(httpClientModule.getHttpProxyUrl(), httpClientModule.getHttpProxyPort()),
-						new UsernamePasswordCredentials(httpClientModule.getHttpProxyUser(), httpClientModule.getHttpProxyPwd())
-					);
+				credentialsProvider.setCredentials(new AuthScope(proxyHost, proxyPort),
+						new UsernamePasswordCredentials(proxyUser, proxyPassword.toCharArray()));
 			}
 		}
 		
@@ -197,25 +187,12 @@ public class HttpClientServicempl implements HttpClientService {
 			if (credentialsProvider == null) {
 				credentialsProvider = new BasicCredentialsProvider();
 			}
-			credentialsProvider.setCredentials(
-					new AuthScope(host, port),
-					new UsernamePasswordCredentials(user, password)
-				);
+			credentialsProvider.setCredentials(new AuthScope(host, port),
+					new UsernamePasswordCredentials(user, password.toCharArray()));
 		}
 		
-		builder.setDefaultCredentialsProvider(credentialsProvider);
-	}
-	
-	private static class NoRedirectStrategy implements RedirectStrategy {
-		@Override
-		public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) {
-			return false;
-		}
-
-		@Override
-		public HttpUriRequest getRedirect(HttpRequest request, HttpResponse response, HttpContext context) {
-			return null;
+		if(credentialsProvider != null) {
+			builder.setDefaultCredentialsProvider(credentialsProvider);
 		}
 	}
-	
 }

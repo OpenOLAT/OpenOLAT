@@ -23,14 +23,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.drawio.DrawioConversionService;
 import org.olat.core.commons.services.doceditor.drawio.DrawioModule;
@@ -97,22 +96,24 @@ public class DrawioConversionServiceImpl implements DrawioConversionService {
 		request.setEntity(new UrlEncodedFormEntity(params));
 		
 		boolean thumbnailCreated = false;
-		try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of create thumbnail request: {}", statusCode);
-			
-			if (statusCode == HttpStatus.SC_OK) {
-				HttpEntity entity = response.getEntity();
-				if (entity != null && entity.getContentLength() > 1) {
-					entity.writeTo(thumbnailLeaf.getOutputStream(false));
-					thumbnailCreated = true;
+		try (CloseableHttpClient client = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
+			thumbnailCreated = client.execute(request, response -> {
+				int statusCode = response.getCode();
+				log.debug("Status code of create thumbnail request: {}", statusCode);
+				
+				if (statusCode == HttpStatus.SC_OK) {
+					HttpEntity entity = response.getEntity();
+					if (entity != null && entity.getContentLength() > 1) {
+						entity.writeTo(thumbnailLeaf.getOutputStream(false));
+						return Boolean.TRUE;
+					} else {
+						log.warn("draw.io conversion returned empty file.");
+					}
 				} else {
-					log.warn("draw.io conversion returned empty file.");
+					log.warn("draw.io conversion return status: {}", statusCode);
 				}
-			} else {
-				log.warn("draw.io conversion return status: {}", statusCode);
-			}
+				return Boolean.FALSE;
+			}).booleanValue();
 		} catch (Exception e) {
 			log.error("Create thumbnail request error.", e);
 		}

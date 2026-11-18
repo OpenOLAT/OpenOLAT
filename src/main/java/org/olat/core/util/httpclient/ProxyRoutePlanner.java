@@ -1,6 +1,6 @@
 /**
  * <a href="https://www.openolat.org">
- * OpenOLAT - Online Learning and Training</a><br>
+ * OpenOlat - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
@@ -20,12 +20,12 @@
 package org.olat.core.util.httpclient;
 
 import java.util.Collection;
+import java.util.Locale;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
@@ -45,16 +45,15 @@ public class ProxyRoutePlanner extends DefaultProxyRoutePlanner {
 		super(proxy);
 		this.httpProxyExclusionUrls = httpProxyExclusionUrls;
 	}
-	
+
 	@Override
-	protected HttpHost determineProxy(HttpHost target, HttpRequest request, HttpContext context) throws HttpException {
-		if (httpProxyExclusionUrls.contains(target.getHostName().toLowerCase())) {
+	protected HttpHost determineProxy(HttpHost target, HttpContext context) throws HttpException {
+		if (httpProxyExclusionUrls != null && httpProxyExclusionUrls.contains(target.getHostName().toLowerCase(Locale.ROOT))) {
 			log.debug("Proxy bypass to {}", target.getHostName());
 			return null; // Bypass proxy
 		}
-		
-		log.debug("Proxy to {}", target.getHostName());
-		return super.determineProxy(target, request, context);
-	}
 
+		log.debug("Proxy to {}", target.getHostName());
+		return super.determineProxy(target, context);
+	}
 }

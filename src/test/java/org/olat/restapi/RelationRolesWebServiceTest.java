@@ -33,7 +33,6 @@ import java.util.UUID;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,9 +46,6 @@ import org.olat.course.groupsandrights.CourseRightsEnum;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.RelationRoleVO;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -278,15 +274,4 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		conn.close();
 
 	}
-	
-	protected List<RelationRoleVO> parseRelationRoleArray(HttpEntity body) {
-		try(InputStream in = body.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(in, new TypeReference<List<RelationRoleVO>>(){/* */});
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 }

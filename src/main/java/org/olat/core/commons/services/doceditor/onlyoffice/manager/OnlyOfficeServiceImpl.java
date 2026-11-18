@@ -24,9 +24,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Optional;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.AccessSearchParams;
@@ -347,18 +346,18 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		String autorization = "Bearer " + token;
 		HttpGet request = new HttpGet(url);
 		request.addHeader("Authorization", autorization);
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			if (httpResponse.getStatusLine().getStatusCode() == 200) {
-				InputStream content = httpResponse.getEntity().getContent();
-				if (versionControlled && vfsLeaf.canVersion() == VFSStatus.YES) {
-					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, false, "OnlyOffice", content);
-				} else {
-					updated = VFSManager.copyContent(content, vfsLeaf, identity);
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE)) {
+			updated = httpClient.execute(request, httpResponse -> {
+				if (httpResponse.getCode() == 200) {
+					InputStream content = httpResponse.getEntity().getContent();
+					if (versionControlled && vfsLeaf.canVersion() == VFSStatus.YES) {
+						return Boolean.valueOf(vfsRepositoryService.addVersion(vfsLeaf, identity, false, "OnlyOffice", content));
+					}
+					return Boolean.valueOf(VFSManager.copyContent(content, vfsLeaf, identity));
 				}
-			} else {
 				log.warn("Update content from ONLYOFICE failed. URL: {}", url);
-			}
+				return Boolean.FALSE;
+			}).booleanValue();
 		} catch (Exception e) {
 			log.warn("Update content from ONLYOFICE failed. URL: {}", url);
 			log.error("", e);

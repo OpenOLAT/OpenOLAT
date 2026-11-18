@@ -29,13 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.http.Header;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -394,7 +393,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 			post.addHeader("Accept-Language", "en-GB,en-US;q=0.9,en;q=0.8,it;q=0.7");
 			post.addHeader("Content-Type", "application/x-www-form-urlencoded");
 			post.addHeader("Referer", lti13Module.getPlatformIss());
-			for (Header header : post.getAllHeaders()) {
+			for (Header header : post.getHeaders()) {
 				log.debug("Header: {} = {}", header.getName(), header.getValue());
 			}
 
@@ -427,25 +426,33 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	private CheckConnectionResponse execute(HttpPost request) {
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient(PROTECTION_PROFILE);
-			 CloseableHttpResponse response = httpClient.execute(request)) {
-			int status = response.getStatusLine().getStatusCode();
-			if (status != 302) {
-				return new CheckConnectionResponse(false, "Expected a redirect status code 302 from " + request.getURI().toString());
-			}
-			Header[] locations = response.getHeaders("location");
-			if (locations.length < 1 || !StringHelper.containsNonWhitespace(locations[0].getValue())) {
-				return new CheckConnectionResponse(false, "Redirect without a location header");
-			}
-			String location = locations[0].getValue();
-			if (!location.startsWith(lti13Module.getPlatformIss())) {
-				URI locationUri = new URI(location);
-				String locationSchemeAndHost = locationUri.getScheme() + "://" + locationUri.getHost();
-				return new CheckConnectionResponse(false, "Expecting a redirect to \"" +
-						lti13Module.getPlatformIss() + "\", but got a redirect to \"" + locationSchemeAndHost + "\" instead.");
-			}
-			return new CheckConnectionResponse(true, null);
-		} catch (IOException | URISyntaxException e) {
+		// The 302 must not be followed (HttpClient 4 did not follow it for a POST)
+		try (CloseableHttpClient httpClient = httpClientService.createHttpClientBuilder(PROTECTION_PROFILE)
+				.disableRedirectHandling().build()) {
+			return httpClient.execute(request, response -> {
+				try {
+					int status = response.getCode();
+					if (status != 302) {
+						return new CheckConnectionResponse(false, "Expected a redirect status code 302 from " + request.getUri().toString());
+					}
+					Header[] locations = response.getHeaders("location");
+					if (locations.length < 1 || !StringHelper.containsNonWhitespace(locations[0].getValue())) {
+						return new CheckConnectionResponse(false, "Redirect without a location header");
+					}
+					String location = locations[0].getValue();
+					if (!location.startsWith(lti13Module.getPlatformIss())) {
+						URI locationUri = new URI(location);
+						String locationSchemeAndHost = locationUri.getScheme() + "://" + locationUri.getHost();
+						return new CheckConnectionResponse(false, "Expecting a redirect to \"" +
+								lti13Module.getPlatformIss() + "\", but got a redirect to \"" + locationSchemeAndHost + "\" instead.");
+					}
+					return new CheckConnectionResponse(true, null);
+				} catch (URISyntaxException e) {
+					log.error(e);
+					return new CheckConnectionResponse(false, e.getMessage());
+				}
+			});
+		} catch (IOException e) {
 			log.error(e);
 			return new CheckConnectionResponse(false, e.getMessage());
 		}

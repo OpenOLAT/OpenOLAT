@@ -34,7 +34,6 @@ import java.util.UUID;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,9 +51,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -272,16 +268,4 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		conn.close();
 
 	}
-
-	
-	protected List<AssessmentModeVO> parseAssessmentModeArray(HttpEntity entity) {
-		try(InputStream in=entity.getContent()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			return mapper.readValue(in, new TypeReference<List<AssessmentModeVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
-	}
-
 }

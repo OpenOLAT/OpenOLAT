@@ -37,11 +37,13 @@ import java.util.stream.Stream;
 
 import jakarta.annotation.PostConstruct;
 
-import org.apache.http.Header;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.io.CloseMode;
+import org.apache.hc.core5.io.ModalCloseable;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -297,14 +299,25 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 
 	private boolean isStreaming(String url) {
 		HttpGet request = new HttpGet(url);
-		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED);
-			CloseableHttpResponse response = httpclient.execute(request);) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode == HttpStatus.SC_OK) {
-				// Wrong WOWZA urls returns a html message instead of a video.
-				Header contentType = response.getFirstHeader("Content-Type");
-				if (contentType != null && !contentType.getValue().contains("html")) {
-					return true;
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClient(ProtectionProfile.USER_PROVIDED)) {
+			// Don't use a response handler, it would consume the (possibly endless) stream
+			ClassicHttpResponse response = httpclient.executeOpen(null, request, null);
+			try {
+				int statusCode = response.getCode();
+				if (statusCode == HttpStatus.SC_OK) {
+					// Wrong WOWZA urls returns a html message instead of a video.
+					Header contentType = response.getFirstHeader("Content-Type");
+					if (contentType != null && !contentType.getValue().contains("html")) {
+						return true;
+					}
+				}
+			} finally {
+				// Cancel and close without reading the rest of the stream
+				request.cancel();
+				if(response instanceof ModalCloseable closeable) {
+					closeable.close(CloseMode.IMMEDIATE);
+				} else {
+					response.close();
 				}
 			}
 		} catch(Exception e) {

@@ -29,12 +29,10 @@ import java.util.stream.Collectors;
 
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -607,16 +605,17 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager,
 		
 		BreezeSession session = null;
 		HttpGet commonGet = new HttpGet(common);
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(AbstractAdobeConnectProvider.PROTECTION_PROFILE);
-			CloseableHttpResponse response = httpClient.execute(commonGet)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			if(statusCode == 200) {
-				Header header = response.getFirstHeader("Set-Cookie");
-				if(header != null) {
-					session = BreezeSession.valueOf(header);
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(AbstractAdobeConnectProvider.PROTECTION_PROFILE)) {
+			session = httpClient.execute(commonGet, response -> {
+				int statusCode = response.getCode();
+				if(statusCode == 200) {
+					Header header = response.getFirstHeader("Set-Cookie");
+					if(header != null) {
+						return BreezeSession.valueOf(header);
+					}
 				}
-			}
-			EntityUtils.consume(response.getEntity());
+				return null;
+			});
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -627,12 +626,11 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager,
 			request += "&session" + session.getSession();
 			get.setHeader(new BasicHeader("Cookie", AbstractAdobeConnectProvider.COOKIE + session.getSession()));
 		}
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(AbstractAdobeConnectProvider.PROTECTION_PROFILE);
-			CloseableHttpResponse response = httpClient.execute(get)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {
-				allOk = true;
-			}
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(AbstractAdobeConnectProvider.PROTECTION_PROFILE)) {
+			allOk = httpClient.execute(get, response -> {
+				int statusCode = response.getCode();
+				return statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity());
+			});
 		} catch(Exception e) {
 			log.error("", e);
 		}

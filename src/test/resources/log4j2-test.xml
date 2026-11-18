@@ -9,6 +9,9 @@
 		<Logger name="org.apache.commons.httpclient" additivity="false" level="warn">
             <AppenderRef ref="Console" />
         </Logger>
+		<Logger name="org.apache.hc" additivity="false" level="warn">
+            <AppenderRef ref="Console" />
+        </Logger>
 		<Logger name="org.apache.pdfbox" additivity="false" level="fatal">
             <AppenderRef ref="Console" />
         </Logger>

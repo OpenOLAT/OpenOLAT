@@ -25,10 +25,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -276,26 +275,27 @@ public class EditBuildingController extends FormBasicController {
 			get.setHeader("User-Agent", "OpenOlat/RoomManagement (https://www.openolat.org)");
 			get.setHeader("Accept-Language", getLocale().getLanguage());
 
-			try (CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.CONFIGURED);
-				 CloseableHttpResponse response = client.execute(get)) {
+			try (CloseableHttpClient client = httpClientService.createThreadSafeHttpClient(true, ProtectionProfile.CONFIGURED)) {
+				client.execute(get, response -> {
+					int status = response.getCode();
+					String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
-				int status = response.getStatusLine().getStatusCode();
-				String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-				if (status == 200) {
-					JSONArray results = new JSONArray(body);
-					if (results.length() > 0) {
-						JSONObject first = results.getJSONObject(0);
-						geoLatitude  = new BigDecimal(first.getString("lat"));
-						geoLongitude = new BigDecimal(first.getString("lon"));
-						updateMapContext();
+					if (status == 200) {
+						JSONArray results = new JSONArray(body);
+						if (results.length() > 0) {
+							JSONObject first = results.getJSONObject(0);
+							geoLatitude  = new BigDecimal(first.getString("lat"));
+							geoLongitude = new BigDecimal(first.getString("lon"));
+							updateMapContext();
+						} else {
+							showWarning("building.geocoding.not.found");
+						}
 					} else {
-						showWarning("building.geocoding.not.found");
+						log.warn("Nominatim returned HTTP {} for address: {}", status, address);
+						showWarning("building.geocoding.error");
 					}
-				} else {
-					log.warn("Nominatim returned HTTP {} for address: {}", status, address);
-					showWarning("building.geocoding.error");
-				}
+					return null;
+				});
 			}
 		} catch (Exception e) {
 			log.error("Geocoding failed for address: {}", address, e);

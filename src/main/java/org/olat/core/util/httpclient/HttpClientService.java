@@ -19,8 +19,8 @@
  */
 package org.olat.core.util.httpclient;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 
 /**
  * 
@@ -30,33 +30,36 @@ import org.apache.http.impl.client.HttpClientBuilder;
  */
 public interface HttpClientService {
 	
-	/*
-	 * Creates a HttpClientBuilder with default configuration.
+	/**
+	 * Creates a builder with the default configuration (timeouts, proxy and SSRF
+	 * protection). The builder comes with its own connection manager which holds
+	 * the timeouts and the filtering DNS resolver: don't replace it with
+	 * {@code setConnectionManager}, it would disable the SSRF protection.
 	 * 
 	 * @param profile Profile to activate SSRF protection
 	 */
 	HttpClientBuilder createHttpClientBuilder(ProtectionProfile profile);
 	
-	/*
-	 * Creates a HttpClientBuilder with default configuration.
+	/**
+	 * Same as {@link #createHttpClientBuilder(ProtectionProfile)} with basic authentication.
 	 *
 	 * @param host For basic authentication
 	 * @param port For basic authentication
-	 * @param port For basic authentication
 	 * @param user For basic authentication
+	 * @param password For basic authentication
 	 * @param profile Profile to activate SSRF protection
 	 */
 	HttpClientBuilder createHttpClientBuilder(String host, int port, String user, String password, ProtectionProfile profile);
 	
-	/*
-	 * Creates a HttpClient with default configuration.
+	/**
+	 * Creates a client with the default configuration.
 	 * 
 	 * @param profile Profile to activate SSRF protection
 	 */
 	CloseableHttpClient createHttpClient(ProtectionProfile profile);
 	
 	/**
-	 * Creates a thread safe http client.
+	 * Creates a thread safe client with a cookie store.
 	 * 
 	 * @param redirect If redirect is allowed
 	 * @param profile Profile to activate SSRF protection
@@ -65,7 +68,7 @@ public interface HttpClientService {
 	CloseableHttpClient createThreadSafeHttpClient(boolean redirect, ProtectionProfile profile);
 	
 	/**
-	 * Creates a thread safe http client.
+	 * Creates a thread safe client with a cookie store.
 	 * 
 	 * @param host For basic authentication
 	 * @param port For basic authentication

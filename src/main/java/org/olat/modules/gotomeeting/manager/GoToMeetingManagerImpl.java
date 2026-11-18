@@ -25,20 +25,19 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.basesecurity.IdentityRef;
@@ -644,17 +643,18 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 	
 	private GoToResponse execute(HttpUriRequest request) {
-		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED);
-				CloseableHttpResponse response = httpClient.execute(request)) {
-			int status = response.getStatusLine().getStatusCode();
-			HttpEntity entity = response.getEntity();
-			String content;
-			if(entity == null) {
-				content = "";
-			} else {
-				content = EntityUtils.toString(entity);
-			}
-			return new GoToResponse(status, content);
+		try(CloseableHttpClient httpClient = httpClientService.createHttpClient(ProtectionProfile.CONFIGURED)) {
+			return httpClient.execute(request, response -> {
+				int status = response.getCode();
+				HttpEntity entity = response.getEntity();
+				String content;
+				if(entity == null) {
+					content = "";
+				} else {
+					content = EntityUtils.toString(entity);
+				}
+				return new GoToResponse(status, content);
+			});
 		} catch(IOException e) {
 			log.error("", e);
 			return new GoToResponse(500, null);
