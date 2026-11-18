@@ -35,7 +35,6 @@ public class LectureBlocksWidgetRow {
 	private String statusCss;
 	private String dayAbbr;
 	private String day;
-	private String externalRef;
 	private String title;
 	private String location;
 	private boolean onlineMeeting;
@@ -91,14 +90,6 @@ public class LectureBlocksWidgetRow {
 		this.day = day;
 	}
 
-	public String getExternalRef() {
-		return externalRef;
-	}
-	
-	public void setExternalRef(String externalRef) {
-		this.externalRef = externalRef;
-	}
-	
 	public String getTitle() {
 		return title;
 	}

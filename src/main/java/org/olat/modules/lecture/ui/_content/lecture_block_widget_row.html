@@ -1,6 +1,6 @@
 <div #if($r.isNotEmpty($row.id))id="$row.id"#end class="o_lecture_widget_row o_cell_top_border">
 	$r.render($row.getTitleName())
 	#if($r.available($row.getRollCallName()))
-		<div class="o_row_rollcall">$r.render($row.getRollCallName())</div>
+		$r.render($row.getRollCallName())
 	#end
 </div>

@@ -96,8 +96,7 @@ public class CoachLectureBlocksWidgetController extends LectureBlocksWidgetContr
 		searchParams.addRollCallStatus(LectureRollCallStatus.open, LectureRollCallStatus.reopen);
 		long numOpenAbsences = lectureService.countLectureBlocks(searchParams);
 		
-		String i18nKey = numOpenAbsences == 1 ? "dashboard.widget.open.absence" : "dashboard.widget.open.absences";
-		openAbsencesLink.setI18nKey(i18nKey, String.valueOf(numOpenAbsences));
+		openAbsencesLink.setI18nKey("dashboard.widget.open.absences", String.valueOf(numOpenAbsences));
 		openAbsencesLink.setVisible(numOpenAbsences > 0);
 	}
 
@@ -159,7 +158,7 @@ public class CoachLectureBlocksWidgetController extends LectureBlocksWidgetContr
 	}
 	
 	private boolean isRollCallEnabled(RepositoryEntry entry) {
-		return entryKeyToRollCallEnabled.computeIfAbsent(entry.getKey(), key -> ConfigurationHelper
+		return entryKeyToRollCallEnabled.computeIfAbsent(entry.getKey(), _ -> ConfigurationHelper
 				.isRollCallEnabled(lectureService.getRepositoryEntryLectureConfiguration(entry), lectureModule));
 	}
 

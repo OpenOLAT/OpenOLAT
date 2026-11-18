@@ -225,7 +225,6 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 		for (LectureBlock lectureBlock : lectureBlocks) {
 			LectureBlocksWidgetRow row = new LectureBlocksWidgetRow();
 			row.setKey(lectureBlock.getKey());
-			row.setExternalRef(lectureBlock.getExternalRef());
 			row.setTitle(lectureBlock.getTitle());
 			row.setLocation(lectureBlock.getLocation());
 			row.setOnlineMeeting(lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null);
@@ -347,6 +346,7 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	protected FormLink addRollCallLink(LectureBlock lectureBlock) {
 		FormLink rollCallLink = uifactory.addFormLink("rcall_" + lectureBlock.getKey(), "rollcall", "", tableEl, Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
 		rollCallLink.setDomReplacementWrapperRequired(false);
+		rollCallLink.setElementCssClass("o_row_rollcall");
 		rollCallLink.setTitle(translate("dashboard.widget.edit.absence", lectureBlock.getTitle(), formatter.formatDateAndTime(lectureBlock.getStartDate())));
 		rollCallLink.setIconLeftCSS("o_icon o_icon-lg o_icon_lecture");
 		return rollCallLink;
