@@ -48,6 +48,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.IdentityEnvironment;
@@ -73,6 +74,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -92,6 +94,8 @@ import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.EmptyScreenData;
+import org.olat.repository.ui.RepositoryEntrySelectionController;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -134,10 +138,11 @@ public class CourseOptionsController extends FormBasicController {
 	private final RepositoryEntry entry;
 
 	private CloseableModalController cmc;
+	private FooterModalController footerCmc;
 	private DialogBoxController folderRefAddWarnBox;
 	private DialogBoxController folderRefRemoveWarnBox;
 	private ReferencableEntriesSearchController folderSearchCtr;
-	private ReferencableEntriesSearchController glossarySearchCtr;
+	private RepositoryEntrySelectionController glossarySelectionCtrl;
 	private BCCourseNodeEditChooseFolderForm folderSelectCtrl;
 
 	@Autowired
@@ -301,12 +306,15 @@ public class CourseOptionsController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == glossarySearchCtr) {
-			cmc.deactivate();
+		if (source == glossarySelectionCtrl) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				doSelectGlossary(glossarySearchCtr.getSelectedEntry());
-				markDirty();
+				RepositoryEntry selectedEntry = glossarySelectionCtrl.getSelectedEntry();
+				if (selectedEntry != null) {
+					doSelectGlossary(selectedEntry);
+					markDirty();
+				}
 			}
+			footerCmc.deactivate();
 			cleanUp();
 		} else if (source == folderSearchCtr) {
 			cmc.deactivate();
@@ -315,7 +323,7 @@ public class CourseOptionsController extends FormBasicController {
 				markDirty();
 			}
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(cmc == source || footerCmc == source) {
 			cleanUp();
 		} else if(source == folderRefRemoveWarnBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
@@ -351,11 +359,13 @@ public class CourseOptionsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(glossarySearchCtr);
+		removeAsListenerAndDispose(glossarySelectionCtrl);
+		removeAsListenerAndDispose(footerCmc);
 		removeAsListenerAndDispose(folderSelectCtrl);
 		removeAsListenerAndDispose(folderSearchCtr);
 		removeAsListenerAndDispose(cmc);
-		glossarySearchCtr = null;
+		glossarySelectionCtrl = null;
+		footerCmc = null;
 		folderSelectCtrl = null;
 		folderSearchCtr = null;
 		cmc = null;
@@ -364,13 +374,7 @@ public class CourseOptionsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addGlossaryCommand) {
-			List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
-			glossarySearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-					GlossaryResource.TYPE_NAME, defaultOrganisations, translate("select"));			
-			listenTo(glossarySearchCtr);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), glossarySearchCtr.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
+			doChooseGlossary(ureq);
 		} else if (source == removeGlossaryCommand) {
 			doRemoveGlossary();
 			markDirty();
@@ -580,9 +584,55 @@ public class CourseOptionsController extends FormBasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
+	private void doChooseGlossary(UserRequest ureq) {
+		if(guardModalController(glossarySelectionCtrl)) return;
+
+		List<Organisation> defaultOrganisations = repositoryService.getOrganisations(entry);
+		CourseNodeReferenceProvider referenceProvider = new GlossaryReferenceProvider(repositoryService);
+		glossarySelectionCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "course-glossary-v1",
+				List.of(GlossaryResource.TYPE_NAME), defaultOrganisations, referenceProvider);
+		listenTo(glossarySelectionCtrl);
+
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), glossarySelectionCtrl.getBodyComponent(),
+				glossarySelectionCtrl.getFooterComponent(), translate("command.glossary.add"));
+		listenTo(footerCmc);
+		footerCmc.activate();
+	}
+
+	private class GlossaryReferenceProvider extends CourseNodeReferenceProvider {
+
+		public GlossaryReferenceProvider(RepositoryService repositoryService) {
+			super(repositoryService, List.of(GlossaryResource.TYPE_NAME), null, null, null, null);
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.glossaries");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-GLOSSARY_icon",
+					translate("select.no.glossary.yet"),
+					translate("select.no.glossary.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-GLOSSARY_icon",
+					translate("select.no.glossaries.in.view"),
+					translate("select.no.glossaries.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term.glossary");
+		}
+	}
+
 	/**
 	 * Updates config with selected glossary
-	 * 
+	 *
 	 * @param repoEntry
 	 * @param ureq
 	 */
