@@ -1394,7 +1394,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				activateFilterTab(ureq, allTab);
 				activateLecture(ureq, id, entries);
 			} else if(tabsMap.containsKey(type.toLowerCase())) {
-				activateFilterTab(ureq, tabsMap.get(type.toLowerCase()));
+				FlexiFiltersTab filterTab = tabsMap.get(type.toLowerCase());
+				if(filterTab == pendingTab) {
+					doPending(ureq);
+				} else {
+					activateFilterTab(ureq, filterTab);
+				}
 				if(entries.size() > 1) {
 					Long subId = subEntries.get(0).getOLATResourceable().getResourceableId();
 					String subType = subEntries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();

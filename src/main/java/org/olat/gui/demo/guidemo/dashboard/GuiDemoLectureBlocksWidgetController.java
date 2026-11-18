@@ -27,7 +27,10 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
@@ -49,6 +52,7 @@ public class GuiDemoLectureBlocksWidgetController extends LectureBlocksWidgetCon
 	private final Date dueDate;
 	private final List<LectureBlock> lectureBlocks;
 	private LectureBlockRef nextScheduledBlock;
+	private FormLink openAbsencesLink;
 	private long counter = 0;
 
 	public GuiDemoLectureBlocksWidgetController(UserRequest ureq, WindowControl wControl, Date dueDate) {
@@ -170,8 +174,31 @@ public class GuiDemoLectureBlocksWidgetController extends LectureBlocksWidgetCon
 	}
 	
 	@Override
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
+		openAbsencesLink = uifactory.addFormLink("open.absences", "dashboard.widget.open.absences", null, widgetCont, Link.BUTTON);
+		openAbsencesLink.setI18nKey("dashboard.widget.open.absences", "2");
+		openAbsencesLink.setPrimary(true);
+		openAbsencesLink.getComponent().setAriaRole(Link.ARIA_ROLE_LINK);
+		
+		List<String> buttonNames = new ArrayList<>();
+		buttonNames.add(openAbsencesLink.getComponent().getComponentName());
+		buttonNames.addAll(super.createFooterButtons(widgetCont));
+		return buttonNames;
+	}
+	
+	@Override
+	protected FormLink createRollCallLink(LectureBlock lectureBlock) {
+		if (lectureBlock.getStartDate().after(new Date())) {
+			return null;
+		}
+		
+		return addRollCallLink(lectureBlock);
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == showAllLink) {
+		if (source == showAllLink || source == openAbsencesLink
+				|| (source instanceof FormLink link && "rollcall".equals(link.getCmd()))) {
 			doShowAll();
 		}
 		super.formInnerEvent(ureq, source, event);

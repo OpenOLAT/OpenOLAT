@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+
 /**
  * 
  * Initial date: Jan 8, 2026<br>
@@ -38,7 +40,8 @@ public class LectureBlocksWidgetRow {
 	private String location;
 	private boolean onlineMeeting;
 	private String time;
-	private String url;
+	private FormLink titleLink;
+	private FormLink rollCallLink;
 	
 	public Long getKey() {
 		return key;
@@ -128,12 +131,28 @@ public class LectureBlocksWidgetRow {
 		this.time = time;
 	}
 
-	public String getUrl() {
-		return url;
+	public FormLink getTitleLink() {
+		return titleLink;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public void setTitleLink(FormLink titleLink) {
+		this.titleLink = titleLink;
 	}
 
+	public String getTitleName() {
+		return titleLink != null? titleLink.getComponent().getComponentName(): null;
+	}
+	
+	public FormLink getRollCallLink() {
+		return rollCallLink;
+	}
+	
+	public String getRollCallName() {
+		return rollCallLink != null? rollCallLink.getComponent().getComponentName(): null;
+	}
+	
+	public void setRollCallLink(FormLink rollCallLink) {
+		this.rollCallLink = rollCallLink;
+	}
+	
 }

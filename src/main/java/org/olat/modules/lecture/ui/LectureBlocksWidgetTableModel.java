@@ -19,9 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
@@ -30,8 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class LectureBlocksWidgetTableModel extends DefaultFlexiTableDataModel<LectureBlocksWidgetRow>
-		implements FlexiBusinessPathModel {
+public class LectureBlocksWidgetTableModel extends DefaultFlexiTableDataModel<LectureBlocksWidgetRow> {
 	
 	public LectureBlocksWidgetTableModel(FlexiTableColumnModel tableColumnModel) {
 		super(tableColumnModel);
@@ -41,12 +38,6 @@ public class LectureBlocksWidgetTableModel extends DefaultFlexiTableDataModel<Le
 	public Object getValueAt(int row, int col) {
 		// No table view => No columns available.
 		return null;
-	}
-
-	@Override
-	public String getUrl(Component source, Object object, String action) {
-		LectureBlocksWidgetRow row = (LectureBlocksWidgetRow)object;
-		return row.getUrl();
 	}
 
 }

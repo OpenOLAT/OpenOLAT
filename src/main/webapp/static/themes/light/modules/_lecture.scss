@@ -734,23 +734,48 @@ tr.o_rm_room_preselected {
 
 /* Dashboard */
 .o_lecture_widget_row {
-	container-type: inline-size;
-	
-	display: flex;
+	display: grid;
 	width: 100%;
-	align-items: stretch;
+	grid-template-columns: 3px minmax(3.5em, auto) minmax(0, 1fr) auto;
+	grid-template-areas:
+		"status .    ref   ."
+		"status time title rollcall"
+		"status .    loc   .";
+	align-items: baseline;
+	column-gap: 10px;
+	position: relative;
 	
-	>div {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		padding: 5px 10px;
+	&:not(:has(.o_row_rollcall)) .o_row_select {
+		grid-column-end: -1;
 	}
-	
+	.o_row_select {
+		grid-area: 1 / 1 / 4 / 4;
+		display: grid;
+		grid-template-columns: subgrid;
+		grid-template-rows: subgrid;
+		align-items: baseline;
+		padding: 5px 0;
+		position: static;
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+		}
+		&:focus:focus-visible {
+			@include o-focus-ring-inset;
+		}
+		> span {
+			display: contents;
+		}
+	}
 	.o_row_status {
-		padding: 0;
-		width: 3px;
-		>div {
+		grid-area: status;
+		align-self: stretch;
+		margin: -5px 0;
+		display: flex;
+		align-items: center;
+		>span {
+			width: 100%;
 			height: 80%;
 			// fill of the state of the lecture status (OO-10042)
 			&.o_lecture_widget_status_next {
@@ -762,47 +787,71 @@ tr.o_rm_room_preselected {
 		}
 	}
 	
-	.o_row_event {
-		flex-grow: 1;
-		margin-left: -3px;
-		
-		overflow: hidden;
-		div {
-			overflow: hidden;
-		}
-		
-		display: flex;
-		flex-direction: column;
-		.o_ext_ref {
-			color: var(--o-text-muted);
-			font-size: 10px;
-			line-height: 12px;
-			height: 12px;
-			@include text-overflow();
-		}
-		.o_title {
-			line-height: 1.2;
-			font-size: 18px;
-			margin: 0;
+	.o_ext_ref {
+		grid-area: ref;
+		color: var(--o-text-muted);
+		font-size: 10px;
+		line-height: 12px;
+		@include text-overflow();
+	}
+	
+	.o_lecture_time {
+		grid-area: time;
+		justify-self: end;
+		white-space: nowrap;
+		line-height: 1.2;
+	}
+	.o_lecture_time_hour {
+		font-size: 130%;
+		font-weight: bold;
+	}
+	.o_lecture_time_minute,
+	.o_lecture_time_ampm {
+		font-size: 80%;
+		line-height: 0;
+		margin-left: 2px;
+		// lift to the cap height of the hour: 130% / 80% - 1 = 0.625
+		vertical-align: 0.625cap;
+	}
+	.o_lecture_time_minute {
+		font-weight: bold;
+	}
+	.o_lecture_time_ampm {
+		@extend %o_muted;
+	}
+	
+	.o_title {
+		grid-area: title;
+		line-height: 1.2;
+		font-size: 18px;
+		font-weight: $headings-font-weight;
+		overflow-wrap: break-word;
+	}
+	.o_row_rollcall {
+		display: contents;
+		a {
+			grid-area: 1 / 4 / 4 / 5;
+			display: grid;
+			grid-template-rows: subgrid;
+			z-index: 1;
+			padding: 5px 10px;
+			&:focus:focus-visible {
+				@include o-focus-ring-inset;
+			}
+			// no baseline sharing between sibling subgrids: start of the title row plus the offset to its baseline
+			i {
+				grid-row: 2;
+				align-self: start;
+				margin-top: 13px;
+			}
 		}
 	}
 	.o_row_location {
-		width: 20%;
-		flex-shrink: 0;
-	}
-	.o_row_time {
-		width: 160px;
-		flex-shrink: 0;
-	}
-	@container (max-width: 600px) {
-		.o_row_location {
-			display: none;
-		}
-	}
-	@container (max-width: 300px) {
-		.o_row_time {
-			display: none;
-		}
+		grid-area: loc;
+		@extend %o_muted;
+		font-size: 12px;
+		margin-top: 2px;
+		overflow-wrap: break-word;
 	}
 }
 

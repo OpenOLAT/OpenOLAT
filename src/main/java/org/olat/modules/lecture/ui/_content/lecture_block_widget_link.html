@@ -1,0 +1,17 @@
+<span class="o_row_status">
+	<span class="$row.statusCss">
+		#if($r.isNotEmpty($row.statusText))
+			<span class="sr-only">$row.statusText</span>
+		#end
+	</span>
+</span>
+<span class="o_lecture_time">$row.time</span>
+#if($r.isNotEmpty($row.externalRef))
+	<span class="o_ext_ref">$r.escapeHtml($row.externalRef)</span>
+#end
+<span class="o_title">$r.escapeHtml($row.title)</span>
+#if($r.isNotEmpty($row.location))
+	<span class="o_row_location"><i class="o_icon o_icon_location"></i> $r.escapeHtml($row.location)</span>
+#elseif($row.isOnlineMeeting())
+	<span class="o_row_location"><i class="o_icon o_vc_icon"></i> $r.translate("lecture.online.meeting")</span>
+#end

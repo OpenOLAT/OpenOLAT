@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -37,7 +37,6 @@ import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureBlocksWidgetController;
-import org.olat.modules.lecture.ui.LectureBlocksWidgetRow;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,6 +49,7 @@ public class CurriculumLectureBlocksWidgetController extends LectureBlocksWidget
 	
 	private Curriculum curriculum;
 	private CurriculumElement curriculumElement;
+	private final String lecturesPath;
 	
 	@Autowired
 	private LectureService lectureService;
@@ -57,24 +57,27 @@ public class CurriculumLectureBlocksWidgetController extends LectureBlocksWidget
 	public CurriculumLectureBlocksWidgetController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
+		lecturesPath = "[CurriculumAdmin:0][Events:0][All:0]";
 		initForm(ureq);
-		setUrl(showAllLink, "[CurriculumAdmin:0][Events:0][All:0]");
+		setUrl(showAllLink, lecturesPath);
 	}
 	
 	public CurriculumLectureBlocksWidgetController(UserRequest ureq, WindowControl wControl, Curriculum curriculum) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
 		
+		lecturesPath = "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + curriculum.getKey() + "][Lectures:0][All:0]";
 		initForm(ureq);
-		setUrl(showAllLink, "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + curriculum.getKey() + "][Lectures:0][All:0]");
+		setUrl(showAllLink, lecturesPath);
 	}
 	
 	public CurriculumLectureBlocksWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
 		super(ureq, wControl);
 		this.curriculumElement = curriculumElement;
 		
+		lecturesPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElement.getKey() + "][Lectures:0][All:0]";
 		initForm(ureq);
-		setUrl(showAllLink, "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElement.getKey() + "][Lectures:0][All:0]");
+		setUrl(showAllLink, lecturesPath);
 	}
 
 	@Override
@@ -127,22 +130,18 @@ public class CurriculumLectureBlocksWidgetController extends LectureBlocksWidget
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == tableEl) {
-			if (event instanceof SelectionEvent se) {
-				doOpenLectureBlock(ureq, se.getIndex());
-			}
-		} else if (source == showAllLink) {
+		if (source == showAllLink) {
 			doOpen(ureq, "[Lectures:0][All:0]");
+		} else if (source instanceof FormLink link && link.getUserObject() instanceof String businessPath) {
+			doOpen(ureq, businessPath);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void doOpenLectureBlock(UserRequest ureq, int index) {
-		LectureBlocksWidgetRow row = dataModel.getObject(index);
-		StringBuilder lecturesPath = new StringBuilder();
-		lecturesPath.append("[Lectures:0][All:0]");
-		lecturesPath.append("[Lecture:").append(row.getKey()).append("]");
-		doOpen(ureq, lecturesPath.toString());
+	@Override
+	protected void setLectureBlockUrl(FormLink link, LectureBlock lectureBlock) {
+		String lecturePath = "[Lecture:" + lectureBlock.getKey() + "]";
+		setUrl(link, "[Lectures:0][All:0]" + lecturePath, lecturesPath + lecturePath);
 	}
 
 	private void doOpen(UserRequest ureq, String businessPath) {

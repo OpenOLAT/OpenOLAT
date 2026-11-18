@@ -24,8 +24,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.daynav.DayNavElement;
 import org.olat.core.gui.components.daynav.DayNavFactory;
 import org.olat.core.gui.components.emptystate.EmptyState;
@@ -49,6 +52,7 @@ import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
@@ -64,6 +68,8 @@ import org.olat.modules.lecture.ui.component.LectureBlocksWidgetRenderer;
  */
 public abstract class LectureBlocksWidgetController extends TableWidgetController implements FlexiTableComponentDelegate {
 
+	private static final Pattern TIME_PATTERN = Pattern.compile("^(\\d{1,2})\\D(\\d{2})\\W*(.*)$");
+	
 	private final Formatter formatter;
 	protected DayNavElement dayNavEl;
 	protected LectureBlocksWidgetTableModel dataModel;
@@ -117,8 +123,15 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 	
 	@Override
-	public boolean isRowClickEnabled() {
-		return true;
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		List<Component> cmps = new ArrayList<>(2);
+		if (rowObject instanceof LectureBlocksWidgetRow widgetRow) {
+			cmps.add(widgetRow.getTitleLink().getComponent());
+			if (widgetRow.getRollCallLink() != null) {
+				cmps.add(widgetRow.getRollCallLink().getComponent());
+			}
+		}
+		return cmps;
 	}
 	
 	@Override
@@ -245,8 +258,8 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 			row.setStatusText(statusText);
 			row.setStatusCss(statusCss);
 			
-			String url = getLectureBlockUrl(lectureBlock);
-			row.setUrl(url);
+			row.setTitleLink(createTitleLink(lectureBlock, row));
+			row.setRollCallLink(createRollCallLink(lectureBlock));
 			
 			rows.add(row);
 		}
@@ -273,16 +286,19 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	}
 	
 	public String formatTime(LectureBlock lectureBlock) {
+		String time = formatter.formatTimeShort(lectureBlock.getStartDate());
 		StringBuilder sb = new StringBuilder();
-		sb.append("<span>");
-		// Hour
-		sb.append("<span class='o_lecture_time'>")
-		      .append(formatter.formatTimeShort(lectureBlock.getStartDate()))
-		      .append("</span>");
-		// Duration
-		if(lectureBlock.getEndDate() != null) {
-			String duration = Formatter.formatDurationCompact(lectureBlock.getEndDate().getTime() - lectureBlock.getStartDate().getTime());
-			sb.append(", <span class='o_lecture_duration'>").append(duration).append("</span>");
+		sb.append("<span class='sr-only'>").append(formatter.formatDateAndTime(lectureBlock.getStartDate())).append("</span>");
+		sb.append("<span aria-hidden='true'>");
+		Matcher matcher = TIME_PATTERN.matcher(time);
+		if (matcher.matches()) {
+			sb.append("<span class='o_lecture_time_hour'>").append(matcher.group(1)).append("</span>");
+			sb.append("<span class='o_lecture_time_minute'>").append(matcher.group(2)).append("</span>");
+			if (StringHelper.containsNonWhitespace(matcher.group(3))) {
+				sb.append("<span class='o_lecture_time_ampm'>").append(matcher.group(3)).append("</span>");
+			}
+		} else {
+			sb.append("<span class='o_lecture_time_hour'>").append(time).append("</span>");
 		}
 		sb.append("</span>");
 		return sb.toString();
@@ -302,12 +318,40 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	protected abstract Date getNextLectureBlock(Date date);
 
 	/**
-	 * @param lectureBlock  
+	 * @param link
+	 * @param lectureBlock
 	 */
-	protected String getLectureBlockUrl(LectureBlock lectureBlock) {
-		return null;
+	protected void setLectureBlockUrl(FormLink link, LectureBlock lectureBlock) {
+		//
 	}
 
+	private FormLink createTitleLink(LectureBlock lectureBlock, LectureBlocksWidgetRow row) {
+		VelocityContainer linkVC = createVelocityContainer("lecture_block_widget_link");
+		linkVC.setDomReplacementWrapperRequired(false);
+		linkVC.contextPut("row", row);
+		
+		FormLink titleLink = uifactory.addFormLink("title_" + lectureBlock.getKey(), "open", "", tableEl, Link.NONTRANSLATED);
+		titleLink.setInnerComponent(linkVC);
+		titleLink.setElementCssClass("o_link_plain o_row_select");
+		setLectureBlockUrl(titleLink, lectureBlock);
+		return titleLink;
+	}
+	
+	/**
+	 * @param lectureBlock  
+	 */
+	protected FormLink createRollCallLink(LectureBlock lectureBlock) {
+		return null;
+	}
+	
+	protected FormLink addRollCallLink(LectureBlock lectureBlock) {
+		FormLink rollCallLink = uifactory.addFormLink("rcall_" + lectureBlock.getKey(), "rollcall", "", tableEl, Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
+		rollCallLink.setDomReplacementWrapperRequired(false);
+		rollCallLink.setTitle(translate("dashboard.widget.edit.absence", lectureBlock.getTitle(), formatter.formatDateAndTime(lectureBlock.getStartDate())));
+		rollCallLink.setIconLeftCSS("o_icon o_icon-lg o_icon_lecture");
+		return rollCallLink;
+	}
+	
 	private final static class TableCssDelegate implements FlexiTableCssDelegate {
 		
 		private static final FlexiTableCssDelegate DELEGATE = new TableCssDelegate();

@@ -451,12 +451,17 @@
 
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
+		gap: 10px;
 
 		.o_dashboard_widget_footer_text {
+			flex: 1 1 0;
 			font-size: $font-size-small;
 		}
 		.o_dashboard_widget_footer_buttons {
 			margin-left: auto;
+			flex-shrink: 0;
+			white-space: nowrap;
 		}
 	}
 	.o_visual {
