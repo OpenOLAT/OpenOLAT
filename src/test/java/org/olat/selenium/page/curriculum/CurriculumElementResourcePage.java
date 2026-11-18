@@ -64,12 +64,10 @@ public class CurriculumElementResourcePage {
 		By rowsBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]");
 		OOGraphene.waitElement(rowsBy, browser);
 		
-		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td[contains(@class,'o_multiselect')]/input[@type='checkbox']");
+		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
 		OOGraphene.waitElement(selectRowBy, browser);
 		OOGraphene.click(selectRowBy, browser);
-		
-		By oneRowSelectedBy = By.xpath("//div[@class='o_sel_author_env']//span[contains(@class,'o_table_batch_label')][text()[contains(.,'1')]]");
-		OOGraphene.waitElement(oneRowSelectedBy, browser);
+		OOGraphene.waitBusy(browser);
 		
 		By selectBy = By.cssSelector(".o_modal_selection .modal-footer .o_button_group a.btn-primary.o_sel_re_selection_select");
 		OOGraphene.waitElement(selectBy, browser).click();
@@ -78,7 +76,4 @@ public class CurriculumElementResourcePage {
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return assertOnCourseInResourcesList(name);
 	}
-	
-	
-
 }
