@@ -9,7 +9,8 @@ import { toString } from 'mdast-util-to-string';
 import { gfm } from '@milkdown/preset-gfm';
 import { $prose } from '@milkdown/utils';
 import { keymap } from '@milkdown/prose/keymap';
-import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, isInTable } from '@milkdown/prose/tables';
+import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, isInTable, selectedRect } from '@milkdown/prose/tables';
+import { history } from '@milkdown/plugin-history';
 import { placeholder, placeholderCtx } from './placeholder';
 
 /**
@@ -40,14 +41,28 @@ export function ooMdView(targetDomId, text) {
  * Keyboard shortcuts to add and delete table rows and columns. The GFM preset
  * ships the commands but binds no keys, and the editor has no table toolbar.
  * The shortcuts are active only when the cursor is in a table.
+ *
+ * A GFM table has exactly one header row, which must be the first row, and
+ * at least one body row (schema: "table_header_row table_row+"). A row added
+ * above the header row or the deletion of the header row or of the last body
+ * row breaks the schema: ProseMirror then wraps the content in a new, broken
+ * table. These row actions are blocked. A blocked shortcut returns true, so
+ * the key does nothing instead of its browser default (e.g. select to start).
  */
 const inTable = (command) => (state, dispatch, view) => isInTable(state) && command(state, dispatch, view);
+const notInHeaderRow = (command) => (state, dispatch, view) =>
+	selectedRect(state).top > 0 ? command(state, dispatch, view) : true;
+const keepsHeaderAndBodyRow = (command) => (state, dispatch, view) => {
+	const rect = selectedRect(state);
+	const keeps = rect.top > 0 && (rect.bottom - rect.top) < rect.map.height - 1;
+	return keeps ? command(state, dispatch, view) : true;
+};
 const tableShortcuts = $prose(() => keymap({
 	'Mod-Shift-ArrowDown': inTable(addRowAfter),
-	'Mod-Shift-ArrowUp': inTable(addRowBefore),
+	'Mod-Shift-ArrowUp': inTable(notInHeaderRow(addRowBefore)),
 	'Mod-Shift-ArrowRight': inTable(addColumnAfter),
 	'Mod-Shift-ArrowLeft': inTable(addColumnBefore),
-	'Mod-Shift-Backspace': inTable(deleteRow),
+	'Mod-Shift-Backspace': inTable(keepsHeaderAndBodyRow(deleteRow)),
 	'Mod-Alt-Backspace': inTable(deleteColumn)
 }));
 
@@ -75,6 +90,7 @@ export async function ooMdEditFormElement(targetDomId, text, updateListener, onB
 		.use(commonmark)
 		.use(gfm)
 		.use(tableShortcuts)
+		.use(history)
 		.use(placeholder)
 		.use(listener)
 		.create();

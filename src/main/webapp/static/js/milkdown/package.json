@@ -16,16 +16,18 @@
 		"webpack-cli": "^4.9.1"
 	},
 	"dependencies": {
-		"@milkdown/core": "^7.2.1",
-		"@milkdown/ctx": "^7.2.1",
-		"@milkdown/prose": "^7.2.1",
-		"@milkdown/transformer": "^7.2.1",
-		"@milkdown/utils": "^7.2.1",
-		"@milkdown/plugin-listener": "^7.2.1",
-		"@milkdown/preset-commonmark": "^7.2.1",
-		"@milkdown/preset-gfm": "^7.2.1",
-		"mdast-util-to-string": "^4.0.0",
-		"remark-gfm": "^4.0.0",
-		"strip-markdown": "^5.0.1"
+		"@milkdown/core": "7.23.0",
+		"@milkdown/ctx": "7.23.0",
+		"@milkdown/prose": "7.23.0",
+		"@milkdown/transformer": "7.23.0",
+		"@milkdown/utils": "7.23.0",
+		"@milkdown/plugin-history": "7.23.0",
+		"@milkdown/plugin-listener": "7.23.0",
+		"@milkdown/preset-commonmark": "7.23.0",
+		"@milkdown/preset-gfm": "7.23.0",
+		"mdast-util-to-string": "4.0.0",
+		"remark": "15.0.1",
+		"remark-gfm": "4.0.1",
+		"strip-markdown": "5.0.1"
 	}
 }
