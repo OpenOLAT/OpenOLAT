@@ -145,7 +145,11 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     The buttons have shade tokens for the hover, focus and active state, e.g.
     --o-btn-primary-bg-hover and --o-btn-primary-border-focus. The compile computes them as the
     darker colour of --o-btn-primary-bg and --o-btn-primary-border, so they follow your button
-    colours. Set a shade token with $o-tokens only when you want a different state colour. When
+    colours. The primary button, the help button, the selected tag, the course start button and
+    the login button go by the text colour of their token (-fg): a dark text (a light primary
+    colour) gets a lighter hover and pressed fill, a light text or a white fill a darker one.
+    With the realistic style, a primary button with dark text has flat fills. Set a shade
+    token with $o-tokens only when you want a different state colour. When
     you override a button background with $o-tokens, override its border token too. Other
     elements have shade tokens too: the compile computes them with the darken() or lighten()
     percentage of the module from the element token, so your Sass variable gives the same
@@ -172,7 +176,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     "--o-". The value is the name of any other token ("primary", "tree-link"), a palette step
     "{hue}-{step}", a neutral step "neutral-{step}", "white" or a colour, e.g.
       $o-tokens: ("text-muted": "slate-600", "state-success-bg": "green-600", "state-success-fg": "white");
-      $o-tokens: ("navbar-bg": "primary", "navbar-text": "primary-fg", "navbar-link": "primary-fg", "navbar-tools": "primary-fg", "bookmark": "red-600");
+      $o-tokens: ("navbar-link": "neutral-800", "navbar-link-hover": "neutral-950", "bookmark": "red-600");
       $o-tokens: ("qti-menu-link": "link", "selectus-review-glow": "orange-500");
     The semantic tokens for surfaces, lines and veils read Bootstrap variables:
       --o-bg-hover       $table-bg-hover            row or item under the pointer
@@ -247,7 +251,14 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
          in your config to hide the warning.
     The login link of the navigation bar for guests is a primary button
     (li#o_navbar_login.o_navbar_button), like the login button of the navigation bar of the
-    login page. It reads the btn-primary tokens. The variable $o-navbar-login-color and the
+    login page. It reads the tokens navbar-login-bg, navbar-login-fg and navbar-login-border.
+    Their default is the primary button: the tokens and their hover and pressed fills read
+    the btn-primary tokens. When your navbar has the colour of the primary button, set other
+    colours for the button, e.g.
+      $o-tokens: ("navbar-login-bg": "white", "navbar-login-fg": "neutral-900",
+                  "navbar-login-border": "white");
+    The hover and pressed fills follow your colours, and the button gets a flat fill, also
+    with the realistic style. The variable $o-navbar-login-color and the
     token navbar-login are removed. When your config still sets one of them, delete the
     setting: $o-tokens: ("navbar-login": ...) stops the compile with "unknown token";
     $o-navbar-login-color has no effect, and the compile gives no warning for it. Do not add
@@ -272,7 +283,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     $o-navbar-bg. A value that your config sets is not adjusted.
     The focus ring: every control shows the same ring on :focus-visible, an outline of 2px in
     the colour of the token focus with a gap of 2px ($o-focus-ring-width, $o-focus-ring-offset).
-    The token reads $o-focus-color. Default: $brand-primary adjusted to 3:1 on $body-bg. When
+    The token reads $o-focus-color. Default: $brand-primary adjusted to 3:1 on the darkest of
+    $body-bg, $panel-default-heading-bg and $table-bg-accent (striped table rows). When
     your config sets $input-border-focus, the ring has that colour. A value that your config
     sets for $o-focus-color or $input-border-focus is not adjusted: check 3:1 on the page
     background yourself. The navigation bar and the footer have own tokens (navbar-focus,
@@ -402,6 +414,101 @@ cd openolat/src/main/webapp/static/themes/
 ./compiletheme.sh mytheme
 
 If you don't have SASS installed, see "Installing SASS below"
+
+Checking the contrast of a theme
+================================
+Check the colours after each compile, and always when you upgrade a theme to OpenOLAT 21.2.
+The light theme gives default colours and compile checks. It does not choose a colour for
+your theme. When a default does not fit your colours, set the token in $o-tokens or set the
+Sass variable to a plain colour (a literal value, a palette step or a colour variable of your
+theme). Do not write Sass functions, mixins or @if blocks in your theme to calculate a colour.
+Use one $o-tokens map in your config: a second map replaces the first.
+
+Required ratios (WCAG 2.1 AA):
+  text, links, text on buttons            4.5:1 on the background of the text
+  edge of a control, focus ring, icons    3:1 on the background around it
+
+The compile checks:
+- the palette, the theme colours and every pair of a token that $o-tokens sets. A pair
+  below its ratio stops the compile ($o-contrast-check, see "Creating a custom theme");
+- the text of the primary button, the help button, the selected tag, the start button of
+  the course site and the login button of the navigation bar: when the text has its ratio on
+  the fill but not on the hover or the pressed fill, the compile stops.
+The compile does not check:
+- a colour that your config sets as Sass variable, e.g. $btn-primary-color: #fff,
+  $text-color, $link-color, $o-navbar-color, $o-focus-color. The same colour in $o-tokens
+  is checked;
+- the edge of the login button against the navigation bar;
+- a grey body text on the fills of the selected and the hovered table row.
+Look at the compiled colours in the GUI demo (guidemo.enabled=true), page "Colors".
+
+The usual problems:
+  #   Problem                                        Ratio       Compile stops
+  1   login button on a coloured navbar              3:1 edge    text yes, edge no
+  2   light primary colour: button text, links       4.5:1       no
+  3   black primary colour: hover states             visible     no
+  4   grey body text                                 4.5:1       no
+  5   navbar text and tools set in the config        4.5:1       no
+  6   navbar links on a coloured navbar              4.5:1       for $o-tokens
+  7   own navbar rules reach the login button        -           no
+  8   focus colour set in the config                 3:1         no
+  9   filter tabs above a table                      4.5:1       for $o-tokens
+  10  old colours of status labels and icons         -           no (warning)
+  11  fill token as text colour in own rules         4.5:1       no
+
+1. Login button. Its tokens navbar-login-bg, -fg and -border default to the primary button
+   (see the login link of the navigation bar above). On a navbar in or near the primary
+   colour the button has no edge: the fill or the border needs 3:1 on the navbar. Set the
+   three tokens. Any colour is possible; these three variants are ready to use:
+     variant  navbar-login-bg  navbar-login-fg  navbar-login-border  use when
+     A        "white"          "navbar-bg"      "white"              the navbar colour has
+                                                                     4.5:1 on neutral-250
+     B        "white"          "neutral-900"    "white"              white has 3:1 on the navbar,
+                                                                     the navbar 3:1 on neutral-250
+     C        "neutral-900"    "white"          "neutral-900"        the navbar has 3:1 on
+                                                                     neutral-900 (light navbar)
+   neutral-250 (#D0D5DD in light) is the pressed fill of a white button. Another colour needs
+   4.5:1 for the text on the fill and on its hover and pressed fills, and 3:1 for the edge.
+2. Light primary colour (yellow, light green, beige, grey): white has less than 4.5:1 on
+   $brand-primary. The default text of the primary button is then dark, and the hover and
+   pressed fills get lighter. Keep it. Do not set $btn-primary-color: #fff. When the text must
+   be white, set a darker fill as a plain colour. The links read $brand-primary too:
+     $brand-primary: #FFDC00;    // white 1.36:1
+     $btn-primary-bg: #857200;   // white 4.77:1, also the start button of the course site
+     $link-color: #7A6900;       // 5.46:1 on white
+3. Black or near black primary colour: some hover colours stay black. Set grey steps:
+     $o-tokens: ("primary-hover": "neutral-800", "btn-primary-border-hover": "neutral-800",
+                 "table-filter-fg-hover": "neutral-800", "table-filter-fg-active": "neutral-700");
+4. Grey body text: $text-color needs 4.5:1 on white, on the subtle background and on the
+   row fills ($table-bg-active, $table-bg-hover, see above). #777777 has 4.48:1 on white and
+   fails. #595959 has 7.00:1 on white and passes on the default row fills (light: 5.16:1 on
+   the hovered row). A grey up to about #6B6B6B needs lighter row fills:
+     $o-selection-step: 50;
+     $o-selection-hover-step: 100;
+5. Navbar text and tools: delete $o-navbar-color and $o-navbar-tools-permanent-color from
+   your config, the default is adjusted to your navbar (see above). A value that you set
+   needs 4.5:1 on $o-navbar-bg.
+6. Coloured navbar: $o-navbar-link-color is not adjusted. Set the background as Sass
+   variable and the links as tokens; set the active link and its fill together:
+     $o-navbar-bg: $brand-primary;
+     $o-tokens: ("navbar-link": "primary-fg", "navbar-link-hover": "primary-fg",
+                 "navbar-brand": "primary-fg", "navbar-link-active": "primary-fg",
+                 "navbar-link-active-bg": "theme1-800");
+   theme1-800 fits white text (primary-fg); for a dark primary-fg take a light step such as
+   theme1-200. Do not set "navbar-bg": "primary" in $o-tokens: the tab close icon is
+   adjusted to $o-navbar-bg, it then fails on the token and the compile stops.
+7. Own rules on "#o_navbar_tools_permanent > li > a" reach the login button: exclude the
+   login item (see the login link of the navigation bar above).
+8. Focus colour: a value of $o-focus-color or $input-border-focus is not adjusted. It needs
+   3:1 on white and on the subtle background (#F9FAFB in light). See the focus ring above.
+9. Filter tabs: the token segments-tab-link (default "link") needs 4.5:1 on the page, e.g.
+     $o-tokens: ("segments-tab-link": "content-link");
+10. Old colours of status labels and icons: delete own rules on status classes (o_labeled,
+   label-*, o_repo_status_*) and the old state variables. Change a state with $o-states or
+   $o-tokens (see the status colours above).
+11. Own rules: a fill token is no text colour. Write color: var(--o-primary-text), not
+   var(--o-primary); var(--o-state-danger-text), not var(--o-state-danger-bg).
+When the client insists on a colour below its ratio, see $o-contrast-check: "warn" above.
 
 Testing a custom theme
 ======================

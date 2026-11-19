@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -246,6 +247,10 @@ public class ColorTokensTest {
 	// The compiled themes that emit the tokens (not email.css)
 	private static final List<String> TOKEN_FILES = List.of("light/theme.css", "light/content.css", "light/oo-docs.css",
 			"openolat/theme.css", "openolat/content.css");
+	// Custom properties that are no colour tokens: a renderer sets them at runtime
+	// in an inline style and the rule that reads them has a fallback.
+	// onav-cols: the column count of a group of the overview navigation (OverviewNavigationRenderer)
+	private static final Set<String> RUNTIME_PROPERTIES = Set.of("onav-cols");
 
 	private final Map<String, String> tokens = loadTokens();
 
@@ -2256,7 +2261,8 @@ public class ColorTokensTest {
 	/**
 	 * Every var(--o-*) in the compiled theme.css, content.css and oo-docs.css
 	 * of the themes light and openolat has a definition in the same file.
-	 * The compile does not check the names.
+	 * The compile does not check the names. Exception: the custom properties
+	 * that a renderer sets at runtime (RUNTIME_PROPERTIES).
 	 */
 	@Test
 	public void referencesHaveDefinitions() {
@@ -2266,7 +2272,8 @@ public class ColorTokensTest {
 			Map<String, String> defined = parseTokens(css);
 			Matcher m = ANY_VAR_REFERENCE.matcher(css);
 			while (m.find()) {
-				Assert.assertTrue(file + ": var(--o-" + m.group(1) + ") has no definition", defined.containsKey(m.group(1)));
+				Assert.assertTrue(file + ": var(--o-" + m.group(1) + ") has no definition",
+						defined.containsKey(m.group(1)) || RUNTIME_PROPERTIES.contains(m.group(1)));
 			}
 		}
 	}
@@ -2305,7 +2312,8 @@ public class ColorTokensTest {
 	 * of the navbar of the login page): the navbar items have the inset ring
 	 * in the focus colour, which has too little contrast on the primary fill.
 	 * The button has the ring in the text colour of the fill, inside the edge,
-	 * 3:1 on the fill, on its hover and on its pressed fill.
+	 * 3:1 on the fill, on its hover and on its pressed fill. The button reads
+	 * the tokens navbar-login-*; in light they follow the primary button.
 	 */
 	@Test
 	public void navbarPrimaryButtonFocusRing() {
@@ -2313,9 +2321,14 @@ public class ColorTokensTest {
 		String button = ".o_navbar .o_navbar_button .btn.btn-primary:focus:focus-visible";
 		assertRuleReads(css, button, "outline:2px solid currentColor");
 		assertRuleReads(css, button, "outline-offset:-4px");
-		assertRuleReads(css, ".o_navbar .o_navbar_button .btn.btn-primary", "color:var(--o-btn-primary-fg)");
-		for (String fill : List.of("btn-primary-bg", "btn-primary-bg-hover", "btn-primary-bg-active")) {
-			assertContrast("btn-primary-fg", fill, 3.0);
+		assertRuleReads(css, ".o_navbar .o_navbar_button .btn.btn-primary", "color:var(--o-navbar-login-fg)");
+		assertRuleReads(css, ".o_navbar .o_navbar_button .btn.btn-primary", "background-color:var(--o-navbar-login-bg)");
+		for (String fill : List.of("navbar-login-bg", "navbar-login-bg-hover", "navbar-login-bg-active")) {
+			assertContrast("navbar-login-fg", fill, 3.0);
+		}
+		// light: the login button has the colours of the primary button
+		for (String token : List.of("bg", "fg", "border", "bg-hover", "bg-active", "border-hover", "border-focus")) {
+			Assert.assertEquals("--o-navbar-login-" + token, "var(--o-btn-primary-" + token + ")", tokens.get("navbar-login-" + token));
 		}
 	}
 
@@ -2638,14 +2651,15 @@ public class ColorTokensTest {
 	/**
 	 * A fill token (-bg) is never the colour of a text or an icon. A glyph
 	 * with a status meaning reads the text role of its state, a letter reads
-	 * a text token. Allowed: a legend mark that is a sample of its chart fill
+	 * a text token. Allowed: a legend mark that is a sample of its chart fill,
+	 * an icon that is a sample of the fill of the progress bar it refers to
 	 * and a text that is hidden on purpose by the colour of its own fill
 	 * (each with a comment in the module). The pale success and failure glyph
 	 * behind the number of the radial progress reads its own glyph token.
 	 */
 	@Test
 	public void fillTokensAreNoTextColours() throws IOException {
-		Map<String, Integer> allowed = Map.of("_practice.scss", 6, "_selectus.scss", 2, "_video.scss", 2);
+		Map<String, Integer> allowed = Map.of("_curriculum.scss", 2, "_practice.scss", 6, "_selectus.scss", 2, "_video.scss", 2);
 		Pattern fillAsColor = Pattern.compile("(?<![-\\w])color\\s*:\\s*[^;{}]*var\\(--o-[a-z0-9-]*-bg(?:-hover|-active)?\\)");
 		Map<String, Integer> found = new TreeMap<>();
 		try (Stream<Path> modules = Files.list(ThemeColorRatchetTest.LIGHT_MODULES)) {

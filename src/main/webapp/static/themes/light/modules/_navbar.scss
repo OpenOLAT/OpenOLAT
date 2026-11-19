@@ -81,7 +81,13 @@ a.o_disabled.navbar-text {
 		.btn {
 			@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
 			&.btn-primary {
-				@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
+				// the login button: the tokens navbar-login-*, by default the
+				// colours of the primary button
+				@include button-variant(var(--o-navbar-login-fg), var(--o-navbar-login-bg), var(--o-navbar-login-border));
+				// own colours of the theme: a flat fill, also with the realistic style
+				@if o-navbar-login-own-colors() {
+					background-image: none;
+				}
 				// the navbar items have the inset ring in the focus colour; on the
 				// primary fill the ring has the text colour of the fill
 				&:focus:focus-visible {

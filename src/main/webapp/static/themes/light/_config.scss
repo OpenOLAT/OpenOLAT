@@ -217,13 +217,18 @@ $body-bg						: o-neutral(0) !default;
 $link-color						: $brand-primary !default;
 $link-hover-color				: o-scale-snap($link-color, darken($link-color, 15%)) !default;
 $btn-primary-bg					: $brand-primary !default;
+// The text of the primary button: white, or the colour with 4.5:1 on the
+// fill. Before the Bootstrap import, which sets white with !default. A dark
+// text gets lighter hover and pressed fills ($o-token-state-text-buttons).
+$btn-primary-color				: o-a11y-color(o-neutral(0), $btn-primary-bg) !default;
 $btn-primary-border				: o-scale-snap($btn-primary-bg, darken($btn-primary-bg, 5%)) !default;
 
 /* Focus ring of every control (OO-10043): outline of
    $o-focus-ring-width in the colour of the token focus, $o-focus-ring-offset
    away from the control, on :focus-visible (modules/_focus.scss).
    $o-focus-color is the base colour of the token focus. Default: the primary
-   colour, adjusted to 3:1 on the page background. A theme that sets
+   colour, adjusted to 3:1 on the page background and on the subtle
+   backgrounds (striped table rows, panel headings). A theme that sets
    $input-border-focus keeps that colour. A value that the theme sets for
    $o-focus-color or $input-border-focus is not adjusted. */
 $o-focus-color						: null !default;
@@ -231,7 +236,10 @@ $o-focus-color						: null !default;
 	@if $o-focus-color-from-input-border {
 		$o-focus-color: $input-border-focus;
 	} @else {
-		$o-focus-color: o-a11y-color($brand-primary, $body-bg, 3);
+		// 3:1 on the darkest of these backgrounds; the hex value of the token,
+		// so that the row fills (o-scale-tint() below) derive from the colour of the CSS
+		$o-focus-bg: o-darkest-color(o-opaque-colors($body-bg, $panel-default-heading-bg, $table-bg-accent)...);
+		$o-focus-color: o-color-round(o-a11y-color($brand-primary, $o-focus-bg, 3));
 	}
 }
 $o-focus-ring-width					: 2px !default;
@@ -291,7 +299,6 @@ $o-brand-box-bg 				: color-mix(in srgb, var(--o-primary) 10%, transparent) !def
 $o-brand-text					: $brand-primary !default;
 /* override primary button to match a11y standards */
 $btn-primary-bg:                 $brand-primary !default;
-$btn-primary-color:              o-a11y-color(o-neutral(0), $btn-primary-bg) !default;
 $btn-primary-border:             o-scale-snap($btn-primary-bg, darken($btn-primary-bg, 5%)) !default;
 
 /* ---- OpenOLAT specific configurations ---- */
@@ -1855,8 +1862,13 @@ $o-cp-withdraw-color						: o-state-color("danger", "text");
 
 
 /* Not available visual: gradients of the primary colour and the tokens
-   not-available-dark and not-available-light */
-$o-not-available-bg: 		linear-gradient(40deg, var(--o-primary), color-mix(in srgb, var(--o-not-available-light) 50%, transparent) 90%), linear-gradient(160deg, var(--o-not-available-dark), color-mix(in srgb, var(--o-primary) 30%, transparent) 40%), linear-gradient(280deg, color-mix(in srgb, var(--o-primary) 70%, transparent), color-mix(in srgb, var(--o-not-available-dark) 60%, transparent) 80%) !default;
+   not-available-dark and not-available-light. The gradients interpolate in
+   sRGB ("in srgb"), as with the rgba() stops of 21.1: the default
+   interpolation of the current browsers with color-mix() stops is Oklab.
+   The syntax needs Chrome and Edge 111, Safari 16.2 or Firefox 127; an older
+   browser shows no gradient. A theme that sets $o-not-available-bg keeps its
+   value. */
+$o-not-available-bg: 		linear-gradient(40deg in srgb, var(--o-primary), color-mix(in srgb, var(--o-not-available-light) 50%, transparent) 90%), linear-gradient(160deg in srgb, var(--o-not-available-dark), color-mix(in srgb, var(--o-primary) 30%, transparent) 40%), linear-gradient(280deg in srgb, color-mix(in srgb, var(--o-primary) 70%, transparent), color-mix(in srgb, var(--o-not-available-dark) 60%, transparent) 80%) !default;
 
 /* Vertical timeline */
 $o-v-timeline-rows-gap								: 5px !default;

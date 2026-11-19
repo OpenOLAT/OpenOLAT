@@ -10,6 +10,37 @@
 @import "../../../bootstrap/stylesheets/bootstrap/theme";
 // Second add same style patches for OpenOLAT modules
 
+/* A primary button with dark text (a light primary colour) has the flat
+   fills of its tokens: the gradient and the darker fills of the Bootstrap
+   theme take the contrast of the dark text, the hover and the pressed fill
+   of the tokens are lighter (o-token-state-lighter()). */
+@if o-token-state-lighter("btn-primary", $o-token-values) {
+	.btn-primary {
+		background-image: none;
+		&:hover,
+		&:focus {
+			background-color: var(--o-btn-primary-bg-hover);
+		}
+		&:active,
+		&.active {
+			background-color: var(--o-btn-primary-bg-hover);
+			border-color: var(--o-btn-primary-border-hover);
+		}
+		&.disabled,
+		&[disabled],
+		fieldset[disabled] & {
+			&,
+			&:hover,
+			&:focus,
+			&.focus,
+			&:active,
+			&.active {
+				background-color: var(--o-btn-primary-bg);
+			}
+		}
+	}
+}
+
 /* Buttons */
 .o_button_dirty {
   	text-shadow: 0 -1px 0 rgba(0,0,0,.2);

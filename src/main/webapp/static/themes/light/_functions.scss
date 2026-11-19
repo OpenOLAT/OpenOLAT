@@ -108,8 +108,18 @@ $o-contrast-check: "error" !default;
     } 
 }
 
+/* Helper method to adjust a colour to the contrast ratio on a background:
+ * lighter or darker in steps of 1% lightness. The CSS holds the colour as
+ * 8-bit value, so the colour passes also with its channels rounded
+ * (o-color-round(), OO-10043).
+ *
+ * @param {Color} $color - The colour to adjust
+ * @param {Color} $background - The background colour
+ * @param {Number} $targetRatio - The minimum contrast ratio, default 4.5
+ * @return {Color}
+ */
 @function o-a11y-color($color, $background: #fff, $targetRatio: 4.5) {
-	$currentRatio: contrast($color, $background);
+	$currentRatio: math.min(contrast($color, $background), contrast(o-color-round($color), o-color-round($background)));
 	$ligherAllowed: contrast(#fff, $background) >= $targetRatio;
 	$i: 0; // while loop breaker
 	
@@ -119,7 +129,7 @@ $o-contrast-check: "error" !default;
 		} @else {
 		   	$color: color.adjust($color, $lightness: -1%);
 		}
-    	$currentRatio: contrast($color, $background);
+    	$currentRatio: math.min(contrast($color, $background), contrast(o-color-round($color), o-color-round($background)));
     	$i: $i + 1;
     	@if $i == 100 {
 			@debug "Can not calculate o-a11y-color with ratio" $targetRatio for color $color on background $background with background luminance luminance($background) $ligherAllowed;    	
@@ -261,6 +271,24 @@ $o-contrast-check: "error" !default;
 		math.clamp(0, math.round(color.channel($color, "blue", $space: rgb)), 255));
 }
 
+/* true when the theme sets a colour of the login button in the navbar with
+ * $o-tokens ("navbar-login-*", OO-10043). The button then has a flat fill:
+ * the realistic style (light/styles/realistic) paints the primary button
+ * with a gradient of $btn-primary-bg.
+ *
+ * @return {Boolean}
+ */
+@function o-navbar-login-own-colors() {
+	@if meta.global-variable-exists("o-tokens") and meta.type-of($o-tokens) == "map" {
+		@each $name, $value in $o-tokens {
+			@if string.index("#{$name}", "navbar-login-") == 1 {
+				@return true;
+			}
+		}
+	}
+	@return false;
+}
+
 /* Helper method for a default that changes when a theme keeps the light
  * value of another variable: returns $new when $value is the light value
  * $light, else $value (the own colour of the theme wins).
@@ -304,10 +332,6 @@ $o-contrast-check: "error" !default;
 	$state-hex: o-color-round($state-bg);
 	@if not $darkens or contrast(#000, $state-bg) >= $ratio {
 		$text: o-color-round(o-a11y-color($fg, $state-bg, $ratio));
-		@if contrast($text, $state-hex) < $ratio {
-			// the rounded channels lost the last part of the ratio: one step more
-			$text: o-color-round(o-a11y-color($fg, $state-bg, $ratio + 0.05));
-		}
 		@if contrast($text, $state-hex) >= $ratio {
 			@return $text;
 		}

@@ -300,6 +300,10 @@ $o-token-layer-framework: (
 	"dropdown-link-hover":                        ($dropdown-link-hover-color, ()),
 	"dropdown-link-hover-bg":                     ($dropdown-link-hover-bg, ("bg-hover",)),
 	"dropdown-divider":                           ($dropdown-divider-bg, ()),
+	// the border of a menu panel in the look of a dropdown menu (the
+	// overview navigation on small screens): the colour of the Bootstrap
+	// variable, translucent by default (color-mix() of backdrop)
+	"dropdown-border":                            ($dropdown-border, ()),
 	// the text and the fill of the active item of a dropdown menu with a
 	// label (Bootstrap variables)
 	"dropdown-link-active":                        ($dropdown-link-active-color, ()),
@@ -709,6 +713,12 @@ $o-token-layer-framework: (
 	"navbar-highlight":                           (o-neutral(0), ()),
 	// the logout link of the personal menu
 	"navbar-logout":                               ($o-navbar-logout-color, ("state-danger-text",)),
+	// the login button of the guest navbar and of the navbar of the login
+	// page: the primary button. A theme whose navbar has the colour of the
+	// primary button sets own colours.
+	"navbar-login-bg":                            "btn-primary-bg",
+	"navbar-login-fg":                            "btn-primary-fg",
+	"navbar-login-border":                        "btn-primary-border",
 	// Offcanvas menu: the logout link and its hover, the link under the
 	// pointer ($o-offcanvas-link-hover-color) and the line under a category
 	// title
@@ -1587,6 +1597,7 @@ $o-token-elements: map.merge(map.merge($o-token-layer-base, $o-token-layer-frame
 }
 
 $o-token-shades: (
+	// darker, lighter for a dark text ($o-token-state-text-buttons)
 	"btn-primary-bg-hover":                       ("btn-primary-bg", 10%),
 	"btn-primary-bg-active":                      ("btn-primary-bg", 17%),
 	"btn-primary-border-hover":                   ("btn-primary-border", 12%),
@@ -1607,6 +1618,10 @@ $o-token-shades: (
 	"coursesite-start-bg-active":                 ("coursesite-start-bg", 17%),
 	"coursesite-start-border-hover":              ("coursesite-start-border", 12%),
 	"coursesite-start-border-focus":              ("coursesite-start-border", 25%),
+	"navbar-login-bg-hover":                      ("navbar-login-bg", 10%),
+	"navbar-login-bg-active":                     ("navbar-login-bg", 17%),
+	"navbar-login-border-hover":                  ("navbar-login-border", 12%),
+	"navbar-login-border-focus":                  ("navbar-login-border", 25%),
 	"coursesite-book-bg-hover":                   ("coursesite-book-bg", 10%),
 	"coursesite-book-bg-active":                  ("coursesite-book-bg", o-token-active-percent($o-coursesite-book-color, $o-coursesite-book-bg)),
 	"coursesite-book-border-hover":               ("coursesite-book-border", 12%),
@@ -1780,6 +1795,39 @@ $o-token-shades: (
 	"state-warning-text-hover":                   ("state-warning-text", 10%),
 	"state-danger-text-hover":                    ("state-danger-text", 10%)
 );
+
+// The buttons whose text can be dark (a light primary colour): the hover and
+// the pressed fill go in the direction of the text, as in Bootstrap 5:
+// darker for a light text, lighter for a dark text. A white fill cannot get
+// lighter and gets darker. The text and the fill are the colours of the
+// tokens, also of an override in $o-tokens.
+$o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", "coursesite-start", "navbar-login");
+
+// true when the text of the button is darker than its fill and the fill is
+// not white: the hover and the pressed fill get lighter
+@function o-token-state-lighter($button, $values) {
+	$bg: luminance(map.get($values, "#{$button}-bg"));
+	@return luminance(map.get($values, "#{$button}-fg")) < $bg and $bg < 1;
+}
+
+// $o-token-shades with the direction of the hover and the pressed fill of
+// the buttons of $o-token-state-text-buttons for the colours $values
+@function o-token-state-shades($values) {
+	$shades: $o-token-shades;
+	@each $button in $o-token-state-text-buttons {
+		@each $name in ("#{$button}-bg-hover", "#{$button}-bg-active") {
+			$def: map.get($shades, $name);
+			@if $def != null {
+				$def: (list.nth($def, 1), list.nth($def, 2));
+				@if o-token-state-lighter($button, $values) {
+					$def: list.append($def, "lighten");
+				}
+				$shades: map.merge($shades, ($name: $def));
+			}
+		}
+	}
+	@return $shades;
+}
 
 // The colour of a shade token: its token colour darkened or lightened, or
 // with the hue turned by an angle ("hue", the Sass function adjust-hue()), or
@@ -1985,6 +2033,9 @@ $o-token-contrast-pairs: (
 	("btn-dirty-fg", "btn-dirty-bg", 4.5),
 	("btn-primary-fg", "btn-primary-bg-hover", 4.5),
 	("btn-primary-fg", "btn-primary-bg-active", 4.5),
+	("navbar-login-fg", "navbar-login-bg", 4.5),
+	("navbar-login-fg", "navbar-login-bg-hover", 4.5),
+	("navbar-login-fg", "navbar-login-bg-active", 4.5),
 	("btn-default-fg", "btn-default-bg-hover", 4.5),
 	("btn-default-fg", "btn-default-bg-active", 4.5),
 	("btn-dirty-fg", "btn-dirty-bg-hover", 4.5),
@@ -2653,6 +2704,7 @@ $o-token-progress: true;
 		@error "_tokens.scss: the shade token '#{$name}' has the unknown function '#{list.nth($def, 3)}', use \"lighten\", \"hue\", \"state\" or nothing (darken)";
 	}
 }
+$o-token-shades: o-token-state-shades($o-token-defaults);
 @each $name, $def in $o-token-shades {
 	$o-token-defaults: map.merge($o-token-defaults, ($name: o-token-shade-scale($name, map.get($o-token-defaults, list.nth($def, 1)), $def, $o-token-defaults)));
 }
@@ -2753,6 +2805,19 @@ $o-token-shade-follows: ();
 		$o-token-shade-follows: map.merge($o-token-shade-follows, ($name: list.nth($def, 1)));
 	}
 }
+// The shade tokens of a token that follows the token of another element
+// read the shade tokens of that element: while the login button follows the
+// primary button, var(--o-navbar-login-bg-hover) is
+// var(--o-btn-primary-bg-hover), also when the theme overrides it.
+$o-token-shade-aliases: ("navbar-login-bg": "btn-primary-bg", "navbar-login-border": "btn-primary-border");
+@each $name, $def in $o-token-shades {
+	$token: list.nth($def, 1);
+	$alias: map.get($o-token-shade-aliases, $token);
+	@if $alias != null and map.get($o-token-follows, $token) == $alias and map.has-key($o-token-shade-follows, $name) {
+		$o-token-shade-follows: map.remove($o-token-shade-follows, $name);
+		$o-token-references: map.merge($o-token-references, ($name: $alias + string.slice($name, string.length($token) + 1)));
+	}
+}
 
 // The colour of every token after the client overrides. A token with a
 // reference gets its colour after the token it references. A loop of
@@ -2777,7 +2842,23 @@ $o-token-progress: true;
 @if list.length($o-token-pending) > 0 {
 	@error "$o-tokens: the references form a loop (a token without an override follows its default):#{o-token-pairs-text($o-token-pending)}";
 }
+// The direction of the hover and the pressed fill of the buttons of
+// $o-token-state-text-buttons after the overrides: a fill whose direction
+// changes gets its colour again
+$o-token-shades-default: $o-token-shades;
+$o-token-shades: o-token-state-shades($o-token-values);
+@each $name, $def in $o-token-shades {
+	@if $def != map.get($o-token-shades-default, $name) and map.has-key($o-token-shade-follows, $name) {
+		$o-token-values: map.merge($o-token-values, ($name: o-token-shade-scale($name, map.get($o-token-values, list.nth($def, 1)), $def, $o-token-values)));
+	}
+}
 $o-token-values: o-token-shade-trios($o-token-values);
+// a shade token with a reference keeps the colour of the token it references
+@each $name, $target in $o-token-references {
+	@if map.has-key($o-token-shades, $name) {
+		$o-token-values: map.merge($o-token-values, ($name: map.get($o-token-values, $target)));
+	}
+}
 
 // Contrast check of the pairs with a colour that differs from its default.
 // A pair that fails already with the default colours fails only when its
@@ -2840,6 +2921,30 @@ $o-token-state-fills: (
 	}
 }
 @include o-token-state-fill-check();
+
+// The text of the buttons of $o-token-state-text-buttons keeps its ratio on
+// the hover and the pressed fill where it has the ratio on the fill of the
+// normal state. Default colours and overrides.
+// A mixin, so that its variables stay local.
+@mixin o-token-state-text-check() {
+	@each $pair in $o-token-contrast-pairs {
+		$fg: list.nth($pair, 1);
+		$state: list.nth($pair, 2);
+		$ratio: list.nth($pair, 3);
+		@each $button in $o-token-state-text-buttons {
+			@if $state == "#{$button}-bg-hover" or $state == "#{$button}-bg-active" {
+				$fg-color: map.get($o-token-values, $fg);
+				$bg-color: map.get($o-token-values, "#{$button}-bg");
+				$state-color: map.get($o-token-values, $state);
+				@if color.channel($fg-color, "alpha") == 1 and color.channel($bg-color, "alpha") == 1 and color.channel($state-color, "alpha") == 1
+						and contrast($fg-color, $bg-color) >= $ratio and contrast($fg-color, $state-color) < $ratio {
+					$failed: o-contrast-failed("'#{$fg}' #{o-hex($fg-color)} has #{o-contrast-rounded($fg-color, $bg-color)}:1 on '#{$button}-bg' #{o-hex($bg-color)}, but #{o-contrast-rounded($fg-color, $state-color)}:1 on '#{$state}' #{o-hex($state-color)}, needs #{$ratio}:1");
+				}
+			}
+		}
+	}
+}
+@include o-token-state-text-check();
 
 // One warning per stylesheet when the client config sets an old state colour
 // to a value other than the default of the light theme

@@ -403,6 +403,11 @@ a.o_validation_open_results {
 		grid-area: status;
 		white-space: nowrap;
 		font-size: $o-figure-card-label-font-size;
+		// The status icons of the members widget are samples of the fills of
+		// the progress bar they refer to, so each reads the fill token of its
+		// part of the bar: the info icon the minimum marker, the overbooked
+		// icon the overbooked segment. The status text next to the icon gives
+		// the information, so the icon needs no contrast pair.
 		.o_icon_info {
 			color: var(--o-progress-bar-neutral-bg);
 		}

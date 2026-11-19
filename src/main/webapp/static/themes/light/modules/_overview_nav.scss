@@ -13,7 +13,7 @@
 		padding: 15px 0 25px 0;
 		border: $o-widget-border-width $o-widget-border-style var(--o-widget-border);
 		border-radius: $o-widget-border-radius;
-		background-color: $body-bg;
+		background-color: var(--o-bg);
 	}
 	
 	.o_overview_nav_group {
@@ -29,7 +29,7 @@
 		margin: 0 0 10px 0;
 		font-size: $font-size-base;
 		font-weight: normal;
-		color: $text-color;
+		color: var(--o-text);
 	}
 	
 	.o_overview_nav_items {
@@ -100,7 +100,7 @@
 		
 		.o_overview_nav_desc {
 			display: block;
-			color: $text-color;
+			color: var(--o-text);
 		}
 	}
 	
@@ -139,7 +139,7 @@
 		
 		.o_button_details {
 			border-radius: 12px;
-			background-color: $body-bg;
+			background-color: var(--o-bg);
 		}
 	}
 	
@@ -162,9 +162,9 @@
 			right: 0;
 			margin-top: 5px;
 			padding: 5px 0;
-			border: 1px solid $dropdown-border;
+			border: 1px solid var(--o-dropdown-border);
 			border-radius: $border-radius-base;
-			background-color: $dropdown-bg;
+			background-color: var(--o-bg-raised);
 			box-shadow: $o-dropdown-box-shadow;
 		}
 		
@@ -177,7 +177,7 @@
 			
 			& + .o_overview_nav_group {
 				border-left: 0;
-				border-top: 1px solid $dropdown-divider-bg;
+				border-top: 1px solid var(--o-dropdown-divider);
 			}
 		}
 		
@@ -209,12 +209,12 @@
 					min-height: 44px;
 					padding: 0 15px;
 					font-weight: normal;
-					color: $dropdown-link-color;
+					color: var(--o-dropdown-link);
 					
 					&:hover,
 					&:focus {
-						color: $dropdown-link-hover-color;
-						background-color: $dropdown-link-hover-bg;
+						color: var(--o-dropdown-link-hover);
+						background-color: var(--o-dropdown-link-hover-bg);
 						text-decoration: none;
 					}
 					
