@@ -352,6 +352,25 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		component.setDirty(true);
 	}
 	
+	public List<Long> getVisibleFiltersButtons() {
+		List<FlexiFilterButton> buttons = getFiltersButtons();
+		List<Long> enabledPositions = new ArrayList<>();
+		for(int i=0; i<buttons.size(); i++) {
+			if(buttons.get(i).isEnabled()) {
+				enabledPositions.add(Long.valueOf(i));
+			}
+		}
+		return enabledPositions;
+	}
+	
+	public void setVisibleFiltersButtons(List<Long> index) {
+		List<FlexiFilterButton> buttons = getFiltersButtons();
+		for(int i=0; i<buttons.size(); i++) {
+			boolean enabled = index.contains(Long.valueOf(i));
+			buttons.get(i).setEnabled(enabled);
+		}
+	}
+	
 	/**
 	 * Flag some filters as implicit.
 	 */
@@ -438,8 +457,10 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		if(source instanceof Choice colsChoice) {
 			if(Choice.EVNT_VALIDATION_OK.equals(event)) {
 				setCustomizedFilters(colsChoice);
+				tableEl.saveCustomSettings(ureq);
 			} else if(Choice.EVNT_FORM_RESETED.equals(event)) {
 				resetCustomizedFilters();
+				tableEl.saveCustomSettings(ureq);
 			}
 			if(addFiltersCallout != null) {
 				addFiltersCallout.deactivate();

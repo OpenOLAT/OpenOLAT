@@ -40,14 +40,16 @@ public class FlexiTablePreferences implements Serializable {
 	private List<String> enabledColumnKey;
 	private List<FlexiFiltersTab> customTabs;
 	private FlexiTableRendererType rendererType;
+	private List<Long> enabledFiltersButtons;
 	
 	public FlexiTablePreferences(int pageSize, String sortedColumnKey, boolean sortDirection,
 			List<String> enabledColumnKey, List<FlexiFiltersTab> customTabs,
-			FlexiTableRendererType rendererType) {
+			List<Long> enabledFiltersButtons, FlexiTableRendererType rendererType) {
 		this.pageSize = pageSize;
 		this.sortedColumnKey = sortedColumnKey;
 		this.sortDirection = sortDirection;
 		this.enabledColumnKey = enabledColumnKey;
+		this.enabledFiltersButtons = enabledFiltersButtons;
 		this.customTabs = customTabs;
 		this.rendererType = rendererType;
 	}
@@ -86,6 +88,14 @@ public class FlexiTablePreferences implements Serializable {
 	
 	public List<FlexiFiltersTab> getCustomTabs() {
 		return customTabs;
+	}
+
+	public List<Long> getEnabledFiltersButtons() {
+		return enabledFiltersButtons;
+	}
+
+	public void setEnabledFiltersButtons(List<Long> enabledFiltersButtons) {
+		this.enabledFiltersButtons = enabledFiltersButtons;
 	}
 
 	public FlexiTableRendererType getRendererType() {

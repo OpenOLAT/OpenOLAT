@@ -1962,7 +1962,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
-	private void saveCustomSettings(UserRequest ureq) {
+	public void saveCustomSettings(UserRequest ureq) {
 		if(StringHelper.containsNonWhitespace(persistentId)) {
 			Preferences prefs = ureq.getUserSession().getGuiPreferences();
 			if (prefs == null) {
@@ -2002,9 +2002,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 
+			List<Long> enabledFiltersButtons = filtersEl != null
+					? filtersEl.getVisibleFiltersButtons()
+					: null;
+
 			FlexiTablePreferences tablePrefs =
 					new FlexiTablePreferences(getPageSize(), sortedColKey, sortDirection,
-							convertColumnIndexToKeys(enabledColumnIndex), presets, rendererType);
+							convertColumnIndexToKeys(enabledColumnIndex), presets,
+							enabledFiltersButtons, rendererType);
 			prefs.putAndSave(FlexiTableElement.class, persistentId, tablePrefs);
 		}
 	}
@@ -2030,6 +2035,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					for(FlexiFiltersTab customTab:tablePrefs.getCustomTabs()) {
 						filterTabsEl.addCustomFilterTab(customTab);
 					}
+				}
+				
+				if(filtersEl != null && tablePrefs.getEnabledFiltersButtons() != null) {
+					filtersEl.setVisibleFiltersButtons(tablePrefs.getEnabledFiltersButtons());
 				}
 
 				if(tablePrefs.getRendererType() != null) {
