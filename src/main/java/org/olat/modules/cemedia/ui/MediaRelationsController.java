@@ -48,7 +48,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -64,10 +63,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -81,12 +82,9 @@ import org.olat.modules.cemedia.ui.MediaRelationsTableModel.MediaRelationsCols;
 import org.olat.modules.cemedia.ui.component.MediaRelationsCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.repository.ui.author.AuthorListConfiguration;
-import org.olat.repository.ui.author.AuthorListController;
-import org.olat.repository.ui.author.AuthoringEntryRow;
-import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
-import org.olat.repository.ui.author.AuthoringEntryRowsListSelectionEvent;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.EmptyScreenData;
+import org.olat.repository.ui.RepositoryEntrySelectionController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -116,7 +114,8 @@ public class MediaRelationsController extends FormBasicController {
 	private FlexiFiltersTab organisationsTab;
 	
 	private CloseableModalController cmc;
-	private AuthorListController repoSearchCtr;
+	private FooterModalController footerCmc;
+	private RepositoryEntrySelectionController repoSearchCtr;
 	private UserSearchController userSearchController;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private ConfirmDeleteRelationController deleteRelationCtrl;
@@ -296,12 +295,18 @@ public class MediaRelationsController extends FormBasicController {
 			}
 			cleanUp();
 		} else if(source == repoSearchCtr) {
-			if(event instanceof AuthoringEntryRowSelectionEvent se) {
-				doShareWithCourses(ureq, List.of(se.getRow()));
-			} else if(event instanceof AuthoringEntryRowsListSelectionEvent se) {
-				doShareWithCourses(ureq, se.getRows());
+			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
+				List<RepositoryEntry> entries = repoSearchCtr.getSelectedEntries();
+				if(entries != null) {
+					doShareWithCourses(ureq, entries);
+				}
+			} else if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				RepositoryEntry entry = repoSearchCtr.getSelectedEntry();
+				if(entry != null) {
+					doShareWithCourses(ureq, List.of(entry));
+				}
 			}
-			cmc.deactivate();
+			footerCmc.deactivate();
 			cleanUp();
 		} else if(source == selectOrganisationCtrl) {
 			if (event == Event.DONE_EVENT) {
@@ -322,19 +327,23 @@ public class MediaRelationsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(source == cmc) {
+		} else if(source == cmc || source == footerCmc) {
 			cleanUp();
 		}
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(userSearchController);
 		removeAsListenerAndDispose(deleteRelationCtrl);
 		removeAsListenerAndDispose(selectGroupCtrl);
+		removeAsListenerAndDispose(repoSearchCtr);
+		removeAsListenerAndDispose(footerCmc);
 		removeAsListenerAndDispose(cmc);
 		userSearchController = null;
 		deleteRelationCtrl = null;
 		selectGroupCtrl = null;
+		repoSearchCtr = null;
+		footerCmc = null;
 		cmc = null;
 	}
 	
@@ -462,37 +471,28 @@ public class MediaRelationsController extends FormBasicController {
 	}
 	
 	private void doSelectCourse(UserRequest ureq) {
-		removeAsListenerAndDispose(repoSearchCtr);
+		if(guardModalController(repoSearchCtr)) return;
 
-		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("media-course-v1", "CourseModule");
-		tableConfig.setSelectRepositoryEntry(SelectionMode.multi);
-		tableConfig.setBatchSelect(true);
-		tableConfig.setImportRessources(false);
-		tableConfig.setCreateRessources(false);
-		
-		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
-		searchParams.addResourceTypes("CourseModule");
-		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
+		CourseNodeReferenceProvider referenceProvider = new MediaCourseReferenceProvider(repositoryService);
+		repoSearchCtr = new RepositoryEntrySelectionController(ureq, getWindowControl(), "media-course-v1",
+				List.of("CourseModule"), null, null, null, true, referenceProvider);
 		listenTo(repoSearchCtr);
-		repoSearchCtr.selectFilterTab(ureq, repoSearchCtr.getMyTab());
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				repoSearchCtr.getInitialComponent(), true, translate("select.course"));
-		cmc.activate();
-		listenTo(cmc);
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"),
+				repoSearchCtr.getBodyComponent(), repoSearchCtr.getFooterComponent(), translate("select.course"));
+		listenTo(footerCmc);
+		footerCmc.activate();
 	}
 
-	private void doShareWithCourses(UserRequest ureq, List<AuthoringEntryRow> entryRows) {
-		if(entryRows == null || entryRows.isEmpty()) return; // Nothing to do
-		
+	private void doShareWithCourses(UserRequest ureq, List<RepositoryEntry> entries) {
+		if(entries == null || entries.isEmpty()) return; // Nothing to do
+
 		if(delaySave) {
-			for(AuthoringEntryRow entryRow:entryRows) {
-				RepositoryEntry entry = repositoryService.loadByKey(entryRow.getKey());
+			for(RepositoryEntry entry:entries) {
 				addToModel(new MediaShare(null, entry));
 			}
 		} else {
-			for(AuthoringEntryRow entryRow:entryRows) {
-				RepositoryEntry entry = repositoryService.loadByKey(entryRow.getKey());
+			for(RepositoryEntry entry:entries) {
 				mediaService.addRelation(media, false, entry);
 			}
 			dbInstance.commit();
@@ -614,6 +614,37 @@ public class MediaRelationsController extends FormBasicController {
 			} else if(share.getType() == MediaToGroupRelationType.ORGANISATION) {
 				mediaService.addRelation(mediaReference, row.getEditableToggleButton().isOn(), share.getOrganisation());
 			}
+		}
+	}
+
+	private class MediaCourseReferenceProvider extends CourseNodeReferenceProvider {
+
+		public MediaCourseReferenceProvider(RepositoryService repositoryService) {
+			super(repositoryService, List.of("CourseModule"), null, null, null, null);
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.courses");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_CourseModule_icon",
+					translate("select.no.course.yet"),
+					translate("select.no.course.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_CourseModule_icon",
+					translate("select.no.courses.in.view"),
+					translate("select.no.courses.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term.course");
 		}
 	}
 }
