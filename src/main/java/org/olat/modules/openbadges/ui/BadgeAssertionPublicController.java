@@ -115,7 +115,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
 		flc.contextPut("badgeClass", badgeClass);
 
-		String recipientName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient()));
+		String recipientName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient(), getLocale()));
 		flc.contextPut("recipientName", recipientName);
 
 		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
@@ -150,7 +150,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 
 		if (badgeAssertion.getAwardedBy() != null) {
 			Identity awardedByIdentity = badgeAssertion.getAwardedBy();
-			String awardedBy = StringHelper.escapeHtml(userManager.getUserDisplayName(awardedByIdentity));
+			String awardedBy = StringHelper.escapeHtml(userManager.getUserDisplayName(awardedByIdentity, getLocale()));
 			uifactory.addStaticTextElement("form.awarded.by", awardedBy, formLayout);
 
 			if (awardedByIdentity.getUser() != null && awardedByIdentity.getUser().getEmail() != null) {

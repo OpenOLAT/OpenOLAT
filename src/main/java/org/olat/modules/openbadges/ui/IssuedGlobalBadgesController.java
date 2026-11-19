@@ -192,7 +192,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	}
 
 	private void doConfirmRevoke(UserRequest ureq, BadgeAssertion badgeAssertion) {
-		String recipientDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient()));
+		String recipientDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient(), getLocale()));
 		String title = translate("confirm.revoke.issued.badge.title", recipientDisplayName);
 		String text = translate("confirm.revoke.issued.badge", recipientDisplayName);
 		confirmRevokeCtrl = activateOkCancelDialog(ureq, title, text, confirmRevokeCtrl);
@@ -200,7 +200,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	}
 
 	private void doConfirmDelete(UserRequest ureq, BadgeAssertion badgeAssertion) {
-		String recipientDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient()));
+		String recipientDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient(), getLocale()));
 		String title = translate("confirm.delete.issued.badge.title", recipientDisplayName);
 		String text = translate("confirm.delete.issued.badge", recipientDisplayName);
 		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
@@ -284,10 +284,10 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 			return switch (Cols.values()[col]) {
 				case id -> badgeAssertion.getUuid();
 				case name -> badgeAssertion.getBadgeClass().getName();
-				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
+				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient(), locale);
 				case status -> badgeAssertion;
 				case verification -> badgeAssertion.getBadgeClass().getVerificationMethod();
-				case awardedBy -> userManager.getUserDisplayName(badgeAssertion.getAwardedBy());
+				case awardedBy -> userManager.getUserDisplayName(badgeAssertion.getAwardedBy(), locale);
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
 				case revoke -> row.revokeLink();
 				case delete -> row.deleteLink();

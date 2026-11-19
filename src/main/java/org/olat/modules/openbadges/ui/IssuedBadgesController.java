@@ -264,7 +264,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		row.setDownloadUrl(downloadUrl + "/" + badgeAssertion.getDownloadFileName());
 
 		if (identity == null) {
-			String recipientName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
+			String recipientName = userManager.getUserDisplayName(badgeAssertion.getRecipient(), getLocale());
 			row.setRecipientName(StringHelper.xssScan(recipientName));
 		}
 
