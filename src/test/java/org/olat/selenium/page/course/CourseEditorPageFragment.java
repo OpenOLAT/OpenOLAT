@@ -473,7 +473,7 @@ public class CourseEditorPageFragment {
 		By rowsBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]");
 		OOGraphene.waitElement(rowsBy, browser);
 		
-		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + resourceTitle + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
+		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td[text()[contains(.,'" + resourceTitle + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
 		if(browser.findElements(selectRowBy).isEmpty()) {
 			By searchFieldBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_table_toolbar')]//input[contains(@class,'o_search_input')][@role='searchbox']");
 			browser.findElement(searchFieldBy).sendKeys(resourceTitle);

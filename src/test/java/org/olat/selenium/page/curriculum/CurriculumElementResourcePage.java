@@ -64,7 +64,7 @@ public class CurriculumElementResourcePage {
 		By rowsBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]");
 		OOGraphene.waitElement(rowsBy, browser);
 		
-		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
+		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td[text()[contains(.,'" + name + "')]]]/td[contains(@class,'o_singleselect')]/input[@type='radio']");
 		OOGraphene.waitElement(selectRowBy, browser);
 		OOGraphene.click(selectRowBy, browser);
 		OOGraphene.waitBusy(browser);
