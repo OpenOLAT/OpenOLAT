@@ -46,7 +46,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionS
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -55,12 +54,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
+import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PracticeFilterRule;
 import org.olat.course.nodes.practice.PracticeFilterRule.Operator;
@@ -90,12 +90,9 @@ import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.repository.ui.author.AuthorListConfiguration;
-import org.olat.repository.ui.author.AuthorListController;
-import org.olat.repository.ui.author.AuthoringEntryRow;
-import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
-import org.olat.repository.ui.author.AuthoringEntryRowsListSelectionEvent;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.EmptyScreenData;
+import org.olat.repository.ui.RepositoryEntrySelectionController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -128,8 +125,9 @@ public class PracticeConfigurationController extends FormBasicController {
 	private FormLayoutContainer statisticsKeywordsCont;
 	
 	private CloseableModalController cmc;
+	private FooterModalController footerCmc;
 	private DialogBoxController confirmRemoveDialog;
-	private AuthorListController testResourcesListCtrl;
+	private RepositoryEntrySelectionController testResourcesListCtrl;
 	private SharedResourceChooserController sharesChooserCtrl;
 	
 	private int counter = 0;
@@ -514,12 +512,18 @@ public class PracticeConfigurationController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(testResourcesListCtrl == source) {
-			if(event instanceof AuthoringEntryRowSelectionEvent se) {
-				doAddTest(se.getRow());
-			} else if(event instanceof AuthoringEntryRowsListSelectionEvent se) {
-				doAddTest(se.getRows());
+			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
+				List<RepositoryEntry> entries = testResourcesListCtrl.getSelectedEntries();
+				if(entries != null) {
+					doAddTest(entries);
+				}
+			} else if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				RepositoryEntry entry = testResourcesListCtrl.getSelectedEntry();
+				if(entry != null) {
+					doAddTest(entry);
+				}
 			}
-			cmc.deactivate();
+			footerCmc.deactivate();
 			cleanUp();
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(sharesChooserCtrl == source) {
@@ -537,20 +541,22 @@ public class PracticeConfigurationController extends FormBasicController {
 			}
 			cleanUp();
 			fireEvent(ureq, Event.DONE_EVENT);
-		} else if(cmc == source) {
+		} else if(cmc == source || footerCmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(testResourcesListCtrl);
 		removeAsListenerAndDispose(confirmRemoveDialog);
 		removeAsListenerAndDispose(sharesChooserCtrl);
+		removeAsListenerAndDispose(footerCmc);
 		removeAsListenerAndDispose(cmc);
 		testResourcesListCtrl = null;
 		confirmRemoveDialog = null;
 		sharesChooserCtrl = null;
+		footerCmc = null;
 		cmc = null;
 	}
 
@@ -671,42 +677,34 @@ public class PracticeConfigurationController extends FormBasicController {
 	}
 	
 	private void doAddTest(UserRequest ureq) {
-		Roles roles = ureq.getUserSession().getRoles();
-		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("practice-qti21-test-v1", ImsQTI21Resource.TYPE_NAME);
-		tableConfig.setSelectRepositoryEntry(SelectionMode.multi);
-		tableConfig.setBatchSelect(true);
-		tableConfig.setImportRessources(false);
-		tableConfig.setCreateRessources(false);
-		
-		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
-		searchParams.setCanReference(true);
-		searchParams.addResourceTypes(ImsQTI21Resource.TYPE_NAME);
+		if(guardModalController(testResourcesListCtrl)) return;
+
 		List<Long> excludeEntries = resourcesModel.getObjects().stream()
 				.filter(infos -> infos.getResource().getTestEntry() != null)
 				.map(resource -> resource.getResource().getTestEntry().getKey())
 				.collect(Collectors.toList());
-		searchParams.setExcludeEntryKeys(excludeEntries);
-		
-		testResourcesListCtrl = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
+
+		CourseNodeReferenceProvider referenceProvider = new PracticeTestReferenceProvider(repositoryService);
+		testResourcesListCtrl = new RepositoryEntrySelectionController(ureq, getWindowControl(), "practice-qti21-test-v1",
+				List.of(ImsQTI21Resource.TYPE_NAME), null, null, null, true,
+				searchParams -> searchParams.setExcludeEntryKeys(excludeEntries),
+				referenceProvider);
 		listenTo(testResourcesListCtrl);
-		testResourcesListCtrl.selectFilterTab(ureq, testResourcesListCtrl.getMyTab());
-		
-		String title = translate("add.resource.test.title");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), testResourcesListCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), testResourcesListCtrl.getBodyComponent(),
+				testResourcesListCtrl.getFooterComponent(), translate("add.resource.test.title"));
+		listenTo(footerCmc);
+		footerCmc.activate();
 	}
-	
-	private void doAddTest(AuthoringEntryRow entryRow) {
-		RepositoryEntry testEntry = repositoryService.loadByKey(entryRow.getKey());
+
+	private void doAddTest(RepositoryEntry testEntry) {
 		practiceResourceService.createResource(courseEntry, courseNode.getIdent(), testEntry);
 		loadModel();
 		loadStatistics();
 	}
-	
-	private void doAddTest(List<AuthoringEntryRow> entryRows) {
-		for(AuthoringEntryRow entryRow:entryRows) {
-			RepositoryEntry testEntry = repositoryService.loadByKey(entryRow.getKey());
+
+	private void doAddTest(List<RepositoryEntry> testEntries) {
+		for(RepositoryEntry testEntry:testEntries) {
 			practiceResourceService.createResource(courseEntry, courseNode.getIdent(), testEntry);
 		}
 		loadModel();
@@ -816,6 +814,37 @@ public class PracticeConfigurationController extends FormBasicController {
 				return Operator.valueOf(operatorEl.getSelectedKey());
 			}
 			return Operator.equals;
+		}
+	}
+
+	private class PracticeTestReferenceProvider extends CourseNodeReferenceProvider {
+
+		public PracticeTestReferenceProvider(RepositoryService repositoryService) {
+			super(repositoryService, List.of(ImsQTI21Resource.TYPE_NAME), null, null, null, null);
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.tests");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-IMSQTI21_icon",
+					translate("select.no.test.yet"),
+					translate("select.no.test.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-IMSQTI21_icon",
+					translate("select.no.tests.in.view"),
+					translate("select.no.tests.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term.test");
 		}
 	}
 }

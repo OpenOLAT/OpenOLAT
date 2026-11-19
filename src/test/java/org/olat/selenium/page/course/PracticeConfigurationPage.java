@@ -48,12 +48,20 @@ public class PracticeConfigurationPage {
 	public PracticeConfigurationPage selectTest(String name) {
 		By addButtonBy = By.cssSelector("a.o_sel_practice_add_test");
 		browser.findElement(addButtonBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		By selectBy = By.xpath("//div[@class='o_sel_author_env']//td/a[text()[contains(.,'" + name + "')]]");
-		browser.findElement(selectBy).click();
+		OOGraphene.waitModalDialog(browser, "div.o_sel_author_env");
+
+		By rowsBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]");
+		OOGraphene.waitElement(rowsBy, browser);
+
+		By selectRowBy = By.xpath("//div[@class='o_sel_author_env']//div[contains(@class,'o_coursetable')]//table[contains(@class,'table')]//tr[td[text()[contains(.,'" + name + "')]]]/td[contains(@class,'o_multiselect')]/input[@type='checkbox']");
+		OOGraphene.waitElement(selectRowBy, browser);
+		OOGraphene.click(selectRowBy, browser);
+		OOGraphene.waitBusy(browser);
+
+		By selectBy = By.cssSelector(".o_modal_selection .modal-footer .o_button_group a.btn-primary.o_sel_re_selection_select");
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
-		
+
 		By resourcesBy = By.xpath("//div[contains(@class,'o_sel_practice_resources_list')]//td[contains(.,'" + name + "')]");
 		OOGraphene.waitElement(resourcesBy, browser);
 		return this;
