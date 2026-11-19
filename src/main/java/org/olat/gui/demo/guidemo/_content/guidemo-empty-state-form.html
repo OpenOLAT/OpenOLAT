@@ -1,5 +1,43 @@
-<p>$r.translate("example") (form, $variant):</p>
-$r.render("emptyStateInForm")
-
-<p>$r.translate("example") (table, $variant):</p>
-$r.render("itemPriceTable")
+<div class="o_guidemo_empty_state">
+	<div class="o_guidemo_empty_state_settings" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-bottom: 16px;">
+		<div class="o_guidemo_empty_state_setting" style="display: inline-flex; align-items: center; gap: 8px;">
+			<span>$r.translate("empty.state.demo.width")</span>
+			$r.render("empty.state.demo.width")
+		</div>
+		<div class="o_guidemo_empty_state_setting" style="display: inline-flex; align-items: center; gap: 8px;">
+			<span>$r.translate("empty.state.demo.height")</span>
+			<div style="width: 200px;">$r.render("empty.state.demo.height")</div>
+			<span style="min-width: 52px;">$height px</span>
+		</div>
+		<div class="o_guidemo_empty_state_setting" style="display: inline-flex; align-items: center; gap: 8px;">
+			<span>$r.translate("empty.state.demo.variant")</span>
+			$r.render("empty.state.demo.variant")
+		</div>
+	</div>
+	<fieldset class="o_guidemo_empty_state_elements" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 24px; margin-bottom: 16px; padding: 8px 16px; border: 1px solid var(--o-border); border-radius: 8px;">
+		<legend style="width: auto; margin: 0; padding: 0 6px; border: 0; font-size: 1em; font-weight: 500;">$r.translate("empty.state.demo.elements")</legend>
+		$r.render("empty.state.demo.elements")
+		<div class="o_guidemo_empty_state_setting" style="display: inline-flex; align-items: center; gap: 8px;">
+			<span>$r.translate("empty.state.demo.buttons")</span>
+			$r.render("empty.state.demo.buttons")
+		</div>
+		<div class="o_guidemo_empty_state_setting" style="display: inline-flex; align-items: center; gap: 8px;">
+			<span>$r.translate("empty.state.demo.title.length")</span>
+			$r.render("empty.state.demo.title.length")
+		</div>
+		<div class="o_guidemo_empty_state_setting" style="display: inline-flex; align-items: center; gap: 8px;">
+			<span>$r.translate("empty.state.demo.hint.length")</span>
+			$r.render("empty.state.demo.hint.length")
+		</div>
+	</fieldset>
+	<div class="o_guidemo_empty_state_stage" style="display: flex; justify-content: center; margin-bottom: 24px; padding: 24px 12px; border-radius: 12px; background-color: var(--o-bg-subtle);">
+		<section class="o_guidemo_empty_state_frame" style="width: 100%; max-width: $frameWidth; padding: 16px; border-radius: 8px; background-color: var(--o-bg-raised); transition: max-width 0.3s ease;">
+			<h4>$previewTitle</h4>
+			<div class="o_guidemo_empty_state_box" style="display: flex; flex-direction: column; $boxStyle">
+				$r.render("preview")
+			</div>
+		</section>
+	</div>
+	<h4>$r.translate("empty.state.demo.table")</h4>
+	$r.render("itemPriceTable")
+</div>

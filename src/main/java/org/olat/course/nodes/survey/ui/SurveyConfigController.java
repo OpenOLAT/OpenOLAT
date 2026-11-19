@@ -94,7 +94,7 @@ public class SurveyConfigController extends FormBasicController implements Refer
 		// Empty state config with Select/Create/Import buttons inside the box
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.survey.resource.selected"))
-				.withDescTranslated(translate("no.survey.resource.selected.text"))
+				.withHintTranslated(translate("no.survey.resource.selected.text"))
 				.withIconCss("o_icon o_FileResource-FORM_icon")
 				.withPrimaryButton("o_icon_search o_sel_survey_choose_repofile", "select", null)
 				.withSecondaryButton("o_icon_add", "create", null, "create")

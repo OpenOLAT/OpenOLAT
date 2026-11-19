@@ -3576,6 +3576,50 @@ function o_initDayNavHeaderFit(domId) {
 	headerEl.oDayNavFitObserver = observer;
 }
 
+function o_initEmptyStateAuto(domId) {
+	const stateEl = document.getElementById(domId);
+	const innerEl = stateEl ? stateEl.querySelector('.o_empty_inner') : null;
+	if (!innerEl) {
+		return;
+	}
+	
+	// measure the space with the small layout, so that neighbours in the same row do not
+	// hold each other in the standard layout; keep the standard layout only if it fits
+	function fit() {
+		stateEl.classList.add('o_empty_low');
+		const available = stateEl.clientHeight;
+		stateEl.classList.remove('o_empty_low');
+		if (innerEl.offsetHeight > available + 1) {
+			stateEl.classList.add('o_empty_low');
+		}
+	}
+	
+	const parentEl = stateEl.parentElement;
+	let size;
+	function fitAndRemember() {
+		fit();
+		size = parentEl.clientWidth + 'x' + parentEl.clientHeight;
+	}
+	
+	if (parentEl.oEmptyStateObserver) {
+		parentEl.oEmptyStateObserver.disconnect();
+	}
+	fitAndRemember();
+	if (document.fonts.status === 'loading') {
+		document.fonts.ready.then(fitAndRemember);
+	}
+	const observer = new ResizeObserver(() => {
+		if (!stateEl.isConnected) {
+			observer.disconnect();
+			delete parentEl.oEmptyStateObserver;
+		} else if (size !== parentEl.clientWidth + 'x' + parentEl.clientHeight) {
+			requestAnimationFrame(fitAndRemember);
+		}
+	});
+	observer.observe(parentEl);
+	parentEl.oEmptyStateObserver = observer;
+}
+
 function o_initRepeatableFieldGroup(domId) {
 	const groupEl = document.getElementById(domId);
 	if (!groupEl) {

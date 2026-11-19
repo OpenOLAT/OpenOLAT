@@ -34,9 +34,7 @@ public class EmptyStateRenderConfigBuilder {
 	private String indicatorIconCss;
 	private String messageTranslated;
 	private String hintTranslated;
-	private EmptyStateHintAlignment hintAlignment;
-	private String descTranslated;
-	private EmptyStateVariant variant = EmptyStateVariant.standard;
+	private EmptyStateVariant variant;
 	private String helpTranslated;
 	private String helpPage;
 	private EmptyStateButtonRenderer primaryButtonRenderer;
@@ -76,16 +74,6 @@ public class EmptyStateRenderConfigBuilder {
 		return this;
 	}
 
-	public EmptyStateRenderConfigBuilder withHintAlignment(EmptyStateHintAlignment hintAlignment) {
-		this.hintAlignment = hintAlignment;
-		return this;
-	}
-	
-	public EmptyStateRenderConfigBuilder withDescTranslated(String descTranslated) {
-		this.descTranslated = descTranslated;
-		return this;
-	}
-
 	public EmptyStateRenderConfigBuilder withHelp(String helpTranslated, String page) {
 		this.helpTranslated = helpTranslated;
 		this.helpPage = page;
@@ -106,7 +94,7 @@ public class EmptyStateRenderConfigBuilder {
 
 	public EmptyStateRenderConfig build() {
 		return new EmptyStateRenderConfigImpl(variant, wrapperSelector, iconCss, indicatorIconCss, messageTranslated, 
-				hintTranslated, hintAlignment, descTranslated, helpTranslated, helpPage, primaryButtonRenderer, 
+				hintTranslated, helpTranslated, helpPage, primaryButtonRenderer,
 				secondaryButtonRenderers);
 	}
 
@@ -117,8 +105,6 @@ public class EmptyStateRenderConfigBuilder {
 		private final String indicatorIconCss;
 		private final String messageTranslated;
 		private final String hintTranslated;
-		private final EmptyStateHintAlignment hintAlignment;
-		private final String descTranslated;
 		private final String helpTranslated;
 		private final String helpPage;
 		private final EmptyStateVariant variant;
@@ -126,9 +112,8 @@ public class EmptyStateRenderConfigBuilder {
 		private final List<EmptyStateButtonRenderer> secondaryButtonRenderers;
 
 		public EmptyStateRenderConfigImpl(EmptyStateVariant variant, String wrapperSelector, String iconCss,
-										  String indicatorIconCss, String messageTranslated, String hintTranslated, 
-										  EmptyStateHintAlignment hintAlignment, 
-										  String descTranslated, String helpTranslated, String helpPage, 
+										  String indicatorIconCss, String messageTranslated, String hintTranslated,
+										  String helpTranslated, String helpPage,
 										  EmptyStateButtonRenderer primaryButtonRenderer, 
 										  List<EmptyStateButtonRenderer> secondaryButtonRenderers) {
 			this.variant = variant;
@@ -137,8 +122,6 @@ public class EmptyStateRenderConfigBuilder {
 			this.indicatorIconCss = indicatorIconCss;
 			this.messageTranslated = messageTranslated;
 			this.hintTranslated = hintTranslated;
-			this.hintAlignment = hintAlignment;
-			this.descTranslated = descTranslated;
 			this.helpTranslated = helpTranslated;
 			this.helpPage = helpPage;
 			this.primaryButtonRenderer = primaryButtonRenderer;
@@ -168,16 +151,6 @@ public class EmptyStateRenderConfigBuilder {
 		@Override
 		public String getHintTranslated() {
 			return hintTranslated;
-		}
-		
-		@Override
-		public EmptyStateHintAlignment getHintAlignment() {
-			return hintAlignment;
-		}
-
-		@Override
-		public String getDescTranslated() {
-			return descTranslated;
 		}
 
 		@Override

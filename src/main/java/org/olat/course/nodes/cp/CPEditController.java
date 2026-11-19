@@ -133,7 +133,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.cp.resource.selected"))
-				.withDescTranslated(translate("no.cp.resource.selected.text"))
+				.withHintTranslated(translate("no.cp.resource.selected.text"))
 				.withIconCss("o_icon o_FileResource-IMSCP_icon")
 				.withPrimaryButton("o_icon_search o_sel_cp_choose_repofile", "select", null)
 				.withSecondaryButton("o_icon_add", "create", null, "create")

@@ -123,7 +123,7 @@ public class FormConfigController extends FormBasicController implements Referen
 		// Empty state config with Select/Create/Import buttons inside the box
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.form.resource.selected"))
-				.withDescTranslated(translate("no.form.resource.selected.text"))
+				.withHintTranslated(translate("no.form.resource.selected.text"))
 				.withIconCss("o_icon o_FileResource-FORM_icon")
 				.withPrimaryButton("o_icon_search o_sel_form_choose_repofile", "select", null)
 				.withSecondaryButton("o_icon_add", "create", null, "create")

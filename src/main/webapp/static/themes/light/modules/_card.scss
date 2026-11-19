@@ -478,6 +478,12 @@
 		background-color: var(--o-dashboard-widget-table-bg);
 		border-top: $o-dashboard-widget-border-width $o-dashboard-widget-border-style var(--o-dashboard-widget-border);
 		border-bottom: $o-dashboard-widget-border-width $o-dashboard-widget-border-style var(--o-dashboard-widget-border);
+		
+		&:has(.o_empty_auto), :has(.o_empty_auto) {
+			display: flex;
+			flex-direction: column;
+			flex-grow: 1;
+		}
 	}
 	.o_dashboard_widget_table :has(.o_dashboard_table_max_height) {
 		height: 100%;

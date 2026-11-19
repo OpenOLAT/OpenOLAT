@@ -40,11 +40,7 @@ public class EmptyStateConfigBuilder {
 	private String hintI18nKey;
 	private String[] hintI18nArgs;
 	private String hintTranslated;
-	private EmptyStateHintAlignment hintAlignment;
-	private String descI18nKey;
-	private String[] descI18nArgs;
-	private String descTranslated;
-	private EmptyStateVariant variant = EmptyStateVariant.standard;
+	private EmptyStateVariant variant;
 	private String helpTranslated;
 	private String helpPage;
 	private EmptyStateButton primaryButton;
@@ -99,26 +95,6 @@ public class EmptyStateConfigBuilder {
 		return this;
 	}
 
-	public EmptyStateConfigBuilder withHintAlignment(EmptyStateHintAlignment hintAlignment) {
-		this.hintAlignment = hintAlignment;
-		return this;
-	}
-	
-	public EmptyStateConfigBuilder withDescI18nKey(String descI18nKey) {
-		this.descI18nKey = descI18nKey;
-		return this;
-	}
-
-	public EmptyStateConfigBuilder withDescI18nArgs(String[] descI18nArgs) {
-		this.descI18nArgs = descI18nArgs;
-		return this;
-	}
-
-	public EmptyStateConfigBuilder withDescTranslated(String descTranslated) {
-		this.descTranslated = descTranslated;
-		return this;
-	}
-	
 	public EmptyStateConfigBuilder withHelp(String helpTranslated, String page) {
 		this.helpTranslated = helpTranslated;
 		this.helpPage = page;
@@ -144,8 +120,8 @@ public class EmptyStateConfigBuilder {
 	
 	public EmptyStateConfig build() {
 		return new EmptyStateConfigImpl(variant, iconCss, indicatorIconCss, messageI18nKey, 
-				messageI18nArgs, messageTranslated, hintI18nKey, hintI18nArgs, hintTranslated, hintAlignment, descI18nKey, 
-				descI18nArgs, descTranslated, helpTranslated, helpPage, primaryButton, secondaryButtons);
+				messageI18nArgs, messageTranslated, hintI18nKey, hintI18nArgs, hintTranslated,
+				helpTranslated, helpPage, primaryButton, secondaryButtons);
 	}
 
 	private static class EmptyStateConfigImpl implements EmptyStateConfig {
@@ -158,10 +134,6 @@ public class EmptyStateConfigBuilder {
 		private final String hintI18nKey;
 		private final String[] hintI18nArgs;
 		private final String hintTranslated;
-		private final EmptyStateHintAlignment hintAlignment;
-		private final String descI18nKey;
-		private final String[] descI18nArgs;
-		private final String descTranslated;
 		private final String helpTranslated;
 		private final String helpPage;
 		private final EmptyStateVariant variant;
@@ -170,8 +142,7 @@ public class EmptyStateConfigBuilder {
 
 		public EmptyStateConfigImpl(EmptyStateVariant variant, String iconCss, String indicatorIconCss, String messageI18nKey,
 									String[] messageI18nArgs, String messageTranslated, String hintI18nKey, String[] hintI18nArgs,
-									String hintTranslated, EmptyStateHintAlignment hintAlignment, String descI18nKey, String[] descI18nArgs,
-									String descTranslated, String helpTranslated, String helpPage, 
+									String hintTranslated, String helpTranslated, String helpPage,
 									EmptyStateButton primaryButton, List<EmptyStateButton> secondaryButtons) {
 			this.variant = variant;
 			this.iconCss = iconCss;
@@ -182,10 +153,6 @@ public class EmptyStateConfigBuilder {
 			this.hintI18nKey = hintI18nKey;
 			this.hintI18nArgs = hintI18nArgs;
 			this.hintTranslated = hintTranslated;
-			this.hintAlignment = hintAlignment;
-			this.descI18nKey = descI18nKey;
-			this.descI18nArgs = descI18nArgs;
-			this.descTranslated = descTranslated;
 			this.helpTranslated = helpTranslated;
 			this.helpPage = helpPage;
 			this.primaryButton = primaryButton;
@@ -231,27 +198,7 @@ public class EmptyStateConfigBuilder {
 		public String getHintTranslated() {
 			return hintTranslated;
 		}
-		
-		@Override
-		public EmptyStateHintAlignment getHintAlignment() {
-			return hintAlignment;
-		}
 
-		@Override
-		public String getDescI18nKey() {
-			return descI18nKey;
-		}
-
-		@Override
-		public String[] getDescI18nArgs() {
-			return descI18nArgs;
-		}
-
-		@Override
-		public String getDescTranslated() {
-			return descTranslated;
-		}
-		
 		@Override
 		public String getHelpTranslated() {
 			return helpTranslated;

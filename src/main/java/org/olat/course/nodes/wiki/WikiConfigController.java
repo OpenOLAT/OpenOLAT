@@ -94,7 +94,7 @@ public class WikiConfigController extends BasicController implements ReferenceCo
 		RepositoryEntry wikiEntry = courseNode.getReferencedRepositoryEntry();
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.wiki.resource.selected"))
-				.withDescTranslated(translate("no.wiki.resource.selected.text"))
+				.withHintTranslated(translate("no.wiki.resource.selected.text"))
 				.withIconCss("o_icon o_FileResource-WIKI_icon")
 				.withPrimaryButton("o_icon_search", "select", null)
 				.withSecondaryButton("o_icon_add", "create", null, "create")

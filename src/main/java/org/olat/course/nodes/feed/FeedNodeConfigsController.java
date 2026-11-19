@@ -108,7 +108,7 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 		boolean isBlog = Objects.equals(resourceTypeName, BlogFileResource.TYPE_NAME);
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.feed.resource.selected"))
-				.withDescTranslated(translate("no.feed.resource.selected.text"))
+				.withHintTranslated(translate("no.feed.resource.selected.text"))
 				.withIconCss(isBlog ? "o_icon o_blog_icon" : "o_icon o_podcast_icon")
 				.withPrimaryButton("o_icon_search", "select", null)
 				.withSecondaryButton("o_icon_add", "create", null, "create")

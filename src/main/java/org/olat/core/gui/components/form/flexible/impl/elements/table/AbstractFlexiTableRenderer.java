@@ -29,6 +29,7 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderConfigBuilder;
 import org.olat.core.gui.components.emptystate.EmptyStateRenderer;
+import org.olat.core.gui.components.emptystate.EmptyStateVariant;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
@@ -183,13 +184,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				() -> renderFormItem(renderer, sb, ftE.getEmptyStatePrimaryButton(), ubu, translator, renderResult, null) : null;
 
 		EmptyStateRenderConfigBuilder renderConfigBuilder = EmptyStateRenderConfig.builder()
-				.withVariant(config.getVariant())
+				.withVariant(config.getVariant() != null ? config.getVariant() : EmptyStateVariant.standard)
 				.withWrapperSelector(ftE.getWrapperSelector())
 				.withIconCss(config.getIconCss())
 				.withMessageTranslated(message)
 				.withHelp(config.getHelpTranslated(), config.getHelpPage())
 				.withHintTranslated(hint)
-				.withHintAlignment(config.getHintAlignment())
 				.withPrimaryButtonRenderer(buttonRenderer);
 		for (FormLink secondaryButton : ftE.getEmptyStateSecondaryButtons()) {
 			EmptyStateButtonRenderer secondaryButtonRenderer = 

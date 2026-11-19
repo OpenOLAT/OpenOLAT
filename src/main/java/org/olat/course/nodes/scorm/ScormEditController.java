@@ -186,7 +186,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		// Empty state config with Select/Import buttons inside the box (SCORM packages are imported, not created)
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.scorm.resource.selected"))
-				.withDescTranslated(translate("no.scorm.resource.selected.text"))
+				.withHintTranslated(translate("no.scorm.resource.selected.text"))
 				.withIconCss("o_icon o_FileResource-SCORMCP_icon")
 				.withPrimaryButton("o_icon_search o_sel_scorm_choose_repofile", "select", null)
 				.withSecondaryButton("o_icon_import", "import", null, "import")

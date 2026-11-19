@@ -41,10 +41,6 @@ public class EmptyStateFactory {
 		emptyState.setHintI18nKey(config.getHintI18nKey());
 		emptyState.setHintI18nArgs(config.getHintI18nArgs());
 		emptyState.setHintTranslated(config.getHintTranslated());
-		emptyState.setHintAlignment(config.getHintAlignment());
-		emptyState.setDescI18nKey(config.getDescI18nKey());
-		emptyState.setDescI18nArgs(config.getDescI18nArgs());
-		emptyState.setDescTranslated(config.getDescTranslated());
 		emptyState.setHelpTranslated(config.getHelpTranslated());
 		emptyState.setHelpPage(config.getHelpPage());
 		emptyState.setPrimaryButton(config.getPrimaryButton());

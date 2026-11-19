@@ -71,7 +71,7 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	
 	private static final ComponentRenderer RENDERER = new EmptyStateRenderer();
 	
-	private EmptyStateVariant variant = EmptyStateVariant.standard;
+	private EmptyStateVariant variant;
 	private String iconCss;
 	private String indicatorIconCss;
 	private String messageI18nKey;
@@ -80,10 +80,6 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	private String hintI18nKey;
 	private String[] hintI18nArgs;
 	private String hintTranslated;
-	private EmptyStateHintAlignment hintAlignment;
-	private String descI18nKey;
-	private String[] descI18nArgs;
-	private String descTranslated;
 	private String helpTranslated;
 	private String helpPage;
 	private final Link primaryButtonLink;
@@ -93,6 +89,7 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 
 	EmptyState(String name) {
 		super(name);
+		setDomReplacementWrapperRequired(false);
 		
 		primaryButtonLink = LinkFactory.createCustomLink("emptystate_" + CodeHelper.getRAMUniqueID(), 
 				"empty.state.primary", "", Link.BUTTON, null, this);
@@ -182,39 +179,7 @@ public class EmptyState extends AbstractComponent implements FormBaseComponent, 
 	public void setHintTranslated(String hintTranslated) {
 		this.hintTranslated = hintTranslated;
 	}
-	
-	public EmptyStateHintAlignment getHintAlignment() {
-		return hintAlignment;
-	}
-	
-	public void setHintAlignment(EmptyStateHintAlignment hintAlignment) {
-		this.hintAlignment = hintAlignment;
-	}
 
-	public String getDescI18nKey() {
-		return descI18nKey;
-	}
-
-	public void setDescI18nKey(String descI18nKey) {
-		this.descI18nKey = descI18nKey;
-	}
-
-	public String[] getDescI18nArgs() {
-		return descI18nArgs;
-	}
-
-	public void setDescI18nArgs(String[] descI18nArgs) {
-		this.descI18nArgs = descI18nArgs;
-	}
-
-	public String getDescTranslated() {
-		return descTranslated;
-	}
-
-	public void setDescTranslated(String descTranslated) {
-		this.descTranslated = descTranslated;
-	}
-	
 	public String getHelpTranslated() {
 		return helpTranslated;
 	}

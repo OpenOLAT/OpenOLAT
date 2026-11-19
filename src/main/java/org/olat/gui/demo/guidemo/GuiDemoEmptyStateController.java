@@ -21,96 +21,26 @@ package org.olat.gui.demo.guidemo;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.emptystate.EmptyState;
-import org.olat.core.gui.components.emptystate.EmptyStateConfig;
-import org.olat.core.gui.components.emptystate.EmptyStateConfigBuilder;
-import org.olat.core.gui.components.emptystate.EmptyStateFactory;
-import org.olat.core.gui.components.emptystate.EmptyStateVariant;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * Entry point for the GUI demo of empty states.
- * Delegates to EmptyStateMainController which provides the full demo layout.
+ * Delegates to GuiDemoEmptyStateFormController which provides the playground.
  */
 public class GuiDemoEmptyStateController extends BasicController {
 
-	VelocityContainer mainVC;
-
 	public GuiDemoEmptyStateController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-
-		mainVC = createVelocityContainer("guidemo-empty-state");
-
-		initStandard1();
-		initStandard2();
-		initStandardForm(ureq);
 		
-		initSmall1();
-		
-		initSmallForm(ureq);
-
-		putInitialPanel(mainVC);
-	}
-
-	private void initStandard1() {
-		EmptyStateConfig emptyStateConfig = example1Builder().build();
-		EmptyState emptyState = EmptyStateFactory.create("emptyStateStandard1", mainVC, this, emptyStateConfig);
-		emptyState.setTranslator(getTranslator());
-	}
-
-	EmptyStateConfigBuilder example1Builder() {
-		return EmptyStateConfig.builder()
-				.withIconCss("o_icon_globe")
-				.withMessageI18nKey("empty.state.message.nothing")
-				.withHintI18nKey("empty.state.hint.additional")
-				.withHelp(translate("empty.state.help.additional"), "release_notes/")
-				.withPrimaryButton("o_icon_bolt_lightning", "empty.state.button.primary.action", null)
-				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.1", null, "#1")
-				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.2", null,"#2")
-				.withSecondaryButton("o_icon_bolt_lightning", "empty.state.button.secondary.action.3", null,"#3");
-	}
-	
-	private void initSmall1() {
-		EmptyStateConfig emptyStateConfig = example1Builder().withVariant(EmptyStateVariant.small).build();
-		EmptyState emptyState = EmptyStateFactory.create("emptyStateSmall1", mainVC, this, emptyStateConfig);
-		emptyState.setTranslator(getTranslator());
-	}
-
-	private void initStandardForm(UserRequest ureq) {
-		GuiDemoEmptyStateFormController ctrl = new GuiDemoEmptyStateFormController(ureq, getWindowControl(), 
-				EmptyStateVariant.standard);
-		listenTo(ctrl);
-		mainVC.put("emptyStateStandardForm", ctrl.getInitialComponent());
-	}
-
-	private void initStandard2() {
-		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
-				.withIconCss("o_icon_search")
-				.withMessageI18nKey("empty.state.message.learning")
-				.withHintI18nKey("empty.state.hint.modify")
-				.build();
-		EmptyState emptyState = EmptyStateFactory.create("emptyStateStandard2", mainVC, this, emptyStateConfig);
-		emptyState.setTranslator(getTranslator());
-	}
-	
-	private void initSmallForm(UserRequest ureq) {
-		GuiDemoEmptyStateFormController ctrl = new GuiDemoEmptyStateFormController(ureq, getWindowControl(), 
-				EmptyStateVariant.small);
-		listenTo(ctrl);
-		mainVC.put("emptyStateSmallForm", ctrl.getInitialComponent());
+		GuiDemoEmptyStateFormController playgroundCtrl = new GuiDemoEmptyStateFormController(ureq, wControl);
+		listenTo(playgroundCtrl);
+		putInitialPanel(playgroundCtrl.getInitialComponent());
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source instanceof EmptyState) {
-			if (event instanceof EmptyState.PrimaryEvent) {
-				showInfo("empty.state.event.primary");
-			} else if (event instanceof EmptyState.SecondaryEvent secondaryEvent) {
-				showInfo("empty.state.event.secondary", secondaryEvent.getAction());
-			}
-		}
+		//
 	}
 }

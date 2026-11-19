@@ -36,8 +36,6 @@ public interface EmptyStateRenderConfig {
 	String getIndicatorIconCss();
 	String getMessageTranslated();
 	String getHintTranslated();
-	EmptyStateHintAlignment getHintAlignment();
-	String getDescTranslated();
 	String getHelpTranslated();
 	String getHelpPage();
 	EmptyStateVariant getVariant();

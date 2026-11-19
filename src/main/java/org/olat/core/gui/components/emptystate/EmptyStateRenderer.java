@@ -29,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -47,16 +48,14 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		
 		String message = getMessage(emptyState, translator);
 		String hint = getHint(emptyState, translator);
-		String desc = getDesc(emptyState, translator);
 
 		EmptyStateRenderConfigBuilder builder = EmptyStateRenderConfig.builder()
+				.withWrapperSelector(Renderer.getComponentPrefix(emptyState))
 				.withVariant(emptyState.getVariant())
 				.withIndicatorIconCss(emptyState.getIndicatorIconCss())
 				.withIconCss(emptyState.getIconCss())
 				.withMessageTranslated(message)
 				.withHintTranslated(hint)
-				.withHintAlignment(emptyState.getHintAlignment())
-				.withDescTranslated(desc)
 				.withHelp(emptyState.getHelpTranslated(), emptyState.getHelpPage());
 
 		addPrimaryButtonRenderer(builder, renderer, sb, emptyState, translator, args);
@@ -80,15 +79,6 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			return emptyState.getHintTranslated();
 		} else if (StringHelper.containsNonWhitespace(emptyState.getHintI18nKey())) {
 			return translator.translate(emptyState.getHintI18nKey(), emptyState.getHintI18nArgs());
-		}
-		return null;
-	}
-	
-	private String getDesc(EmptyState emptyState, Translator translator) {
-		if (StringHelper.containsNonWhitespace(emptyState.getDescTranslated())) {
-			return emptyState.getDescTranslated();
-		} else if (StringHelper.containsNonWhitespace(emptyState.getDescI18nKey())) {
-			return translator.translate(emptyState.getDescI18nKey(), emptyState.getDescI18nArgs());
 		}
 		return null;
 	}
@@ -157,43 +147,39 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 
 	public static void renderEmptyState(StringOutput sb, Translator translator,
 										String elementCssClass, EmptyStateRenderConfig config) {
-		sb.append("<div class='o_empty_state");
+		EmptyStateVariant variant = config.getVariant() != null ? config.getVariant() : EmptyStateVariant.auto;
+		String domId = config.getWrapperSelector();
+		if (domId == null && variant == EmptyStateVariant.auto) {
+			domId = "o_empty_" + CodeHelper.getRAMUniqueID();
+		}
+		
+		sb.append("<div class='o_empty_state o_empty_").append(variant.name());
+		sb.append(" o_empty_low", variant == EmptyStateVariant.auto);
 		if (StringHelper.containsNonWhitespace(elementCssClass)) {
 			sb.append(" ").append(elementCssClass);
 		}
 		sb.append("'");
-		if (config.getWrapperSelector() != null) {
-			sb.append(" id='").append(config.getWrapperSelector()).append("'");
+		if (domId != null) {
+			sb.append(" id='").append(domId).append("'");
 		}
 		sb.append(">");
-		
-		EmptyStateVariant variant = config.getVariant() != null ? config.getVariant() : EmptyStateVariant.standard;
+		sb.append("<div class='o_empty_inner'>");
 
-		switch (variant) {
-			case standard -> renderStandardVariantIcon(sb, config);
-			case small -> renderSmallVariantOpen(sb, config);
-		}
+		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ? config.getIconCss() : "o_icon_question";
+		sb.append("<div class='o_empty_circle'>");
+		sb.append("<i class='o_icon ").append(iconCss).append("' aria-hidden='true'></i>");
+		sb.append("</div>");
 
-		// message
+		sb.append("<div class='o_empty_body'>");
+		sb.append("<div class='o_empty_texts'>");
 		sb.append("<div class='o_empty_msg'>").append(config.getMessageTranslated()).append("</div>");
-
-		// hint
 		if (StringHelper.containsNonWhitespace(config.getHintTranslated())) {
-			sb.append("<div class='o_empty_hint'>");
-			sb.append("<div class='o_empty_hint_text o_empty_hint_").append(getHintAlignment(config, variant).name()).append("'>");
-			sb.append(config.getHintTranslated());
-			sb.append("</div>");
-			sb.append("</div>");
+			sb.append("<div class='o_empty_hint'>").append(config.getHintTranslated()).append("</div>");
 		}
 
-		// description
-		if (StringHelper.containsNonWhitespace(config.getDescTranslated())) {
-			sb.append("<small>").append(config.getDescTranslated()).append("</small>");
-		}
-		
-		if (StringHelper.containsNonWhitespace(config.getHelpTranslated()) && 
+		if (StringHelper.containsNonWhitespace(config.getHelpTranslated()) &&
 				StringHelper.containsNonWhitespace(config.getHelpPage())) {
-			sb.append("<div>");
+			sb.append("<div class='o_empty_help'>");
 			HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
 			String url = helpModule.getManualProvider().getURL(translator.getLocale(), config.getHelpPage());
 			String linkText = config.getHelpTranslated();
@@ -204,6 +190,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			sb.append("</a>");
 			sb.append("</div>");
 		}
+		sb.append("</div>");
 
 		if (config.getPrimaryButtonRenderer() != null ||
 				(config.getSecondaryButtonRenderers() != null && !config.getSecondaryButtonRenderers().isEmpty())) {
@@ -219,45 +206,11 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 			sb.append("</div>");
 		}
 
-		switch (variant) {
-			case standard -> {}
-			case small -> renderSmallVariantClose(sb);
+		sb.append("</div>");
+		sb.append("</div>");
+		if (variant == EmptyStateVariant.auto) {
+			sb.append("<script>'use strict';o_initEmptyStateAuto('").append(domId).append("');</script>");
 		}
-
 		sb.append("</div>");
-	}
-
-	private static EmptyStateHintAlignment getHintAlignment(EmptyStateRenderConfig config, EmptyStateVariant variant) {
-		if (config.getHintAlignment() != null) {
-			return config.getHintAlignment();
-		}
-		return variant == EmptyStateVariant.small ? EmptyStateHintAlignment.left : EmptyStateHintAlignment.center;
-	}
-	
-	private static void renderStandardVariantIcon(StringOutput sb, EmptyStateRenderConfig config) {
-		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
-				config.getIconCss() : "o_icon_question";
-		
-		sb.append("<div class='o_empty_standard'>");
-		sb.append("<div class='o_empty_circle'>");
-		sb.append("<i class='o_icon ").append(iconCss).append("'></i>");
-		sb.append("</div>");
-		sb.append("</div>");
-	}
-
-	private static void renderSmallVariantOpen(StringOutput sb, EmptyStateRenderConfig config) {
-		String iconCss = StringHelper.containsNonWhitespace(config.getIconCss()) ?
-				config.getIconCss() : "o_icon_question";
-
-		sb.append("<div class='o_empty_small'>");
-		sb.append("<div class='o_empty_circle'>");
-		sb.append("<i class='o_icon ").append(iconCss).append("'></i>");
-		sb.append("</div>");
-		sb.append("<div class='o_empty_text'>");
-	}
-	
-	private static void renderSmallVariantClose(StringOutput sb) {
-		sb.append("</div>"); // o_empty_text
-		sb.append("</div>"); // o_empty_small
 	}
 }

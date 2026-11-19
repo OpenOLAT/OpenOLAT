@@ -94,7 +94,7 @@ public class PortfolioConfigController extends BasicController implements Refere
 		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
 				.withMessageTranslated(translate("no.portfolio.resource.selected"))
-				.withDescTranslated(translate("no.portfolio.resource.selected.text"))
+				.withHintTranslated(translate("no.portfolio.resource.selected.text"))
 				.withIconCss("o_icon o_BinderTemplate_icon")
 				.withPrimaryButton("o_icon_search", "select", null)
 				.withSecondaryButton("o_icon_add", "create", null, "create")

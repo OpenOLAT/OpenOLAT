@@ -52,29 +52,6 @@ public interface EmptyStateConfig {
 	 * @return translated hint
 	 */
 	public String getHintTranslated();
-	
-	/**
-	 * @return the alignment of the hint or null to align it according to the variant
-	 */
-	public EmptyStateHintAlignment getHintAlignment();
-
-	/**
-	 * retrieve i18n key for the description
-	 * @return i18n key for the description
-	 */
-	public String getDescI18nKey();
-
-	/**
-	 * should be used alongside with getDescI18nKey()
-	 * @return i18n args for the description
-	 */
-	public String[] getDescI18nArgs();
-
-	/**
-	 * if translation happens before passing the value, retrieve it and don't translate it afterwards
-	 * @return translated description
-	 */
-	public String getDescTranslated();
 
 	public String getHelpTranslated();
 	
