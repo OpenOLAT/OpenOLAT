@@ -85,6 +85,7 @@ import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryCoachCandidates;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.EmptyScreenData;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.SettingsContentProvider;
@@ -1115,6 +1116,35 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 		@Override
 		public boolean isSettingsEditable(RepositoryEntry repositoryEntry, Identity identity) {
 			return true;
+		}
+
+		@Override
+		public boolean useNewSelectionDialog() {
+			return true;
+		}
+
+		@Override
+		public String getMyTabLabel() {
+			return translate("my.rubricforms");
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesYet() {
+			return new EmptyScreenData("o_FileResource-FORM_icon",
+					translate("select.no.rubricform.yet"),
+					translate("select.no.rubricform.yet.hint"));
+		}
+
+		@Override
+		public EmptyScreenData getEmptyScreenDataForNoEntriesInView() {
+			return new EmptyScreenData("o_FileResource-FORM_icon",
+					translate("select.no.rubricforms.in.view"),
+					translate("select.no.rubricforms.in.view.hint"));
+		}
+
+		@Override
+		public String getEnterSearchTermMessage() {
+			return translate("select.enter.search.term.rubricform");
 		}
 	}
 }
