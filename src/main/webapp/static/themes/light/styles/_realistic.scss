@@ -54,6 +54,37 @@
 	@include btn-styles($o-button-dirty-bg);
 }
 
+/* A dirty button with dark text (a light fill) has the flat fills of its
+   tokens, as the primary button above: the gradient and the darker fills of
+   the Bootstrap theme take the contrast of the dark text, the hover and the
+   pressed fill of the tokens are lighter (o-token-state-lighter()). */
+@if o-token-state-lighter("btn-dirty", $o-token-values) {
+	.o_button_dirty {
+		background-image: none;
+		&:hover,
+		&:focus {
+			background-color: var(--o-btn-dirty-bg-hover);
+		}
+		&:active,
+		&.active {
+			background-color: var(--o-btn-dirty-bg-hover);
+			border-color: var(--o-btn-dirty-border-hover);
+		}
+		&.disabled,
+		&[disabled],
+		fieldset[disabled] & {
+			&,
+			&:hover,
+			&:focus,
+			&.focus,
+			&:active,
+			&.active {
+				background-color: var(--o-btn-dirty-bg);
+			}
+		}
+	}
+}
+
 .o_table_batch_buttons .btn.btn-default {
 	@include btn-styles($btn-primary-bg);
 }

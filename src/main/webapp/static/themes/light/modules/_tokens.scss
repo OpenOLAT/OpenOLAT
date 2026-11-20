@@ -1801,7 +1801,7 @@ $o-token-shades: (
 // darker for a light text, lighter for a dark text. A white fill cannot get
 // lighter and gets darker. The text and the fill are the colours of the
 // tokens, also of an override in $o-tokens.
-$o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", "coursesite-start", "navbar-login");
+$o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", "coursesite-start", "navbar-login", "btn-dirty");
 
 // true when the text of the button is darker than its fill and the fill is
 // not white: the hover and the pressed fill get lighter

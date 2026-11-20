@@ -104,6 +104,9 @@ public class ColorTokensTest {
 	// (o-token-active-percent() in _tokens.scss)
 	private static final Map<String, Integer> ACTIVE_PERCENT = Map.of("btn-dirty", 16, "coursesite-book", 16,
 			"state-warning", 16);
+	// The buttons of $o-token-state-text-buttons with a dark text in light: the hover
+	// and the pressed fill go lighter (o-token-state-lighter() in _tokens.scss)
+	private static final List<String> LIGHTER_TEXT_BUTTONS = List.of("btn-dirty");
 	// The buttons whose pressed fill is darker by the amount of Bootstrap at most:
 	// the text keeps 4.5:1 (o-contrast-shade-amount() in _functions.scss)
 	private static final List<String> CONTRAST_SHADE_BUTTONS = List.of("btn-primary-light", "btn-danger-light",
@@ -212,7 +215,7 @@ public class ColorTokensTest {
 	private static final Pattern SCALE_PROPERTY = Pattern.compile("(white|[a-z]+\\d*-\\d+|sw-[a-z-]+|theme\\d+)");
 	// The bright fills of light at step 400 with dark text and their hue: the hover and the pressed fill
 	// go one step lighter inside the hue (step 300)
-	private static final Map<String, String> BRIGHT_FILLS = Map.of("btn-dirty-bg", "yellow", "coursesite-book-bg", "yellow",
+	private static final Map<String, String> BRIGHT_FILLS = Map.of("coursesite-book-bg", "yellow",
 			"tag-selected-bg", "yellow", "state-warning-bg", "yellow", "selectus-rating-b-bg", "yellow",
 			"state-success-bg", "green");
 	// The element tokens of the links that a rule of the compiled theme reads
@@ -604,6 +607,10 @@ public class ColorTokensTest {
 			if (CONTRAST_SHADE_BUTTONS.contains(button)) {
 				hover = contrastShadeAmount(resolve(button + "-fg"), resolve(button + "-bg"), hover);
 				active = contrastShadeAmount(resolve(button + "-fg"), resolve(button + "-bg"), active);
+			}
+			if (LIGHTER_TEXT_BUTTONS.contains(button)) {
+				hover = -hover;
+				active = -active;
 			}
 			assertShade(button + "-bg-hover", button + "-bg", hover);
 			assertShade(button + "-bg-active", button + "-bg", active);
@@ -1996,6 +2003,11 @@ public class ColorTokensTest {
 			Assert.assertEquals(fill.getKey() + "-hover", "var(--o-" + hue + "-300)", tokens.get(fill.getKey() + "-hover"));
 			Assert.assertEquals(fill.getKey() + "-active", "var(--o-" + hue + "-300)", tokens.get(fill.getKey() + "-active"));
 		}
+		// the dirty button is a button of $o-token-state-text-buttons: its dark text gives a
+		// lighter hover (step 300) and a lighter pressed fill (step 200)
+		Assert.assertEquals("btn-dirty-bg", resolve("yellow-400"), resolve("btn-dirty-bg"));
+		Assert.assertEquals("btn-dirty-bg-hover", "var(--o-yellow-300)", tokens.get("btn-dirty-bg-hover"));
+		Assert.assertEquals("btn-dirty-bg-active", "var(--o-yellow-200)", tokens.get("btn-dirty-bg-active"));
 		for (String state : List.of("", "-hover", "-active")) {
 			assertContrast("btn-dirty-fg", "btn-dirty-bg" + state, 4.5);
 			assertContrast("coursesite-book-fg", "coursesite-book-bg" + state, 4.5);

@@ -1218,7 +1218,7 @@ $o-dialog-footer-background		: $o-dialog-header-background !default;
 $o-im-chat-load-font-size		: $font-size-small !default;
 $o-im-chat-history-border		: $gray-lighter !default;
 $o-im-chat-message-bg			: o-neutral(0) !default;
-$o-im-chat-message-bg-me			: $gray-lighter !default;
+$o-im-chat-message-bg-me			: o-neutral(50) !default;
 $o-im-chat-message-bg-status		: o-state-color("warning", "soft-bg") !default;
 $o-im-chat-message-bg-error			: o-state-color("danger", "soft-bg") !default;
 $o-im-chat-message-border-radius	: $border-radius-base !default;
@@ -1228,9 +1228,9 @@ $o-im-chat-border				: $gray-lighter !default;
 // the name and the time of a message: neutral 600, 4.5:1 also on the grey
 // fill of the own message. A theme that sets $gray-light keeps its colour.
 $o-im-chat-from-color			: o-own-or($gray-light, o-neutral(500), o-neutral(600)) !default;
-$o-im-chat-from-font-size		: floor($font-size-base * 0.9) !default;
-$o-im-chat-date-font-size		: floor($font-size-base * 0.7) !default;
-$o-im-chat-body-font-size		: floor($font-size-base * 0.9) !default;
+$o-im-chat-from-font-size		: $font-size-base !default;
+$o-im-chat-date-font-size		: $font-size-small !default;
+$o-im-chat-body-font-size		: $font-size-base !default;
 $o-im-groupchat-font-size		: floor($font-size-base * 0.9) !default;
 $o-im-groupchat-vip-color 		: o-state-color("success", "text") !default;
 $o-im-groupchat-anonymous-color : o-state-color("neutral", "text") !default;

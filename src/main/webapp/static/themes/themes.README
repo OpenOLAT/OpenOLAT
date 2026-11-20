@@ -145,10 +145,11 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     The buttons have shade tokens for the hover, focus and active state, e.g.
     --o-btn-primary-bg-hover and --o-btn-primary-border-focus. The compile computes them as the
     darker colour of --o-btn-primary-bg and --o-btn-primary-border, so they follow your button
-    colours. The primary button, the help button, the selected tag, the course start button and
-    the login button go by the text colour of their token (-fg): a dark text (a light primary
-    colour) gets a lighter hover and pressed fill, a light text or a white fill a darker one.
-    With the realistic style, a primary button with dark text has flat fills. Set a shade
+    colours. The primary button, the help button, the selected tag, the course start button,
+    the login button and the dirty button go by the text colour of their token (-fg): a dark
+    text (a light primary colour) gets a lighter hover and pressed fill, a light text or a
+    white fill a darker one. With the realistic style, a primary or dirty button with dark
+    text has flat fills. Set a shade
     token with $o-tokens only when you want a different state colour. When
     you override a button background with $o-tokens, override its border token too. Other
     elements have shade tokens too: the compile computes them with the darken() or lighten()
@@ -157,7 +158,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     token reads the nearest step of the same hue (neutral scale, brand ramp) that differs
     from the token and keeps the contrast of its text, e.g. --o-btn-primary-bg-hover:
     var(--o-theme1-600). A bright fill at step 400 with dark text (the warning and success
-    fills, the dirty button) goes lighter: hover and pressed fill step 300 of its hue. The name is the token name and a suffix:
+    fills, the book button) goes lighter: hover and pressed fill step 300 of its hue. The dirty
+    button has dark text on step 400: hover step 300, pressed step 200. The name is the token name and a suffix:
       -hover, -active, -focus   the colour of a state, e.g. --o-tag-bg-hover, --o-chelp-bg-hover
       -edge                     a darker edge around a fill, e.g. --o-focus-edge, the text
                                 stroke around a rating star --o-rating-star-edge
@@ -432,8 +434,8 @@ The compile checks:
 - the palette, the theme colours and every pair of a token that $o-tokens sets. A pair
   below its ratio stops the compile ($o-contrast-check, see "Creating a custom theme");
 - the text of the primary button, the help button, the selected tag, the start button of
-  the course site and the login button of the navigation bar: when the text has its ratio on
-  the fill but not on the hover or the pressed fill, the compile stops.
+  the course site, the login button of the navigation bar and the dirty button: when the text
+  has its ratio on the fill but not on the hover or the pressed fill, the compile stops.
 The compile does not check:
 - a colour that your config sets as Sass variable, e.g. $btn-primary-color: #fff,
   $text-color, $link-color, $o-navbar-color, $o-focus-color. The same colour in $o-tokens
