@@ -70,6 +70,17 @@ public enum CurriculumRoles {
 		return false;
 	}
 	
+	public static final CurriculumRoles secureValueOf(String val) {
+		if(StringHelper.containsNonWhitespace(val)) {
+			for(CurriculumRoles role:values()) {
+				if(role.name().equals(val)) {
+					return role;
+				}
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * @param role The role to check
 	 * @return true if the role is by default inherited in the curriculum tree

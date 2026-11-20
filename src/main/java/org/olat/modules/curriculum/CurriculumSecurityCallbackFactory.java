@@ -85,6 +85,11 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewPeople() {
+			return admin || principal || !ownedCurriculumKeys.isEmpty();
+		}
+
+		@Override
 		public boolean canNewCurriculum() {
 			return admin;
 		}

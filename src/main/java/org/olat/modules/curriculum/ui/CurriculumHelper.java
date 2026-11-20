@@ -52,6 +52,10 @@ public class CurriculumHelper {
 		return "[CurriculumAdmin:0][Curriculum:" + curriculumKey + "]";
 	}
 	
+	public static String getImplementationBusinessPath(Long elementKey) {
+		return "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementKey + "][Overview:0]";
+	}
+	
 	public static String getLabel(CurriculumElement element, Translator translator) {
 		Curriculum curriculum = element.getCurriculum();
 		CurriculumElement parentElement = element.getParent();

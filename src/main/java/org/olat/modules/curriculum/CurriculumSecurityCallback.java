@@ -83,6 +83,8 @@ public interface CurriculumSecurityCallback {
 	
 	boolean canViewCatalogSettings(CurriculumElement element);
 	
+	boolean canViewPeople();
+	
 	boolean canViewAllCalendars();
 	
 	boolean canNewLectureBlock();

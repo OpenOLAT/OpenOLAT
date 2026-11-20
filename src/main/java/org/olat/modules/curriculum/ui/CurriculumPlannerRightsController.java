@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.modules.coach.security.ViewCreditPointsRightProvider;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.user.ui.role.EditRelationRoleController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,11 +52,16 @@ public class CurriculumPlannerRightsController extends FormBasicController {
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
+	private ViewCreditPointsRightProvider relationRight;
+	
 	private List<RightProvider> relationRights;
 
 	public CurriculumPlannerRightsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(EditRelationRoleController.class, getLocale(), getTranslator()));
+		relationRights = new ArrayList<>();
+		relationRights.add(relationRight);
+		
 		initForm(ureq);
 	}
 

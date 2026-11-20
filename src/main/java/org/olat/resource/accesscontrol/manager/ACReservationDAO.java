@@ -31,10 +31,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.ResourceReservationImpl;
+import org.olat.resource.accesscontrol.model.ResourceReservationsIdentityInfos;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,6 +125,35 @@ public class ACReservationDAO {
 			return reservations;
 		}
 		return query.getResultList();
+	}
+	
+	public List<ResourceReservationsIdentityInfos> loadCurriculumReservations(Identity identity) {
+		String query = """
+				select new org.olat.resource.accesscontrol.model.ResourceReservationsIdentityInfos(reservation.identity.key, count(distinct reservation.key))
+				from resourcereservation as reservation
+				inner join reservation.resource rsrc
+				inner join curriculumelement curEl on (rsrc.key=curEl.resource.key)
+				inner join curEl.curriculum cur
+				inner join cur.group curGroup
+				inner join curGroup.members curMembership
+				where rsrc.resName=:resourceType
+				and (
+				exists (select orgMember.key from organisation org
+				  inner join org.group baseGroup
+				  inner join baseGroup.members orgMember
+				  where cur.organisation.key=org.key and orgMember.identity.key=:identityKey and orgMember.role=:role
+				) or (
+				  curMembership.identity.key=:identityKey and curMembership.role=:elrole
+				))
+				group by reservation.identity.key""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, ResourceReservationsIdentityInfos.class)
+				.setParameter("resourceType", "CurriculumElement")
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", CurriculumRoles.curriculummanager.name())
+				.setParameter("elrole", CurriculumRoles.curriculumowner.name())
+				.getResultList();
 	}
 	
 	public List<ResourceReservation> loadReservations(IdentityRef identity) {

@@ -45,6 +45,7 @@ import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
+import org.olat.resource.accesscontrol.model.ResourceReservationsIdentityInfos;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -293,6 +294,8 @@ public interface ACService {
 	 * @return
 	 */
 	public List<ResourceReservation> getReservations(IdentityRef identity);
+	
+	public List<ResourceReservationsIdentityInfos> getCurriculumReservationsManagedBy(Identity manager);
 
 	/**
 	 * Retrieves a list of resource reservations associated with the specified identity. 

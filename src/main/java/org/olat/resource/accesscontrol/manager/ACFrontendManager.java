@@ -131,6 +131,7 @@ import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
+import org.olat.resource.accesscontrol.model.ResourceReservationsIdentityInfos;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutManager;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
@@ -1010,6 +1011,11 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 		return reservationDao.loadReservations(identity);
 	}
 	
+	@Override
+	public List<ResourceReservationsIdentityInfos> getCurriculumReservationsManagedBy(Identity manager) {
+		return reservationDao.loadCurriculumReservations(manager);
+	}
+
 	@Override
 	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity) {
 		return orderManager.getReservationsWithOrders(identity);

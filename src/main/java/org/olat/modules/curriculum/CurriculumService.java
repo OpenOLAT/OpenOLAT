@@ -1,5 +1,4 @@
 /**
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -42,6 +41,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementKeyToRepositoryEntryKey;
+import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
@@ -54,6 +54,7 @@ import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumMemberStats;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.model.MemberImplementationsInfos;
 import org.olat.modules.curriculum.model.RepositoryEntryInfos;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -471,6 +472,8 @@ public interface CurriculumService {
 	
 	public List<CurriculumElement> getImplementations(Curriculum curriculum, CurriculumElementStatus... status);
 	
+	public List<CurriculumElementMember> getImplementationsOf(Identity manager, List<CurriculumRoles> roles, Identity withMember);
+	
 	public boolean hasImplementations(Curriculum curriculum, CurriculumElementStatus... status);
 	
 	public VFSContainer getMediaContainer(CurriculumElement curriculumElement);
@@ -492,6 +495,16 @@ public interface CurriculumService {
 	public List<CurriculumMember> getCurriculumElementsMembersIntersection(SearchMemberParameters params);
 
 	public List<CurriculumMemberStats> getMembersWithStats(SearchMemberParameters params);
+
+	/**
+	 * Search members in the curriculums the specified identity can access.
+	 * 
+	 * @param params
+	 * @param identity
+	 * @return
+	 */
+	public List<MemberImplementationsInfos> getMembers(SearchMemberParameters params, Identity manager,
+			List<String> managerRoles, List<String> membesRoles);
 	
 	/**
 	 * The list of members of the specified curriculum element with the specified role.

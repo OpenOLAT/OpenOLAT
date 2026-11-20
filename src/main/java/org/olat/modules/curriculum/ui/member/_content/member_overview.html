@@ -1,0 +1,15 @@
+<div class="o_header_with_buttons">
+	<h2><i class="o_icon o_icon_user"> </i> $r.escapeHtml($fullname)</h2>
+	<div class="o_button_group">
+	#if($r.available("member.previous"))
+		$r.render("member.previous")
+	#end
+	#if($r.available("member.next"))
+		$r.render("member.next")
+	#end
+	</div>
+</div>
+<div class="o_block_bottom">
+	$r.render("portrait")
+</div>
+$r.render("memberTabP")

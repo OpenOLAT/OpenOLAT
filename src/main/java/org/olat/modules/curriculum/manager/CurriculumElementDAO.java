@@ -65,6 +65,7 @@ import org.olat.modules.curriculum.model.AccessibleCurriculumSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
+import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
@@ -1184,6 +1185,50 @@ public class CurriculumElementDAO {
 		List<CurriculumElement> elements = query.getResultList();
 		Collections.sort(elements, new PathMaterializedPathLengthComparator());
 		return elements;
+	}
+	
+
+	public List<CurriculumElementMember> getImplementations(Identity manager, List<CurriculumRoles> roles, Identity withMember) {
+		String query = """
+			with mcurriculums as (
+			  select ownercur.key as curKey from curriculum as ownercur
+			   inner join ownercur.group as oGroup
+			   inner join oGroup.members as owner
+			   where owner.identity.key=:managerKey and owner.role=:orole
+			  union
+			  select managercur.key as curKey from curriculum as managercur
+			   inner join managercur.organisation as org
+			   inner join org.group as orgGroup
+			   inner join orgGroup.members as manager
+			   where manager.identity.key=:managerKey and manager.role=:orgrole
+			)
+			select el, member.role from curriculumelement as el
+			inner join fetch el.curriculum as curriculum
+			inner join fetch el.group as baseGroup
+			inner join fetch baseGroup.members as member
+			left join fetch el.implementation as impl
+			left join fetch el.type as type
+			where member.identity.key=:memberKey
+			and curriculum.key in (select mcur.curKey from mcurriculums as mcur)""";
+		
+		List<Object[]> rawObjectsList = dbInstance.getCurrentEntityManager()
+			.createQuery(query, Object[].class)
+			.setParameter("managerKey", manager.getKey())
+			.setParameter("memberKey", withMember.getKey())
+			.setParameter("orole", CurriculumRoles.curriculumowner.name())
+			.setParameter("orgrole", CurriculumRoles.curriculummanager.name())
+			.getResultList();
+		List<CurriculumElementMember> members = new ArrayList<>(rawObjectsList.size());
+		for(Object[] rawObjects:rawObjectsList) {
+			CurriculumElement element = (CurriculumElement)rawObjects[0];
+			String role = (String)rawObjects[1];
+			CurriculumRoles r = CurriculumRoles.isValueOf(role)
+					? CurriculumRoles.valueOf(role)
+					: null;
+			members.add(new CurriculumElementMember(element, withMember, r));
+		}
+		
+		return members;
 	}
 	
 	public boolean hasImplementations(Curriculum curriculum, CurriculumElementStatus... status) {

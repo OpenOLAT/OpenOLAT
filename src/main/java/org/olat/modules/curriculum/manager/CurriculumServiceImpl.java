@@ -126,6 +126,7 @@ import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementKeyToRepositoryEntryKey;
+import org.olat.modules.curriculum.model.CurriculumElementMember;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
@@ -141,6 +142,7 @@ import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumMemberStats;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.model.MemberImplementationsInfos;
 import org.olat.modules.curriculum.model.RepositoryEntryInfos;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
@@ -1297,6 +1299,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
+	public List<MemberImplementationsInfos> getMembers(SearchMemberParameters params, Identity manager,
+			List<String> managerRoles, List<String> membesRoles) {
+		return memberQueries.getMembers(params, manager, managerRoles, membesRoles);
+	}
+
+	@Override
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role) {
 		return curriculumElementDao.getMembersIdentity(element, role.name());
 	}
@@ -2272,6 +2280,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumElement> getImplementations(Curriculum curriculum, CurriculumElementStatus... status) {
 		return curriculumElementDao.getImplementations(curriculum, status);
 	}
+	
+	@Override
+	public List<CurriculumElementMember> getImplementationsOf(Identity manager, List<CurriculumRoles> roles, Identity withMember) {
+		return curriculumElementDao.getImplementations(manager, roles, withMember);
+	}
 
 	@Override
 	public boolean hasImplementations(Curriculum curriculum, CurriculumElementStatus... status) {
@@ -2314,7 +2327,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				.collect(Collectors.toList());
 		// Build parent line
 		Map<Long,NumberingCurriculumElement> keyToElements = elements.stream()
-				.collect(Collectors.toMap(NumberingCurriculumElement::getKey, el -> el, (u, v) -> u));
+				.collect(Collectors.toMap(NumberingCurriculumElement::getKey, el -> el, (u, _) -> u));
 		for(NumberingCurriculumElement element:elements) {
 			if(element.getParentKey() != null) {
 				element.setParent(keyToElements.get(element.getParentKey()));
