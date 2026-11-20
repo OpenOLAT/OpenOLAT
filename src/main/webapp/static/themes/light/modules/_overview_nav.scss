@@ -105,14 +105,28 @@
 	}
 	
 	&.o_collapsed {
+		.o_overview_nav_group {
+			flex: var(--o-onav-cols, 1) 1 0;
+			min-width: 14em;
+			container: o_overview_nav_group / inline-size;
+		}
+		
 		.o_overview_nav_items {
 			display: flex;
 			flex-direction: column;
 			gap: 5px 25px;
 		}
 		
-		@container o_overview_nav (min-width: 1250px) {
+		@container o_overview_nav_group (min-width: 25em) {
 			.o_overview_nav_items {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+		}
+		
+		@container o_overview_nav_group (min-width: 30em) {
+			.o_overview_nav_items {
+				display: flex;
 				flex-direction: row;
 				flex-wrap: wrap;
 			}
