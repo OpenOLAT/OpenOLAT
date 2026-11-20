@@ -81,7 +81,7 @@
 		<io.undertow.ee>2.0.3.Final</io.undertow.ee>
 		<jackson.version>2.23.0</jackson.version>
 		<jackson.annotations.version>2.23</jackson.annotations.version>
-		<swagger.ui.version>5.35.0</swagger.ui.version>
+		<swagger.ui.version>5.35.1</swagger.ui.version>
 		<org.postgresql.version>42.7.14</org.postgresql.version>
 		<org.infinispan.version>16.3.1</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
@@ -92,7 +92,7 @@
 		<jakarta.xml.ws-api>4.0.3</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.37</qtiworks.version>
 		<org.commonmark>0.32.0</org.commonmark>
-		<dev.langchain4j>1.23.0</dev.langchain4j>
+		<dev.langchain4j>1.24.0</dev.langchain4j>
 		<mcp.sdk.version>2.2.0</mcp.sdk.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -2179,7 +2179,7 @@
 		<dependency>
 			<groupId>dev.langchain4j</groupId>
 			<artifactId>langchain4j-embeddings</artifactId>
-			<version>${dev.langchain4j}-beta33</version>
+			<version>${dev.langchain4j}-beta34</version>
 		</dependency>
 		<!-- end AI API -->
 
