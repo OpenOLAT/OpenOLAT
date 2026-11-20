@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.ui.dashboard;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.olat.core.commons.services.vfs.model.VFSThumbnailInfos;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.figurecards.FigureCardsFactory;
 import org.olat.core.gui.components.figurecards.FigureCardsItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -40,10 +42,20 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelFormat;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
+import org.olat.core.gui.components.progressbar.ProgressBarCellRenderer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
 import org.olat.core.gui.control.generic.dashboard.MaxHeightScrollableDelegate;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetConfigPrefs;
@@ -62,9 +74,10 @@ import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.CoursesSummaryKeyFigures;
 import org.olat.modules.coach.model.CoursesSummary;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.modules.coach.ui.CourseListController;
-import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
+import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer.SuccessStatusPercents;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,14 +92,17 @@ public class CourseWidgetController extends TableWidgetController
 		implements TableWidgetConfigProvider, FlexiTableComponentDelegate {
 
 	private static final String CMD_OPEN = "open";
+	private static final String CMD_PARTICIPANTS = "participants";
 	
 	private FigureCardsItem figuresEl;
 	private CourseTableModel dataModel;
 	private FlexiTableElement tableEl;
-	private CompletionCellRenderer completionCellRenderer;
+	private ProgressBarCellRenderer completionCellRenderer;
 	private SuccessStatusCellRenderer successStatusCellRenderer;
 	private Map<String, FormLink> keyToFigureCard;
 	private FormLink showAllLink;
+	
+	private CloseableCalloutWindowController calloutCtrl;
 
 	private final CoachingSecurity coachingSec;
 	private final MapperKey mapperThumbnailKey;
@@ -108,8 +124,8 @@ public class CourseWidgetController extends TableWidgetController
 		this.coachingSec = coachingSec;
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
-		completionCellRenderer = new CompletionCellRenderer(getTranslator());
-		successStatusCellRenderer = new SuccessStatusCellRenderer(getLocale());
+		completionCellRenderer = new ProgressBarCellRenderer(RenderStyle.horizontal, RenderSize.small, LabelFormat.none, BarColor.primary);
+		successStatusCellRenderer = new SuccessStatusCellRenderer(getLocale(), false);
 		
 		initForm(ureq);
 	}
@@ -199,8 +215,17 @@ public class CourseWidgetController extends TableWidgetController
 	}
 	
 	@Override
-	public boolean isRowClickEnabled() {
-		return true;
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		List<Component> cmps = new ArrayList<>(2);
+		if (rowObject instanceof CourseRow courseRow) {
+			if (courseRow.getTitleLink() != null) {
+				cmps.add(courseRow.getTitleLink().getComponent());
+			}
+			if (courseRow.getParticipantsLink() != null) {
+				cmps.add(courseRow.getParticipantsLink().getComponent());
+			}
+		}
+		return cmps;
 	}
 
 	@Override
@@ -275,7 +300,25 @@ public class CourseWidgetController extends TableWidgetController
 			target = new StringOutput();
 			successStatusCellRenderer.render(null, target, entry.getSuccessStatus(), 0, null, null, getTranslator());
 			row.setSuccessStatus(target.toString());
+			
+			String participants = String.valueOf(entry.getParticipants());
+			FormLink participantsLink = uifactory.addFormLink("participants_" + row.getKey(), CMD_PARTICIPANTS, participants, tableEl, Link.NONTRANSLATED);
+			participantsLink.setIconLeftCSS("o_icon o_icon_group");
+			participantsLink.setAriaLabel(translate("success.status.participants", participants));
+			participantsLink.setAriaDialogOpener();
+			participantsLink.setUserObject(entry.getSuccessStatus());
+			row.setParticipantsLink(participantsLink);
 		}
+		
+		VelocityContainer linkVC = createVelocityContainer("course_row_link");
+		linkVC.setDomReplacementWrapperRequired(false);
+		linkVC.contextPut("row", row);
+		
+		FormLink titleLink = uifactory.addFormLink("title_" + row.getKey(), CMD_OPEN, "", tableEl, Link.NONTRANSLATED);
+		titleLink.setInnerComponent(linkVC);
+		titleLink.setElementCssClass("o_link_plain o_row_select");
+		setUrl(titleLink, "[RepositoryEntry:" + row.getKey() + "]");
+		row.setTitleLink(titleLink);
 		
 		String url = BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString("[RepositoryEntry:" + row.getKey() + "]");
 		row.setUrl(url);
@@ -290,12 +333,21 @@ public class CourseWidgetController extends TableWidgetController
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (calloutCtrl == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(calloutCtrl);
+		calloutCtrl = null;
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == tableEl) {
-			if (event instanceof SelectionEvent se) {
-				doOpenCourse(ureq, se.getIndex());
-			}
-		} else if (source == showAllLink) {
+		if (source == showAllLink) {
 			if (showAllLink.getUserObject() instanceof String businessPath) {
 				doOpen(ureq, businessPath);
 			}
@@ -304,18 +356,40 @@ public class CourseWidgetController extends TableWidgetController
 				if (link.getUserObject() instanceof String businessPath) {
 					doOpen(ureq, businessPath);
 				}
+			} else if (CMD_PARTICIPANTS.equals(link.getCmd())) {
+				if (link.getUserObject() instanceof SuccessStatus successStatus) {
+					doOpenSuccessStatus(ureq, successStatus, link);
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doOpenCourse(UserRequest ureq, int index) {
-		CourseRow row = dataModel.getObject(index);
-		doOpen(ureq, "[RepositoryEntry:" + row.getKey() + "]");
+	private void doOpenSuccessStatus(UserRequest ureq, SuccessStatus successStatus, FormLink link) {
+		cleanUp();
+		
+		SuccessStatusPercents percents = SuccessStatusCellRenderer.getPercents(successStatus);
+		List<SuccessStatusItem> items = new ArrayList<>(3);
+		items.add(new SuccessStatusItem("o_coaching_success_passed", translate("success.status.callout.value",
+				translate("passed.true"), String.valueOf(successStatus.numPassed()), String.valueOf(percents.passed()))));
+		items.add(new SuccessStatusItem("o_coaching_success_failed", translate("success.status.callout.value",
+				translate("passed.false"), String.valueOf(successStatus.numFailed()), String.valueOf(percents.failed()))));
+		items.add(new SuccessStatusItem("o_coaching_success_undefined", translate("success.status.callout.value",
+				translate("passed.undefined"), String.valueOf(successStatus.numUndefined()), String.valueOf(percents.undefined()))));
+		
+		VelocityContainer calloutVC = createVelocityContainer("success_status_callout");
+		calloutVC.contextPut("items", items);
+		
+		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true, null);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), calloutVC, link, "", true, "", settings);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doOpen(UserRequest ureq, String businessPath) {
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
+	public record SuccessStatusItem(String css, String text) {}
+	
 }

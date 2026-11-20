@@ -50,18 +50,24 @@ public class SuccessStatusCellRenderer extends ProgressBarCellRenderer implement
 
 	private final Translator customTranslator;
 	private final Translator coachTranslator;
+	private final boolean renderNumbers;
 
 	public SuccessStatusCellRenderer(Locale locale) {
-		this(null, locale);
+		this(null, locale, true);
+	}
+	
+	public SuccessStatusCellRenderer(Locale locale, boolean renderNumbers) {
+		this(null, locale, renderNumbers);
 	}
 
 	public SuccessStatusCellRenderer(Translator translator) {
-		this(translator, translator.getLocale());
+		this(translator, translator.getLocale(), true);
 	}
 	
-	private SuccessStatusCellRenderer(Translator customTranslator, Locale locale) {
+	private SuccessStatusCellRenderer(Translator customTranslator, Locale locale, boolean renderNumbers) {
 		super(RenderStyle.horizontal, RenderSize.medium, LabelFormat.none, BarColor.passed);
 		this.customTranslator = customTranslator;
+		this.renderNumbers = renderNumbers;
 		this.coachTranslator = Util.createPackageTranslator(CourseListController.class, locale);
 	}
 
@@ -78,20 +84,16 @@ public class SuccessStatusCellRenderer extends ProgressBarCellRenderer implement
 
 	private void renderStatus(StringOutput target, Object cellValue, Translator translator) {
 		if(cellValue instanceof SuccessStatus status) {
-			long passed = status.numPassed();
-			long failed = status.numFailed();
-			long undefined = status.numUndefined();
-			long total = passed + failed + undefined;
-			long passedPercent = (total == 0L) ? 0L : Math.round(100.0d * ((double)passed / (double)total));
-			long failedPercent = (total == 0L) ? 0L : max100Percent(Math.round(100.0d * ((double)failed / (double)total)), passedPercent);
-			long undefinedPercent = (total == 0L) ? 0L : max100Percent(Math.round(100.0d * ((double)undefined / (double)total)), passedPercent, failedPercent);
+			SuccessStatusPercents percents = getPercents(status);
 			String tooltip = translator.translate("success.status.tooltip",
-					String.valueOf(passed), String.valueOf(passedPercent),
-					String.valueOf(failed), String.valueOf(failedPercent),
-					String.valueOf(undefined), String.valueOf(undefinedPercent));
+					String.valueOf(status.numPassed()), String.valueOf(percents.passed()),
+					String.valueOf(status.numFailed()), String.valueOf(percents.failed()),
+					String.valueOf(status.numUndefined()), String.valueOf(percents.undefined()));
 			target.append("<div class='o_coaching_status' title='").append(StringHelper.escapeForHtmlAttribute(tooltip)).append("'>");
 			super.render(null, target, status, 0, null, null, translator);
-			renderNumber(target, status);
+			if (renderNumbers) {
+				renderNumber(target, status);
+			}
 			target.append("</div>");
 		}
 	}
@@ -109,7 +111,18 @@ public class SuccessStatusCellRenderer extends ProgressBarCellRenderer implement
 		return null;
 	}
 	
-	private long max100Percent(long val, long... precedentVals) {
+	public static SuccessStatusPercents getPercents(SuccessStatus status) {
+		long passed = status.numPassed();
+		long failed = status.numFailed();
+		long undefined = status.numUndefined();
+		long total = passed + failed + undefined;
+		long passedPercent = (total == 0L) ? 0L : Math.round(100.0d * ((double)passed / (double)total));
+		long failedPercent = (total == 0L) ? 0L : max100Percent(Math.round(100.0d * ((double)failed / (double)total)), passedPercent);
+		long undefinedPercent = (total == 0L) ? 0L : max100Percent(Math.round(100.0d * ((double)undefined / (double)total)), passedPercent, failedPercent);
+		return new SuccessStatusPercents(passedPercent, failedPercent, undefinedPercent);
+	}
+	
+	private static long max100Percent(long val, long... precedentVals) {
 		long total = 0l;
 		for(long precedentVal:precedentVals) {
 			total += precedentVal;
@@ -129,4 +142,7 @@ public class SuccessStatusCellRenderer extends ProgressBarCellRenderer implement
 		      .append(status.numUndefined())
 		      .append("</div>");
 	}
+	
+	public record SuccessStatusPercents(long passed, long failed, long undefined) {}
+	
 }

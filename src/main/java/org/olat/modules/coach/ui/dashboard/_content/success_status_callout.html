@@ -1,0 +1,5 @@
+<ul class="o_coaching_success_status_callout list-unstyled">
+	#foreach($item in $items)
+		<li><span class="o_coaching_success_dot $item.css()" aria-hidden="true"></span> $r.escapeHtml($item.text())</li>
+	#end
+</ul>

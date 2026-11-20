@@ -92,6 +92,7 @@ public class Formatter {
 	private final Locale locale;
 	private final Translator translator;
 	private final DateFormat shortDateFormat;
+	private final DateFormat shortDateTwoDigitYearFormat;
 	private final DateFormat shortDateWithDayFormat;
 	private final DateFormat shortDateWithDayWithoutYearFormat;
 	private final DateFormat longDateFormat;
@@ -118,6 +119,11 @@ public class Formatter {
 		// Date only formats
 		shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
 		shortDateFormat.setLenient(false);
+		shortDateTwoDigitYearFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+		shortDateTwoDigitYearFormat.setLenient(false);
+		if (shortDateTwoDigitYearFormat instanceof SimpleDateFormat sdf) {
+			sdf.applyPattern(sdf.toPattern().replaceAll("y+", "yy"));
+		}
 		
 		
 		
@@ -249,6 +255,15 @@ public class Formatter {
 		if (date == null) return null;
 		synchronized (shortDateFormat) {
 			return shortDateFormat.format(date);
+		}
+	}
+	
+	public String formatDateTwoDigitYear(Date date) {
+		if (date == null) {
+			return null;
+		}
+		synchronized (shortDateTwoDigitYearFormat) {
+			return shortDateTwoDigitYearFormat.format(date);
 		}
 	}
 	

@@ -1,0 +1,31 @@
+<div class="o_course">
+	<div class="o_visual">
+		#if($row.isThumbnailAvailable())
+			<img src="${row.getThumbnailRelPath()}" alt="" />
+		#else
+			<div class="o_visual_not_available"></div>
+		#end
+	</div>
+	<div class="o_meta">
+		#if($r.isNotEmpty($row.externalRef) || $r.isNotEmpty($row.translatedTechnicalType))
+			<div class="o_ext_ref">
+				#if($r.isNotEmpty($row.externalRef))
+					<span class="o_external_ref">$r.escapeHtml($row.externalRef)</span>
+					#if($r.isNotEmpty($row.translatedTechnicalType))
+						<span class="o_spacer">&middot;</span>
+					#end
+				#end
+				#if($r.isNotEmpty($row.translatedTechnicalType))
+					<span class="o_technical_type">$r.escapeHtml($row.translatedTechnicalType)</span>
+				#end
+			</div>
+		#end
+		<div class="o_title o_dashboard_widget_row_title o_nowrap">$r.escapeHtml($row.displayName)</div>
+		#if($r.isNotEmpty($row.completion))
+			<div class="o_row_completion" aria-hidden="true">$row.completion</div>
+		#end
+	</div>
+</div>
+<div class="o_row_success_status" aria-hidden="true">
+	$!row.successStatus
+</div>

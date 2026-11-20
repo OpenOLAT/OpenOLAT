@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -353,16 +354,19 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 		row.setBeginDate(curriculumElement.getBeginDate());
 		row.setEndDate(curriculumElement.getEndDate());
 
-		StringOutput statusTarget = new StringOutput();
-		CurriculumStatusCellRenderer.getStatus(statusTarget, "o_labeled_light", curriculumElement.getElementStatus(), getTranslator());
-		row.setStatus(statusTarget.toString());
+		if (!CurriculumElementStatus.isValueOf(keyFigureKey)) {
+			StringOutput statusTarget = new StringOutput();
+			CurriculumStatusCellRenderer.getStatus(statusTarget, "o_labeled_light", curriculumElement.getElementStatus(), getTranslator());
+			row.setStatus(statusTarget.toString());
+		}
 
 		CurriculumElementType type = curriculumElement.getType();
 		if (type != null) {
 			row.setTranslatedTechnicalType(type.getDisplayName());
 		}
 
-		String executionPeriod = RepositoyUIFactory.formatExecutionPeriod(getTranslator(), curriculumElement.getBeginDate(), curriculumElement.getEndDate());
+		String executionPeriod = RepositoyUIFactory.formatExecutionPeriod(getTranslator(), curriculumElement.getBeginDate(),
+				curriculumElement.getEndDate(), Formatter.getInstance(getLocale())::formatDateTwoDigitYear);
 		row.setExecutionPeriod(executionPeriod);
 
 		forgeLinks(row, curriculumElement);

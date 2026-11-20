@@ -456,7 +456,7 @@ a.o_validation_open_results {
 .o_widget_implementation_row {
 	
 	display: grid;
-	grid-template-columns: 1fr 25px 110px 100px;
+	grid-template-columns: 1fr 25px 130px;
 	width: 100%;
 	align-items: center;
 	padding: 5px;
@@ -476,7 +476,7 @@ a.o_validation_open_results {
 		
 		.o_implementation {
 			display: flex;
-			align-items: center;
+			align-items: flex-start;
 			gap: 10px;
 			.o_visual {
 				height: 50px;
@@ -493,17 +493,22 @@ a.o_validation_open_results {
 					height: 12px;
 					@include text-overflow();
 				}
-				.o_title {
-					line-height: 1.2;
-					font-size: 18px;
-					margin: 0;
-				}
 			}
 		}
 	}
-	.o_row_status {
+	.o_row_status_period {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		align-self: stretch;
+		gap: 2px;
+		white-space: nowrap;
 		.o_labeled_light {
 			position: initial; // to make it clickable
+			margin-top: 0;
+		}
+		.o_row_execution_period {
+			margin-top: auto;
 		}
 	}
 	
@@ -530,16 +535,14 @@ a.o_validation_open_results {
 		}
 	}
 	
-	@container (max-width: 500px) {
+	@container (max-width: 400px) {
 		grid-template-columns: 1fr 25px;
 		
-		.o_row_status,
-		.o_row_execution_period {
+		.o_row_status_period {
 			display: none;
 		}
 		.o_row_implementation {
 			.o_implementation {
-				align-items: center;
 				.o_meta {
 					.o_title {
 						font-size: 16px;

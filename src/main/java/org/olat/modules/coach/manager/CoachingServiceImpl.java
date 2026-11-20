@@ -273,7 +273,7 @@ public class CoachingServiceImpl implements CoachingService {
 				.collect(Collectors.toMap(CourseStatEntry::getRepoKey, se -> se, (u, _) -> u));
 		if(!mapAs.isEmpty()) {
 			coachingDao.loadCoursesStatistics(null, identity, roles, false, mapAs);
-			coachingDao.loadCoursesStatementsAndCompletions(null, identity, roles, true, false, mapAs);
+			coachingDao.loadCoursesStatementsAndCompletions(null, identity, roles, true, true, mapAs);
 		}
 	}
 	

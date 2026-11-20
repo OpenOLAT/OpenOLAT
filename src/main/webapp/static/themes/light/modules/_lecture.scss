@@ -793,7 +793,6 @@ tr.o_rm_room_preselected {
 	}
 	.o_lecture_time_hour {
 		font-size: 130%;
-		font-weight: bold;
 	}
 	.o_lecture_time_minute,
 	.o_lecture_time_ampm {
@@ -803,18 +802,12 @@ tr.o_rm_room_preselected {
 		// lift to the cap height of the hour: 130% / 80% - 1 = 0.625
 		vertical-align: 0.625cap;
 	}
-	.o_lecture_time_minute {
-		font-weight: bold;
-	}
 	.o_lecture_time_ampm {
 		@extend %o_muted;
 	}
 	
 	.o_title {
 		grid-area: title;
-		line-height: 1.2;
-		font-size: 18px;
-		font-weight: $headings-font-weight;
 		overflow-wrap: break-word;
 	}
 	.o_row_rollcall {

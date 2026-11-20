@@ -22,7 +22,7 @@
 						#end
 					</div>
 				#end
-				<h4 class="o_title o_nowrap">$r.render($row.getTitleName())</h4>
+				<div class="o_title o_dashboard_widget_row_title o_nowrap">$r.render($row.getTitleName())</div>
 			</div>
 		</div>
 	</div>
@@ -31,12 +31,12 @@
 			$r.render($row.getStructureName())
 	#end
 	</div>
-	<div class="o_row_status">
+	<div class="o_row_status_period">
+		#if($r.isNotEmpty($row.status))
 			$row.status
-	</div>
-	<div class="o_row_execution_period">
+		#end
 		#if($r.isNotEmpty($row.executionPeriod))
-			<span><i class="o_icon o_icon_calendar"></i> $row.executionPeriod</span>
+			<span class="o_row_execution_period">$row.executionPeriod</span>
 		#end
 	</div>
 </div>

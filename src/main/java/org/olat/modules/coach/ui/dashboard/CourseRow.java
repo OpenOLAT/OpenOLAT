@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.ui.dashboard;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 
@@ -40,6 +41,8 @@ public class CourseRow implements OLATResourceable {
 	private String resourceableTypeName;
 	private Long resourceableId;
 	private String url;
+	private FormLink titleLink;
+	private FormLink participantsLink;
 	
 	public Long getKey() {
 		return key;
@@ -125,6 +128,30 @@ public class CourseRow implements OLATResourceable {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+	
+	public String getTitleName() {
+		return titleLink != null? titleLink.getComponent().getComponentName(): null;
+	}
+	
+	public FormLink getTitleLink() {
+		return titleLink;
+	}
+	
+	public void setTitleLink(FormLink titleLink) {
+		this.titleLink = titleLink;
+	}
+	
+	public String getParticipantsName() {
+		return participantsLink != null? participantsLink.getComponent().getComponentName(): null;
+	}
+	
+	public FormLink getParticipantsLink() {
+		return participantsLink;
+	}
+	
+	public void setParticipantsLink(FormLink participantsLink) {
+		this.participantsLink = participantsLink;
 	}
 	
 }

@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
@@ -285,12 +286,15 @@ public class RepositoyUIFactory {
 	 * @return The formatted execution period, or null if both dates are null (anytime)
 	 */
 	public static String formatExecutionPeriod(Translator translator, Date begin, Date end) {
+		return formatExecutionPeriod(translator, begin, end, Formatter.getInstance(translator.getLocale())::formatDate);
+	}
+	
+	public static String formatExecutionPeriod(Translator translator, Date begin, Date end, Function<Date, String> dateFormatter) {
 		if(begin != null && end != null && DateUtils.isSameDay(begin, end)) {
-			return Formatter.getInstance(translator.getLocale()).formatDate(begin);
+			return dateFormatter.apply(begin);
 		}
-		Formatter formatter = Formatter.getInstance(translator.getLocale());
-		String from = begin == null ? null : formatter.formatDate(begin);
-		String to = end == null ? null : formatter.formatDate(end);
+		String from = begin == null ? null : dateFormatter.apply(begin);
+		String to = end == null ? null : dateFormatter.apply(end);
 		if(from != null && to != null) {
 			return translator.translate("cif.dates.range", from, to);
 		}
