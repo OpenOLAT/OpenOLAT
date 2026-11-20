@@ -640,6 +640,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.teams.manager.TeamsServiceTest.class,
 	org.olat.modules.teams.manager.MicrosoftGraphDAOTest.class,
 	org.olat.modules.topicbroker.manager.TBBrokerDAOTest.class,
+	org.olat.modules.topicbroker.manager.TBCalendarSyncherTest.class,
 	org.olat.modules.topicbroker.manager.TBCustomFieldDAOTest.class,
 	org.olat.modules.topicbroker.manager.TBCustomFieldDefinitionDAOTest.class,
 	org.olat.modules.topicbroker.manager.TBParticipantDAOTest.class,

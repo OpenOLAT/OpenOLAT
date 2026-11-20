@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.repository.RepositoryEntryRef;
+
 /**
  * 
  * Initial date: 30 May 2024<br>
@@ -32,6 +34,7 @@ import java.util.List;
 public class TBBrokerSearchParams {
 	
 	private Collection<Long> brokerKeys;
+	private Long repositoryEntryKey;
 	private Date selectionEndDateBefore;
 	private Boolean autoEnrollment;
 	private Boolean enrollmentStartNull;
@@ -48,6 +51,14 @@ public class TBBrokerSearchParams {
 		brokerKeys = brokers != null? brokers.stream().map(TBBrokerRef::getKey).toList(): null;
 	}
 
+	public Long getRepositoryEntryKey() {
+		return repositoryEntryKey;
+	}
+	
+	public void setRepositoryEntry(RepositoryEntryRef repositoryEntry) {
+		repositoryEntryKey = repositoryEntry != null? repositoryEntry.getKey(): null;
+	}
+	
 	public Date getSelectionEndDateBefore() {
 		return selectionEndDateBefore;
 	}

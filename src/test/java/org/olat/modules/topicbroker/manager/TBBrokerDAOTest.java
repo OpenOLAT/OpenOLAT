@@ -142,6 +142,20 @@ public class TBBrokerDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadBrokers_byRepositoryEntry() {
+		TBBroker broker1 = createRandomBroker();
+		TBBroker broker2 = sut.createBroker(broker1.getRepositoryEntry(), random());
+		createRandomBroker();
+		dbInstance.commitAndCloseSession();
+		
+		TBBrokerSearchParams params = new TBBrokerSearchParams();
+		params.setRepositoryEntry(broker1.getRepositoryEntry());
+		List<TBBroker> brokers = sut.loadBrokers(params);
+		
+		assertThat(brokers).containsExactlyInAnyOrder(broker1, broker2);
+	}
+	
+	@Test
 	public void shouldLoadBrokers_bySelectionEndBefore() {
 		TBBroker brokerBefore = createRandomBroker();
 		((TBBrokerImpl)brokerBefore).setSelectionEndDate(DateUtils.addDays(new Date(), -12));

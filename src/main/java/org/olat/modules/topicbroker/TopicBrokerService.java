@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -72,6 +73,8 @@ public interface TopicBrokerService {
 	public TBBroker getBroker(RepositoryEntry repositoryEntry, String subIdent);
 	
 	public TBBroker getBroker(TBBrokerRef broker);
+	
+	public void syncCalendars(RepositoryEntryRef repositoryEntry, IdentityRef identity);
 	
 	public VFSContainer getBrokerContainer(TBBrokerRef broker);
 	

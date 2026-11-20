@@ -109,6 +109,9 @@ public class TBBrokerDAO {
 		if (params.getBrokerKeys() != null && !params.getBrokerKeys().isEmpty()) {
 			sb.and().append("broker.key in :brokerKeys");
 		}
+		if (params.getRepositoryEntryKey() != null) {
+			sb.and().append("broker.repositoryEntry.key = :repositoryEntryKey");
+		}
 		if (params.getSelectionEndDateBefore() != null) {
 			sb.and().append("broker.selectionEndDate <= :selectionEndDate");
 		}
@@ -123,6 +126,9 @@ public class TBBrokerDAO {
 				.createQuery(sb.toString(), TBBroker.class);
 		if (params.getBrokerKeys() != null && !params.getBrokerKeys().isEmpty()) {
 			query.setParameter("brokerKeys", params.getBrokerKeys());
+		}
+		if (params.getRepositoryEntryKey() != null) {
+			query.setParameter("repositoryEntryKey", params.getRepositoryEntryKey());
 		}
 		if (params.getSelectionEndDateBefore() != null) {
 			query.setParameter("selectionEndDate", params.getSelectionEndDateBefore());

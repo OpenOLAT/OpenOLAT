@@ -106,6 +106,7 @@ public class TBSelectionDAO {
 		}
 		if (params.isFetchIdentity()) {
 			sb.append(" join fetch participant.identity identity");
+			sb.append(" join fetch identity.user identityUser");
 			sb.append(" left join fetch selection.creator creator");
 		}
 		if (params.isFetchTopic()) {

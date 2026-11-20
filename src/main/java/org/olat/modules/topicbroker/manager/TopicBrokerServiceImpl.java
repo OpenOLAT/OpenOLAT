@@ -97,6 +97,7 @@ import org.olat.modules.topicbroker.model.TBSelectionImpl;
 import org.olat.modules.topicbroker.model.TBTopicImpl;
 import org.olat.modules.topicbroker.ui.events.TBBrokerChangedEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -135,6 +136,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Autowired
 	private TBAuditLogDAO auditLogDao;
 	@Autowired
+	private TBCalendarSyncher calendarSyncher;
+	@Autowired
 	private TopicBrokerMailing mailing;
 	@Autowired
 	private Coordinator coordinator;
@@ -162,6 +165,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			return;
 		}
 		
+		calendarSyncher.unsyncCalendarsAsync(broker);
 		auditLogDao.delete(broker);
 		customFieldDao.deleteCustomFields(broker);
 		customFieldDefinitionDao.deleteDefinitions(broker);
@@ -185,9 +189,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		
 		String before = TopicBrokerXStream.toXml(reloadedBroker);
 		boolean contentChanged = false;
+		boolean maxSelectionsChanged = false;
 		if (!Objects.equals(reloadedBroker.getMaxSelections(), maxSelections)) {
 			reloadedBroker.setMaxSelections(maxSelections);
 			contentChanged = true;
+			maxSelectionsChanged = true;
 		}
 		if (!Objects.equals(reloadedBroker.getSelectionStartDate(), selectionStartDate)) {
 			reloadedBroker.setSelectionStartDate(selectionStartDate);
@@ -237,6 +243,10 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			// to the (immediate) termination of the selection period.
 			dbInstance.commit();
 			coordinator.getEventBus().fireEventToListenersOf(TBBrokerChangedEvent.EVENT, reloadedBroker);
+			
+			if (maxSelectionsChanged) {
+				calendarSyncher.syncCalendarsAsync(reloadedBroker);
+			}
 		}
 		
 		return reloadedBroker;
@@ -276,6 +286,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			
 			String after = TopicBrokerXStream.toXml(reloadedBroker);
 			auditLogDao.create(TBAuditLog.Action.brokerEnrollmentDone, before, after, doer, reloadedBroker);
+			calendarSyncher.syncCalendarsAsync(reloadedBroker);
 			
 			if (sendEmails) {
 				sendEnrollmentEmails(reloadedBroker, null);
@@ -299,6 +310,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			
 			String after = TopicBrokerXStream.toXml(reloadedBroker);
 			auditLogDao.create(TBAuditLog.Action.brokerEnrollmentReset, before, after, doer, reloadedBroker);
+			calendarSyncher.syncCalendarsAsync(reloadedBroker);
 		}
 	}
 	
@@ -379,6 +391,26 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		params.setBroker(broker);
 		List<TBBroker> brokers = brokerDao.loadBrokers(params);
 		return !brokers.isEmpty()? brokers.get(0): null;
+	}
+	
+	@Override
+	public void syncCalendars(RepositoryEntryRef repositoryEntry, IdentityRef identity) {
+		TBBrokerSearchParams params = new TBBrokerSearchParams();
+		params.setRepositoryEntry(repositoryEntry);
+		for (TBBroker broker : brokerDao.loadBrokers(params)) {
+			if (identity == null) {
+				calendarSyncher.syncCalendarsAsync(broker);
+			} else if (hasSelections(broker, identity)) {
+				calendarSyncher.syncCalendarsAsync(broker, List.of(identity));
+			}
+		}
+	}
+	
+	private boolean hasSelections(TBBrokerRef broker, IdentityRef identity) {
+		TBSelectionSearchParams searchParams = new TBSelectionSearchParams();
+		searchParams.setBroker(broker);
+		searchParams.setIdentity(identity);
+		return !selectionDao.loadSelections(searchParams).isEmpty();
 	}
 	
 	@Override
@@ -563,13 +595,16 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		String before = TopicBrokerXStream.toXml(reloadedTopic);
 		
 		boolean contentChanged = false;
+		boolean calendarChanged = false;
 		if (!Objects.equals(reloadedTopic.getIdentifier(), identifier)) {
 			reloadedTopic.setIdentifier(identifier);
 			contentChanged = true;
+			calendarChanged = true;
 		}
 		if (!Objects.equals(reloadedTopic.getTitle(), title)) {
 			reloadedTopic.setTitle(title);
 			contentChanged = true;
+			calendarChanged = true;
 		}
 		if (!Objects.equals(reloadedTopic.getDescription(), description)) {
 			reloadedTopic.setDescription(description);
@@ -578,6 +613,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		if (reloadedTopic.getExecutionType() != executionType) {
 			reloadedTopic.setExecutionType(executionType);
 			contentChanged = true;
+			calendarChanged = true;
 		}
 		if (TBTopicExecutionType.dates == executionType) {
 			beginDate = null;
@@ -586,10 +622,12 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		if (!Objects.equals(reloadedTopic.getBeginDate(), beginDate)) {
 			reloadedTopic.setBeginDate(beginDate);
 			contentChanged = true;
+			calendarChanged = true;
 		}
 		if (!Objects.equals(reloadedTopic.getEndDate(), endDate)) {
 			reloadedTopic.setEndDate(endDate);
 			contentChanged = true;
+			calendarChanged = true;
 		}
 		if (!Objects.equals(reloadedTopic.getMinParticipants(), minParticipants)) {
 			reloadedTopic.setMinParticipants(minParticipants);
@@ -609,6 +647,9 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			
 			String after = TopicBrokerXStream.toXml(reloadedTopic);
 			auditLogDao.create(TBAuditLog.Action.topicUpdateContent, before, after, doer, reloadedTopic);
+		}
+		if (calendarChanged) {
+			calendarSyncher.syncCalendarsAsync(reloadedTopic);
 		}
 		
 		return reloadedTopic;
@@ -689,10 +730,12 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		searchParams.setTopic(reloadedTopic);
 		searchParams.setFetchIdentity(true);
 		searchParams.setFetchTopic(true);
-		getSelections(searchParams).forEach(selection -> unselect(doer,
+		List<TBSelection> selections = getSelections(searchParams);
+		selections.forEach(selection -> unselect(doer,
 				selection.getParticipant().getIdentity(),
 				selection.getTopic(), 
-				selection));
+				selection,
+				false));
 		
 		String before = TopicBrokerXStream.toXml(reloadedTopic);
 		
@@ -703,6 +746,9 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		
 		String after = TopicBrokerXStream.toXml(reloadedTopic);
 		auditLogDao.create(TBAuditLog.Action.topicDeleteSoftly, before, after, doer, reloadedTopic);
+		
+		calendarSyncher.syncCalendarsAsync(reloadedTopic.getBroker(),
+				selections.stream().map(selection -> selection.getParticipant().getIdentity()).toList());
 	}
 
 	@Override
@@ -745,10 +791,12 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		Map<Long,TBTopicDate> keyToDate = topicDateDao.loadDates(searchParams).stream()
 				.collect(Collectors.toMap(TBTopicDate::getKey, Function.identity()));
 		
+		boolean datesChanged = false;
 		for (TBTopicDateValues values : dateValues) {
 			TBTopicDate date = values.key() != null? keyToDate.remove(values.key()): null;
 			if (date == null) {
 				date = topicDateDao.createDate(reloadedTopic, values);
+				datesChanged = true;
 				
 				String after = TopicBrokerXStream.toXml(date);
 				auditLogDao.create(TBAuditLog.Action.topicDateCreate, null, after, doer, reloadedTopic);
@@ -756,6 +804,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 				String before = TopicBrokerXStream.toXml(date);
 				if (updateDateValues(date, values)) {
 					date = topicDateDao.updateDate(date);
+					datesChanged = true;
 					
 					String after = TopicBrokerXStream.toXml(date);
 					auditLogDao.create(TBAuditLog.Action.topicDateUpdateContent, before, after, doer, reloadedTopic);
@@ -767,6 +816,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			String before = TopicBrokerXStream.toXml(date);
 			topicDateDao.deleteDate(date);
 			auditLogDao.create(TBAuditLog.Action.topicDateDelete, before, null, doer, reloadedTopic);
+			datesChanged = true;
+		}
+		
+		if (datesChanged) {
+			calendarSyncher.syncCalendarsAsync(reloadedTopic);
 		}
 	}
 	
@@ -1175,6 +1229,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		selections.add(realSortOrder-1, selection);
 		
 		updateSortOrders(doer, selections);
+		calendarSyncher.syncCalendar(reloadedTopic.getBroker(), participantIdentity);
 	}
 	
 	@Override
@@ -1189,10 +1244,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			return;
 		}
 		
-		unselect(doer, participantIdentity, reloadedTopic, selection);
+		unselect(doer, participantIdentity, reloadedTopic, selection, true);
 	}
 
-	private void unselect(Identity doer, Identity participantIdentity, TBTopic reloadedTopic, TBSelection selection) {
+	private void unselect(Identity doer, Identity participantIdentity, TBTopic reloadedTopic, TBSelection selection,
+			boolean syncCalendar) {
 		if (selection.isEnrolled()) {
 			withdraw(doer, selection, false);
 			selection = getSelection(participantIdentity, reloadedTopic);
@@ -1205,6 +1261,9 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		List<TBSelection> selections = getSelections(reloadedTopic.getBroker(), participantIdentity);
 		Collections.sort(selections, (s1, s2) -> Integer.compare(s1.getSortOrder(), s2.getSortOrder()));
 		updateSortOrders(doer, selections);
+		if (syncCalendar) {
+			calendarSyncher.syncCalendar(reloadedTopic.getBroker(), participantIdentity);
+		}
 	}
 	
 	@Override
@@ -1241,6 +1300,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		selections.add(sortOrder - 1, selection);
 		
 		updateSortOrders(doer, selections);
+		calendarSyncher.syncCalendar(reloadedTopic.getBroker(), participantIdentity);
 	}
 
 	private void updateSortOrders(Identity doer, List<TBSelection> selections) {
@@ -1274,6 +1334,10 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		selection = selectionDao.updateSelection(selection);
 		String after = TopicBrokerXStream.toXml(selection);
 		auditLogDao.create(getSelectionEnrollAction(doer, process), before, after, doer, selection);
+		
+		if (!process) {
+			calendarSyncher.syncCalendar(selection.getTopic().getBroker(), participantIdentity);
+		}
 	}
 	
 	private TBAuditLog.Action getSelectionEnrollAction(Identity doer, boolean proccess) {
@@ -1295,6 +1359,9 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		}
 		
 		withdraw(doer, selection, process);
+		if (!process) {
+			calendarSyncher.syncCalendar(selection.getTopic().getBroker(), selection.getParticipant().getIdentity());
+		}
 	}
 
 	private void withdraw(Identity doer, TBSelection selection, boolean process) {

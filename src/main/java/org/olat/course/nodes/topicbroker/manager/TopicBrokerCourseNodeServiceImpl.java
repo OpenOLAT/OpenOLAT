@@ -25,12 +25,14 @@ import java.util.List;
 import jakarta.annotation.PostConstruct;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -41,14 +43,22 @@ import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeService;
+import org.olat.group.BusinessGroup;
+import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.TopicBrokerExportService;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
+import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +81,8 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 	private BaseSecurityManager securityManager;
 	@Autowired
 	private DueDateService dueDateService;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	@Autowired
 	private Coordinator coordinator;
@@ -78,6 +90,9 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 	@PostConstruct
 	public void init() {
 		coordinator.getEventBus().registerFor(this, null, RepositoryService.REPOSITORY_EVENT_ORES);
+		coordinator.getEventBus().registerFor(this, null, OresHelper.lookupType(RepositoryEntry.class));
+		coordinator.getEventBus().registerFor(this, null, OresHelper.lookupType(BusinessGroup.class));
+		coordinator.getEventBus().registerFor(this, null, OresHelper.lookupType(CurriculumElement.class));
 	}
 
 	@Override
@@ -173,6 +188,28 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 	public void event(Event event) {
 		if (event instanceof EntryChangedEvent entryChangedEvent && entryChangedEvent.isEventOnThisNode()) {
 			synchTopicBrokers(entryChangedEvent.getRepositoryEntryKey(), entryChangedEvent.getIdentityKey());
+		} else if (event instanceof RepositoryEntryStatusChangedEvent e && e.isEventOnThisNode()) {
+			topicBrokerService.syncCalendars(() -> e.getRepositoryEntryKey(), null);
+		} else if (event instanceof RepositoryEntryMembershipModifiedEvent e && e.isEventOnThisNode()) {
+			if (RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(e.getCommand())
+					|| RepositoryEntryMembershipModifiedEvent.IDENTITY_REMOVED.equals(e.getCommand())) {
+				syncCalendar(() -> e.getRepositoryEntryKey(), e.getIdentityKey());
+			}
+		} else if (event instanceof BusinessGroupModifiedEvent e && e.isEventOnThisNode()) {
+			if (e.getAffectedRepositoryEntryKey() != null
+					&& (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(e.getCommand())
+						|| BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(e.getCommand()))) {
+				syncCalendar(() -> e.getAffectedRepositoryEntryKey(), e.getAffectedIdentityKey());
+			}
+		} else if (event instanceof CurriculumElementMembershipEvent e && e.isEventOnThisNode()) {
+			curriculumService.getRepositoryEntries(() -> e.getCurriculumElementKey())
+					.forEach(repositoryEntry -> syncCalendar(repositoryEntry, e.getIdentityKey()));
+		}
+	}
+	
+	private void syncCalendar(RepositoryEntryRef repositoryEntry, Long identityKey) {
+		if (identityKey != null) {
+			topicBrokerService.syncCalendars(repositoryEntry, new IdentityRefImpl(identityKey));
 		}
 	}
 
