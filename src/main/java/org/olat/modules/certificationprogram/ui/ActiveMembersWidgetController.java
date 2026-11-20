@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.figurecards.FigureCardsFactory;
 import org.olat.core.gui.components.figurecards.FigureCardsItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -38,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -66,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class ActiveMembersWidgetController extends TableWidgetController implements FlexiTableComponentDelegate {
+public class ActiveMembersWidgetController extends TableWidgetController {
 
 	private static final String CMD_OPEN = "open";
 
@@ -208,29 +206,10 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 		tableEl.setNumOfRowsEnabled(false);
 		
 		tableEl.setRendererType(FlexiTableRendererType.classic);
-		VelocityContainer rowVC = createVelocityContainer("member_row");
-		rowVC.setDomReplacementWrapperRequired(false);
-		tableEl.setRowRenderer(rowVC, this);
 		
 		return tableEl.getComponent().getComponentName();
 	}
 	
-	@Override
-	public boolean isRowClickEnabled() {
-		return false;
-	}
-
-	@Override
-	public Iterable<Component> getComponents(int row, Object rowObject) {
-		List<Component> components = new ArrayList<>(1);
-		if(rowObject instanceof MemberRow mRow) {
-			if(mRow.portraitCmp() != null) {
-				components.add(mRow.portraitCmp());
-			}
-		}
-		return components;
-	}
-
 	@Override
 	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
 		showAllLink = DashboardUIFactory.createShowAllLink(widgetCont);
