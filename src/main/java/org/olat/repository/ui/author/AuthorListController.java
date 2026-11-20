@@ -759,7 +759,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			allTab = FlexiFiltersTabFactory.tab("All", translate("search.all"), TabSelectionBehavior.reloadData);
 			allTab.setElementCssClass("o_sel_author_all");
 			allTab.setFiltersExpanded(true);
-			allTab.setEnabledFilters(redesignedDialogVisibleFiltersWithoutOwned());
 			tabs.add(allTab);
 		}
 
@@ -824,9 +823,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchTab.setPosition(FlexiFilterTabPosition.right);
 		searchTab.setLargeSearch(true);
 		searchTab.setFiltersExpanded(true);
-		if(configuration.isRedesignedSelectionDialog()) {
-			searchTab.setEnabledFilters(redesignedDialogVisibleFiltersWithoutOwned());
-		}
 		tabs.add(searchTab);
 		
 		if(!configuration.isSelectRepositoryEntries() && (roles.isAuthor() || hasAdministratorRight)) {
@@ -839,11 +835,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		tableEl.setFilterTabs(true, tabs);
-	}
-
-	private List<String> redesignedDialogVisibleFiltersWithoutOwned() {
-		return List.of(AuthorSourceFilter.MARKED.name(), AuthorSourceFilter.STATUS.name(),
-				AuthorSourceFilter.RUNTIMETYPE.name(), AuthorSourceFilter.TAXONOMYLEVEL.name());
 	}
 
 	private List<RepositoryEntryStatusEnum> computeOfferableStatus(boolean excludePreparation) {
@@ -945,7 +936,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 			if(runtimeTypeKV.size() > 1) {
 				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.runtime.type"),
-						AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, false));
+						AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, configuration.isRedesignedSelectionDialog()));
 			}
 		}
 
