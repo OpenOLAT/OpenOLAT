@@ -88,6 +88,7 @@ import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -250,7 +251,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
-		dataSource = new OrdersDataSource(acService, resource, null, methods, userPropertyHandlers, this, this);
+		dataSource = new OrdersDataSource(acService, resource, null, methods, userPropertyHandlers, ViewAs.ALL, getIdentity(), this, this);
 		if(resource == null) {
 			Calendar cal = CalendarUtils.getStartOfDayCalendar(getLocale());
 			cal.add(Calendar.MONTH, -1);

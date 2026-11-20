@@ -34,9 +34,11 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.id.Identity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -61,6 +63,8 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	private Integer count;
 	private Date to;
 	private Date from;
+	private final ViewAs viewAs;
+	private final Identity identity; 
 	private final OLATResource resource;
 	private final IdentityRef delivery;
 	private final PresetDelegate presetDelegate;
@@ -72,6 +76,7 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	
 	public OrdersDataSource(ACService acService, OLATResource resource, IdentityRef delivery,
 			List<AccessMethod> methods, List<UserPropertyHandler> userPropertyHandlers,
+			ViewAs viewAs, Identity identity, 
 			PresetDelegate presetDelegate, ForgeDelegate delegate) {
 		this.acService = acService;
 		this.resource = resource;
@@ -80,11 +85,13 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 		this.delegate = delegate;
 		this.methods = methods;
 		this.userPropertyHandlers = userPropertyHandlers;
+		this.viewAs = viewAs;
+		this.identity = identity;
 	}
 	
 	public void setModifications(List<OrderModification> orderModifications) {
 		modifications = orderModifications.stream()
-				.collect(Collectors.toMap(OrderModification::orderKey, o -> o, (u, v) -> u));
+				.collect(Collectors.toMap(OrderModification::orderKey, o -> o, (u, _) -> u));
 	}
 
 	public Long getRefNo() {
@@ -118,7 +125,7 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	@Override
 	public int getRowCount() {
 		if(count == null) {
-			count = acService.countOrderItems(resource, delivery, refNo, from, to, null);
+			count = acService.countOrderItems(resource, delivery, refNo, from, to, viewAs, identity, null);
 		}
 		return count.intValue();
 	}
@@ -156,8 +163,8 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 		boolean filterAddressProposal = presetDelegate != null? presetDelegate.isFilterAddressProposal(): false;
 		
 		List<OrderTableItem> items = acService.findOrderItems(resource, delivery, refNo, from, to, states,
-				filterMethods, filterOfferAccess, filterAdjustedAmount, filterAddressProposal, firstResult, maxResults,
-				userPropertyHandlers, orderBy);
+				filterMethods, filterOfferAccess, filterAdjustedAmount, filterAddressProposal, viewAs, identity,
+				firstResult, maxResults, userPropertyHandlers, orderBy);
 		List<OrderTableRow> rows = new ArrayList<>(items.size());
 		for(OrderTableItem item:items) {
 			OrderTableRow row = new OrderTableRow(item);

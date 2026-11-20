@@ -304,7 +304,7 @@ public interface ACService {
 	 * @param identity the identity used to filter and retrieve reservations
 	 * @return a list of resource reservations containing corresponding orders
 	 */
-	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity);
+	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity, ViewAs viewAs, IdentityRef viewerIdentity);
 
 	/**
 	 * Reserve a resource
@@ -421,12 +421,12 @@ public interface ACService {
 	public List<Order> findOrdersWithDelivery(List<OLATResource> resources, OrderStatus... status);
 
 	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
-			OrderStatus[] statuss);
+			ViewAs viewAs, IdentityRef viewerIdentity, OrderStatus[] statuss);
 
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from,
 			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
-			boolean filterAdjustedAmount, boolean filterAddressProposal, int firstResult, int maxResults,
-			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
+			boolean filterAdjustedAmount, boolean filterAddressProposal, ViewAs viewAs, IdentityRef viewerIdentity,
+			int firstResult, int maxResults, List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
 	
 	public boolean hasOrder(OfferRef offer);
 	

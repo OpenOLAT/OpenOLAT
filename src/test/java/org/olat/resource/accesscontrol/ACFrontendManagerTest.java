@@ -974,7 +974,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// act
-		List<ResourceReservation> reservations = acService.getReservationsWithOrders(orderer);
+		List<ResourceReservation> reservations = acService.getReservationsWithOrders(orderer, ViewAs.ALL, null);
 
 		// assert
 		assertEquals(1, reservations.size());

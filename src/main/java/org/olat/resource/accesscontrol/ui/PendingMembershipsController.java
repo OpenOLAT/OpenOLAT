@@ -71,8 +71,9 @@ import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.repository.ui.list.ImplementationEvent;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.resource.accesscontrol.manager.ACOrderDAO;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.PendingMembershipsTableModel.PendingMembershipCol;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,7 @@ public class PendingMembershipsController extends FormBasicController implements
 	private static final String CMD_ACCEPT = "accept";
 	private static final String CMD_DECLINE = "decline";
 
+	private final ViewAs viewAs;
 	private final Identity identity;
 	private FlexiTableElement tableEl;
 	private PendingMembershipsTableModel tableModel;
@@ -100,17 +102,20 @@ public class PendingMembershipsController extends FormBasicController implements
 	private int counter = 0;
 
 	@Autowired
-	private CurriculumElementDAO curriculumElementDao;
+	private ACService acService;
 	@Autowired
-	private ACOrderDAO orderDao;
+	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private GroupDAO groupDao;
 
-	public PendingMembershipsController(UserRequest ureq, WindowControl wControl, Identity identity) {
+	public PendingMembershipsController(UserRequest ureq, WindowControl wControl, Identity identity, ViewAs viewAs) {
 		super(ureq, wControl, "pending_memberships");
 		this.identity = identity;
+		this.viewAs = viewAs;
 
 		detailsVC = createVelocityContainer("pending_membership_details");
 
@@ -282,12 +287,13 @@ public class PendingMembershipsController extends FormBasicController implements
 	}
 	
 	private void loadModel() {
-		List<ResourceReservation> reservations = orderDao.getReservationsWithOrders(identity).stream()
+		List<ResourceReservation> reservations = acService.getReservationsWithOrders(identity, viewAs, getIdentity()).stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getType()))
 				.filter(r -> r.getType().startsWith(CurriculumService.RESERVATION_PREFIX))
 				.toList();
 		Set<OLATResource> resources = reservations.stream().map(ResourceReservation::getResource).collect(Collectors.toSet());
-		List<CurriculumElement> curriculumElements = curriculumElementDao.loadElementsByResources(resources);
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElementsByResources(resources);
+
 		Map<Long, CurriculumElement> resourceKeyToElement = new HashMap<>();
 		for (CurriculumElement curriculumElement : curriculumElements) {
 			resourceKeyToElement.put(curriculumElement.getResource().getKey(), curriculumElement);

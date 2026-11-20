@@ -64,6 +64,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
@@ -90,6 +91,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private BreadcrumbPanel stackPanel;
 	private OrderCommentRenderer orderCommentRenderer;
 
+	private final ViewAs viewAs;
 	private final Identity identity;
 	private final OLATResource resource;
 	private final OrdersSettings settings;
@@ -111,8 +113,9 @@ public class OrdersController extends FormBasicController implements Activateabl
 	@Autowired
 	private AccessControlModule acModule;
 
-	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity, OrdersSettings settings) {
+	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity, OrdersSettings settings, ViewAs viewAs) {
 		super(ureq, wControl, "orders_identity");
+		this.viewAs = viewAs;
 		this.identity = identity;
 		this.resource = null;
 		this.settings = settings;
@@ -122,6 +125,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity, OLATResource resource,
 			OrdersSettings settings, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "orders_identity", rootForm);
+		this.viewAs = ViewAs.ALL;
 		this.identity = identity;
 		this.resource = resource;
 		this.settings = settings;
@@ -181,7 +185,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
-		dataSource = new OrdersDataSource(acService, resource, identity, List.of(), null, null, this);
+		dataSource = new OrdersDataSource(acService, resource, identity, List.of(), null, viewAs, getIdentity(), null, this);
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);

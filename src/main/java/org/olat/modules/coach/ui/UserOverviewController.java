@@ -85,6 +85,7 @@ import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.openbadges.ui.BadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.HomePageDisplayController;
@@ -284,7 +285,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (!roleSecurityCallback.canViewPendingCourseBookings()) {
 			return;
 		}
-		long pendingMembershipCount = acService.getReservationsWithOrders(mentee).stream()
+		long pendingMembershipCount = acService.getReservationsWithOrders(mentee, ViewAs.ALL, getIdentity()).stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getType()))
 				.filter(r -> r.getType().startsWith(CurriculumService.RESERVATION_PREFIX)).count();
 		if (pendingMembershipCount > 1) {
@@ -367,7 +368,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (catalogV2Module.isEnabled() && roleSecurityCallback.canViewResourcesAndBookings()) {
 			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("tab.bookings"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
-				userOrderController = new UserOrderController(uureq, bwControl, mentee, roleSecurityCallback.canViewPendingCourseBookings());
+				userOrderController = new UserOrderController(uureq, bwControl, mentee, ViewAs.ALL, roleSecurityCallback.canViewPendingCourseBookings());
 				listenTo(userOrderController);
 				return userOrderController;
 			});

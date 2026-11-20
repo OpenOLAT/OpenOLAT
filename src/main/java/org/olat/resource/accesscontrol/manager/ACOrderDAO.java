@@ -36,6 +36,7 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.NativeQueryBuilder;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -43,6 +44,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
@@ -53,6 +55,7 @@ import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OrderImpl;
 import org.olat.resource.accesscontrol.model.OrderLineImpl;
@@ -84,7 +87,9 @@ public class ACOrderDAO {
 			"cost_center_accounts", "trxStatus", "trxMethodIds", "pspTrxStatus", "checkoutTrxStatus", "checkoutTrxPaypalStatus",
 			"delivery_ident_id", "delivery_ident_name", "delivery_user_id");
 
-
+	private static final List<String> CURRICULUM_MANAGERS_ROLES = List.of(OrganisationRoles.administrator.name(),
+			OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name());
+	
 	@Autowired
 	private DB dbInstance;
 
@@ -210,9 +215,13 @@ public class ACOrderDAO {
 	 * @return
 	 */
 	public int countNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
-			Date from, Date to, OrderStatus... status) {
+			Date from, Date to, ViewAs viewAs, IdentityRef viewerIdentity, OrderStatus... status) {
 
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			findNativeOrderItemsWithAsCurriculumAdmin(sb);
+		}
+		
 		sb.append("select count(o.order_id)")
 		  .append(" from o_ac_order o")
 		  .append(" inner join o_ac_order_part order_part on (o.order_id=order_part.fk_order_id and order_part.pos=0)")
@@ -222,6 +231,10 @@ public class ACOrderDAO {
 		if(resource != null) {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append(" offer.fk_resource_id=:resourceKey ");
+		}
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" offer.fk_resource_id in (select crsrc.rsrcId from curriculumrsrc as crsrc)");
 		}
 		if(delivery != null) {
 			where = PersistenceHelper.appendAnd(sb, where);
@@ -280,6 +293,11 @@ public class ACOrderDAO {
 			cal.set(Calendar.MILLISECOND, 0);
 			query.setParameter("to", cal.getTime(), TemporalType.TIMESTAMP);
 		}
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			query.setParameter("viewerKey", viewerIdentity.getKey())
+		         .setParameter("managerRoles", CURRICULUM_MANAGERS_ROLES)
+		         .setParameter("ownerRole", CurriculumRoles.curriculumowner.name());
+		}
 
 		Object rawOrders = query.getSingleResult();
 		return rawOrders instanceof Number ? ((Number)rawOrders).intValue() : 0;
@@ -317,12 +335,16 @@ public class ACOrderDAO {
 	 */
 	public List<RawOrderItem> findNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from,
 			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
-			boolean filterAdjustedAmount, boolean filterAddressProposal, int firstResult, int maxResults,
-			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
+			boolean filterAdjustedAmount, boolean filterAddressProposal, ViewAs viewAs, IdentityRef viewerIdentity,
+			int firstResult, int maxResults, List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
 		
 		Set<String> allowedOrderBys = new HashSet<>(findNativeOrderItemsOrderBys);
 
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			findNativeOrderItemsWithAsCurriculumAdmin(sb);
+		}
+		
 		sb.append("select")
 		  .append("  o.order_id as order_id,")
 		  .append("  o.total_currency_code as total_currency_code,")
@@ -379,6 +401,11 @@ public class ACOrderDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append(" offer.fk_resource_id=:resourceKey ");
 		}
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" offer.fk_resource_id in (select crsrc.rsrcId from curriculumrsrc as crsrc)");
+		}
+		
 		if(delivery != null) {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append(" o.fk_delivery_id=:deliveryKey ");
@@ -460,6 +487,11 @@ public class ACOrderDAO {
 				.createNativeQuery(sb.toString());
 		if(resource != null) {
 			query.setParameter("resourceKey", resource.getKey());
+		}
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			query.setParameter("viewerKey", viewerIdentity.getKey())
+			     .setParameter("managerRoles", CURRICULUM_MANAGERS_ROLES)
+			     .setParameter("ownerRole", CurriculumRoles.curriculumowner.name());
 		}
 		if(delivery != null) {
 			query.setParameter("deliveryKey", delivery.getKey());
@@ -558,6 +590,23 @@ public class ACOrderDAO {
 			items.add(item);
 		}
 		return items;
+	}
+	
+	private void findNativeOrderItemsWithAsCurriculumAdmin(NativeQueryBuilder sb) {
+		sb.append(" with curriculumrsrc as (")
+		  .append("  select ownedel.fk_resource as rsrcId from o_cur_curriculum_element as ownedel")
+		  .append("  inner join o_cur_curriculum as ownedcur on (ownedel.fk_curriculum=ownedcur.id)")
+		  .append("  inner join o_bs_group as ownedgroup on (ownedcur.fk_group=ownedgroup.id)")
+		  .append("  inner join o_bs_group_member as owner on (owner.fk_group_id=ownedgroup.id )")
+		  .append("  where owner.g_role=:ownerRole and owner.fk_identity_id=:viewerKey")
+		  .append("  union")
+		  .append("  select mangerel.fk_resource as rsrcId from o_cur_curriculum_element as mangerel")
+		  .append("  inner join o_cur_curriculum as managercur on (mangerel.fk_curriculum=managercur.id)")
+		  .append("  inner join o_org_organisation as managerorg on (managercur.fk_organisation=managerorg.id)")
+		  .append("  inner join o_bs_group as managergroup on (managerorg.fk_group=managergroup.id)")
+		  .append("  inner join o_bs_group_member as manager on (manager.fk_group_id=managergroup.id )")
+		  .append("  where manager.g_role in (:managerRoles) and manager.fk_identity_id=:viewerKey");
+		sb.append(")");
 	}
 
 	public List<Order> findOrdersByResource(OLATResource resource, OrderStatus... status) {
@@ -704,7 +753,7 @@ public class ACOrderDAO {
 				.collect(Collectors.toMap(row -> (Long)row[0], row -> (Long)row[1]));
 	}
 	
-	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity) {
+	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity, ViewAs viewAs, IdentityRef viewerIdentity) {
 		QueryBuilder sb = new QueryBuilder();
 		
 		sb.append("select reservation from resourcereservation as reservation ");
@@ -715,10 +764,32 @@ public class ACOrderDAO {
 		sb.and().append("reservation.identity.key=:identityKey");
 		sb.and().append("reservation.resource.key = offer.resource.key");
 		
-		return dbInstance.getCurrentEntityManager()
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			sb.and().append("(")
+			  .append(" reservation.resource.key in (select ownerel.resource.key from curriculumelement as ownerel")
+			  .append("   inner join ownerel.curriculum as ownercur")
+			  .append("   inner join ownercur.group as oGroup")
+			  .append("   inner join oGroup.members as owner")
+			  .append("   where owner.identity.key=:managerKey and owner.role=:orole)");
+			sb.append(" or ");
+			sb.append(" reservation.resource.key in (select managerel.resource.key from curriculumelement as managerel")
+			  .append("   inner join managerel.curriculum as managercur")
+			  .append("   inner join managercur.organisation as org")
+			  .append("   inner join org.group as orgGroup")
+			  .append("   inner join orgGroup.members as manager")
+			  .append("   where manager.identity.key=:managerKey and manager.role in (:orgroles))");
+			sb.append(")");
+		}
+		
+		TypedQuery<ResourceReservation> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ResourceReservation.class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultList();
+				.setParameter("identityKey", identity.getKey());
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			query.setParameter("managerKey", viewerIdentity.getKey())
+			     .setParameter("orole", CurriculumRoles.curriculumowner.name())
+			     .setParameter("orgroles", CURRICULUM_MANAGERS_ROLES);
+		}
+		return query.getResultList();
 	}
 	
 	public List<UserResourceReservation> getReservationsWithOrders(IdentityRef identity, String right, List<UserPropertyHandler> userPropertyHandlers) {

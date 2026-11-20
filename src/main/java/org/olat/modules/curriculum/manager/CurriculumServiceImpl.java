@@ -878,6 +878,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public CurriculumElement getCurriculumElement(OLATResource resource) {
 		return curriculumElementDao.loadElementByResource(resource);
 	}
+	
+	@Override
+	public List<CurriculumElement> getCurriculumElementsByResources(Collection<OLATResource> resources) {
+		if(resources == null || resources.isEmpty()) return new ArrayList<>();
+		return curriculumElementDao.loadElementsByResources(resources);
+	}
 
 	@Override
 	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs) {

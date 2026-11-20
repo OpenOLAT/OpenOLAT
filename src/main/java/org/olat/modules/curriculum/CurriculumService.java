@@ -296,6 +296,8 @@ public interface CurriculumService {
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
 	
 	public CurriculumElement getCurriculumElement(OLATResource resource);
+	
+	public List<CurriculumElement> getCurriculumElementsByResources(Collection<OLATResource> resources);
 
 	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs);
 	

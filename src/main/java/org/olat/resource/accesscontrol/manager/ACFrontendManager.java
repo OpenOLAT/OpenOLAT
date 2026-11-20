@@ -120,6 +120,7 @@ import org.olat.resource.accesscontrol.ParticipantsAvailability;
 import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.ACResourceInfoImpl;
@@ -1017,8 +1018,8 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 
 	@Override
-	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity) {
-		return orderManager.getReservationsWithOrders(identity);
+	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity, ViewAs viewAs, IdentityRef viewIdentity) {
+		return orderManager.getReservationsWithOrders(identity, viewAs, viewIdentity);
 	}
 
 	@Override
@@ -1154,14 +1155,14 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	public boolean isAccessRefusedByStatus(RepositoryEntry entry, IdentityRef identity) {
 		return !RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
 					&& !findOrderItems(entry.getOlatResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED },
-							null, null, false, false, 0, 1, null).isEmpty();
+							null, null, false, false, ViewAs.ALL, null, 0, 1, null).isEmpty();
 	}
 	
 	@Override
 	public boolean isAccessRefusedByStatus(CurriculumElement element, IdentityRef identity) {
 		return !Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(element.getElementStatus())
 				&& !findOrderItems(element.getResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED },
-						null, null, false, false, 0, 1, null).isEmpty();
+						null, null, false, false, ViewAs.ALL, null, 0, 1, null).isEmpty();
 	}
 
 	@Override
@@ -1571,15 +1572,17 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 
 	@Override
-	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to, OrderStatus[] status) {
-		return orderManager.countNativeOrderItems(resource, delivery, orderNr, from, to, status);
+	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
+			ViewAs viewAs, IdentityRef viewerIdentity, OrderStatus[] status) {
+		return orderManager.countNativeOrderItems(resource, delivery, orderNr,
+				from, to, viewAs, viewerIdentity, status);
 	}
 
 	@Override
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from,
 			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
-			boolean filterAdjustedAmount, boolean billingAddressProposal, int firstResult, int maxResults,
-			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
+			boolean filterAdjustedAmount, boolean billingAddressProposal, ViewAs viewAs, IdentityRef viewerIdentity,
+			int firstResult, int maxResults, List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
 		List<AccessMethod> methods = methodManager.getAllMethods();
 		Map<String,AccessMethod> methodMap = new HashMap<>();
 		for(AccessMethod method:methods) {
@@ -1587,8 +1590,8 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 		}
 
 		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, status,
-				methodsKeys, offerAccessKeys, filterAdjustedAmount, billingAddressProposal, firstResult, maxResults,
-				userPropertyHandlers, orderBy);
+				methodsKeys, offerAccessKeys, filterAdjustedAmount, billingAddressProposal, viewAs, viewerIdentity,
+				firstResult, maxResults, userPropertyHandlers, orderBy);
 		List<OrderTableItem> items = new ArrayList<>(rawOrders.size());
 		for(RawOrderItem rawOrder:rawOrders) {
 			String orderStatusStr = rawOrder.getOrderStatus();
@@ -1798,7 +1801,7 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 			header.addCell(4, "Method");
 			header.addCell(5, "Total");
 			
-			List<OrderTableItem> orders = findOrderItems(null, identity, null, null, null, null, null, null, false, false, 0, -1, null);
+			List<OrderTableItem> orders = findOrderItems(null, identity, null, null, null, null, null, null, false, false, ViewAs.ALL, null, 0, -1, null);
 			for(OrderTableItem order:orders) {
 				exportNoteData(order, sheet, workbook, locale);
 			}

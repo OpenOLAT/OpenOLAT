@@ -69,6 +69,7 @@ import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
@@ -281,7 +282,7 @@ public class OrderDetailController extends FormBasicController {
 		try(StringOutput status = new StringOutput()) {
 			OrderStatusRenderer statusRenderer = new OrderStatusRenderer(getTranslator());
 			List<OrderTableItem> items = acService.findOrderItems(null, delivery, order.getKey(), null, null,
-					OrderStatus.values(), null, null, false, false, 0, 1, null);
+					OrderStatus.values(), null, null, false, false, ViewAs.ALL, null, 0, 1, null);
 			Status consolidatedStatus; 
 			if(items.size() == 1) {
 				consolidatedStatus = items.get(0).getStatus();

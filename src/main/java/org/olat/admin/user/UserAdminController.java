@@ -89,6 +89,7 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.CompetencesOverviewController;
 import org.olat.properties.Property;
 import org.olat.repository.ui.list.ImplementationsListController;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.PortraitUser;
@@ -631,7 +632,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 		if (isAdminOf || isPrincipalOf || isRolesManagerOf) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_ACCESS), uureq -> {
-				Controller accessCtr = new UserOrderController(uureq, getWindowControl(), identity, false);
+				Controller accessCtr = new UserOrderController(uureq, getWindowControl(), identity, ViewAs.ALL, false);
 				listenTo(accessCtr);
 				return accessCtr.getInitialComponent();
 			});

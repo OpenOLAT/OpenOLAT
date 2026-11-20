@@ -37,6 +37,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.provider.auto.ui.AdvanceOrderController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,6 +59,7 @@ public class UserOrderController extends BasicController {
 	private PendingMembershipsController pendingMembershipsCtrl;
 	private AdvanceOrderController advanceOrdersCtrl;
 
+	private final ViewAs viewAs;
 	private final Identity identity;
 	private final boolean canActivatePendingAccounts;
 
@@ -66,8 +68,10 @@ public class UserOrderController extends BasicController {
 	@Autowired
 	private CurriculumModule curriculumModule;
 
-	public UserOrderController(UserRequest ureq, WindowControl wControl, Identity identity, boolean canActivatePendingAccounts) {
+	public UserOrderController(UserRequest ureq, WindowControl wControl, Identity identity,
+			ViewAs viewAs, boolean canActivatePendingAccounts) {
 		super(ureq, wControl);
+		this.viewAs = viewAs;
 		this.identity = identity;
 		this.canActivatePendingAccounts = canActivatePendingAccounts;
 
@@ -138,7 +142,7 @@ public class UserOrderController extends BasicController {
 		if(ordersCtrl == null) {
 			OrdersSettings settings = OrdersSettings.defaultSettings("user");
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(SCOPE_KEY_ORDERS), null);
-			ordersCtrl = new OrdersController(ureq, bwControl, identity, settings);
+			ordersCtrl = new OrdersController(ureq, bwControl, identity, settings, viewAs);
 			listenTo(ordersCtrl);
 		}
 		mainVC.put("scopeCmp", ordersCtrl.getInitialComponent());
@@ -147,7 +151,7 @@ public class UserOrderController extends BasicController {
 	private void doPendingMemberships(UserRequest ureq) {
 		if (pendingMembershipsCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(SCOPE_KEY_PENDING_MEMBERSHIPS), null);
-			pendingMembershipsCtrl = new PendingMembershipsController(ureq, bwControl, identity);
+			pendingMembershipsCtrl = new PendingMembershipsController(ureq, bwControl, identity, viewAs);
 			listenTo(pendingMembershipsCtrl);
 		}
 		mainVC.put("scopeCmp", pendingMembershipsCtrl.getInitialComponent());

@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -92,7 +93,7 @@ public class HomeOrdersController extends BasicController {
 	private void doOpenOrders(UserRequest ureq) {
 		if(ordersCtrl == null) {
 			OrdersSettings settings = OrdersSettings.defaultSettings("home");
-			ordersCtrl = new OrdersController(ureq, getWindowControl(), getIdentity(), settings);
+			ordersCtrl = new OrdersController(ureq, getWindowControl(), getIdentity(), settings, ViewAs.ALL);
 			listenTo(ordersCtrl);
 		}
 		mainVC.put("scopeCmp", ordersCtrl.getInitialComponent());

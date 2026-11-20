@@ -47,6 +47,7 @@ import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
 import org.olat.modules.curriculum.ui.component.NextEvent;
 import org.olat.modules.curriculum.ui.component.PreviousEvent;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoProfileConfig;
@@ -135,7 +136,8 @@ public class CurriculumMemberOverviewController extends BasicController {
 		});
 		
 		memberTabP.addTab(ureq, translate("tab.bookings"), uureq -> {
-			Controller accessCtr = new UserOrderController(uureq, getWindowControl(), member, false);
+			Controller accessCtr = new UserOrderController(uureq, getWindowControl(), member,
+					ViewAs.CURRICULUM_AS_MANAGER, true);
 			listenTo(accessCtr);
 			return accessCtr.getInitialComponent();
 		});
