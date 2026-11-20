@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateVariant;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -89,6 +91,11 @@ public class TaxonomyLevelsCalloutController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withVariant(EmptyStateVariant.small)
+				.withIconCss("o_icon_taxonomy_levels")
+				.withMessageI18nKey("table.taxonomy.level.empty")
+				.build());
 	}
 	
 	public class TaxonomyLevelSmallCellRenderer implements FlexiCellRenderer {

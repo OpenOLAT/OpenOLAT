@@ -213,7 +213,11 @@ ul.o_dropdown {
 		flex-direction: column;
 		width: 100%;
 		padding: 0;
-		
+
+		// container-type ignores the width of the content, a popover sized by its content would collapse
+		.popover & {
+			min-width: min(360px, calc(100vw - 32px));
+		}
 		.o_empty_inner {
 			display: flex;
 			flex-direction: column;
@@ -321,12 +325,11 @@ ul.o_dropdown {
 			
 			.btn {
 				padding: 5px 10px;
-				font-size: $font-size-small;
 			}
 		}
 	}
 	
-	@container (max-width: 520px) {
+	@container (max-width: 400px) {
 		.o_empty_inner .o_empty_body, .o_empty_inner .o_empty_action {
 			width: 100%;
 		}

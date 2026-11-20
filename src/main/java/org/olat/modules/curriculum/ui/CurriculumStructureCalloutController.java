@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateVariant;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -104,6 +106,11 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
+		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withVariant(EmptyStateVariant.small)
+				.withIconCss("o_icon_structure")
+				.withMessageI18nKey("structure.empty")
+				.build());
 	}
 	
 	private class ElementTreeNodeFlexiCellRenderer extends TreeNodeFlexiCellRenderer {

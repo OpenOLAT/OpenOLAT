@@ -33,6 +33,7 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.emptystate.EmptyStateVariant;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -129,6 +130,7 @@ public class ProjWhiteboardController extends BasicController implements Generic
 		
 		// Empty state
 		emptyState = EmptyStateFactory.create("whiteboard.empty.state", mainVC, this);
+		emptyState.setVariant(EmptyStateVariant.standard);
 		emptyState.setIconCss("o_icon o_icon_proj_whiteboard");
 		emptyState.setIndicatorIconCss("o_no_indicator");
 		emptyState.setMessageI18nKey("whiteboard.empty.message");
