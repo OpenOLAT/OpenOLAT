@@ -3422,6 +3422,7 @@ The compile does not check a Sass value of the theme config (`$btn-primary-color
 |---|---|---|---|
 | Login button on a navbar in or near the primary colour | edge 3:1 on `navbar-bg`, text 4.5:1 | `navbar-login-bg`, `navbar-login-fg`, `navbar-login-border` in `$o-tokens`: `"white"` with `"navbar-bg"` (the navbar colour has 4.5:1 on `neutral-250`), `"white"` with `"neutral-900"`, or `"neutral-900"` with `"white"` (light navbar) | text yes, edge no |
 | Light primary colour | 4.5:1 | keep the dark default of `$btn-primary-color`; for white text a darker `$btn-primary-bg`; a darker `$link-color` | no |
+| Own fill of the course start button (`$o-coursesite-start-bg`) | 4.5:1 | keep the default of `$o-coursesite-start-color`: on the primary fill the text of the primary button, on an own fill white, or a dark text when white has less than 4.5:1 (as `$btn-primary-color`) | no |
 | Black primary colour | state visible | `primary-hover`, `btn-primary-border-hover`, `table-filter-fg-hover`: `"neutral-800"`; `table-filter-fg-active`: `"neutral-700"` | no |
 | Grey body text | 4.5:1 on `bg`, `bg-subtle`, `bg-selected`, `bg-hover` | `#595959` or darker; up to about `#6B6B6B` with `$o-selection-step: 50` and `$o-selection-hover-step: 100` | no |
 | Navbar text and tools set in the config | 4.5:1 on `navbar-bg` | delete `$o-navbar-color` and `$o-navbar-tools-permanent-color` | no |

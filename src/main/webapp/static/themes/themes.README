@@ -476,6 +476,11 @@ The usual problems:
      $brand-primary: #FFDC00;    // white 1.36:1
      $btn-primary-bg: #857200;   // white 4.77:1, also the start button of the course site
      $link-color: #7A6900;       // 5.46:1 on white
+   The start button of the course site has the text of the primary button while
+   $o-coursesite-start-bg is the primary fill. A start button with an own fill
+   ($o-coursesite-start-bg: <colour>) gets white text, or a dark text when white has less
+   than 4.5:1 on that fill, the same rule as for $btn-primary-color. Set
+   $o-coursesite-start-color only for another colour.
 3. Black or near black primary colour: some hover colours stay black. Set grey steps:
      $o-tokens: ("primary-hover": "neutral-800", "btn-primary-border-hover": "neutral-800",
                  "table-filter-fg-hover": "neutral-800", "table-filter-fg-active": "neutral-700");

@@ -738,7 +738,14 @@ $o-coursesite-meta-header-padding-bottom	: 2em !default;
 $o-coursesite-sidecol-radius	: $border-radius-base !default;
 $o-coursesite-sidecol-padding 	: $panel-body-padding !default;
 $o-coursesite-start-bg			: $btn-primary-bg !default;
-$o-coursesite-start-color		: o-a11y-color($btn-primary-color, $o-coursesite-start-bg) !default;
+// The text of the Start button: the text of the primary button on the
+// primary fill; on an other fill white, or the colour with 4.5:1 on it,
+// as for $btn-primary-color.
+$o-coursesite-start-color-default	: o-a11y-color(o-neutral(0), $o-coursesite-start-bg);
+@if $o-coursesite-start-bg == $btn-primary-bg {
+	$o-coursesite-start-color-default	: o-a11y-color($btn-primary-color, $o-coursesite-start-bg);
+}
+$o-coursesite-start-color		: $o-coursesite-start-color-default !default;
 $o-coursesite-start-border		: o-scale-snap($o-coursesite-start-bg, darken($o-coursesite-start-bg, 5%)) !default;
 // the book button follows the dirty button: warning state (OO-10043, S5 and S3)
 $o-coursesite-book-bg			: o-state-color("warning", "bg") !default;
