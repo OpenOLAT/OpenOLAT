@@ -63,7 +63,7 @@ public class TBrokerPage {
 	}
 	
 	public TBrokerPage assertEnrolledByTopic(String title, int priority) {
-		By enrolledBy = By.xpath("//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + title + "')]]][td/div[@class='o_tb_priority_labels']/div[@class='o_tb_priority_label']/div[@class='o_tb_priority_enrolled'][text()[contains(.,'" + priority + "')]]]/td/div/span[contains(@class,'o_tb_label_light_enrolled')]");
+		By enrolledBy = By.xpath("//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + title + "')]]][td/div[@class='o_tb_priority_labels']/div[@class='o_tb_priority_label']/div[@class='o_tb_priority_neutral'][text()[contains(.,'" + priority + "')]]]/td/div/span[contains(@class,'o_tb_label_light_enrolled')]");
 		OOGraphene.waitElement(enrolledBy, browser);
 		return this;
 	}
