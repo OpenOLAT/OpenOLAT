@@ -151,6 +151,15 @@ public class AssessmentHelper {
 		return uce;
 	}
 	
+	public static UserCourseEnvironment createAndInitParticipantCourseEnvironment(Identity identity, ICourse course) {
+		IdentityEnvironment ienv = new IdentityEnvironment();
+		ienv.setIdentity(identity);
+		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		uce.setUserRoles(false, false, true);
+		uce.getScoreAccounting().evaluateAll();
+		return uce;
+	}
+	
 	public static UserCourseEnvironment createAndInitUserCourseEnvironment(Identity identity, CourseEnvironment courseEnv) {
 		// create an identenv with no roles, no attributes, no locale
 		IdentityEnvironment ienv = new IdentityEnvironment(); 

@@ -831,7 +831,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				|| !Objects.equals(updatePerformanceClassIdent, currentPerformanceClassIdent);
 		
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
-		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		uce.setUserRoles(false, false, true);
 		if(needUpdate) {
 			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedWeightedScore,
 					updatedScoreScale, updateGrade, updateGradeSystemIdent,
