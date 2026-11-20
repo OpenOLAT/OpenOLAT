@@ -355,8 +355,8 @@ $o-state-wiring: (
 	".o_labeled_light.o_tb_label_light_waiting": ("warning", "text"),
 	".o_labeled.o_tb_label_not_enrolled": ("inactive", "tint"),
 	".o_labeled_light.o_tb_label_light_not_enrolled": ("inactive", "text"),
-	".o_labeled.o_tb_label_surplus": ("highlight", "solid"),
-	".o_labeled_light.o_tb_label_light_surplus": ("highlight", "text"),
+	".o_labeled.o_tb_label_surplus": ("warning", "solid"),
+	".o_labeled_light.o_tb_label_light_surplus": ("warning", "text"),
 	".o_labeled.o_tb_label_broker_selection_in_progress": ("neutral", "solid"),
 	".o_labeled.o_tb_label_broker_enrollment_done": ("success", "solid"),
 	".o_labeled.o_tb_label_selected": ("neutral", "solid"),
@@ -545,7 +545,7 @@ $o-state-wiring: (
 	".o_tb_priority_enrolled": ("success", "solid"),
 	".o_tb_priority_waiting": ("warning", "text"),
 	".o_tb_priority_not_enrolled": ("inactive", "text"),
-	".o_tb_priority_surplus": ("highlight", "text"),
+	".o_tb_priority_surplus": ("warning", "text"),
 	// Certificate
 	".o_labeled.o_certificate_expiration": ("warning", "tint"),
 	// MCP token

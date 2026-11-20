@@ -329,8 +329,8 @@ public class GuiDemoColorBadges {
 				new Sample("o_labeled_light o_tb_label_light_waiting", "Waiting", WARNING, TEXT),
 				new Sample("o_labeled o_tb_label_not_enrolled", "Not enrolled", INACTIVE, TINT),
 				new Sample("o_labeled_light o_tb_label_light_not_enrolled", "Not enrolled", INACTIVE, TEXT),
-				new Sample("o_labeled o_tb_label_surplus", "Surplus", HIGHLIGHT, SOLID),
-				new Sample("o_labeled_light o_tb_label_light_surplus", "Surplus", HIGHLIGHT, TEXT),
+				new Sample("o_labeled o_tb_label_surplus", "Surplus", WARNING, SOLID),
+				new Sample("o_labeled_light o_tb_label_light_surplus", "Surplus", WARNING, TEXT),
 				new Sample("o_labeled o_tb_label_broker_selection_in_progress", "Selection running", NEUTRAL, SOLID),
 				new Sample("o_labeled o_tb_label_broker_enrollment_done", "Enrolment done", SUCCESS, SOLID),
 				new Sample("o_labeled o_tb_label_selected", "Selected", NEUTRAL, SOLID),
@@ -521,7 +521,7 @@ public class GuiDemoColorBadges {
 				new Sample("o_tb_priority_enrolled", "Enrolled", SUCCESS, SOLID),
 				new Sample("o_tb_priority_waiting", "Waiting list", WARNING, TEXT),
 				new Sample("o_tb_priority_not_enrolled", "Not enrolled", INACTIVE, TEXT),
-				new Sample("o_tb_priority_surplus", "Surplus", HIGHLIGHT, TEXT))));
+				new Sample("o_tb_priority_surplus", "Surplus", WARNING, TEXT))));
 		groups.add(new Group("Certificate", null, List.of(
 				new Sample("o_labeled o_certificate_expiration", "Expires in 3 days", WARNING, TINT))));
 		groups.add(new Group("MCP token", null, List.of(
