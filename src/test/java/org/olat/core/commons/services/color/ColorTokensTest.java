@@ -2320,6 +2320,65 @@ public class ColorTokensTest {
 	}
 
 	/**
+	 * The fills of the tree and of the centre and the right column, the
+	 * border of the navigation bar and the hover colours of the content links
+	 * and of the footer links read element tokens. A client theme keeps
+	 * setting the Sass variables. The fills are transparent by default; the
+	 * hover colours have a contrast pair.
+	 */
+	@Test
+	public void layoutFillsAndLinkHoversReadTokens() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		assertRuleReads(css, ".o_tree", "background-color:var(--o-tree-bg)");
+		assertRuleReads(css, ".o_tree .o_tree_link", "background-color:var(--o-tree-link-bg)");
+		assertRuleReads(css, ".o_tree ul li .active.o_tree_link", "background-color:var(--o-tree-link-active-bg)");
+		assertRuleReads(css, ".o_tree.o_course_menu div.o_tree_l0>a:first-child", "background-color:var(--o-tree-link-bg)");
+		assertRuleReads(css, "#o_main_wrapper #o_main_container #o_main_center", "background:var(--o-main-center-bg)");
+		assertRuleReads(css, "#o_main_wrapper #o_main_container #o_main_right", "background:var(--o-main-right-bg)");
+		assertRuleReads(css, "#o_navbar_wrapper", "border-top:1px solid var(--o-navbar-border)");
+		assertRuleReads(css, ".o_navbar", "border:1px solid var(--o-navbar-border)");
+		assertRuleReads(css, ".o_navbar-form", "border-top:1px solid var(--o-navbar-border)");
+		assertRuleReads(css, ".o_navbar-form", "border-bottom:1px solid var(--o-navbar-border)");
+		assertRuleReads(css, "#o_footer_wrapper a:hover", "color:var(--o-footer-link-hover)");
+		assertRuleReads(css, "#o_footer_user #o_share a:hover", "color:var(--o-footer-link-hover)");
+		assertRuleReads(css, ".o_user_content_block a:hover", "color:var(--o-content-link-hover)");
+		for (String fill : List.of("tree-bg", "tree-link-bg", "tree-link-active-bg", "main-center-bg", "main-right-bg")) {
+			Assert.assertEquals(fill, "transparent", resolve(fill));
+		}
+		Assert.assertEquals("var(--o-link-hover)", tokens.get("content-link-hover"));
+		assertContrast("content-link-hover", "bg", 4.5);
+		assertContrast("footer-link-hover", "footer-inner-bg", 4.5);
+	}
+
+	/**
+	 * The elements that client themes coloured with own rules read tokens
+	 * with a reference default, so the light look does not change: the
+	 * navigation bar of the login page from 768px (:where() keeps the
+	 * specificity of the navbar rules), the bar under the active site or tab
+	 * (an inset shadow, width 0 by default) and the top border of the footer
+	 * (width 0 by default).
+	 */
+	@Test
+	public void loginNavbarTabIndicatorAndFooterBorderTokens() {
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		Assert.assertEquals("var(--o-navbar-bg)", tokens.get("login-navbar-bg"));
+		Assert.assertEquals("var(--o-navbar-link)", tokens.get("login-navbar-link"));
+		Assert.assertEquals("var(--o-navbar-border)", tokens.get("login-navbar-border"));
+		Assert.assertEquals("var(--o-primary)", tokens.get("navbar-tab-indicator"));
+		Assert.assertEquals("var(--o-border-subtle)", tokens.get("footer-border"));
+		Assert.assertTrue("The login navbar rules need @media (min-width: 768px) and :where()",
+				css.contains("@media(min-width: 768px){:where(#o_body.o_dmz) .o_navbar{background-color:var(--o-login-navbar-bg);border-bottom:1px solid var(--o-login-navbar-border)}"
+						+ ":where(#o_body.o_dmz) .o_navbar-nav>li>a{color:var(--o-login-navbar-link)}}"));
+		assertRuleReads(css, ".o_navbar_tabs>li.active>a", "box-shadow:inset 0 0 0 var(--o-navbar-tab-indicator)");
+		assertRuleReads(css, "#o_navbar_more>li>a:hover", "box-shadow:inset 0 0 0 var(--o-navbar-tab-indicator)");
+		assertRuleReads(css, "#o_navbar_more .dropdown-menu .o_dropdown_tab.active>a", "box-shadow:inset 0 0 0 var(--o-navbar-tab-indicator)");
+		assertRuleReads(css, "#o_footer_wrapper", "border-top:0 solid var(--o-footer-border)");
+		assertContrast("login-navbar-link", "login-navbar-bg", 4.5);
+		assertContrast("navbar-tab-indicator", "navbar-bg", 3.0);
+		assertContrast("navbar-tab-indicator", "bg-raised", 3.0);
+	}
+
+	/**
 	 * The primary button in the navbar (login button of the guest navbar and
 	 * of the navbar of the login page): the navbar items have the inset ring
 	 * in the focus colour, which has too little contrast on the primary fill.

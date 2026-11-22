@@ -13,7 +13,7 @@
 		text-decoration: none;
 		&:hover,
 		&:focus {
-			color: $o-content-link-hover-color; // o-color-keep(client-value)
+			color: var(--o-content-link-hover);
 			text-decoration: $o-content-link-decoration;
 		}
 	}

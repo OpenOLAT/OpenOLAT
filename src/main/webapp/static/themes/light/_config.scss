@@ -406,8 +406,9 @@ $o-page-width-toggler-hover-background		: o-neutral(100) !default;
 $o-main-outer-bg 	: o-neutral(0) !default;
 $o-main-inner-bg 	: o-neutral(0) !default;
 $o-main-left-bg		: o-neutral(0) !default;
-$o-main-center-bg	: inherit !default;
-$o-main-right-bg	: inherit !default;
+// the centre and the right column: transparent, they show the fill of the main container
+$o-main-center-bg	: transparent !default;
+$o-main-right-bg	: transparent !default;
 
 /* Page main navigation for sites, tabs and tools */
 $o-navbar-height					: $navbar-height !default;
@@ -466,6 +467,11 @@ $o-navbar-brand-hover-bg			: $navbar-inverse-brand-hover-bg ;
 
 $o-navbar-tab-max-width				: 150px !default;
 $o-navbar-tab-enable-icons			: false !default;
+// the bar under the active site or tab, under the item of the pointer and next
+// to the active item of the "More" dropdown: width, 0 = no bar (colour: token navbar-tab-indicator)
+$o-navbar-tab-indicator-width		: 0 !default;
+// the bottom border of the navigation bar of the login page from 768px (colour: token login-navbar-border)
+$o-login-navbar-border-width		: 1px !default;
 
 /* More button and dropdown menu */
 $o-navbar-more-dropdown-max-width	: 300px !default;
@@ -501,6 +507,8 @@ $o-footer-default-link-color 		: o-neutral(500) !default;
 $o-footer-default-link-hover-color 	: o-neutral(750) !default;
 $o-footer-position-absolute 		: true !default;
 $o-footer-margin-top				: $padding-large-vertical !default;
+// the top border of the footer: width, 0 = no border (colour: token footer-border)
+$o-footer-border-width				: 0 !default;
 
 /* Toolbar in course, editor etc */
 $o-toolbar-bg-color				: $navbar-default-bg !default;
@@ -565,16 +573,16 @@ $o-radio-card-bg-hover				: o-scale-snap($btn-default-bg, darken($btn-default-bg
 $o-radio-card-image-border-radius	: $border-radius-small !default;
 $o-radio-card-icon-font-size		: 28px !default;
 
-/* Left side menu tree */
-$o-tree-bg						: none !default;
+/* Left side menu tree. The tree, its items and the selected item have no own fill (transparent) */
+$o-tree-bg						: transparent !default;
 $o-tree-border-color			: $list-group-border !default;
 $o-tree-border-radius			: $list-group-border-radius !default;
 $o-tree-link-color 				: $navbar-default-link-color !default;
-$o-tree-link-bg					: none !default;
+$o-tree-link-bg					: transparent !default;
 $o-tree-link-hover-color 		: $navbar-default-link-hover-color !default;
 $o-tree-link-hover-bg			: $navbar-default-bg !default;
 $o-tree-link-active-color 		: $link-color !default;
-$o-tree-link-active-bg			: none !default;
+$o-tree-link-active-bg			: transparent !default;
 $o-tree-link-active-hover-color : $link-hover-color !default;
 $o-tree-link-active-hover-bg	: $gray-lighter !default;
 $o-tree-link-active-font-weight	: bold !default;

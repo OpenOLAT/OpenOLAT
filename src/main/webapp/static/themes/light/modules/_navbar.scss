@@ -1,6 +1,6 @@
 #o_navbar_wrapper {
 	z-index: $o-navbar-z-index;
-	border-top: 1px solid $o-navbar-border-color; // o-color-keep(client-value)
+	border-top: 1px solid var(--o-navbar-border);
 	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
 
 	#o_navbar_container {
@@ -16,7 +16,7 @@ a.o_disabled.navbar-text {
 	position: relative;
 	min-height: $o-navbar-height; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
 	margin-bottom: $o-navbar-margin-bottom;
-	border: 1px solid $o-navbar-border-color; // o-color-keep(client-value)
+	border: 1px solid var(--o-navbar-border);
 	background-color: var(--o-navbar-bg);
 	
 	// Prevent floats from breaking the navbar
@@ -481,6 +481,42 @@ body.o_dmz {
     }
 }
 
+// The bar under the active site or tab and under the item of the pointer,
+// next to the active item of the "More" dropdown (OO-10043): width
+// $o-navbar-tab-indicator-width (default 0: no bar), colour
+// navbar-tab-indicator. An inset shadow: the height of the items does not
+// change.
+.o_navbar_sites, .o_navbar_tabs, #o_navbar_more {
+	> li.active > a,
+	> li > a:hover,
+	> li > a:focus {
+		box-shadow: inset 0 (-1 * $o-navbar-tab-indicator-width) 0 var(--o-navbar-tab-indicator);
+	}
+}
+#o_navbar_more .dropdown-menu {
+	.o_dropdown_site, .o_dropdown_tab {
+		&.active > a,
+		> a:hover,
+		> a:focus {
+			box-shadow: inset $o-navbar-tab-indicator-width 0 0 var(--o-navbar-tab-indicator);
+		}
+	}
+}
+
+// The navigation bar of the login page from 768px (OO-10043): fill, link
+// text and bottom border. :where() keeps the specificity of the navbar
+// rules: the links under the pointer, the active link, the tool links and
+// the off-canvas menu keep their colours.
+@media (min-width: $screen-sm-min) {
+	:where(#o_body.o_dmz) .o_navbar {
+		background-color: var(--o-login-navbar-bg);
+		border-bottom: $o-login-navbar-border-width solid var(--o-login-navbar-border);
+	}
+	:where(#o_body.o_dmz) .o_navbar-nav > li > a {
+		color: var(--o-login-navbar-link);
+	}
+}
+
 
 // Component alignment
 //
@@ -504,8 +540,8 @@ body.o_dmz {
   	margin-left: -$o-navbar-padding-horizontal;
   	margin-right: -$o-navbar-padding-horizontal;
   	padding: 10px $o-navbar-padding-horizontal;
-  	border-top: 1px solid $o-navbar-border-color; // o-color-keep(client-value)
-  	border-bottom: 1px solid $o-navbar-border-color; // o-color-keep(client-value)
+  	border-top: 1px solid var(--o-navbar-border);
+  	border-bottom: 1px solid var(--o-navbar-border);
   	$shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent), 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
   	@include box-shadow($shadow);
 

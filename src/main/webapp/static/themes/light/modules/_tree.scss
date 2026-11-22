@@ -1,7 +1,7 @@
 .o_tree {
 	position: relative;
 	display: block;
-	background-color: $o-tree-bg; // o-color-keep(client-value)
+	background-color: var(--o-tree-bg);
 	border: 1px solid var(--o-tree-border);
     @include border-top-radius($o-tree-border-radius);
     @include border-bottom-radius($o-tree-border-radius);
@@ -18,7 +18,7 @@
     }
     
 	.o_tree_link {
-		background-color : $o-tree-link-bg; // o-color-keep(client-value)
+		background-color : var(--o-tree-link-bg);
 		&:hover,
 		&:focus {
 			background-color : var(--o-tree-link-hover-bg);
@@ -120,7 +120,7 @@
 		
 		li .active.o_tree_link {
 			a { color : var(--o-tree-link-active); }
-			background-color : $o-tree-link-active-bg; // o-color-keep(client-value)
+			background-color : var(--o-tree-link-active-bg);
 			&:hover,
 			&:focus {
 				a { color: var(--o-tree-link-active-hover); }

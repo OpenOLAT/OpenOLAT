@@ -312,8 +312,29 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     variables, e.g. $o-box-tip-color gives --o-box-tip-border, $o-login-lead-color gives
     --o-login-lead, $o-tree-border-color gives --o-tree-border, $o-im-status-available-color
     gives --o-im-status-available. Keep setting the Sass variables, or set the token with
-    $o-tokens. Still Sass: $o-tree-bg, $o-tree-link-bg, $o-tree-link-active-bg and
-    $o-navbar-border-color (they accept "none").
+    $o-tokens. $o-tree-bg, $o-tree-link-bg, $o-tree-link-active-bg, $o-main-center-bg,
+    $o-main-right-bg and $o-navbar-border-color feed --o-tree-bg, --o-tree-link-bg,
+    --o-tree-link-active-bg, --o-main-center-bg, --o-main-right-bg and --o-navbar-border;
+    $o-content-link-hover-color and $o-footer-default-link-hover-color feed
+    --o-content-link-hover and --o-footer-link-hover. Set them to a colour or to
+    transparent: "none", "inherit", an invalid hex value or "!important" stops the compile.
+    Some elements that themes coloured with own CSS rules have tokens now. Set the token and
+    delete the own rule:
+      - navigation bar of the login page from 768px (#o_body.o_dmz .o_navbar: background-color,
+        border-bottom; .o_navbar-nav > li > a: color): --o-login-navbar-bg,
+        --o-login-navbar-border with $o-login-navbar-border-width (default 1px),
+        --o-login-navbar-link. They follow the navigation bar.
+      - bar under the active site or tab (border-bottom on li.active of .o_navbar_sites,
+        .o_navbar_tabs, #o_navbar_more, border-left in the "More" dropdown):
+        --o-navbar-tab-indicator (default: primary) with $o-navbar-tab-indicator-width
+        (default 0: no bar). The bar is an inset shadow: delete the padding that made room
+        for the border, e.g.
+          $o-navbar-tab-indicator-width: 3px;
+          $o-tokens: ("navbar-tab-indicator": "orange-500");
+      - top border of the footer (#o_footer_wrapper: border-top): --o-footer-border (default:
+        border-subtle) with $o-footer-border-width (default 0: no border).
+    The drop shadow below the navigation bar stays an own rule. Write its colour with the
+    shadow token: box-shadow: 0 1px 5px color-mix(in srgb, var(--o-shadow-color) 10%, transparent);
     The tests, the page editor, the practice and the video modules read element tokens fed by
     their Sass variables too, e.g. $o-qti-menu-border-color gives --o-qti-menu-border,
     $o-editor-border-color gives --o-editor-border, $o-practice-progress-l1-bg-color gives

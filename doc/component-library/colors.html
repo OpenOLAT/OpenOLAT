@@ -285,8 +285,8 @@ $o-tokens: (
   <div class="cl-component" id="element-tokens">
     <div class="cl-component-header">
       <h3>Element tokens</h3>
-      <p>869 colours of single elements in three layers (<code>modules/_tokens.scss</code>): the global elements of the base layer (<code>$o-token-layer-base</code>, 56), the framework elements (<code>$o-token-layer-framework</code>, 376) and the elements of one feature module (<code>$o-token-layer-component</code>, 437). "Default" shows one of two forms.</p>
-      <p>A Sass default (699 tokens) feeds the token, so a client theme that sets the Sass variable keeps working. The token reads the first token of its list whose default has the same colour, else the scale step with the same colour (palette, brand ramp, neutral scale, white), else its base colour <code>--o-base-{name}</code>. For 566 tokens the default is a Sass variable. For 65 tokens it is a fixed scale step without a Sass variable, for example <code>o-palette("yellow", 400)</code> (<code>rating-star</code>) or <code>o-neutral(150)</code> (<code>card-border</code>). For 68 tokens it is a Sass expression:</p>
+      <p>882 colours of single elements in three layers (<code>modules/_tokens.scss</code>): the global elements of the base layer (<code>$o-token-layer-base</code>, 57), the framework elements (<code>$o-token-layer-framework</code>, 388) and the elements of one feature module (<code>$o-token-layer-component</code>, 437). "Default" shows one of two forms.</p>
+      <p>A Sass default (707 tokens) feeds the token, so a client theme that sets the Sass variable keeps working. The token reads the first token of its list whose default has the same colour, else the scale step with the same colour (palette, brand ramp, neutral scale, white), else its base colour <code>--o-base-{name}</code>. For 574 tokens the default is a Sass variable. For 65 tokens it is a fixed scale step without a Sass variable, for example <code>o-palette("yellow", 400)</code> (<code>rating-star</code>) or <code>o-neutral(150)</code> (<code>card-border</code>). For 68 tokens it is a Sass expression:</p>
       <ul>
         <li>a text or an icon that <code>o-a11y-color()</code> adjusts for the background of one rule, also for the navigation bar, the footer or the tree rows (<code>link-subtle</code>, <code>navbar-tab-close</code>, <code>navbar-focus</code>, <code>footer-focus</code>, <code>tree-focus</code>, <code>badge-status-info</code>);</li>
         <li>a text that reads the nearest scale step with the ratio (<code>o-scale-a11y-color()</code>, <code>o-scale-on-color()</code>: <code>toggle-text</code>, <code>badge-row-expanded-link-hover</code>, <code>selectus-rating-b-fg</code>);</li>
@@ -296,7 +296,7 @@ $o-tokens: (
         <li>a state colour, also in a style without a state token (<code>activity-add-border</code>, <code>lecture-rollcall-pending</code>, <code>user-status-inactive-border</code>), or a swatch role (<code>figure-card-icon-blue</code>, <code>activity-remove-border</code>);</li>
         <li>a computed fill that reads the nearest scale step (<code>o-scale-snap()</code>: <code>page-code-box-bg</code>), or the colour of an older variable when the theme sets it, else the text colour (<code>highscore-position-title</code>).</li>
       </ul>
-      <p>A token name in quotes (170 tokens) is a reference to another token: <code>"primary"</code> gives <code>var(--o-primary)</code>. There is no Sass variable for it; a client theme sets it with <code>$o-tokens</code>. "Contrast" shows each contrast pair of the token in <code>$o-token-contrast-pairs</code>: 4.5:1 for a text, 3:1 for an icon, a border or a focus ring. The compile checks the pairs for the defaults and for an override. 4 tokens do not reach their limit with the light defaults and have no pair: the decorative icons <code>folder-card-thumbnail-icon</code>, <code>practice-icon</code>, <code>empty-icon</code> and the fill <code>rating-star</code> (its shade token <code>rating-star-edge</code> has the pair). Disabled texts and texts on a client value, on a <code>color-mix()</code> background or on a swatch colour have no pair either, nor the solid state fills of the selectus rating marks (<code>selectus-rating-a-mark</code>, <code>-b-mark</code>, <code>-c-mark</code>) on the rows: the border of the mark <code>btn-default-border</code> has the pairs on the rows.</p>
+      <p>A token name in quotes (175 tokens) is a reference to another token: <code>"primary"</code> gives <code>var(--o-primary)</code>. There is no Sass variable for it; a client theme sets it with <code>$o-tokens</code>. "Contrast" shows each contrast pair of the token in <code>$o-token-contrast-pairs</code>: 4.5:1 for a text, 3:1 for an icon, a border or a focus ring. The compile checks the pairs for the defaults and for an override. 4 tokens do not reach their limit with the light defaults and have no pair: the decorative icons <code>folder-card-thumbnail-icon</code>, <code>practice-icon</code>, <code>empty-icon</code> and the fill <code>rating-star</code> (its shade token <code>rating-star-edge</code> has the pair). Disabled texts and texts on a client value, on a <code>color-mix()</code> background or on a swatch colour have no pair either, nor the solid state fills of the selectus rating marks (<code>selectus-rating-a-mark</code>, <code>-b-mark</code>, <code>-c-mark</code>) on the rows: the border of the mark <code>btn-default-border</code> has the pairs on the rows.</p>
       <div class="cl-classes">
         <code>$o-token-layer-base</code> <code>$o-token-layer-framework</code> <code>$o-token-layer-component</code> <code>--o-{element}-{part}</code> <code>--o-base-{name}</code>
       </div>
@@ -468,6 +468,7 @@ $o-tokens: (
     ['base', 'Buttons', 'btn-danger-border', null, ['state-danger-border'], []],
     ['base', 'Content text and headings', 'content-header', '$o-content-header-base-color', ['heading', 'text'], [['bg', 4.5]]],
     ['base', 'Content text and headings', 'content-link', '$o-content-link-color', ['link'], [['bg', 4.5]]],
+    ['base', 'Content text and headings', 'content-link-hover', '$o-content-link-hover-color', ['link-hover'], [['bg', 4.5]]],
     ['base', 'Content text and headings', 'content-bg', null, ['bg'], []],
     ['base', 'Content text and headings', 'content-dimmed', '$o-content-dimmed-color', ['text-muted'], [['bg', 4.5]]],
     ['base', 'Content text and headings', 'content-disabled', null, ['text-muted'], []],
@@ -603,6 +604,8 @@ $o-tokens: (
     ['framework', 'Footer', 'footer-inner-bg', '$o-footer-inner-bg', [], []],
     ['framework', 'Footer', 'footer-text', '$o-footer-default-color', ['text-muted'], [['footer-inner-bg', 4.5]]],
     ['framework', 'Footer', 'footer-link', '$o-footer-default-link-color', ['text-muted'], [['footer-inner-bg', 4.5]]],
+    ['framework', 'Footer', 'footer-link-hover', '$o-footer-default-link-hover-color', [], [['footer-inner-bg', 4.5]]],
+    ['framework', 'Footer', 'footer-border', null, ['border-subtle'], []],
     ['framework', 'Footer', 'footer-focus', 'o-a11y-color(o-contrast-hover($o-focus-color, $o-footer-default-link-color, $o-footer-inner-bg, 3), $o-footer-inner-bg, 3)', ['focus', 'footer-link'], [['footer-inner-bg', 3]]],
     ['framework', 'Form elements', 'input-bg', null, ['bg'], []],
     ['framework', 'Form elements', 'input-fg', '$input-color', ['text'], [['input-bg', 4.5]]],
@@ -672,9 +675,15 @@ $o-tokens: (
     ['framework', 'Login page', 'login-border', '$o-login-border-color', [], []],
     ['framework', 'Login page', 'login-bg', '$o-login-bg-color', [], []],
     ['framework', 'Login page', 'login-infomessage-bg', '$o-login-infomessage-bg', [], []],
+    ['framework', 'Login page', 'login-navbar-bg', null, ['navbar-bg'], []],
+    ['framework', 'Login page', 'login-navbar-link', null, ['navbar-link'], [['login-navbar-bg', 4.5]]],
+    ['framework', 'Login page', 'login-navbar-border', null, ['navbar-border'], []],
     ['framework', 'Login page', 'otp-cell-bg', 'o-neutral(100)', [], []],
     ['framework', 'Login page', 'otp-cell-active-bg', 'o-neutral(400)', [], []],
     ['framework', 'Login page', 'otp-caret', 'o-palette("gray", 900)', [], [['otp-cell-bg', 4.5], ['otp-cell-active-bg', 4.5]]],
+    ['framework', 'Menu tree', 'tree-bg', '$o-tree-bg', [], []],
+    ['framework', 'Menu tree', 'tree-link-bg', '$o-tree-link-bg', [], []],
+    ['framework', 'Menu tree', 'tree-link-active-bg', '$o-tree-link-active-bg', [], []],
     ['framework', 'Menu tree', 'tree-link', '$o-tree-link-color', ['nav-link'], []],
     ['framework', 'Menu tree', 'tree-link-hover', '$o-tree-link-hover-color', ['nav-link-hover'], [['tree-link-hover-bg', 4.5]]],
     ['framework', 'Menu tree', 'tree-link-hover-bg', '$o-tree-link-hover-bg', [], []],
@@ -693,6 +702,8 @@ $o-tokens: (
     ['framework', 'Main layout', 'main-outer-bg', '$o-main-outer-bg', [], []],
     ['framework', 'Main layout', 'main-inner-bg', '$o-main-inner-bg', [], []],
     ['framework', 'Main layout', 'main-left-bg', '$o-main-left-bg', [], []],
+    ['framework', 'Main layout', 'main-center-bg', '$o-main-center-bg', [], []],
+    ['framework', 'Main layout', 'main-right-bg', '$o-main-right-bg', [], []],
     ['framework', 'Message boxes of a state', 'box-info-border', '$o-box-info-color', ['state-neutral-bg'], [['box-info-bg', 3]]],
     ['framework', 'Message boxes of a state', 'box-info-text', 'o-own-or($o-box-info-color, o-state-color("neutral", "bg"), o-state-color("neutral", "text"))', ['state-neutral-text'], [['#FFFFFF', 4.5], ['box-info-bg', 4.5]]],
     ['framework', 'Message boxes of a state', 'box-info-icon', 'o-own-or($o-box-info-color, o-state-color("neutral", "bg"), o-state-color("neutral", "text"))', ['state-neutral-text'], [['box-info-bg', 3]]],
@@ -730,6 +741,8 @@ $o-tokens: (
     ['framework', 'Modal dialogs and popovers', 'popover-title-bg', '$popover-title-bg', [], []],
     ['framework', 'Modal dialogs and popovers', 'popover-fallback-border', '$popover-fallback-border-color', [], []],
     ['framework', 'Navigation bar', 'navbar-bg', '$o-navbar-bg', ['bg'], []],
+    ['framework', 'Navigation bar', 'navbar-border', '$o-navbar-border-color', [], []],
+    ['framework', 'Navigation bar', 'navbar-tab-indicator', null, ['primary'], [['navbar-bg', 3], ['bg-raised', 3]]],
     ['framework', 'Navigation bar', 'navbar-text', '$o-navbar-color', [], [['navbar-bg', 4.5]]],
     ['framework', 'Navigation bar', 'navbar-link', '$o-navbar-link-color', [], [['navbar-bg', 4.5]]],
     ['framework', 'Navigation bar', 'navbar-link-hover', '$o-navbar-link-hover-color', [], [['navbar-bg', 4.5]]],

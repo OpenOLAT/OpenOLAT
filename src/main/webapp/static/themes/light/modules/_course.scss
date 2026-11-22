@@ -839,7 +839,7 @@
 /* override transparent background for tree menu */
 .o_tree.o_course_menu {
 	div.o_tree_l0 > a:first-child {
-		background-color: $o-tree-link-bg; // o-color-keep(client-value)
+		background-color: var(--o-tree-link-bg);
 	}
 }
 

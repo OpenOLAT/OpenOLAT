@@ -127,8 +127,7 @@ public class ThemeColorRatchetTest {
 			Map.entry("email", "mixin that email.css reads, no tokens there"),
 			Map.entry("mixin-argument", "colour maths for a colour argument of a mixin"),
 			Map.entry("vendor-copy", "copy of a third-party stylesheet"),
-			Map.entry("a11y-checker", "maximum contrast for accessibility checkers"),
-			Map.entry("client-value", "value of a client theme that a token cannot carry (none or inherit, next to transparent and colours), or a link hover that follows the link colour of the client"));
+			Map.entry("a11y-checker", "maximum contrast for accessibility checkers"));
 
 	/** Prefix of the totals per reason in the baseline */
 	static final String KEEP_PREFIX = "keep.";

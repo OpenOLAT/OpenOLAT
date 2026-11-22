@@ -258,7 +258,9 @@ $o-token-layer-base: (
 	// Content text and headings
 	"content-header":                             ($o-content-header-base-color, ("heading", "text")),
 	"content-link":                               ($o-content-link-color, ("link",)),
-	"content-bg":                                 "bg",
+	// the content link under the pointer and with the focus
+	"content-link-hover":                         ($o-content-link-hover-color, ("link-hover",)),
+	"content-bg":                               "bg",
 	"content-dimmed":                             ($o-content-dimmed-color, ("text-muted",)),
 	"content-disabled":                           "text-muted",
 	"content-h1":                                 "content-header",
@@ -552,6 +554,11 @@ $o-token-layer-framework: (
 	"footer-inner-bg":                            ($o-footer-inner-bg, ()),
 	"footer-text":                                ($o-footer-default-color, ("text-muted",)),
 	"footer-link":                                ($o-footer-default-link-color, ("text-muted",)),
+	// the footer link and the share link under the pointer
+	"footer-link-hover":                          ($o-footer-default-link-hover-color, ()),
+	// the top border of the footer (width $o-footer-border-width, default 0:
+	// no border)
+	"footer-border":                              "border-subtle",
 	// the focus ring in the footer, as navbar-focus:
 	// the focus colour, else the footer link colour, adjusted to 3:1 on the
 	// footer
@@ -641,6 +648,12 @@ $o-token-layer-framework: (
 	// page: the colour of the Sass variable, a color-mix() of a token by default
 	"login-bg":                                    ($o-login-bg-color, ()),
 	"login-infomessage-bg":                        ($o-login-infomessage-bg, ()),
+	// the navigation bar of the login page from 768px: the fill, the link text
+	// and the bottom border (width $o-login-navbar-border-width); they follow
+	// the navigation bar
+	"login-navbar-bg":                            "navbar-bg",
+	"login-navbar-link":                          "navbar-link",
+	"login-navbar-border":                        "navbar-border",
 	// the one-time code field (registration, mail validation, password
 	// change): the fill of a code cell and of the active cell, the caret;
 	// fixed colours
@@ -648,6 +661,11 @@ $o-token-layer-framework: (
 	"otp-cell-active-bg":                         (o-neutral(400), ()),
 	"otp-caret":                                  (o-palette("gray", 900), ()),
 	// Menu tree
+	// the fill of the tree, of an item and of the selected item: transparent
+	// by default
+	"tree-bg":                                    ($o-tree-bg, ()),
+	"tree-link-bg":                               ($o-tree-link-bg, ()),
+	"tree-link-active-bg":                        ($o-tree-link-active-bg, ()),
 	"tree-link":                                  ($o-tree-link-color, ("nav-link",)),
 	"tree-link-hover":                            ($o-tree-link-hover-color, ("nav-link-hover",)),
 	"tree-link-hover-bg":                         ($o-tree-link-hover-bg, ()),
@@ -672,13 +690,21 @@ $o-token-layer-framework: (
 	"tree-insertion-source-bg":                    ($o-tree-insertion-source-bg, ()),
 	"tree-insertion-source-fg":                    ($o-tree-insertion-source-color, ()),
 	// Main layout: the fill of the main wrapper, of the main container and
-	// of the left column. The fill of the right and of the centre column is
-	// "inherit" and stays Sass
+	// of the left, the centre and the right column. The centre and the right
+	// column are transparent by default
 	"main-outer-bg":                               ($o-main-outer-bg, ()),
 	"main-inner-bg":                               ($o-main-inner-bg, ()),
 	"main-left-bg":                                ($o-main-left-bg, ()),
+	"main-center-bg":                              ($o-main-center-bg, ()),
+	"main-right-bg":                               ($o-main-right-bg, ()),
 	// Navigation bar
 	"navbar-bg":                                  ($o-navbar-bg, ("bg",)),
+	// the border of the navigation bar and of the navbar search
+	"navbar-border":                              ($o-navbar-border-color, ()),
+	// the bar under the active site or tab and under the item of the pointer,
+	// next to the active item of the "More" dropdown (width
+	// $o-navbar-tab-indicator-width, default 0: no bar)
+	"navbar-tab-indicator":                       "primary",
 	"navbar-text":                                ($o-navbar-color, ()),
 	"navbar-link":                                ($o-navbar-link-color, ()),
 	"navbar-link-hover":                          ($o-navbar-link-hover-color, ()),
@@ -2091,6 +2117,8 @@ $o-token-contrast-pairs: (
 	("im-newmessage-hover", "navbar-bg", 3),
 	// the focus ring of the navbar items
 	("navbar-focus", "navbar-bg", 3),
+	("navbar-tab-indicator", "navbar-bg", 3),
+	("navbar-tab-indicator", "bg-raised", 3),
 	// the labels without a status class and as a link under the pointer, the
 	// help icon next to a label (the text of the checked radio card on its
 	// fill has 3.88:1 in light, not listed)
@@ -2223,13 +2251,16 @@ $o-token-contrast-pairs: (
 	("tag-selection-remove-selected-fg", "tag-selection-remove-selected-bg", 4.5),
 	("navbar-text", "navbar-bg", 4.5),
 	("navbar-link", "navbar-bg", 4.5),
+	("login-navbar-link", "login-navbar-bg", 4.5),
 	("navbar-tools", "navbar-bg", 4.5),
 	("footer-text", "footer-inner-bg", 4.5),
 	("footer-link", "footer-inner-bg", 4.5),
+	("footer-link-hover", "footer-inner-bg", 4.5),
 	("footer-focus", "footer-inner-bg", 3),
 	("dialog-header", "bg", 4.5),
 	("content-header", "bg", 4.5),
 	("content-link", "bg", 4.5),
+	("content-link-hover", "bg", 4.5),
 	("link-subtle", "bg-subtle", 4.5),
 	("nav-link", "bg", 4.5),
 	("nav-link-hover", "bg", 4.5),
