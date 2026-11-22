@@ -2382,20 +2382,23 @@ public class ColorTokensTest {
 	/**
 	 * The realistic style (light/styles/_realistic.scss, not part of light)
 	 * sets no colour of its own (OO-10043): the fills are the tokens of the
-	 * light theme, the gradient is a translucent white and black layer over
-	 * the fill. It does not import the Bootstrap theme and reads no Bootstrap
-	 * or OpenOlat colour variable, so the old state colours of a client config
-	 * have no effect on it. A button with a text darker than its fill has a
-	 * flat fill.
+	 * light theme, the depth comes from translucent white and black edges and
+	 * from shadows in the token shadow-color. It does not import the
+	 * Bootstrap theme, reads no Bootstrap or OpenOlat colour variable and has
+	 * no Sass colour maths, so the old state colours of a client config have
+	 * no effect on it. An element with a light text gets the black layer, one
+	 * with a dark text the flat fill.
 	 */
 	@Test
 	public void realisticStyleReadsTokens() {
 		Path realistic = ThemeColorRatchetTest.LIGHT_MODULES.resolveSibling("styles").resolve("_realistic.scss");
 		assertSourceLacks(realistic, "bootstrap/theme", "$brand-", "$state-", "$btn-", "$navbar-default-",
-				"$dropdown-", "$o-toolbar-", "$o-button-dirty-", "lighten(", "mix(");
-		assertSourceHas(realistic, "background-image: linear-gradient(to bottom, $top, $bottom);",
-				"@function o-realistic-flat($button)", "o-token-state-lighter($button, $o-token-values)",
-				"\".btn-primary\": (\"btn-primary\", $o-realistic-shade)", "\".o_button_dirty\": (\"btn-dirty\", $o-realistic-shade)");
+				"$dropdown-", "$o-toolbar-", "$o-button-dirty-", "lighten(", "darken(");
+		String code = ThemeColorRatchetTest.withoutComments(read(realistic));
+		Assert.assertFalse("_realistic.scss has a Sass mix()", Pattern.compile("(?<![\\w-])mix\\(").matcher(code).find());
+		assertSourceHas(realistic, "var(--o-shadow-color)", "@mixin o-realistic-raised()", "@mixin o-realistic-body()",
+				"@function o-realistic-light-pair($fg, $bg)", "\".btn-primary\": (\"btn-primary\", true)",
+				"\".o_button_dirty\": (\"btn-dirty\", true)", "@mixin btn-styles($color: #555)");
 	}
 
 	/**

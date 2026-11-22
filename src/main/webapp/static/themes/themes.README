@@ -57,21 +57,37 @@ the light theme and extends on top of it.
 - _palette_theme.scss: the theme colours, the brand colours of the theme the choosers offer after the 14 hues
 - _palette_neutral.scss: the neutral scale, the 18 greys of the theme (--o-neutral-{step})
 - modules/*: tons of include files for different aspects of OpenOLAT
-- styles/_realistic.scss (optional): the realistic style. It adds a gradient and shadows to the
-  buttons, dropdown items, alerts, progress bars, list groups, panels, wells and the tool bar.
-  The fills are the colour tokens; the gradient is a translucent white and black layer over the
-  fill, so a colour that you set with $o-tokens gets the same look. The old state colours
-  ($brand-success, $state-danger-text, ...) have no effect on it. A button with a text that is
-  darker than its fill, the ghost button and the light buttons have a flat fill. Import it in
+- styles/_realistic.scss (optional): the realistic style. It gives the controls and containers
+  a soft depth: buttons, the arrows of the tool bar, progress bars and active list items look
+  gently domed and raised (a soft light at the top, a soft shade at the bottom, a faint
+  shadow) and the buttons have rounder corners; a button with a coloured fill has no visible
+  border; the tool bar, the menu tree, panels, list
+  groups and alerts sit on the page with a soft shadow, the dropdown menu floats, wells and
+  the progress track look recessed. Under the pointer a button rises, when pressed it is
+  pushed in; with focus it keeps its rest depth, disabled it is flat. The fills are the colour
+  tokens; the light and the shade are blurred translucent white and black, the shadows read
+  the token shadow-color, so a colour that you set with $o-tokens gets the same look. An element
+  with a light text has a slight black layer over its fill; an element with a dark text, the
+  ghost button and the light buttons have the flat fill. No text has a text shadow. The old
+  state colours ($brand-success, $state-danger-text, ...) have no effect on it. Import it in
   theme.scss after light/theme and before the own rules of your theme:
     @import "light/styles/realistic";
-  The strength of the gradient is an alpha value from 0 to 1, set in your config:
-  $o-realistic-shade (black at the bottom of a coloured button and a progress bar, default 0.25),
-  $o-realistic-shade-light (the default button, active list and dropdown items, 0.12),
-  $o-realistic-shade-subtle (light fills: dropdown item under the pointer, alerts, panel
-  headings, wells, 0.06) and $o-realistic-light (white at the top of the tool bar, 0.15).
-  The mixin btn-styles($color) of the Bootstrap theme stays available for own rules with a
-  literal colour.
+  Set the depth in your config:
+  $o-realistic-radius (corner radius of a button, default 6px; in button groups and input
+  groups only the outer corners are round),
+  $o-realistic-highlight (alpha of the soft light at the top, 0.28),
+  $o-realistic-edge (alpha of the soft shade at the bottom, 0.12),
+  $o-realistic-body-top and $o-realistic-body-bottom (alpha of the black layer under a light
+  text, 0.07 and 0.11),
+  $o-realistic-elevation-1 (shadow of a raised element at rest and of a container),
+  $o-realistic-elevation-2 (shadow under the pointer), $o-realistic-elevation-3 (shadow of a
+  floating layer), $o-realistic-pressed (inner shadow of a pressed control) and
+  $o-realistic-sunken (inner shadow of a recessed element) and
+  $o-realistic-border-blend (true: the border of a raised button with a coloured fill is
+  transparent in every state, so its edge is the fill; the default button keeps its border;
+  false: every button keeps its border token).
+  The mixin btn-styles($color) gives an own rule of your theme with a literal colour the same
+  depth; the rule sets the colours itself, e.g. with button-variant().
 
 
 Creating a custom theme
