@@ -7,8 +7,11 @@
 @use "sass:math";
 
 .o_user_content_block {
-	/* In some cases links in content area don't have same color as in app */
-	a {
+	/* In some cases links in content area don't have same color as in app.
+	   A link with a button class keeps the colours of its button (OO-10087):
+	   :where() keeps the specificity of the link rules, so the other rules
+	   that won before (a.text-*, .o_link*, labels as links) still win */
+	a:where(:not(.btn, .o_button_primary_light, .o_button_danger_light, .o_button_dirty)) {
 		color: var(--o-content-link);
 		text-decoration: none;
 		&:hover,

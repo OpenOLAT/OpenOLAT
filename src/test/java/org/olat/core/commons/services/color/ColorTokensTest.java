@@ -2341,13 +2341,44 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_navbar-form", "border-bottom:1px solid var(--o-navbar-border)");
 		assertRuleReads(css, "#o_footer_wrapper a:hover", "color:var(--o-footer-link-hover)");
 		assertRuleReads(css, "#o_footer_user #o_share a:hover", "color:var(--o-footer-link-hover)");
-		assertRuleReads(css, ".o_user_content_block a:hover", "color:var(--o-content-link-hover)");
+		Assert.assertTrue("The content link hover rule", css.contains(".o_user_content_block a:where(:not(.btn,.o_button_primary_light,.o_button_danger_light,.o_button_dirty)):hover,.o_user_content_block a:where(:not(.btn,.o_button_primary_light,.o_button_danger_light,.o_button_dirty)):focus{color:var(--o-content-link-hover);"));
 		for (String fill : List.of("tree-bg", "tree-link-bg", "tree-link-active-bg", "main-center-bg", "main-right-bg")) {
 			Assert.assertEquals(fill, "transparent", resolve(fill));
 		}
 		Assert.assertEquals("var(--o-link-hover)", tokens.get("content-link-hover"));
 		assertContrast("content-link-hover", "bg", 4.5);
 		assertContrast("footer-link-hover", "footer-inner-bg", 4.5);
+	}
+
+	/**
+	 * A link with a button class in a content block keeps the colours of its
+	 * button (OO-10087): the link rules of .o_user_content_block exclude the
+	 * button classes with :where(), so their specificity stays (0,1,1) and
+	 * (0,2,1) and the button rules win. Plain links keep the content link
+	 * colours. In theme.css and in content.css.
+	 */
+	@Test
+	public void contentBlockButtonLinksKeepButtonColours() {
+		String link = ".o_user_content_block a:where(:not(.btn,.o_button_primary_light,.o_button_danger_light,.o_button_dirty))";
+		for (Path file : List.of(PaletteTest.LIGHT_THEME_CSS, PaletteTest.LIGHT_THEME_CSS.resolveSibling("content.css"))) {
+			String css = CUSTOM_PROPERTY.matcher(read(file)).replaceAll("");
+			// the selector holds commas inside :not(): assertRuleReads() splits at them
+			Assert.assertTrue(file + ": content link rule", css.contains(link + "{color:var(--o-content-link);"));
+			Assert.assertTrue(file + ": content link hover rule",
+					css.contains(link + ":hover," + link + ":focus{color:var(--o-content-link-hover);"));
+			Assert.assertFalse(file + ": the content block link rule reaches the buttons",
+					css.contains(".o_user_content_block a{") || css.contains(".o_user_content_block a:hover"));
+		}
+		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
+		assertRuleReads(css, ".btn-primary", "color:var(--o-btn-primary-fg)");
+		assertRuleReads(css, ".o_button_primary_light:hover", "color:var(--o-btn-primary-light-fg-hover)");
+		// the realistic style (light/styles/_realistic.scss, not part of light): the
+		// light buttons with btn-default keep their own fills and borders over the
+		// gradient and the grey hover fill of the Bootstrap theme
+		assertSourceHas(ThemeColorRatchetTest.LIGHT_MODULES.resolveSibling("styles").resolve("_realistic.scss"),
+				"@each $light in (\"primary\", \"danger\")", ".btn-default.o_button_#{$light}_light {",
+				"background-image: none;", "background-color: var(--o-btn-#{$light}-light-hover-bg);",
+				"background-color: var(--o-btn-#{$light}-light-bg-active);");
 	}
 
 	/**

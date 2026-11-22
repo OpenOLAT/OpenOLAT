@@ -85,6 +85,46 @@
 	}
 }
 
+/* The light buttons keep their own fills and borders when they also carry
+   the class btn-default (OO-10087): the gradient, the border and the hover,
+   pressed and disabled fill of the Bootstrap theme for .btn-default would
+   cover them (white text on the grey hover fill). The text colours come from
+   _helpers.scss. The dirty button has its own rules above. */
+@each $light in ("primary", "danger") {
+	.btn-default.o_button_#{$light}_light {
+		background-image: none;
+		text-shadow: none;
+		border-color: var(--o-btn-#{$light}-light-border);
+		&:focus,
+		&:hover {
+			background-color: var(--o-btn-#{$light}-light-hover-bg);
+			border-color: var(--o-btn-#{$light}-light-hover-border);
+		}
+		&:active,
+		&.active {
+			background-color: var(--o-btn-#{$light}-light-bg-hover);
+			border-color: var(--o-btn-#{$light}-light-border-hover);
+			&:hover,
+			&:focus {
+				background-color: var(--o-btn-#{$light}-light-bg-active);
+				border-color: var(--o-btn-#{$light}-light-border-focus);
+			}
+		}
+		&.disabled,
+		&[disabled],
+		fieldset[disabled] & {
+			&,
+			&:hover,
+			&:focus,
+			&:active,
+			&.active {
+				background-color: var(--o-btn-#{$light}-light-bg);
+				border-color: var(--o-btn-#{$light}-light-border);
+			}
+		}
+	}
+}
+
 .o_table_batch_buttons .btn.btn-default {
 	@include btn-styles($btn-primary-bg);
 }
