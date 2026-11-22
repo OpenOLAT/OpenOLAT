@@ -2373,12 +2373,29 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".btn-primary", "color:var(--o-btn-primary-fg)");
 		assertRuleReads(css, ".o_button_primary_light:hover", "color:var(--o-btn-primary-light-fg-hover)");
 		// the realistic style (light/styles/_realistic.scss, not part of light): the
-		// light buttons with btn-default keep their own fills and borders over the
-		// gradient and the grey hover fill of the Bootstrap theme
+		// light buttons and the ghost button have a flat fill, their own fills and
+		// borders show without the gradient
 		assertSourceHas(ThemeColorRatchetTest.LIGHT_MODULES.resolveSibling("styles").resolve("_realistic.scss"),
-				"@each $light in (\"primary\", \"danger\")", ".btn-default.o_button_#{$light}_light {",
-				"background-image: none;", "background-color: var(--o-btn-#{$light}-light-hover-bg);",
-				"background-color: var(--o-btn-#{$light}-light-bg-active);");
+				"&.o_button_ghost,", "&.o_button_primary_light,", "&.o_button_danger_light {", "background-image: none;");
+	}
+
+	/**
+	 * The realistic style (light/styles/_realistic.scss, not part of light)
+	 * sets no colour of its own (OO-10043): the fills are the tokens of the
+	 * light theme, the gradient is a translucent white and black layer over
+	 * the fill. It does not import the Bootstrap theme and reads no Bootstrap
+	 * or OpenOlat colour variable, so the old state colours of a client config
+	 * have no effect on it. A button with a text darker than its fill has a
+	 * flat fill.
+	 */
+	@Test
+	public void realisticStyleReadsTokens() {
+		Path realistic = ThemeColorRatchetTest.LIGHT_MODULES.resolveSibling("styles").resolve("_realistic.scss");
+		assertSourceLacks(realistic, "bootstrap/theme", "$brand-", "$state-", "$btn-", "$navbar-default-",
+				"$dropdown-", "$o-toolbar-", "$o-button-dirty-", "lighten(", "mix(");
+		assertSourceHas(realistic, "background-image: linear-gradient(to bottom, $top, $bottom);",
+				"@function o-realistic-flat($button)", "o-token-state-lighter($button, $o-token-values)",
+				"\".btn-primary\": (\"btn-primary\", $o-realistic-shade)", "\".o_button_dirty\": (\"btn-dirty\", $o-realistic-shade)");
 	}
 
 	/**

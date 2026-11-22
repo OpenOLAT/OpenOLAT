@@ -57,6 +57,21 @@ the light theme and extends on top of it.
 - _palette_theme.scss: the theme colours, the brand colours of the theme the choosers offer after the 14 hues
 - _palette_neutral.scss: the neutral scale, the 18 greys of the theme (--o-neutral-{step})
 - modules/*: tons of include files for different aspects of OpenOLAT
+- styles/_realistic.scss (optional): the realistic style. It adds a gradient and shadows to the
+  buttons, dropdown items, alerts, progress bars, list groups, panels, wells and the tool bar.
+  The fills are the colour tokens; the gradient is a translucent white and black layer over the
+  fill, so a colour that you set with $o-tokens gets the same look. The old state colours
+  ($brand-success, $state-danger-text, ...) have no effect on it. A button with a text that is
+  darker than its fill, the ghost button and the light buttons have a flat fill. Import it in
+  theme.scss after light/theme and before the own rules of your theme:
+    @import "light/styles/realistic";
+  The strength of the gradient is an alpha value from 0 to 1, set in your config:
+  $o-realistic-shade (black at the bottom of a coloured button and a progress bar, default 0.25),
+  $o-realistic-shade-light (the default button, active list and dropdown items, 0.12),
+  $o-realistic-shade-subtle (light fills: dropdown item under the pointer, alerts, panel
+  headings, wells, 0.06) and $o-realistic-light (white at the top of the tool bar, 0.15).
+  The mixin btn-styles($color) of the Bootstrap theme stays available for own rules with a
+  literal colour.
 
 
 Creating a custom theme
@@ -148,9 +163,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     colours. The primary button, the help button, the selected tag, the course start button,
     the login button and the dirty button go by the text colour of their token (-fg): a dark
     text (a light primary colour) gets a lighter hover and pressed fill, a light text or a
-    white fill a darker one. With the realistic style, a primary or dirty button with dark
-    text has flat fills. Set a shade
-    token with $o-tokens only when you want a different state colour. When
+    white fill a darker one. With the realistic style, a button with dark text has flat
+    fills. Set a shade token with $o-tokens only when you want a different state colour. When
     you override a button background with $o-tokens, override its border token too. Other
     elements have shade tokens too: the compile computes them with the darken() or lighten()
     percentage of the module from the element token, so your Sass variable gives the same
@@ -236,8 +250,9 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     (.btn-success, .btn-info, .btn-warning, alerts, labels, progress bars, form validation)
     and the message boxes. They do not read $brand-success, $brand-info, $brand-warning,
     $brand-danger or $state-{success,info,warning,danger}-{text,bg,border} any more. Your
-    values of these Bootstrap variables reach only the own rules of your theme. One exception:
-    $brand-success also sets the fill of the done icon in the to-do mail (email.css).
+    values of these Bootstrap variables reach only the own rules of your theme. The done icon
+    in the to-do mail (email.css) has own variables: $o-email-todo-done-bg (default #5cb85c)
+    and $o-email-todo-done-color (default #fff).
     When your config sets one of them to a value other than the default of the light theme,
     the compile prints one warning for theme.css and one for content.css:
       WARNING: OpenOLAT theme: your config sets $brand-danger, ... These variables do not
@@ -247,7 +262,7 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
          of a state) or $o-tokens (one token), e.g.
            $o-tokens: ("state-danger-bg": "red-600", "state-danger-text": "red-600");
       2. Remove the Bootstrap variables from your config when your theme does not need them
-         for its own rules or, for $brand-success, for the done icon in the to-do mail.
+         for its own rules. For the done icon in the to-do mail, set $o-email-todo-done-bg.
       3. When you keep them on purpose, set
            $o-legacy-color-warning: false;
          in your config to hide the warning.

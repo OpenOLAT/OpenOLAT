@@ -2990,7 +2990,7 @@ $o-token-state-fills: (
 		}
 	}
 	@if list.length($names) > 0 {
-		@warn "OpenOLAT theme: your config sets #{$names}. These variables do not change the rules of theme.css and content.css any more. They feed only the own rules of your theme and, for brand-success, the done icon of the to-do mail in email.css. Change the colours with $o-palette, $o-states or $o-tokens, see themes.README. To hide this warning, set $o-legacy-color-warning: false; in your config.";
+		@warn "OpenOLAT theme: your config sets #{$names}. These variables do not change the rules of theme.css and content.css any more. They feed only the own rules of your theme. Change the colours with $o-palette, $o-states or $o-tokens, see themes.README. To hide this warning, set $o-legacy-color-warning: false; in your config.";
 	}
 }
 @if meta.global-variable-exists("o-legacy-color-values") {

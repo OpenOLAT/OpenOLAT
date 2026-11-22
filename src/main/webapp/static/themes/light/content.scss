@@ -36,16 +36,8 @@
 
 @import "../../bootstrap/stylesheets/bootstrap/scaffolding"; 
 // The Bootstrap rules of .text-*, .bg-* and mark read the state tokens, as in
-// modules/_bootstrap.scss: the Sass variables hold the token during the
-// import only (OO-10043)
-$o-bootstrap-state-success-text: $state-success-text;
-$o-bootstrap-state-success-bg: $state-success-bg;
-$o-bootstrap-state-info-text: $state-info-text;
-$o-bootstrap-state-info-bg: $state-info-bg;
-$o-bootstrap-state-warning-text: $state-warning-text;
-$o-bootstrap-state-warning-bg: $state-warning-bg;
-$o-bootstrap-state-danger-text: $state-danger-text;
-$o-bootstrap-state-danger-bg: $state-danger-bg;
+// modules/_bootstrap.scss (OO-10043). The Sass variables keep the token: no
+// rule after the import reads them.
 $state-success-text: var(--o-state-success-text);
 $state-success-bg: var(--o-state-success-soft-bg);
 $state-info-text: var(--o-state-neutral-text);
@@ -55,14 +47,6 @@ $state-warning-bg: var(--o-state-warning-soft-bg);
 $state-danger-text: var(--o-state-danger-text);
 $state-danger-bg: var(--o-state-danger-soft-bg);
 @import "../../bootstrap/stylesheets/bootstrap/type";
-$state-success-text: $o-bootstrap-state-success-text;
-$state-success-bg: $o-bootstrap-state-success-bg;
-$state-info-text: $o-bootstrap-state-info-text;
-$state-info-bg: $o-bootstrap-state-info-bg;
-$state-warning-text: $o-bootstrap-state-warning-text;
-$state-warning-bg: $o-bootstrap-state-warning-bg;
-$state-danger-text: $o-bootstrap-state-danger-text;
-$state-danger-bg: $o-bootstrap-state-danger-bg;
 
 
 /* 

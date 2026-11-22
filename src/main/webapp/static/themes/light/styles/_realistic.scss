@@ -1,132 +1,218 @@
 /*
-	The realistic style can be added to the light theme to add realistic effects
-	to the light theme. The light theme is flat without shadows etc. The realistic
-	style adds shadows and gradients to buttons and alike. 
-	
-	To use this style, first load the standard light theme and then add this style
-	before you add your own patches. See the OpenOLAT theme for an example.
+	The realistic style adds depth to the flat light theme: a gradient and
+	shadows on buttons, dropdown items, alerts, progress bars, list groups,
+	panels, wells, the tool bar and the menu tree.
+
+	The style sets no colour of its own (OO-10043). The fills are the colour
+	tokens of the light theme (var(--o-*)), also the hover, pressed and
+	disabled fills of the buttons. The gradient is a translucent layer over
+	the fill: from a white with the alpha $o-realistic-light or 0 at the top
+	to a black with the alpha of a $o-realistic-shade-* variable at the
+	bottom. A colour that a theme sets in $o-tokens gets the same look.
+
+	A button with a text that is darker than its fill (a light fill,
+	o-token-state-lighter()) has a flat fill: the dark end of the gradient
+	would lower the contrast of the text. The ghost button and the light
+	buttons have a flat fill too.
+
+	To use this style, import it after the light theme and before the own
+	rules of your theme. See the openolat theme for an example. To change the
+	strength of the gradient, set the variables below in your theme config.
 */
-// First add theme styles from bootstrap theme
-@import "../../../bootstrap/stylesheets/bootstrap/theme";
-// Second add same style patches for OpenOLAT modules
+@use "sass:color";
+@use "sass:list";
+@use "sass:map";
+@use "sass:meta";
 
-/* A primary button with dark text (a light primary colour) has the flat
-   fills of its tokens: the gradient and the darker fills of the Bootstrap
-   theme take the contrast of the dark text, the hover and the pressed fill
-   of the tokens are lighter (o-token-state-lighter()). */
-@if o-token-state-lighter("btn-primary", $o-token-values) {
-	.btn-primary {
-		background-image: none;
+// The strength of the gradient: the alpha of the white at the top and of
+// the black at the bottom, from 0 to 1
+// black at the bottom of a coloured button and of a progress bar
+$o-realistic-shade: 0.25 !default;
+// black at the bottom of the default button, an active list or dropdown
+// item and the heading of a primary panel
+$o-realistic-shade-light: 0.12 !default;
+// black on a light fill: a dropdown item under the pointer, an alert, a
+// panel heading, a well, the progress track and the arrows of the tool bar
+$o-realistic-shade-subtle: 0.06 !default;
+// white at the top of the tool bar
+$o-realistic-light: 0.15 !default;
+
+// White and black with the alpha $alpha: the two ends of the gradient
+@function o-realistic-white($alpha) {
+	@return rgba(255, 255, 255, $alpha);
+}
+@function o-realistic-black($alpha) {
+	@return rgba(0, 0, 0, $alpha);
+}
+
+// The gradient over the fill, from $top to $bottom
+@mixin o-realistic-gradient($top, $bottom) {
+	background-image: linear-gradient(to bottom, $top, $bottom);
+	background-repeat: repeat-x;
+}
+
+// A button: the gradient over the fill of its tokens. The hover state moves
+// the gradient up, so the fill of the state shows below it. The focus state
+// keeps the gradient of the rest state: the text of a button can keep its
+// rest colour on focus, and the focus ring shows the focus. The pressed state
+// (.btn:active) and a disabled button have a flat fill.
+@mixin o-realistic-button($shade) {
+	@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($shade));
+	&:hover {
+		background-position: 0 -15px;
+	}
+	&.disabled,
+	&[disabled],
+	fieldset[disabled] & {
+		&,
 		&:hover,
-		&:focus {
-			background-color: var(--o-btn-primary-bg-hover);
-		}
+		&:focus,
+		&.focus,
 		&:active,
 		&.active {
-			background-color: var(--o-btn-primary-bg-hover);
-			border-color: var(--o-btn-primary-border-hover);
-		}
-		&.disabled,
-		&[disabled],
-		fieldset[disabled] & {
-			&,
-			&:hover,
-			&:focus,
-			&.focus,
-			&:active,
-			&.active {
-				background-color: var(--o-btn-primary-bg);
-			}
+			background-image: none;
 		}
 	}
 }
 
-/* Buttons */
+// The colour $color under the black layer with the alpha $alpha
+@function o-realistic-shaded($color, $alpha) {
+	@return rgb(color.channel($color, "red", $space: rgb) * (1 - $alpha),
+		color.channel($color, "green", $space: rgb) * (1 - $alpha),
+		color.channel($color, "blue", $space: rgb) * (1 - $alpha));
+}
+
+// A button with a literal colour and no tokens (the login buttons of other
+// products): the fill $color, the text white or black (o-contrast-text()),
+// the icon in the text colour and the border darker with a black layer. The
+// gradient goes to the black layer at the bottom, the states have the black
+// layer. Where the text does not keep 4.5:1 on the black layer, the rest
+// state and the other states have the flat fill.
+@mixin o-realistic-button-color($color) {
+	$fg: o-contrast-text($color);
+	$shaded: contrast($fg, $color) >= 4.5 and contrast($fg, o-realistic-shaded($color, $o-realistic-shade)) >= 4.5;
+	color: $fg;
+	background-color: $color;
+	border-color: o-realistic-black($o-realistic-shade);
+	@if $shaded {
+		@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade));
+	} @else {
+		background-image: none;
+	}
+	i {
+		color: inherit;
+	}
+	&:hover,
+	&:focus,
+	&:active,
+	&.active,
+	&.disabled,
+	&[disabled],
+	fieldset[disabled] & {
+		@if $shaded {
+			background-image: linear-gradient(o-realistic-black($o-realistic-shade), o-realistic-black($o-realistic-shade));
+		} @else {
+			background-image: none;
+		}
+	}
+}
+
+// true when the text token {button}-fg is darker than the fill token
+// {button}-bg: the button gets a flat fill
+@function o-realistic-flat($button) {
+	$bg: map.get($o-token-values, "#{$button}-bg");
+	$fg: map.get($o-token-values, "#{$button}-fg");
+	@if meta.type-of($bg) != "color" or meta.type-of($fg) != "color" {
+		@return false;
+	}
+	@return o-token-state-lighter($button, $o-token-values);
+}
+
+// The buttons: selector, the prefix of the fill and text tokens, and the
+// alpha of the black at the bottom. A button without an alpha gets the
+// gradient of its button class; only its flat fill has a rule here.
+$o-realistic-buttons: (
+	".btn-default": ("btn-default", $o-realistic-shade-light),
+	".btn-primary": ("btn-primary", $o-realistic-shade),
+	".btn-success": ("state-success", $o-realistic-shade),
+	".btn-info": ("state-neutral", $o-realistic-shade),
+	".btn-warning": ("state-warning", $o-realistic-shade),
+	".btn-danger": ("btn-danger", $o-realistic-shade),
+	".o_button_dirty": ("btn-dirty", $o-realistic-shade),
+	".o_table_batch_buttons .btn.btn-default": ("btn-primary", $o-realistic-shade),
+	".o_coursetable .o_start": ("coursesite-start", null),
+	".o_coursetable .o_book": ("coursesite-book", null)
+);
+
+/* Buttons. A text shadow only under a white text: the coloured buttons with
+   the gradient. The default button and the flat buttons have a dark text
+   and no text shadow. */
+.btn-primary,
+.btn-success,
+.btn-info,
+.btn-warning,
+.btn-danger,
 .o_button_dirty {
-  	text-shadow: 0 -1px 0 rgba(0,0,0,.2);
-  	$shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075);
-  	@include box-shadow($shadow);
-  	// Reset the shadow
-  	&:active,
-  	&.active {
-    	@include box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
-  	}
-	@include btn-styles($o-button-dirty-bg);
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, .2);
 }
-
-/* A dirty button with dark text (a light fill) has the flat fills of its
-   tokens, as the primary button above: the gradient and the darker fills of
-   the Bootstrap theme take the contrast of the dark text, the hover and the
-   pressed fill of the tokens are lighter (o-token-state-lighter()). */
-@if o-token-state-lighter("btn-dirty", $o-token-values) {
-	.o_button_dirty {
+.btn-default,
+.btn-primary,
+.btn-success,
+.btn-info,
+.btn-warning,
+.btn-danger,
+.o_button_dirty {
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 1px 1px rgba(0, 0, 0, .075);
+	&:active,
+	&.active {
+		box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+	}
+	&.disabled,
+	&[disabled],
+	fieldset[disabled] & {
+		box-shadow: none;
+	}
+	.badge {
+		text-shadow: none;
+	}
+}
+.btn {
+	&:active,
+	&.active {
 		background-image: none;
-		&:hover,
-		&:focus {
-			background-color: var(--o-btn-dirty-bg-hover);
-		}
-		&:active,
-		&.active {
-			background-color: var(--o-btn-dirty-bg-hover);
-			border-color: var(--o-btn-dirty-border-hover);
-		}
-		&.disabled,
-		&[disabled],
-		fieldset[disabled] & {
-			&,
-			&:hover,
-			&:focus,
-			&.focus,
-			&:active,
-			&.active {
-				background-color: var(--o-btn-dirty-bg);
-			}
+	}
+}
+@each $selector, $button in $o-realistic-buttons {
+	#{$selector} {
+		@if o-realistic-flat(list.nth($button, 1)) {
+			background-image: none;
+			text-shadow: none;
+		} @else if list.nth($button, 2) != null {
+			@include o-realistic-button(list.nth($button, 2));
 		}
 	}
 }
 
-/* The light buttons keep their own fills and borders when they also carry
-   the class btn-default (OO-10087): the gradient, the border and the hover,
-   pressed and disabled fill of the Bootstrap theme for .btn-default would
-   cover them (white text on the grey hover fill). The text colours come from
-   _helpers.scss. The dirty button has its own rules above. */
-@each $light in ("primary", "danger") {
-	.btn-default.o_button_#{$light}_light {
+/* The default button has a flat fill on focus: buttons with btn-default
+   carry own text colours (tool bar segments), the gradient over the focus
+   fill would take them below 4.5:1 at the bottom */
+.btn-default:focus {
+	background-image: none;
+}
+
+/* The ghost button and the light buttons: a flat fill, as a button with a
+   dark text. The colours are the tokens of _helpers.scss. */
+.btn {
+	&.o_button_ghost,
+	&.o_button_primary_light,
+	&.o_button_danger_light {
 		background-image: none;
 		text-shadow: none;
-		border-color: var(--o-btn-#{$light}-light-border);
-		&:focus,
-		&:hover {
-			background-color: var(--o-btn-#{$light}-light-hover-bg);
-			border-color: var(--o-btn-#{$light}-light-hover-border);
-		}
-		&:active,
-		&.active {
-			background-color: var(--o-btn-#{$light}-light-bg-hover);
-			border-color: var(--o-btn-#{$light}-light-border-hover);
-			&:hover,
-			&:focus {
-				background-color: var(--o-btn-#{$light}-light-bg-active);
-				border-color: var(--o-btn-#{$light}-light-border-focus);
-			}
-		}
-		&.disabled,
-		&[disabled],
-		fieldset[disabled] & {
-			&,
-			&:hover,
-			&:focus,
-			&:active,
-			&.active {
-				background-color: var(--o-btn-#{$light}-light-bg);
-				border-color: var(--o-btn-#{$light}-light-border);
-			}
-		}
 	}
-}
-
-.o_table_batch_buttons .btn.btn-default {
-	@include btn-styles($btn-primary-bg);
+	// the ghost button has no border to carry a shadow
+	&.o_button_ghost {
+		box-shadow: none;
+	}
 }
 
 /* remove text-shadow on default buttons in conjunction with other button styles */
@@ -141,38 +227,38 @@
 	}
 }
 
+/* The login buttons of other products have the colour of that product */
 .o_login {
 	.o_login_social {
 		.btn-default {
 			text-shadow: none;
 			background-image: none;
-			
 			&.o_sel_auth_facebook {
-				@include btn-styles(#4568b2);
-			}		
+				@include o-realistic-button-color(#4568b2);
+			}
 			&.o_sel_auth_twitter {
-				@include btn-styles(#2cc5ff);
-			}		
+				@include o-realistic-button-color(#2cc5ff);
+			}
 			&.o_sel_auth_google {
-				@include btn-styles(#e15f4f);
-			}		
+				@include o-realistic-button-color(#e15f4f);
+			}
 			&.o_sel_auth_linkedin {
-				@include btn-styles(#0181bd);
-			}		
+				@include o-realistic-button-color(#0181bd);
+			}
 			&.o_sel_auth_adfs {
-				@include btn-styles(#1a1a1a);
+				@include o-realistic-button-color(#1a1a1a);
 			}
 			&.o_sel_auth_azureAdfs {
-				@include btn-styles(#016ab4);
+				@include o-realistic-button-color(#016ab4);
 			}
 			&.o_sel_auth_keycloak {
-				@include btn-styles(#e46e87);
+				@include o-realistic-button-color(#e46e87);
 			}
 		}
 	}
 }
 
-/* no realtistic buttons for video task */
+/* no realistic buttons for video task */
 .o_videotask_categories {
 	.btn-default {
 		text-shadow: none;
@@ -180,61 +266,171 @@
 	}
 }
 
+/* The mixin btn-styles of the Bootstrap theme, for the own rules of a theme
+   with a literal colour: the gradient from $color to a darker colour. The
+   rules of this style do not use it. A new rule of a theme uses the tokens
+   of its button and the gradient of this style. */
+@mixin btn-styles($color: #555) {
+	@include gradient-vertical($start-color: $color, $end-color: darken($color, 12%));
+	@include reset-filter;
+	background-repeat: repeat-x;
+	border-color: darken($color, 14%);
+	&:hover,
+	&:focus {
+		background-color: darken($color, 12%);
+		background-position: 0 -15px;
+	}
+	&:active,
+	&.active {
+		background-color: darken($color, 12%);
+		border-color: darken($color, 14%);
+	}
+	&.disabled,
+	&[disabled],
+	fieldset[disabled] & {
+		&,
+		&:hover,
+		&:focus,
+		&.focus,
+		&:active,
+		&.active {
+			background-color: darken($color, 12%);
+			background-image: none;
+		}
+	}
+}
+
+/* Thumbnails */
+.thumbnail,
+.img-thumbnail {
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .075);
+}
+
+/* Dropdowns */
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+	@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade-subtle));
+}
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus {
+	@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade-light));
+}
+
+/* Navbar of Bootstrap. The navigation bar of OpenOlat (.o_navbar) has no
+   gradient. */
+.navbar-brand,
+.navbar-nav > li > a {
+	text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
+}
+.navbar-static-top,
+.navbar-fixed-top,
+.navbar-fixed-bottom {
+	border-radius: 0;
+}
+// the active item of a dropdown in the collapsed navbar
+@media (max-width: $grid-float-breakpoint-max) {
+	.navbar .navbar-nav .open .dropdown-menu > .active > a {
+		&,
+		&:hover,
+		&:focus {
+			color: var(--o-dropdown-link-active);
+			background-color: var(--o-dropdown-link-active-bg);
+			@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade-light));
+		}
+	}
+}
+
+/* Alerts */
+.alert {
+	text-shadow: 0 1px 0 rgba(255, 255, 255, .2);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 1px 2px rgba(0, 0, 0, .05);
+}
+.alert-success,
+.alert-info,
+.alert-warning,
+.alert-danger {
+	@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade-subtle));
+}
+
+/* Progress bars: a striped bar keeps its stripes */
+.progress {
+	@include o-realistic-gradient(o-realistic-black($o-realistic-shade-subtle), o-realistic-black(0));
+}
+.progress-bar,
+.progress-bar-success,
+.progress-bar-info,
+.progress-bar-warning,
+.progress-bar-danger {
+	@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade));
+}
+.progress-bar-striped {
+	@include gradient-striped;
+}
+
+/* List groups */
+.list-group {
+	border-radius: $border-radius-base;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .075);
+}
+.list-group-item.active,
+.list-group-item.active:hover,
+.list-group-item.active:focus {
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, .2);
+	@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade-light));
+	.badge {
+		text-shadow: none;
+	}
+}
+
+/* Panels */
+.panel {
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+}
+// the headings of the state panels (success, info, warning, danger) have a
+// flat fill: their text has little reserve on the soft fill
+.panel-default > .panel-heading {
+	@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade-subtle));
+}
+.panel-primary > .panel-heading {
+	@include o-realistic-gradient(o-realistic-white(0), o-realistic-black($o-realistic-shade-light));
+}
+
+/* Wells */
+.well {
+	@include o-realistic-gradient(o-realistic-black($o-realistic-shade-subtle), o-realistic-black(0));
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, .05), 0 1px 0 rgba(255, 255, 255, .1);
+}
 
 /* Top navbar */
-.o_navbar.o_navbar-default {
-  	@include gradient-vertical($start-color: lighten($navbar-default-bg, 10%), $end-color: $navbar-default-bg);
-  	@include reset-filter(); // Remove gradient in IE<10 to fix bug where dropdowns don't get triggered
-  	$shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 5px rgba(0,0,0,.075);
-  	@include box-shadow($shadow);
-
-  	.o_navbar-nav > .active > a {
-    	@include gradient-vertical($start-color: darken($navbar-default-bg, 5%), $end-color: darken($navbar-default-bg, 2%));
-    	@include box-shadow(inset 0 3px 9px rgba(0,0,0,.075));
-    	&.o_navbar_tab_close {
-    		background: none;
-    		@include box-shadow(none);
-       	}
-  	}
-}  	
 .o_navbar-brand,
 .o_navbar-nav > li > a {
-  	text-shadow: 0 1px 0 rgba(255,255,255,.25);
+	text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
 }
 
 .o_navbar-offcanvas {
-  	.dropdown-menu>li>a:hover,
-  	.dropdown-menu>li>a:focus {
-	        background-image:none;
+	.dropdown-menu > li > a:hover,
+	.dropdown-menu > li > a:focus {
+		background-image: none;
 	}
 }
 
-
-
-
 /* Toolbar with integrated bread crumb */
 .o_toolbar {
-  	$shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 5px rgba(0,0,0,.05);
-  	@include box-shadow($shadow);
-	.o_breadcrumb .breadcrumb {
-		@include gradient-vertical($start-color: lighten($o-toolbar-breadcrumb-bg-color, 10%), $end-color: $o-toolbar-breadcrumb-bg-color);
-		@include reset-filter(); // Remove gradient in IE<10 to fix bug where dropdowns don't get triggered
-	}
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 1px 5px rgba(0, 0, 0, .05);
+	.o_breadcrumb .breadcrumb,
 	.o_tools_container {
-		@include gradient-vertical($start-color: lighten($o-toolbar-bg-color, 15%), $end-color: $o-toolbar-bg-color);
-	  	@include reset-filter(); // Remove gradient in IE<10 to fix bug where dropdowns don't get triggered
+		@include o-realistic-gradient(o-realistic-white($o-realistic-light), o-realistic-white(0));
 	}
 	.o_tool_next, .o_tool_previous {
-		@include gradient-vertical($start-color: lighten($o-toolbar-nav-bg-color, 10%), $end-color: darken($o-toolbar-nav-bg-color, 5%));
-	  	@include reset-filter(); // Remove gradient in IE<10 to fix bug where dropdowns don't get triggered
-	  	:hover {
-		    background-color: darken($o-toolbar-nav-bg-color, 5%);
-	  	}
+		@include o-realistic-gradient(o-realistic-white($o-realistic-light), o-realistic-black($o-realistic-shade-subtle));
+		:hover {
+			background-color: o-realistic-black($o-realistic-shade-subtle);
+		}
 	}
 }
 
 /* Menu tree */
 .o_tree {
-  	$shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 5px rgba(0,0,0,.05);
-  	@include box-shadow($shadow);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 1px 5px rgba(0, 0, 0, .05);
 }

@@ -759,9 +759,6 @@ $o-coursesite-start-border		: o-scale-snap($o-coursesite-start-bg, darken($o-cou
 $o-coursesite-book-bg			: o-state-color("warning", "bg") !default;
 $o-coursesite-book-color		: if($o-coursesite-book-bg == o-state-color("warning", "bg"), o-state-color("warning", "fg"), o-a11y-color($btn-warning-color, $o-coursesite-book-bg)) !default;
 $o-coursesite-book-border		: o-scale-snap($o-coursesite-book-bg, darken($o-coursesite-book-bg, 5%), $distinct: false) !default;
-$o-coursesite-details-bg		: $btn-success-bg !default;
-$o-coursesite-details-color		: o-a11y-color($btn-success-color, $o-coursesite-details-bg) !default;
-$o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-cat2-header-height			: 240px !default;
 $o-cat2-header-noimage-bg				: linear-gradient(190deg, var(--o-catalog-header-noimage-stop-1) 10%, var(--o-primary) 100%), linear-gradient(40deg, var(--o-catalog-header-noimage-stop-3) 0%, var(--o-catalog-header-noimage-stop-4) 60%) !default;
@@ -1507,6 +1504,9 @@ $o-email-btn-color						: $btn-primary-color !default;
 $o-email-btn-bg							: $btn-primary-bg !default;
 $o-email-btn-border-color				: $btn-primary-border !default;
 $o-email-btn-border-radius				: 4px !default;
+// the done icon of the to-do mail: fill and text (OO-10043)
+$o-email-todo-done-bg					: #5cb85c !default;
+$o-email-todo-done-color				: #fff !default;
 
 /* Appointments */
 $o-ap-planned-color					: o-state-color("warning", "bg") !default;

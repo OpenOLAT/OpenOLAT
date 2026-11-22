@@ -14,9 +14,18 @@
 @import "../../../bootstrap/stylesheets/bootstrap/glyphicons"; 
 */
 
+// The Bootstrap rules read the colour tokens (OO-10043): this file sets the
+// Bootstrap colour variables to a token var(--o-*) before the import of the
+// component. The variables that _tokens.scss reads for the token defaults
+// (links, table hover, default and primary button, disabled link, progress
+// bar) get their Sass value back after the import. The state variables
+// ($state-*, $btn-success|info|warning|danger-*, $label-*, $alert-*,
+// $progress-bar-{state}-bg, $panel-{state}-*) keep the token: no rule after
+// this file reads them.
+
 // The Bootstrap rules of the links (a, .btn-link, pagination hover, the
 // border of .nav .open > a and a.thumbnail) read the link tokens: the Sass
-// variables hold the token during the import only (OO-10043)
+// variables hold the token during the import only
 $o-bootstrap-link-color: $link-color;
 $o-bootstrap-link-hover-color: $link-hover-color;
 $o-bootstrap-pagination-hover-color: $pagination-hover-color;
@@ -27,15 +36,6 @@ $pagination-hover-color: var(--o-link-hover);
 // The Bootstrap rules of .text-*, .bg-*, mark, the contextual table rows, the
 // form validation states and the list group items read the state tokens
 // (OO-10043): text = text, background = soft-bg; info is the state neutral.
-// The Sass variables hold the token until the end of this file.
-$o-bootstrap-state-success-text: $state-success-text;
-$o-bootstrap-state-success-bg: $state-success-bg;
-$o-bootstrap-state-info-text: $state-info-text;
-$o-bootstrap-state-info-bg: $state-info-bg;
-$o-bootstrap-state-warning-text: $state-warning-text;
-$o-bootstrap-state-warning-bg: $state-warning-bg;
-$o-bootstrap-state-danger-text: $state-danger-text;
-$o-bootstrap-state-danger-bg: $state-danger-bg;
 $state-success-text: var(--o-state-success-text);
 $state-success-bg: var(--o-state-success-soft-bg);
 $state-info-text: var(--o-state-neutral-text);
@@ -60,26 +60,15 @@ $table-bg-hover: $o-bootstrap-table-bg-hover;
 @import "../../../bootstrap/stylesheets/bootstrap/forms";
 // The Bootstrap rules of .btn, .btn-default, .btn-primary and .btn-danger read
 // the button tokens, .btn-success, .btn-info and .btn-warning the state tokens
-// (fill bg, text fg, border border): the Sass variables hold the token during
-// the import only (OO-10043)
+// (fill bg, text fg, border border). The variables of the default and the
+// primary button and of the disabled link hold the token during the import
+// only (OO-10043)
 $o-bootstrap-btn-default-color: $btn-default-color;
 $o-bootstrap-btn-default-bg: $btn-default-bg;
 $o-bootstrap-btn-default-border: $btn-default-border;
 $o-bootstrap-btn-primary-color: $btn-primary-color;
 $o-bootstrap-btn-primary-bg: $btn-primary-bg;
 $o-bootstrap-btn-primary-border: $btn-primary-border;
-$o-bootstrap-btn-danger-color: $btn-danger-color;
-$o-bootstrap-btn-danger-bg: $btn-danger-bg;
-$o-bootstrap-btn-danger-border: $btn-danger-border;
-$o-bootstrap-btn-success-color: $btn-success-color;
-$o-bootstrap-btn-success-bg: $btn-success-bg;
-$o-bootstrap-btn-success-border: $btn-success-border;
-$o-bootstrap-btn-info-color: $btn-info-color;
-$o-bootstrap-btn-info-bg: $btn-info-bg;
-$o-bootstrap-btn-info-border: $btn-info-border;
-$o-bootstrap-btn-warning-color: $btn-warning-color;
-$o-bootstrap-btn-warning-bg: $btn-warning-bg;
-$o-bootstrap-btn-warning-border: $btn-warning-border;
 // the text of a disabled .btn-link is the semantic token text-disabled (its
 // base colour is $btn-link-disabled-color)
 $o-bootstrap-btn-link-disabled-color: $btn-link-disabled-color;
@@ -109,18 +98,6 @@ $btn-default-border: $o-bootstrap-btn-default-border;
 $btn-primary-color: $o-bootstrap-btn-primary-color;
 $btn-primary-bg: $o-bootstrap-btn-primary-bg;
 $btn-primary-border: $o-bootstrap-btn-primary-border;
-$btn-danger-color: $o-bootstrap-btn-danger-color;
-$btn-danger-bg: $o-bootstrap-btn-danger-bg;
-$btn-danger-border: $o-bootstrap-btn-danger-border;
-$btn-success-color: $o-bootstrap-btn-success-color;
-$btn-success-bg: $o-bootstrap-btn-success-bg;
-$btn-success-border: $o-bootstrap-btn-success-border;
-$btn-info-color: $o-bootstrap-btn-info-color;
-$btn-info-bg: $o-bootstrap-btn-info-bg;
-$btn-info-border: $o-bootstrap-btn-info-border;
-$btn-warning-color: $o-bootstrap-btn-warning-color;
-$btn-warning-bg: $o-bootstrap-btn-warning-bg;
-$btn-warning-border: $o-bootstrap-btn-warning-border;
 $btn-link-disabled-color: $o-bootstrap-btn-link-disabled-color;
 
 // Components
@@ -134,36 +111,16 @@ $btn-link-disabled-color: $o-bootstrap-btn-link-disabled-color;
 @import "../../../bootstrap/stylesheets/bootstrap/pagination";
 @import "../../../bootstrap/stylesheets/bootstrap/pager";
 // Labels: the fill of the state (text fg, hover bg-hover: _state_variant.scss)
-$o-bootstrap-label-success-bg: $label-success-bg;
-$o-bootstrap-label-info-bg: $label-info-bg;
-$o-bootstrap-label-warning-bg: $label-warning-bg;
-$o-bootstrap-label-danger-bg: $label-danger-bg;
 $label-success-bg: var(--o-state-success-bg);
 $label-info-bg: var(--o-state-neutral-bg);
 $label-warning-bg: var(--o-state-warning-bg);
 $label-danger-bg: var(--o-state-danger-bg);
 @import "../../../bootstrap/stylesheets/bootstrap/labels";
-$label-success-bg: $o-bootstrap-label-success-bg;
-$label-info-bg: $o-bootstrap-label-info-bg;
-$label-warning-bg: $o-bootstrap-label-warning-bg;
-$label-danger-bg: $o-bootstrap-label-danger-bg;
 @import "../../../bootstrap/stylesheets/bootstrap/badges";
 @import "../../../bootstrap/stylesheets/bootstrap/jumbotron";
 @import "../../../bootstrap/stylesheets/bootstrap/thumbnails";
 // Alerts: the soft roles of the state (fill soft-bg, border soft-border,
 // text soft-fg)
-$o-bootstrap-alert-success-bg: $alert-success-bg;
-$o-bootstrap-alert-success-border: $alert-success-border;
-$o-bootstrap-alert-success-text: $alert-success-text;
-$o-bootstrap-alert-info-bg: $alert-info-bg;
-$o-bootstrap-alert-info-border: $alert-info-border;
-$o-bootstrap-alert-info-text: $alert-info-text;
-$o-bootstrap-alert-warning-bg: $alert-warning-bg;
-$o-bootstrap-alert-warning-border: $alert-warning-border;
-$o-bootstrap-alert-warning-text: $alert-warning-text;
-$o-bootstrap-alert-danger-bg: $alert-danger-bg;
-$o-bootstrap-alert-danger-border: $alert-danger-border;
-$o-bootstrap-alert-danger-text: $alert-danger-text;
 $alert-success-bg: var(--o-state-success-soft-bg);
 $alert-success-border: var(--o-state-success-soft-border);
 $alert-success-text: var(--o-state-success-soft-fg);
@@ -177,23 +134,8 @@ $alert-danger-bg: var(--o-state-danger-soft-bg);
 $alert-danger-border: var(--o-state-danger-soft-border);
 $alert-danger-text: var(--o-state-danger-soft-fg);
 @import "../../../bootstrap/stylesheets/bootstrap/alerts";
-$alert-success-bg: $o-bootstrap-alert-success-bg;
-$alert-success-border: $o-bootstrap-alert-success-border;
-$alert-success-text: $o-bootstrap-alert-success-text;
-$alert-info-bg: $o-bootstrap-alert-info-bg;
-$alert-info-border: $o-bootstrap-alert-info-border;
-$alert-info-text: $o-bootstrap-alert-info-text;
-$alert-warning-bg: $o-bootstrap-alert-warning-bg;
-$alert-warning-border: $o-bootstrap-alert-warning-border;
-$alert-warning-text: $o-bootstrap-alert-warning-text;
-$alert-danger-bg: $o-bootstrap-alert-danger-bg;
-$alert-danger-border: $o-bootstrap-alert-danger-border;
-$alert-danger-text: $o-bootstrap-alert-danger-text;
-// Progress bars: the fill of the state (text fg: _state_variant.scss)
-$o-bootstrap-progress-bar-success-bg: $progress-bar-success-bg;
-$o-bootstrap-progress-bar-info-bg: $progress-bar-info-bg;
-$o-bootstrap-progress-bar-warning-bg: $progress-bar-warning-bg;
-$o-bootstrap-progress-bar-danger-bg: $progress-bar-danger-bg;
+// Progress bars: the fill of the state (text fg: _state_variant.scss). The
+// variables of the progress bar hold the token during the import only
 $o-bootstrap-progress-bar-bg: $progress-bar-bg;
 $o-bootstrap-progress-bar-color: $progress-bar-color;
 $progress-bar-bg: var(--o-progress-bar-bg);
@@ -203,27 +145,11 @@ $progress-bar-info-bg: var(--o-state-neutral-bg);
 $progress-bar-warning-bg: var(--o-state-warning-bg);
 $progress-bar-danger-bg: var(--o-state-danger-bg);
 @import "../../../bootstrap/stylesheets/bootstrap/progress-bars";
-$progress-bar-success-bg: $o-bootstrap-progress-bar-success-bg;
-$progress-bar-info-bg: $o-bootstrap-progress-bar-info-bg;
-$progress-bar-warning-bg: $o-bootstrap-progress-bar-warning-bg;
-$progress-bar-danger-bg: $o-bootstrap-progress-bar-danger-bg;
 $progress-bar-bg: $o-bootstrap-progress-bar-bg;
 $progress-bar-color: $o-bootstrap-progress-bar-color;
 @import "../../../bootstrap/stylesheets/bootstrap/media";
 @import "../../../bootstrap/stylesheets/bootstrap/list-group";
 // Panels: heading text text, heading fill soft-bg, borders soft-border
-$o-bootstrap-panel-success-text: $panel-success-text;
-$o-bootstrap-panel-success-border: $panel-success-border;
-$o-bootstrap-panel-success-heading-bg: $panel-success-heading-bg;
-$o-bootstrap-panel-info-text: $panel-info-text;
-$o-bootstrap-panel-info-border: $panel-info-border;
-$o-bootstrap-panel-info-heading-bg: $panel-info-heading-bg;
-$o-bootstrap-panel-warning-text: $panel-warning-text;
-$o-bootstrap-panel-warning-border: $panel-warning-border;
-$o-bootstrap-panel-warning-heading-bg: $panel-warning-heading-bg;
-$o-bootstrap-panel-danger-text: $panel-danger-text;
-$o-bootstrap-panel-danger-border: $panel-danger-border;
-$o-bootstrap-panel-danger-heading-bg: $panel-danger-heading-bg;
 $panel-success-text: var(--o-state-success-text);
 $panel-success-border: var(--o-state-success-soft-border);
 $panel-success-heading-bg: var(--o-state-success-soft-bg);
@@ -237,18 +163,6 @@ $panel-danger-text: var(--o-state-danger-text);
 $panel-danger-border: var(--o-state-danger-soft-border);
 $panel-danger-heading-bg: var(--o-state-danger-soft-bg);
 @import "../../../bootstrap/stylesheets/bootstrap/panels";
-$panel-success-text: $o-bootstrap-panel-success-text;
-$panel-success-border: $o-bootstrap-panel-success-border;
-$panel-success-heading-bg: $o-bootstrap-panel-success-heading-bg;
-$panel-info-text: $o-bootstrap-panel-info-text;
-$panel-info-border: $o-bootstrap-panel-info-border;
-$panel-info-heading-bg: $o-bootstrap-panel-info-heading-bg;
-$panel-warning-text: $o-bootstrap-panel-warning-text;
-$panel-warning-border: $o-bootstrap-panel-warning-border;
-$panel-warning-heading-bg: $o-bootstrap-panel-warning-heading-bg;
-$panel-danger-text: $o-bootstrap-panel-danger-text;
-$panel-danger-border: $o-bootstrap-panel-danger-border;
-$panel-danger-heading-bg: $o-bootstrap-panel-danger-heading-bg;
 @import "../../../bootstrap/stylesheets/bootstrap/responsive-embed";
 @import "../../../bootstrap/stylesheets/bootstrap/wells";
 @import "../../../bootstrap/stylesheets/bootstrap/close";
@@ -265,11 +179,3 @@ $panel-danger-heading-bg: $o-bootstrap-panel-danger-heading-bg;
 $link-color: $o-bootstrap-link-color;
 $link-hover-color: $o-bootstrap-link-hover-color;
 $pagination-hover-color: $o-bootstrap-pagination-hover-color;
-$state-success-text: $o-bootstrap-state-success-text;
-$state-success-bg: $o-bootstrap-state-success-bg;
-$state-info-text: $o-bootstrap-state-info-text;
-$state-info-bg: $o-bootstrap-state-info-bg;
-$state-warning-text: $o-bootstrap-state-warning-text;
-$state-warning-bg: $o-bootstrap-state-warning-bg;
-$state-danger-text: $o-bootstrap-state-danger-text;
-$state-danger-bg: $o-bootstrap-state-danger-bg;
