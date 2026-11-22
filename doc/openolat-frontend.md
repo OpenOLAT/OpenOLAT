@@ -2569,7 +2569,7 @@ Three semantic tokens exist only for translucent colours. They are opaque, and t
 | `--o-backdrop` | `#000000` | the dark layer behind a modal dialog: `dialog::backdrop`, the callout overlay, the lightbox | `color-mix(in srgb, var(--o-backdrop) 50%, transparent)` |
 | `--o-scrim` | `#FFFFFF` | the light veil over content: below a text, a video control or a progress indicator. A dark mode redefines it as a dark colour. | `color-mix(in srgb, var(--o-scrim) 95%, transparent)` |
 
-The shadows with the colour `rgba(16, 24, 40, a)` read `--o-shadow-color` with the same alpha: `$o-dropdown-box-shadow`, `$o-toolbar-box-shadow`, `$o-icon-panel-box-shadow`, `$o-login-box-shadow`, `$o-cc-box-shadow`, `$o-card-box-shadow`, `$o-card-box-hover-shadow` and `.panel`. The Sass variables stay customisation points. The two shadows of the immunity proof (`.o_immunity_proof_wrapper`, `.o_immunity_proof_status`) read `--o-shadow-color` with their alpha too.
+The shadows with the colour `rgba(16, 24, 40, a)` read `--o-shadow-color` with the same alpha: `$o-dropdown-box-shadow`, `$o-toolbar-box-shadow`, `$o-login-box-shadow`, `$o-cc-box-shadow`, `$o-card-box-shadow`, `$o-card-box-hover-shadow` and `.panel`. The Sass variables stay customisation points. The two shadows of the immunity proof (`.o_immunity_proof_wrapper`, `.o_immunity_proof_status`) read `--o-shadow-color` with their alpha too.
 
 Colours without a role read a token with the alpha of the old `rgba()`:
 
