@@ -254,8 +254,7 @@ public class CoachingServiceImpl implements CoachingService {
 				.toList();
 		
 		List<CourseStatEntry> summaryStatistics = filteredStatistics.stream()
-				.sorted(Comparator.comparingDouble(CourseStatEntry::getMyActivity).reversed()
-						.thenComparing(CourseStatEntry::getMyLastVisit, Comparator.nullsLast(Comparator.reverseOrder()))
+				.sorted(Comparator.comparingDouble(CourseStatEntry::getRelevance).reversed()
 						.thenComparing(CourseStatEntry::getRepoDisplayName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
 						.thenComparing(CourseStatEntry::getRepoKey))
 				.limit(maxResults)
