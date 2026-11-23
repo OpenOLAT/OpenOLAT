@@ -742,7 +742,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			ICourse course = CourseFactory.loadCourse(courseOres);
 			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
 			for(Identity assessedIdentity:assessedIdentities) {
-				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitParticipantCourseEnvironment(assessedIdentity, course);
 				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach, getLocale());
 			}
 		}
@@ -832,7 +832,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitParticipantCourseEnvironment(assessedIdentity, course);
 		editCtrl = new AssessedIdentityOverviewController(ureq, getWindowControl(), assessedIdentity,
 				courseOres, coachCourseEnv, assessedUserCourseEnv, courseNode);
 		listenTo(editCtrl);

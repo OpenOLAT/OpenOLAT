@@ -376,7 +376,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 			
 			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
 			for(Identity assessedIdentity:assessedIdentities) {
-				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitParticipantCourseEnvironment(assessedIdentity, course);
 				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach, getLocale());
 			}
 		}
