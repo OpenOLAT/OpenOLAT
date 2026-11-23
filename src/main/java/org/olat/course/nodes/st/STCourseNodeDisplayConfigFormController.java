@@ -159,7 +159,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		SelectionValues layoutKV = new SelectionValues();
 		layoutKV.add(entry(CONFIG_VALUE_COLUMNS_SINGLE, translate("form.layout.single")));
 		layoutKV.add(entry(CONFIG_VALUE_COLUMNS_TWO, translate("form.layout.two")));
-		layoutEl = uifactory.addRadiosHorizontal("form.layout", formLayout, layoutKV.keys(), layoutKV.values());
+		layoutEl = uifactory.addRadiosVertical("form.layout", formLayout, layoutKV.keys(), layoutKV.values());
 		layoutEl.addActionListener(FormEvent.ONCLICK);
 	}
 	

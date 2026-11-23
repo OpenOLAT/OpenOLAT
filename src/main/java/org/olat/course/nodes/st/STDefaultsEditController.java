@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormSection;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -49,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class STDefaultsEditController extends FormBasicController {
 
 	private SingleSelection displayTypeEl;
+	private FormSection layoutSection;
 	private SingleSelection layoutEl;
 	private FormLink resetDefaultsButton;
 	private FormLink backLink;
@@ -73,7 +75,7 @@ public class STDefaultsEditController extends FormBasicController {
 		backLink.setIconLeftCSS("o_icon o_icon_back");
 
 		FormLayoutContainer stCont = FormLayoutContainer.createDefaultFormLayout("stCont", getTranslator());
-		stCont.setFormTitle(translate("form.configuration"));
+		stCont.setFormTitle(translate("config.fieldset.view"));
 		stCont.setRootForm(mainForm);
 		formLayout.add(stCont);
 
@@ -85,10 +87,12 @@ public class STDefaultsEditController extends FormBasicController {
 		displayTypeEl = uifactory.addRadiosVertical("selforsystemoverview", stCont, typesKV.keys(), typesKV.values());
 		displayTypeEl.addActionListener(FormEvent.ONCLICK);
 
+		layoutSection = uifactory.addFormSection("layout.section", translate("form.system"), stCont, FormSection.Level.SUB_TITLE);
+
 		SelectionValues layoutKV = new SelectionValues();
 		layoutKV.add(entry("1", translate("form.layout.single")));
 		layoutKV.add(entry("2", translate("form.layout.two")));
-		layoutEl = uifactory.addRadiosHorizontal("form.layout", stCont, layoutKV.keys(), layoutKV.values());
+		layoutEl = uifactory.addRadiosVertical("form.layout", layoutSection, layoutKV.keys(), layoutKV.values());
 		layoutEl.addActionListener(FormEvent.ONCLICK);
 
 		// Create submit button
@@ -113,13 +117,13 @@ public class STDefaultsEditController extends FormBasicController {
 
 	private void updateUI() {
 		String selectedKey = displayTypeEl.getSelectedKey();
-		layoutEl.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC.equals(selectedKey)
+		layoutSection.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC.equals(selectedKey)
 				|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey));
 	}
 
 	private void updateDefaultConfigValues() {
 		stModule.setDisplayType(displayTypeEl.getSelectedKey());
-		if (layoutEl.isVisible()) {
+		if (layoutSection.isVisible()) {
 			stModule.setColumns("2".equals(layoutEl.getSelectedKey()) ? 2 : 1);
 		}
 	}
