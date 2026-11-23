@@ -71,6 +71,7 @@ import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.manager.RepositoryEntryEducationalTypeDAO;
+import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -754,6 +755,24 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		
 		boolean hasRelations = curriculumElementDao.hasElements(entry);
 		Assert.assertFalse(hasRelations);
+	}
+	
+	@Test
+	public void loadElementsByResources() {
+		Curriculum curriculum1 = curriculumDao.createAndPersist("Cur-for-load-rsrc-1", "Curriculum to load by resource 1", null, false, null);
+		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("El-load-rsrc-1", "Element resource 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum1);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("El-load-rsrc-2", "Element resource 2",
+				CurriculumElementStatus.active, null, null, parentElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum1);
+		dbInstance.commitAndCloseSession();
+		
+		Collection<OLATResource> curriculumRefs = Arrays.asList(parentElement.getResource(), element1.getResource());
+		List<CurriculumElement> elements = curriculumElementDao.loadElementsByResources(curriculumRefs);
+		
+		Assertions.assertThat(elements)
+				.containsExactlyInAnyOrder(parentElement, element1);
 	}
 	
 	@Test

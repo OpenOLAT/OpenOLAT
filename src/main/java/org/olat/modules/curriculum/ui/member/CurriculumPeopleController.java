@@ -32,7 +32,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationModule;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -85,7 +84,6 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.MemberImplementationsInfos;
-import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
 import org.olat.modules.curriculum.ui.component.NextEvent;
@@ -295,12 +293,9 @@ public class CurriculumPeopleController extends FormBasicController implements A
     }
 	
 	private void loadModel() {
-		SearchMemberParameters params = new SearchMemberParameters(List.of());
-		List<String> managerRoles = List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(),
-				CurriculumRoles.curriculummanager.name(), CurriculumRoles.curriculumowner.name());
 		List<String> membersRoles = List.of(CurriculumRoles.values()).stream()
 				.map(CurriculumRoles::name).toList();
-		List<MemberImplementationsInfos> members = curriculumService.getMembers(params, getIdentity(), managerRoles, membersRoles);
+		List<MemberImplementationsInfos> members = curriculumService.getMembersOf(getIdentity(), membersRoles);
 		List<CurriculumPeopleRow> rows = new ArrayList<>();
 		for(MemberImplementationsInfos member:members) {
 			CurriculumPeopleRow row = new CurriculumPeopleRow(member.getIdentity(),

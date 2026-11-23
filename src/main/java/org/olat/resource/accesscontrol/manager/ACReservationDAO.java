@@ -127,6 +127,12 @@ public class ACReservationDAO {
 		return query.getResultList();
 	}
 	
+	/**
+	 * Load the resource per user for the specified manager (curriculum owner or curriculum manager),
+	 * 
+	 * @param identity
+	 * @return A list of statistics about reservations pro user
+	 */
 	public List<ResourceReservationsIdentityInfos> loadCurriculumReservations(Identity identity) {
 		String query = """
 				select new org.olat.resource.accesscontrol.model.ResourceReservationsIdentityInfos(reservation.identity.key, count(distinct reservation.key))

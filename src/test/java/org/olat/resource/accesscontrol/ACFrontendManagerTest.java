@@ -63,6 +63,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -84,6 +85,7 @@ import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.PriceImpl;
+import org.olat.resource.accesscontrol.model.ResourceReservationsIdentityInfos;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.invoice.model.InvoiceAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
@@ -973,14 +975,138 @@ public class ACFrontendManagerTest extends OlatTestCase {
 
 		dbInstance.commitAndCloseSession();
 
+		int count = acService.countOrderItems(null, orderer, null, null, null, ViewAs.ALL, null, null);
+		Assert.assertEquals(1, count);
+		
 		// act
 		List<ResourceReservation> reservations = acService.getReservationsWithOrders(orderer, ViewAs.ALL, null);
 
 		// assert
-		assertEquals(1, reservations.size());
-		assertEquals(reservationWithOrder, reservations.get(0));
-		assertEquals(ce1.getResource(), reservations.get(0).getResource());
-		assertEquals(orderer, reservations.get(0).getIdentity());
+		Assert.assertEquals(1, reservations.size());
+		Assert.assertEquals(reservationWithOrder, reservations.get(0));
+		Assert.assertEquals(ce1.getResource(), reservations.get(0).getResource());
+		Assert.assertEquals(orderer, reservations.get(0).getIdentity());
+	}
+	
+	@Test
+	public void getReservationsWithOrdersWithinCurriculumOwner() {
+		// arrange
+		Identity orderer = JunitTestHelper.createAndPersistIdentityAsRndUser("orderer");
+		Identity curriculumOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("cowner-1");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-RES", "Curriculum Reservations", "Curriculum", false, null);
+		CurriculumElement ce1 = curriculumService.createCurriculumElement("CE-2", "Element 2",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.createCurriculumElement("CE-2", "Element 2",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(curriculum, curriculumOwner, CurriculumRoles.curriculumowner);
+		
+		Offer offer = acService.createOffer(ce1.getResource(), "Offer for curriculum element 2");
+		offer = acService.save(offer);
+		
+		Order order = acOrderDao.createOrder(orderer);
+		OrderPart orderPart = acOrderDao.addOrderPart(order);
+		acOrderDao.addOrderLine(orderPart, offer);
+		acOrderDao.save(order);
+
+		ResourceReservation reservationWithOrder = acReservationDao.createReservation(orderer, "curriculum_participant",
+				null, ConfirmationByEnum.PARTICIPANT, ce1.getResource());
+
+		dbInstance.commitAndCloseSession();
+		
+		int count = acService.countOrderItems(null, orderer, null, null, null, ViewAs.CURRICULUM_AS_MANAGER, curriculumOwner, null);
+		Assert.assertEquals(1, count);
+
+		// act
+		List<ResourceReservation> reservations = acService.getReservationsWithOrders(orderer, ViewAs.CURRICULUM_AS_MANAGER, curriculumOwner);
+
+		// assert
+		Assert.assertEquals(1, reservations.size());
+		Assert.assertEquals(reservationWithOrder, reservations.get(0));
+		Assert.assertEquals(ce1.getResource(), reservations.get(0).getResource());
+		Assert.assertEquals(orderer, reservations.get(0).getIdentity());
+	}
+	
+	@Test
+	public void getReservationsWithOrdersWithinCurriculumManager() {
+		// arrange
+		Identity orderer = JunitTestHelper.createAndPersistIdentityAsRndUser("orderer");
+		Identity curriculumManager = JunitTestHelper.createAndPersistIdentityAsRndUser("cowner-1");
+		
+		Organisation organisation = organisationService.createOrganisation("Curriculum order", "CO-1", null, null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, curriculumManager, OrganisationRoles.curriculummanager, JunitTestHelper.getDefaultActor());
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-RES", "Curriculum Reservations", "Curriculum", false, organisation);
+		CurriculumElement ce1 = curriculumService.createCurriculumElement("CE-2", "Element 2",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.createCurriculumElement("CE-2", "Element 2",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Offer offer = acService.createOffer(ce1.getResource(), "Offer for curriculum element 2");
+		offer = acService.save(offer);
+		Order order = acOrderDao.createOrder(orderer);
+		OrderPart orderPart = acOrderDao.addOrderPart(order);
+		acOrderDao.addOrderLine(orderPart, offer);
+		acOrderDao.save(order);
+
+		ResourceReservation reservationWithOrder = acReservationDao.createReservation(orderer, "curriculum_participant",
+				null, ConfirmationByEnum.PARTICIPANT, ce1.getResource());
+
+		dbInstance.commitAndCloseSession();
+		
+		int count = acService.countOrderItems(null, orderer, null, null, null, ViewAs.CURRICULUM_AS_MANAGER, curriculumManager, null);
+		Assert.assertEquals(1, count);
+		
+		// act
+		List<ResourceReservation> reservations = acService.getReservationsWithOrders(orderer, ViewAs.CURRICULUM_AS_MANAGER, curriculumManager);
+
+		// assert
+		Assert.assertEquals(1, reservations.size());
+		Assert.assertEquals(reservationWithOrder, reservations.get(0));
+		Assert.assertEquals(ce1.getResource(), reservations.get(0).getResource());
+		Assert.assertEquals(orderer, reservations.get(0).getIdentity());
+	}
+	
+	@Test
+	public void loadCurriculumReservations() {
+		// arrange
+		Identity orderer = JunitTestHelper.createAndPersistIdentityAsRndUser("orderer");
+		Identity curriculumOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("cowner-1");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-RES-3", "Curriculum reservations statistics", "Curriculum", false, null);
+		CurriculumElement ce1 = curriculumService.createCurriculumElement("CE-3", "Element 3",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.createCurriculumElement("CE-3-1", "Element 3",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(curriculum, curriculumOwner, CurriculumRoles.curriculumowner);
+		
+		Offer offer = acService.createOffer(ce1.getResource(), "Offer for curriculum element 3");
+		offer = acService.save(offer);
+		Order order = acOrderDao.createOrder(orderer);
+		OrderPart orderPart = acOrderDao.addOrderPart(order);
+		acOrderDao.addOrderLine(orderPart, offer);
+		acOrderDao.save(order);
+
+		ResourceReservation reservationWithOrder = acReservationDao.createReservation(orderer, "curriculum_participant",
+				null, ConfirmationByEnum.PARTICIPANT, ce1.getResource());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reservationWithOrder);
+		
+		// Query manager
+		List<ResourceReservationsIdentityInfos> reservations = acService.getCurriculumReservationsManagedBy(curriculumOwner);
+		Assert.assertEquals(1, reservations.size());
+		Assert.assertEquals(orderer.getKey(), reservations.get(0).identityKey());
+		Assert.assertEquals(1L, reservations.get(0).numOfReservations());
+		
+		// Query user (no permission)
+		List<ResourceReservationsIdentityInfos> noReservations = acService.getCurriculumReservationsManagedBy(orderer);
+		Assert.assertTrue(noReservations.isEmpty());
 	}
 
 	@Test

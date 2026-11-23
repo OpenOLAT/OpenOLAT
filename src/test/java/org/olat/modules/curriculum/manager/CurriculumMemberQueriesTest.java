@@ -25,8 +25,11 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -37,6 +40,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumMemberWithElement;
+import org.olat.modules.curriculum.model.MemberImplementationsInfos;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -56,6 +60,8 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 	private CurriculumService curriculumService;
 	@Autowired
 	private CurriculumMemberQueries memberQueries;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void getCurriculumMembers() {
@@ -244,5 +250,40 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		assertThat(members)
 				.extracting(CurriculumMember::getIdentity)
 				.contains(userBoth, userE1Only, userE2Only, userMixedRoles);
+	}
+	
+	@Test
+	public void getMembersByCurriculumOwner() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-owner-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-12");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-12", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "12. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(curriculum, owner, CurriculumRoles.curriculumowner);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, participant);
+		dbInstance.commitAndCloseSession();
+		
+		List<MemberImplementationsInfos> members = memberQueries.getMembersByManager(owner,
+				List.of(CurriculumRoles.participant.name(), CurriculumRoles.coach.name()));
+		Assert.assertEquals(1l, members.size());
+	}
+	
+	@Test
+	public void getMembersByCurriculummanager() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-2");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-12");
+		Organisation organisation = organisationService.createOrganisation("Curriculum with members", "CUR-MEM-1", null, null, null, manager);
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-12", "Curriculum for element", "Curriculum", false, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-12", "12. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, participant);
+		organisationService.addMember(organisation, manager, OrganisationRoles.curriculummanager, manager);
+		dbInstance.commitAndCloseSession();
+		
+		List<MemberImplementationsInfos> members = memberQueries.getMembersByManager(manager,
+				List.of(CurriculumRoles.participant.name(), CurriculumRoles.coach.name()));
+		Assert.assertEquals(1l, members.size());
 	}
 }

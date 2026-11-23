@@ -501,12 +501,11 @@ public interface CurriculumService {
 	/**
 	 * Search members in the curriculums the specified identity can access.
 	 * 
-	 * @param params
-	 * @param identity
+	 * @param manager Administrator of curriculums
+	 * @param membesRoles Roles of the element members
 	 * @return
 	 */
-	public List<MemberImplementationsInfos> getMembers(SearchMemberParameters params, Identity manager,
-			List<String> managerRoles, List<String> membesRoles);
+	public List<MemberImplementationsInfos> getMembersOf(Identity manager, List<String> membesRoles);
 	
 	/**
 	 * The list of members of the specified curriculum element with the specified role.

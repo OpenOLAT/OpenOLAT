@@ -295,6 +295,12 @@ public interface ACService {
 	 */
 	public List<ResourceReservation> getReservations(IdentityRef identity);
 	
+	/**
+	 * Load the resource per user for the specified manager (curriculum owner or curriculum manager),
+	 * 
+	 * @param identity
+	 * @return A list of statistics about reservations pro user
+	 */
 	public List<ResourceReservationsIdentityInfos> getCurriculumReservationsManagedBy(Identity manager);
 
 	/**
@@ -421,7 +427,7 @@ public interface ACService {
 	public List<Order> findOrdersWithDelivery(List<OLATResource> resources, OrderStatus... status);
 
 	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
-			ViewAs viewAs, IdentityRef viewerIdentity, OrderStatus[] statuss);
+			ViewAs viewAs, IdentityRef viewerIdentity, OrderStatus[] status);
 
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from,
 			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,

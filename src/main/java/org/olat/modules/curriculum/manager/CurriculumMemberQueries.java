@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -133,27 +134,23 @@ public class CurriculumMemberQueries {
 		return members;
 	}
 	
-	public List<MemberImplementationsInfos> getMembers(SearchMemberParameters params, Identity identity,
-			List<String> roles, List<String> membersRoles) {
-		if(identity == null || roles .isEmpty() || membersRoles.isEmpty()) {
+	public List<MemberImplementationsInfos> getMembersByManager(Identity manager, List<String> membersRoles) {
+		if(manager == null || membersRoles.isEmpty()) {
 			return new ArrayList<>();
 		}
 
 		QueryBuilder sb = new QueryBuilder();
-		
-		if(!roles.isEmpty()) {
-			sb.append("with mcurriculums as (")
-			  .append("  select ocur.key as curKey from curriculum ocur")
-			  .append("  inner join ocur.group as oGroup")
-			  .append("  inner join oGroup.members as owner on (owner.role=:orole and owner.identity.key=:identityKey)")
-			  .append(" union ")
-			  .append("  select mcur.key as curKey from curriculum mcur")
-			  .append("  inner join mcur.organisation org")
-			  .append("  inner join org.group as oGroup")
-			  .append("  inner join oGroup.members as manager on (manager.role in (:croles) and manager.identity.key=:identityKey)")
-			  .append(")");
-		}
-		
+		sb.append("with mcurriculums as (")
+		  .append("  select ocur.key as curKey from curriculum ocur")
+		  .append("  inner join ocur.group as oGroup")
+		  .append("  inner join oGroup.members as owner on (owner.role=:orole and owner.identity.key=:identityKey)")
+		  .append(" union ")
+		  .append("  select mcur.key as curKey from curriculum mcur")
+		  .append("  inner join mcur.organisation org")
+		  .append("  inner join org.group as oGroup")
+		  .append("  inner join oGroup.members as manager on (manager.role in (:croles) and manager.identity.key=:identityKey)")
+		  .append(")");
+
 		sb.append("select ident, members.role,")
 		  .append(" el.key, el.implementation.key")
 		  .append(" from curriculumelement el")
@@ -163,19 +160,14 @@ public class CurriculumMemberQueries {
 		  .append(" inner join fetch ident.user user")
 		  .append(" where el.curriculum.key in (select mcrur.curKey from mcurriculums as mcrur)")
 		  .append(" and members.role in (:membersRoles)");
-		createQueryPart(sb, params);
-		createUserPropertiesQueryPart(sb, params.getLogin(), params.getSearchString(),
-				params.getUserProperties(), params.getUserPropertiesSearch());
 	
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("identityKey", identity.getKey())
+				.setParameter("identityKey", manager.getKey())
 				.setParameter("orole", CurriculumRoles.curriculumowner.name())
-				.setParameter("croles", roles)
+				.setParameter("croles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
 				.setParameter("membersRoles", membersRoles);
-		createQueryParameters(query, params);
-		createUserPropertiesQueryParameters(query, params.getLogin(), params.getSearchString(), params.getUserPropertiesSearch());
-					
+		
 		List<Object[]> objects = query.getResultList();
 		Map<Long,MemberImplementationsInfos> membersMap = new HashMap<>();
 		for(Object[] object:objects) {

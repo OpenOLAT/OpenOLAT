@@ -1305,9 +1305,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<MemberImplementationsInfos> getMembers(SearchMemberParameters params, Identity manager,
-			List<String> managerRoles, List<String> membesRoles) {
-		return memberQueries.getMembers(params, manager, managerRoles, membesRoles);
+	public List<MemberImplementationsInfos> getMembersOf(Identity manager, List<String> membesRoles) {
+		return memberQueries.getMembersByManager(manager, membesRoles);
 	}
 
 	@Override
