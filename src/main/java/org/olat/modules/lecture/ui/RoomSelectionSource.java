@@ -219,12 +219,13 @@ public class RoomSelectionSource implements ObjectSelectionSource {
 		params.setStatus(List.of(RoomStatus.active));
 		params.setIdentity(identity);
 		List<Room> rooms = roomManagementService.searchRooms(params, roles);
-		allRoomsMap = rooms.stream().collect(Collectors.toMap(Room::getKey, r -> r));
-	}
+		allRoomsMap = rooms.stream().collect(Collectors.toMap(Room::getKey, r -> r, (a, b) -> a, HashMap::new));
 
-	public Room getRoomByKey(Long key) {
-		initRooms();
-		return allRoomsMap.get(key);
+		// Rooms already selected stay listed (and can be deselected) even if they are no longer
+		// selectable, e.g. inactive rooms or rooms restricted to other organisations (OO-10069).
+		for (Room selectedRoom : selectedRooms) {
+			allRoomsMap.putIfAbsent(selectedRoom.getKey(), selectedRoom);
+		}
 	}
 
 	@Override

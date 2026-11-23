@@ -113,7 +113,8 @@ public class RoomBookingDAO {
 
 	public List<RoomBooking> getBookingsForLectureBlock(LectureBlockRef lectureBlock) {
 		return dbInstance.getCurrentEntityManager()
-				.createQuery("select b from rmroombooking b left join fetch b.room r where b.lectureBlock.key=:lbKey"
+				.createQuery("select b from rmroombooking b left join fetch b.room r left join fetch r.building"
+						+ " where b.lectureBlock.key=:lbKey"
 						+ " order by b.startDate asc, r.externalRef asc, b.key asc", RoomBooking.class)
 				.setParameter("lbKey", lectureBlock.getKey())
 				.getResultList();
