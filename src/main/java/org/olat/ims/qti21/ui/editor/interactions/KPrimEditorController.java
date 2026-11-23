@@ -103,7 +103,7 @@ public class KPrimEditorController extends FormBasicController {
 		mainForm.setMultipartEnabled(true);
 		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
+		metadata.setFormContextHelp("manual_user/learningresources/Test_question_types/Kprim/");
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);

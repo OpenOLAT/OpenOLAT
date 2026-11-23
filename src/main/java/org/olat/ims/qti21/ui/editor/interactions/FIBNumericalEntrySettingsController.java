@@ -96,7 +96,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		toleranceEl.toggle(interaction.getToleranceMode() != null && interaction.getToleranceMode() != ToleranceMode.EXACT);
 		toleranceEl.setElementCssClass("o_sel_gap_numerical_tolerance_enable");
 		toleranceEl.setHelpText(getToleranceHelp());
-		toleranceEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/#ni");
+		toleranceEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/Gap_numerical/#tolerance");
 		toleranceEl.addActionListener(FormEvent.ONCHANGE);
 		
 		SelectionValues tolerancePK = new SelectionValues();

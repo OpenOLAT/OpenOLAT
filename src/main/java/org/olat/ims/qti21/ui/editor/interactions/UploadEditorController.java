@@ -82,7 +82,7 @@ public class UploadEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
+		setFormContextHelp("manual_user/learningresources/Test_question_types/Upload_file/");
 		mainForm.setMultipartEnabled(true);
 		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
