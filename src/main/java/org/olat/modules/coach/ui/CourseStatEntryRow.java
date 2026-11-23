@@ -315,6 +315,11 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	public Mode getPassedMode() {
 		return entry.getPassedMode();
 	}
+	
+	public boolean isWithSuccessStatus() {
+		Mode mode = getPassedMode();
+		return mode != null && mode != Mode.none;
+	}
 
 	public Certificates getCertificates() {
 		return entry.getCertificates();

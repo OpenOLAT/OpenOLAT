@@ -310,6 +310,7 @@ public class CourseWidgetController extends TableWidgetController
 			participantsLink.setAriaLabel(translate("success.status.participants", participants));
 			participantsLink.setAriaDialogOpener();
 			participantsLink.setUserObject(entry.getSuccessStatus());
+			participantsLink.setEnabled(withSuccessStatus(entry));
 			row.setParticipantsLink(participantsLink);
 		}
 		

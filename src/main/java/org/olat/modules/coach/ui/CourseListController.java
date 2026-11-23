@@ -675,7 +675,8 @@ implements Activateable2, FlexiTableComponentDelegate, CoursesListUIFactory {
 		row.setLifecyclePeriod(RepositoyUIFactory.formatExecutionPeriod(getTranslator(), row.getLifecycleStart(), row.getLifecycleEnd()));
 		
 		CourseStatEntry entry = row.getEntry();
-		if(runtimeTypesGroup.loadStatistics() && row.isCourse() && entry.getSuccessStatus() != null) {
+		if(runtimeTypesGroup.loadStatistics() && row.isCourse()
+				&& entry.getSuccessStatus() != null && row.isWithSuccessStatus()) {
 			StringOutput target = new StringOutput();
 			successStatusCellRenderer.render(null, target, entry.getSuccessStatus(), 0, null, null, getTranslator());
 			row.setSuccessStatusHTML(target.toString());

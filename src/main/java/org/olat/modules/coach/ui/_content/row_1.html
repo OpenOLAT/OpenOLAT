@@ -89,7 +89,7 @@
 					<span class="o_spacer">&middot;</span>
 				#end
 					
-				#if($row.successStatusHTML)$row.successStatusHTML#end
+				#if($r.isNotEmpty($row.successStatusHTML))$row.successStatusHTML#end
 				<span class="o_spacer">&middot;</span>
 		
 				#if($r.isNotEmpty(${row.averageScoreAsString}))
