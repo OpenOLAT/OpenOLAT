@@ -125,6 +125,12 @@ public class CoachPeopleController extends BasicController implements Activateab
 		if(roles.isPrincipal()) {
 			scopes.add(ScopeFactory.createScope(PRINCIPAL_SCOPE, translate("coaching.as.principal"), null, "o_icon o_icon_eye"));
 		}
+		if(roles.isLineManager()) {
+			scopes.add(ScopeFactory.createScope(LINE_MANAGER_SCOPE, translate("line.manager.title"), null, "o_icon o_icon_manager"));
+		}
+		if(roles.isEducationManager()) {
+			scopes.add(ScopeFactory.createScope(EDU_MANAGER_SCOPE, translate("education.manager.title"), null, "o_icon o_icon_manager"));
+		}
 		
 		// Relations user to user
 		userRelationRoles = listAvailableRoles(identityRelationsService.getRelationsAsSource(ureq.getIdentity()));
@@ -132,13 +138,6 @@ public class CoachPeopleController extends BasicController implements Activateab
 			String name = RelationRolesAndRightsUIFactory.getTranslatedRole(relationRole, getLocale());
 			String scopeName = translate("relation.as", name);
 			scopes.add(ScopeFactory.createScope(RELATION_PREFIX_SCOPE + relationRole.getRole(), scopeName, null, "o_icon o_icon_right_left"));
-		}
-		
-		if(roles.isLineManager()) {
-			scopes.add(ScopeFactory.createScope(LINE_MANAGER_SCOPE, translate("line.manager.title"), null, "o_icon o_icon_manager"));
-		}
-		if(roles.isEducationManager()) {
-			scopes.add(ScopeFactory.createScope(EDU_MANAGER_SCOPE, translate("education.manager.title"), null, "o_icon o_icon_manager"));
 		}
 		
 		searchScopes = ScopeFactory.createScopeSelection("search.scopes", mainVC, this, scopes);
