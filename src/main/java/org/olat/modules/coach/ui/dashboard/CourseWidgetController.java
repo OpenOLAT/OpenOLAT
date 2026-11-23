@@ -65,6 +65,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -72,8 +73,8 @@ import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
-import org.olat.modules.coach.model.CoursesSummaryKeyFigures;
 import org.olat.modules.coach.model.CoursesSummary;
+import org.olat.modules.coach.model.CoursesSummaryKeyFigures;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.modules.coach.ui.CourseListController;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
@@ -297,9 +298,11 @@ public class CourseWidgetController extends TableWidgetController
 			completionCellRenderer.render(null, target, entry.getAverageCompletion(), 0, null, null, getTranslator());
 			row.setCompletion(target.toString());
 		
-			target = new StringOutput();
-			successStatusCellRenderer.render(null, target, entry.getSuccessStatus(), 0, null, null, getTranslator());
-			row.setSuccessStatus(target.toString());
+			if(withSuccessStatus(entry)) {
+				target = new StringOutput();
+				successStatusCellRenderer.render(null, target, entry.getSuccessStatus(), 0, null, null, getTranslator());
+				row.setSuccessStatus(target.toString());
+			}
 			
 			String participants = String.valueOf(entry.getParticipants());
 			FormLink participantsLink = uifactory.addFormLink("participants_" + row.getKey(), CMD_PARTICIPANTS, participants, tableEl, Link.NONTRANSLATED);
@@ -326,6 +329,10 @@ public class CourseWidgetController extends TableWidgetController
 		return row;
 	}
 	
+	private boolean withSuccessStatus(CourseStatEntry entry) {
+		Mode passedMode = entry.getPassedMode();
+		return passedMode != null && passedMode != Mode.none;
+	}
 
 	private void appendThumbnail(CourseRow row, Map<Long,VFSThumbnailInfos> thumbnails) {
 		String imageUrl = mapperThumbnail.getThumbnailURL(mapperThumbnailKey.getUrl(), row.getKey(), thumbnails);

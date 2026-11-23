@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
@@ -309,6 +310,10 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 			return Long.toString(roundedVal);
 		}
 		return "";
+	}
+	
+	public Mode getPassedMode() {
+		return entry.getPassedMode();
 	}
 
 	public Certificates getCertificates() {

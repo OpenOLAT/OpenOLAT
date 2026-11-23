@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.OLATResourceable;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
@@ -73,7 +74,8 @@ public class CourseStatEntry implements OLATResourceable {
 	private Date lastVisit;
 	
 	private Certificates certificates = NO_CERTIFICATES;
-
+	
+	private Mode passedMode;
 	private Double averageScore;
 	private Double averageCompletion;
 	private SuccessStatus successStatus = NO_SUCCESS;
@@ -299,6 +301,14 @@ public class CourseStatEntry implements OLATResourceable {
 
 	public void setLastVisit(Date lastVisit) {
 		this.lastVisit = lastVisit;
+	}
+
+	public Mode getPassedMode() {
+		return passedMode;
+	}
+
+	public void setPassedMode(Mode passedMode) {
+		this.passedMode = passedMode;
 	}
 
 	public SuccessStatus getSuccessStatus() {

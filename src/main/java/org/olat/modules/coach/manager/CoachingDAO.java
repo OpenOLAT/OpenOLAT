@@ -50,6 +50,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.model.CompletionStats;
@@ -73,7 +74,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.GenericSelectionPropertyHandler;
@@ -98,7 +99,7 @@ public class CoachingDAO {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private RepositoryManager repositoryManager;
+	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 
@@ -214,7 +215,7 @@ public class CoachingDAO {
 	public EfficiencyStatementEntry getEfficencyStatementEntry(UserEfficiencyStatement statement,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		
-		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(statement.getCourseRepoKey(), false);
+		RepositoryEntry re = repositoryEntryDao.loadByKey(statement.getCourseRepoKey());
 		Identity identity = statement.getIdentity();
 		return new EfficiencyStatementEntry(identity, re, statement, userPropertyHandlers, locale);
 	}
@@ -775,6 +776,7 @@ public class CoachingDAO {
 		if(withCompletions) {
 			sb.append(",  avg(ae.completion) as completion");
 		}
+		sb.append(" , max(rootElement.passedMode) as passeMode");
 		sb.append(" from assessmententry as ae");
 		if(withStatements) {
 			sb.append(" left join courseelement as rootElement on (rootElement.repositoryEntry.key=ae.repositoryEntry.key")
@@ -838,6 +840,9 @@ public class CoachingDAO {
 					Double completion = PersistenceHelper.extractDouble(rawObjects, pos++);
 					stats.setAverageCompletion(completion);
 				}
+				
+				Mode mode = (Mode)rawObjects[pos++];
+				stats.setPassedMode(mode);
 			}
 		}
 	}

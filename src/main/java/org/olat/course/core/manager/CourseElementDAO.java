@@ -75,7 +75,7 @@ public class CourseElementDAO {
 		courseElement.setGrade(assessmentConfig.hasGrade());
 		courseElement.setAutoGrade(assessmentConfig.isAutoGrade());
 		courseElement.setPassedMode(assessmentConfig.getPassedMode());
-		BigDecimal cutValue = Mode.none != assessmentConfig.getPassedMode() && assessmentConfig.getCutValue() != null
+		BigDecimal cutValue = Mode.none != assessmentConfig.getPassedMode() && assessmentConfig.getCutValue() != null && !assessmentConfig.getCutValue().isNaN()
 				? new BigDecimal(Float.toString(assessmentConfig.getCutValue()))
 				: null;
 		courseElement.setCutValue(cutValue);

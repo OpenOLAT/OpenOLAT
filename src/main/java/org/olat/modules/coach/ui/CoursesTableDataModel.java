@@ -46,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.modules.coach.CoachingRoles;
 import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.coach.model.CourseStatEntry;
@@ -416,9 +417,12 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			case participantsNotVisited -> row.getParticipantsNotVisited();
 			case lastVisit -> row.getLastVisit();
 			case completion -> row.isShowStatistics() && row.isCourse() ? row.getAverageCompletion() : null;
-			case successStatus -> row.isShowStatistics() && row.isCourse() ? row.getSuccessStatus() : null;
-			case statusPassed -> row.isShowStatistics() && row.isCourse() ? row.getStatusPassed() : null;
-			case statusNotPassed -> row.isShowStatistics() && row.isCourse() ? row.getStatusNotPassed() : null;
+			case successStatus -> row.isShowStatistics() && row.isCourse() && withSuccessStatus(row)
+					? row.getSuccessStatus() : null;
+			case statusPassed -> row.isShowStatistics() && row.isCourse() && withSuccessStatus(row)
+					? row.getStatusPassed() : null;
+			case statusNotPassed -> row.isShowStatistics() && row.isCourse() && withSuccessStatus(row)
+					? row.getStatusNotPassed() : null;
 			case statusUndefined -> row.isShowStatistics() && row.isCourse() ? row.getStatusUndefined() : null;
 			case averageScore -> row.getAverageScore();
 			case certificates -> row.isShowStatistics() && row.isCourse()  && row.getCertificates().numOfCoursesWithCertificates() > 0
@@ -430,6 +434,11 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			case activity -> row.getMyActivity();
 			default -> "ERROR";
 		};
+	}
+	
+	private boolean withSuccessStatus(CourseStatEntryRow row) {
+		Mode mode = row.getPassedMode();
+		return mode != null && mode != Mode.none;
 	}
 	
 	@Override
