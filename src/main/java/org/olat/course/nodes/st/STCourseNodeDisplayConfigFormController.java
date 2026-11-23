@@ -63,12 +63,14 @@ import org.olat.modules.ModuleConfiguration;
 public class STCourseNodeDisplayConfigFormController extends FormBasicController {
 
 	private static final String DISPLAY_OVERVIEW = "system";
-	
+	private static final String CONFIG_VALUE_COLUMNS_SINGLE = "1";
+	private static final String CONFIG_VALUE_COLUMNS_TWO = "2";
+
 	private SingleSelection displayTypeEl;
 	private SingleSelection childrenFilterEl;
 	private MultipleSelectionElement childrenEl;
 	private SingleSelection peekviewFilterEl;
-	private MultipleSelectionElement displayTwoColumns;
+	private SingleSelection layoutEl;
 
 	private String[] childrenKeys;
 	private String[] childrenValues;
@@ -153,11 +155,12 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 			peekviewFilterEl.select(STCourseNodeEditController.CONFIG_VALUE_PEEKVIEW_ALL, true);
 		}
 	
-		// Number of rows
-		displayTwoColumns = uifactory.addCheckboxesHorizontal("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" });
-		displayTwoColumns.setLabel("displayTwoColumns", null);
-		displayTwoColumns.addActionListener(FormEvent.ONCLICK);
-
+		// Layout
+		SelectionValues layoutKV = new SelectionValues();
+		layoutKV.add(entry(CONFIG_VALUE_COLUMNS_SINGLE, translate("form.layout.single")));
+		layoutKV.add(entry(CONFIG_VALUE_COLUMNS_TWO, translate("form.layout.two")));
+		layoutEl = uifactory.addRadiosHorizontal("form.layout", formLayout, layoutKV.keys(), layoutKV.values());
+		layoutEl.addActionListener(FormEvent.ONCLICK);
 	}
 	
 	private void updateUI() {
@@ -178,10 +181,8 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 				&& childrenFilterEl.getSelectedKey().equals(STCourseNodeEditController.CONFIG_VALUE_CHILDREN_SELECTION));
 		
 		int columnsConfig = config.getIntegerSafe(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 1);
-		if (columnsConfig == 2) {
-			displayTwoColumns.select("on", true);
-		}
-		displayTwoColumns.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) || DISPLAY_OVERVIEW.equals(selectedKey));
+		layoutEl.select(columnsConfig == 2 ? CONFIG_VALUE_COLUMNS_TWO : CONFIG_VALUE_COLUMNS_SINGLE, true);
+		layoutEl.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) || DISPLAY_OVERVIEW.equals(selectedKey));
 	}
 
 	@Override
@@ -244,8 +245,8 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 			moduleConfig.setStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_FILTER, peekviewFilter);
 		}
 		
-		if (displayTwoColumns.isVisible()) {
-			int columnsConfig = displayTwoColumns.isAtLeastSelected(1) ? 2 : 1;
+		if (layoutEl.isVisible()) {
+			int columnsConfig = CONFIG_VALUE_COLUMNS_TWO.equals(layoutEl.getSelectedKey()) ? 2 : 1;
 			moduleConfig.setIntValue(STCourseNodeEditController.CONFIG_KEY_COLUMNS, columnsConfig);
 		}
 	}
