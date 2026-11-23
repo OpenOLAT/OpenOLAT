@@ -140,7 +140,12 @@ public class GapEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
+		setFormContextHelp(switch (type) {
+			case numerical -> "manual_user/learningresources/Test_question_types/Gap_numerical/";
+			case inlinechoice -> "manual_user/learningresources/Test_question_types/Gap_dropdown/";
+			case gapmixed -> "manual_user/learningresources/Test_question_types/Gap_mixed/";
+			default -> "manual_user/learningresources/Test_question_types/Gap_text/";
+		});
 		mainForm.setMultipartEnabled(true);
 		
 		initMixingWarning(formLayout);

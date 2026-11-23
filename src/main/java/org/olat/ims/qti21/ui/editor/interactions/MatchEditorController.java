@@ -125,7 +125,10 @@ public class MatchEditorController extends FormBasicController {
 		mainForm.setMultipartEnabled(true);
 		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
+		String helpPage = itemBuilder.hasMatchInteractionClass(QTI21Constants.CSS_MATCH_DRAG_AND_DROP)
+				? "manual_user/learningresources/Test_question_types/Drag_and_drop/"
+				: "manual_user/learningresources/Test_question_types/Match/";
+		metadata.setFormContextHelp(helpPage);
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);

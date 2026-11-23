@@ -106,7 +106,7 @@ public class OrderEditorController extends FormBasicController implements SyncAs
 		mainForm.setMultipartEnabled(true);
 		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout_2_10("metadata", getTranslator());
-		metadata.setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
+		metadata.setFormContextHelp("manual_user/learningresources/Test_question_types/Order/");
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);

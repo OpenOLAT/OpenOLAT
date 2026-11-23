@@ -112,7 +112,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		mainForm.setMultipartEnabled(true);
 		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout_2_10("metadata", getTranslator());
-		metadata.setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
+		metadata.setFormContextHelp("manual_user/learningresources/Test_question_types/Multiple_choice/");
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);

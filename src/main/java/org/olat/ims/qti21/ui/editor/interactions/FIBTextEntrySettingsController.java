@@ -109,7 +109,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		alternativesEl = uifactory.addToggleButton("add.alternative.toggle", "add.alternative.toggle", translate("on"), translate("off"), formLayout);
 		alternativesEl.setEnabled(!restrictedEdit && !readOnly);
 		alternativesEl.setHelpText(translate("fib.alternative.help"));
-		alternativesEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/#fib");
+		alternativesEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/Gap_text/#alternatives");
 		
 		String alternativesPage = velocity_root + "/fib_alternatives.html";
 		alternativesCont = uifactory.addCustomFormLayout("alternatives.list", null, alternativesPage, formLayout);
@@ -168,7 +168,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		correctionsEl.setElementCssClass("o_sel_gap_entry_options");
 		correctionsEl.setEnabled(!restrictedEdit && !readOnly);
 		correctionsEl.setHelpTextKey("fib.corrections.hint", null);
-		correctionsEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/#gap");
+		correctionsEl.setHelpUrlForManualPage("manual_user/learningresources/Test_question_types/Gap_text/#corrections");
 		if(interaction.isCaseSensitive()) {
 			correctionsEl.select(OPTION_CASE_SENSITIVITY_KEY, true);
 		}

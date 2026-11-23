@@ -124,7 +124,7 @@ public class TrueFalseEditorController extends FormBasicController {
 		mainForm.setMultipartEnabled(true);
 		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
+		metadata.setFormContextHelp("manual_user/learningresources/Test_question_types/True_false/");
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);
