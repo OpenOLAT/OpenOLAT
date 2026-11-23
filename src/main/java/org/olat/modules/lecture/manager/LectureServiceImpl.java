@@ -484,7 +484,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public LectureBlock copyLectureBlock(String newTitle, String newExternalRef, LectureBlock block, Identity doer, boolean persist) {
 		LectureBlock copy = copyLectureBlock(block, newTitle, newExternalRef, block.getStartDate(), block.getEndDate(),
-				block.getEntry(), block.getCurriculumElement(), persist, persist);
+				block.getEntry(), block.getCurriculumElement(), persist, false);
+		if(persist && roomManagementModule.isEnabled()) {
+			// Pass the doer so that rooms without access for the doer are not copied
+			roomManagementService.copyBookingsForLectureBlock(block, copy, doer);
+		}
 
 		copy.setMeetingTitle(block.getMeetingTitle());
 		copy.setMeetingUrl(block.getMeetingUrl());

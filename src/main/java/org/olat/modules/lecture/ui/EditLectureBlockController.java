@@ -110,7 +110,9 @@ import org.olat.modules.roommanagement.Room;
 import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementModule;
 import org.olat.modules.roommanagement.RoomManagementService;
+import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.RoomRefImpl;
+import org.olat.modules.roommanagement.model.SearchRoomParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -567,8 +569,17 @@ public class EditLectureBlockController extends FormBasicController {
 		} else if (copySource != null) {
 			// The copy has no bookings of its own yet (OO-9744): pre-select the source's rooms so they
 			// are carried over once the form is actually saved (via the normal syncRoomBookings(...) path).
+			// Only rooms which can still be selected are copied: no inactive rooms and no rooms the
+			// user has no access to.
+			SearchRoomParameters selectableParams = new SearchRoomParameters();
+			selectableParams.setStatus(List.of(RoomStatus.active));
+			selectableParams.setIdentity(getIdentity());
+			Set<Long> selectableRoomKeys = roomManagementService.searchRooms(selectableParams, roles).stream()
+					.map(Room::getKey)
+					.collect(Collectors.toSet());
 			roomManagementService.getBookings(copySource).stream()
 					.map(RoomBooking::getRoom)
+					.filter(room -> selectableRoomKeys.contains(room.getKey()))
 					.forEach(preSelectedRooms::add);
 			participantCount = lectureService.getParticipants(copySource).size();
 		}
