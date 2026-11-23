@@ -21,6 +21,7 @@ package org.olat.repository.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -62,6 +63,10 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private String displayname;
 	private String reference;
 	private String description;
+	private Boolean managedResources;
+	private Date validFrom;
+	private Date validTo;
+	private List<Long> lifecycleKeys;
 	
 	private boolean exactSearch;	// Use exact search instead of fuzzy search
 	
@@ -167,6 +172,40 @@ public class SearchAuthorRepositoryEntryViewParams {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+	public Boolean getManagedResources() {
+		return managedResources;
+	}
+
+	public void setManagedResources(Boolean managedResources) {
+		this.managedResources = managedResources;
+	}
+
+	public Date getValidFrom() {
+		return validFrom;
+	}
+
+	public void setValidFrom(Date validFrom) {
+		this.validFrom = validFrom;
+	}
+
+	public Date getValidTo() {
+		return validTo;
+	}
+
+	public void setValidTo(Date validTo) {
+		this.validTo = validTo;
+	}
+
+	public List<Long> getLifecycleKeys() {
+		return lifecycleKeys;
+	}
+
+	public void setLifecycleKeys(List<Long> lifecycleKeys) {
+		this.lifecycleKeys = lifecycleKeys;
+	}
+	
+	
 
 	public boolean isCanCopy() {
 		return canCopy;

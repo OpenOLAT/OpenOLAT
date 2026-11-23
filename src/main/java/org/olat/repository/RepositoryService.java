@@ -197,6 +197,13 @@ public interface RepositoryService {
 	public void setLastUsageNowFor(RepositoryEntry re);
 
 	public Group getDefaultGroup(RepositoryEntryRef ref);
+	
+	/**
+	 * If at least one managed repository entry exists.
+	 * 
+	 * @return true if a repository entry exists
+	 */
+	public boolean isManagedRepositoryEntries();
 
 	/**
 	 *

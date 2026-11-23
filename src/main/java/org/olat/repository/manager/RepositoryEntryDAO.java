@@ -260,6 +260,18 @@ public class RepositoryEntryDAO {
 				.getResultList();
 	}
 	
+	public boolean managedRepositoryEntries() {
+		String query = "select v.key from repositoryentry as v where v.managedFlagsString is not null and v.status<>:status";
+		List<Long> managedKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("status", RepositoryEntryStatusEnum.deleted.name())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return managedKeys != null && !managedKeys.isEmpty()
+				&& managedKeys.get(0) != null && managedKeys.get(0).longValue() > 0L;
+	}
+	
 	public List<RepositoryEntry> searchByIdAndRefs(String idAndRefs) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")

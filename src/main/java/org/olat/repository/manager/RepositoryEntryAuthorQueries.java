@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -379,6 +380,22 @@ public class RepositoryEntryAuthorQueries {
 			}
 			sb.append(")");	
 		}
+		
+		if(Boolean.TRUE.equals(params.getManagedResources())) {
+			sb.append(" and v.managedFlagsString is not null");
+		} else if(Boolean.FALSE.equals(params.getManagedResources())) {
+			sb.append(" and v.managedFlagsString is null");
+		}
+		
+		if(params.getValidFrom() != null ) {
+			sb.append(" and lifecycle.validFrom>=:validFrom");
+		}
+		if(params.getValidTo() != null) {
+			sb.append(" and lifecycle.validTo<=:validTo");
+		}
+		if(params.getLifecycleKeys() != null && !params.getLifecycleKeys().isEmpty()) {
+			sb.append(" and lifecycle.key in (:lifecycleKeys)");
+		}
 
 		if(!count) {
 			appendAuthorViewOrderBy(params, sb);
@@ -407,6 +424,16 @@ public class RepositoryEntryAuthorQueries {
 		}
 		if(quickText != null) {
 			dbQuery.setParameter("quickText", quickText);
+		}
+		
+		if(params.getValidFrom() != null ) {
+			dbQuery.setParameter("validFrom", DateUtils.toLocalDateTime(params.getValidFrom()));
+		}
+		if(params.getValidTo() != null) {
+			dbQuery.setParameter("validTo", DateUtils.toLocalDateTime(params.getValidTo()));
+		}
+		if(params.getLifecycleKeys() != null && !params.getLifecycleKeys().isEmpty()) {
+			dbQuery.setParameter("lifecycleKeys", params.getLifecycleKeys());
 		}
 		
 		if (params.isTechnicalTypeDefined()) {

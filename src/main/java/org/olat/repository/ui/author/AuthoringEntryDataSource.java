@@ -40,6 +40,8 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
@@ -176,7 +178,11 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		LICENSE,
 		USAGE,
 		ORGANISATION,
-		RUNTIMETYPE
+		RUNTIMETYPE,
+		TIME_PERIOD,
+		EXECUTION_PERIOD,
+		REFERENCE,
+		MANAGED
 	}
 	
 	private void setFilterValue(FlexiTableFilter filter) {
@@ -231,6 +237,9 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				break;
 			case DESCRIPTION:
 				searchParams.setDescription(((FlexiTableTextFilter)filter).getValue());
+				break;
+			case REFERENCE:
+				searchParams.setReference(((FlexiTableTextFilter)filter).getValue());
 				break;
 			case TECHNICALTYPE:
 				List<String> technicalTypes = ((FlexiTableMultiSelectionFilter)filter).getValues();
@@ -290,6 +299,28 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 							.map(OrganisationRefImpl::new)
 							.collect(Collectors.toList());
 					searchParams.setEntryOrganisations(organisations);
+				}
+				break;
+			case TIME_PERIOD:
+				List<Long> timePeriodKeys = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
+				searchParams.setLifecycleKeys(timePeriodKeys);
+				break;
+			case EXECUTION_PERIOD:
+				FlexiTableFilter pFilter = filter;
+				DateRange dateRange = pFilter instanceof FlexiTableDateRangeFilter dateRangeFilter
+						? dateRangeFilter.getDateRange()
+						: null ;
+				searchParams.setValidFrom(dateRange == null ? null : dateRange.getStart());
+				searchParams.setValidTo(dateRange == null ? null : dateRange.getEnd());
+				break;
+			case MANAGED:
+				String managed = ((FlexiTableSingleSelectionFilter)filter).getValue();
+				if("true".equals(managed)) {
+					searchParams.setManagedResources(Boolean.TRUE);
+				} else if("false".equals(managed)) {
+					searchParams.setManagedResources(Boolean.FALSE);
+				} else {
+					searchParams.setManagedResources(null);
 				}
 				break;
 			default:
@@ -391,6 +422,6 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		Collection<OLATResourceable> resources = repoEntries.stream().map(RepositoryEntryAuthorView::getOlatResource).collect(Collectors.toList());
 		List<ResourceLicense> licenses = licenseService.loadLicenses(resources);	
 		return licenses.stream().collect(Collectors
-				.toMap(license -> new Resourceable(license.getResName(), license.getResId()), license -> license, (u, v) -> v));
+				.toMap(license -> new Resourceable(license.getResName(), license.getResId()), license -> license, (_, v) -> v));
 	}
 }

@@ -313,7 +313,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 
 		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
 		List<RepositoryEntryLifecycle> filteredCycles = new ArrayList<>();
-		//just make the upcomming and acutual running cycles or the pre-selected visible in the UI
+		//just make the upcomming and actual running cycles or the pre-selected visible in the UI
 		LocalDateTime now = LocalDateTime.now();
 		for(RepositoryEntryLifecycle cycle:cycles) {
 			if(cycle.getValidTo() == null

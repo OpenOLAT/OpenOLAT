@@ -474,6 +474,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
+	public boolean isManagedRepositoryEntries() {
+		return repositoryEntryDAO.managedRepositoryEntries();
+	}
+
+	@Override
 	public VFSLeaf getIntroductionImage(RepositoryEntryRef ref) {
 		RepositoryEntry re;
 		if(ref instanceof RepositoryEntry) {

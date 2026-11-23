@@ -91,6 +91,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
@@ -194,6 +195,8 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
@@ -337,6 +340,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected TaskExecutorManager taskExecutorManager;
 	@Autowired
 	private LifecycleModule lifecycleModule;
+	@Autowired
+	private RepositoryEntryLifecycleDAO repositoryEntryLifecycleDao;
 
 	public AuthorListController(UserRequest ureq, WindowControl wControl, SearchAuthorRepositoryEntryViewParams searchParams, AuthorListConfiguration configuration) {
 		super(ureq, wControl, "entries");
@@ -875,12 +880,9 @@ public class AuthorListController extends FormBasicController implements Activat
 
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
-		boolean admin = roles.isAdministrator() || roles.isSystemAdmin();
-
 		if (!configuration.isRedesignedSelectionDialog()) {
-			
 			// external id
-			filters.add(new FlexiTableTextFilter(translate("cif.id"), AuthorSourceFilter.ID.name(), admin));
+			filters.add(new FlexiTableTextFilter(translate("cif.id"), AuthorSourceFilter.ID.name(), false));
 		}
 		
 		// bookmarked
@@ -901,55 +903,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			filters.add(new FlexiTableTextFilter(translate("cif.author.search"), AuthorSourceFilter.AUTHOR.name(), false));
 
 			filters.add(new FlexiTableTextFilter(translate("cif.displayname"), AuthorSourceFilter.DISPLAYNAME.name(), false));
+			
+			filters.add(new FlexiTableTextFilter(translate("filter.reference"), AuthorSourceFilter.REFERENCE.name(), false));
 
 			filters.add(new FlexiTableTextFilter(translate("cif.description"), AuthorSourceFilter.DESCRIPTION.name(), false));
-
-			// technical type
-			if (tableConfiguration == null || tableConfiguration.showTechnicalTypeColumn()) {
-				SelectionValues technicalTypeKV = new SelectionValues();
-				for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
-					String name = identifier.getDisplayName(getLocale());
-					technicalTypeKV.add(entry(identifier.getType(), name));
-				}
-				technicalTypeKV.sort(SelectionValues.VALUE_ASC);
-				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.technical.type"),
-						AuthorSourceFilter.TECHNICALTYPE.name(), technicalTypeKV, true));
-			}
-
-			// educational type
-			SelectionValues educationalTypeKV = new SelectionValues();
-			repositoryManager.getAllEducationalTypes()
-					.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(type))))));
-			educationalTypeKV.sort(SelectionValues.VALUE_ASC);
-			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
-					AuthorSourceFilter.EDUCATIONALTYPE.name(), educationalTypeKV, true));
-		}
-		
-		// runtime type
-		if (tableConfiguration == null || (tableConfiguration.showUsageColumn() && tableConfiguration.showUsageFilter())) {
-			SelectionValues runtimeTypeKV = new SelectionValues();
-
-			for(RepositoryEntryRuntimeType runtimeType:RepositoryEntryRuntimeType.ORDERED) {
-				if(configuration.isRuntimeTypeAllowed(runtimeType)) {
-					runtimeTypeKV.add(SelectionValues.entry(runtimeType.name(), translate("runtime.type.".concat(runtimeType.name()))));
-				}
-			}
-			if(runtimeTypeKV.size() > 1) {
-				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.runtime.type"),
-						AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, configuration.isRedesignedSelectionDialog()));
-			}
-		}
-
-		// life-cycle
-		lifecycleValues = new SelectionValues();
-		for(RepositoryEntryStatusEnum status:computeOfferableStatus(false)) {
-			lifecycleValues.add(SelectionValues.entry(status.name(), translate(status.i18nKey())));
-		}
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
-				AuthorSourceFilter.STATUS.name(), lifecycleValues, true));
-
-		if (!configuration.isRedesignedSelectionDialog()) {
-
+			
 			// type of resources
 			SelectionValues resourceValues = new SelectionValues();
 			boolean hasOtherTypes = false;
@@ -972,7 +930,74 @@ public class AuthorListController extends FormBasicController implements Activat
 				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"),
 						AuthorSourceFilter.TYPE.name(), resourceValues, true));
 			}
+			
+			// technical type
+			if (tableConfiguration == null || tableConfiguration.showTechnicalTypeColumn()) {
+				SelectionValues technicalTypeKV = new SelectionValues();
+				for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
+					String name = identifier.getDisplayName(getLocale());
+					technicalTypeKV.add(entry(identifier.getType(), name));
+				}
+				technicalTypeKV.sort(SelectionValues.VALUE_ASC);
+				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.technical.type"),
+						AuthorSourceFilter.TECHNICALTYPE.name(), technicalTypeKV, true));
+			}
 
+			// educational type
+			SelectionValues educationalTypeKV = new SelectionValues();
+			repositoryManager.getAllEducationalTypes()
+					.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(type))))));
+			educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
+					AuthorSourceFilter.EDUCATIONALTYPE.name(), educationalTypeKV, true));
+		}
+		
+		// Life-cycle
+		if (lifecycleModule.isEnabled()) {
+			SelectionValues timePeriodKV = new SelectionValues();
+			List<RepositoryEntryLifecycle> cycles = repositoryEntryLifecycleDao.loadPublicLifecycle();
+			for(RepositoryEntryLifecycle lifecycle:cycles) {
+				timePeriodKV.add(SelectionValues.entry(lifecycle.getKey().toString(), StringHelper.escapeHtml(lifecycle.getLabel())));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.time.period"),
+					AuthorSourceFilter.TIME_PERIOD.name(), timePeriodKV, false));
+		}
+		filters.add(new FlexiTableDateRangeFilter(translate("filter.execution.period"), AuthorSourceFilter.EXECUTION_PERIOD.name(), false, false,
+				getLocale()));
+		
+		// runtime type
+		if (tableConfiguration == null || (tableConfiguration.showUsageColumn() && tableConfiguration.showUsageFilter())) {
+			SelectionValues runtimeTypeKV = new SelectionValues();
+
+			for(RepositoryEntryRuntimeType runtimeType:RepositoryEntryRuntimeType.ORDERED) {
+				if(configuration.isRuntimeTypeAllowed(runtimeType)) {
+					runtimeTypeKV.add(SelectionValues.entry(runtimeType.name(), translate("runtime.type.".concat(runtimeType.name()))));
+				}
+			}
+			if(runtimeTypeKV.size() > 1) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("cif.runtime.type"),
+						AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, configuration.isRedesignedSelectionDialog()));
+			}
+		}
+
+		// Status
+		lifecycleValues = new SelectionValues();
+		for(RepositoryEntryStatusEnum status:computeOfferableStatus(false)) {
+			lifecycleValues.add(SelectionValues.entry(status.name(), translate(status.i18nKey())));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
+				AuthorSourceFilter.STATUS.name(), lifecycleValues, true));
+
+		// taxonomy
+		if (taxonomyEnabled) {
+			SelectionValues taxonomyValues = getTaxonomyLevels();
+			if(taxonomyValues != null) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.taxonomy.paths"),
+						AuthorSourceFilter.TAXONOMYLEVEL.name(), taxonomyValues, false));
+			}
+		}
+		
+		if (!configuration.isRedesignedSelectionDialog()) {
 			// organizations
 			List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 					OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
@@ -995,18 +1020,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased.name(), translate("filter.not.released")));
 			filters.add(new FlexiTableSingleSelectionFilter(translate("details.index.metadata"),
 					AuthorSourceFilter.OERRELASE.name(), oerValues, false));
-		}
-		
-		// taxonomy
-		if (taxonomyEnabled) {
-			SelectionValues taxonomyValues = getTaxonomyLevels();
-			if(taxonomyValues != null) {
-				filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.taxonomy.paths"),
-						AuthorSourceFilter.TAXONOMYLEVEL.name(), taxonomyValues, false));
-			}
-		}
-		
-		if (!configuration.isRedesignedSelectionDialog()) {
 
 			// license
 			SelectionValues licenseValues = getLicenseValues();
@@ -1032,6 +1045,14 @@ public class AuthorListController extends FormBasicController implements Activat
 					return false;
 				}).toList();
 			}
+		}
+		
+		if(repositoryModule.isManagedRepositoryEntries() && repositoryService.isManagedRepositoryEntries()) {
+			SelectionValues managedKV = new SelectionValues();
+			managedKV.add(SelectionValues.entry("true", translate("filter.managed.true")));
+			managedKV.add(SelectionValues.entry("false", translate("filter.managed.false")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("filter.managed"),
+					AuthorSourceFilter.MANAGED.name(), managedKV, false));
 		}
 
 		tableEl.setFilters(true, filters, true, false);
