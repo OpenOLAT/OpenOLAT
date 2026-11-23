@@ -37,8 +37,8 @@ public enum ParticipantsAvailability {
 		case overbooked -> translator.translate("book.overbooked");
 		case fullyBooked -> translator.translate("book.fully.booked");
 		case fewLeft -> availabilityNum.numAvailable == 1
-					? translator.translate("book.participants.left.single")
-					: translator.translate("book.participants.left.multi", String.valueOf(availabilityNum.numAvailable));
+					? translator.translate("book.seats.left.single")
+					: translator.translate("book.seats.left.multi", String.valueOf(availabilityNum.numAvailable));
 		case manyLeft -> null;
 		default -> null;
 		};
@@ -54,9 +54,9 @@ public enum ParticipantsAvailability {
 		if (availability == null) return null;
 		
 		return switch (availability) {
-		case overbooked -> "o_ac_offer_overbooked_icon";
-		case fullyBooked -> "o_ac_offer_fully_booked_icon";
-		case fewLeft -> "o_ac_offer_almost_fully_booked_icon";
+		case overbooked -> "o_icon_overbooked";
+		case fullyBooked -> "o_icon_fully_booked";
+		case fewLeft -> "o_icon_seats_left";
 		case manyLeft -> null;
 		default -> null;
 		};

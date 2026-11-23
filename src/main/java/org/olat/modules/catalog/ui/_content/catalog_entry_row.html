@@ -109,13 +109,8 @@
 			#end
 		</div>
 		#if($r.isNotEmpty($row.getAccessWarning()))
-			<div class="o_access_warning o_warning_line o_nowrap">
+			<div class="o_catalog_seats_left o_tag o_tag_large o_state_critical o_state_light">
 				$row.getAccessWarning()
-			</div>
-		#end
-		#if($r.isNotEmpty($row.getAccessError()))
-			<div class="o_access_error o_error_line o_nowrap">
-				$row.getAccessError()
 			</div>
 		#end
 	

@@ -1086,6 +1086,9 @@
 					.o_access_info {
 						margin-bottom: auto;
 					}
+					.o_catalog_seats_left {
+						align-self: flex-end;
+					}
 					.o_actions {
 						position: initial;
 					}
@@ -1106,4 +1109,6 @@
 	}
 }
 
-
+.o_catalog_seats_left {
+	width: fit-content;
+}

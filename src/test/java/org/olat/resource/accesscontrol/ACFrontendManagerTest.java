@@ -78,6 +78,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACOrderDAO;
@@ -1154,6 +1155,22 @@ public class ACFrontendManagerTest extends OlatTestCase {
 
 		List<Reference> references = referenceManager.getReferences(element.getResource(), formEntry.getOlatResource());
 		assertThat(references).isEmpty();
+	}
+	
+	@Test
+	public void getParticipantsAvailabilityFullyBooked200() {
+		ParticipantsAvailabilityNum availability = acService.getParticipantsAvailability(Long.valueOf(200), Long.valueOf(200), false);
+		
+		assertThat(availability.availability()).isEqualTo(ParticipantsAvailability.fullyBooked);
+		assertThat(availability.numAvailable()).isZero();
+	}
+	
+	@Test
+	public void getParticipantsAvailabilityFullyBooked128() {
+		ParticipantsAvailabilityNum availability = acService.getParticipantsAvailability(Long.valueOf(128), Long.valueOf(128), true);
+		
+		assertThat(availability.availability()).isEqualTo(ParticipantsAvailability.fullyBooked);
+		assertThat(availability.numAvailable()).isZero();
 	}
 	
 }

@@ -87,10 +87,6 @@ public class HeaderStartController extends BasicController {
 	public void setWarning(String warning) {
 		mainVC.contextPut("warning", warning);
 	}
-	
-	public void setError(String error) {
-		mainVC.contextPut("error", error);
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

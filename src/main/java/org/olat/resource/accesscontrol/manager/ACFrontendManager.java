@@ -1760,7 +1760,7 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 					? new ParticipantsAvailabilityNum(ParticipantsAvailability.overbooked, 0)
 					: new ParticipantsAvailabilityNum(ParticipantsAvailability.fullyBooked, 0);
 		}
-		if (numParticipants == maxParticipants) {
+		if (numParticipants.equals(maxParticipants)) {
 			return new ParticipantsAvailabilityNum(ParticipantsAvailability.fullyBooked, 0);
 		}
 		

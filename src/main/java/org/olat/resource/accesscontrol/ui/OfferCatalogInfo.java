@@ -133,7 +133,7 @@ public class OfferCatalogInfo {
 		case bookable -> "o_ac_offer_bookable_icon";
 		case finished -> "o_ac_offer_finished_icon";
 		case notAvailable -> "o_ac_offer_not_available_icon";
-		case fullyBooked -> "o_ac_offer_fully_booked_icon";
+		case fullyBooked -> "o_icon_fully_booked";
 		default -> null;
 		};
 	}

@@ -91,8 +91,8 @@ public class OffersController extends BasicController {
 		updateOfferUI(ureq, offers.get(0));
 	}
 	
-	public void setWarning(String warning) {
-		mainVC.contextPut("warning", warning);
+	public void setSeatsLeft(String seatsLeft) {
+		mainVC.contextPut("seatsLeft", seatsLeft);
 	}
 	
 	public void setError(String error) {

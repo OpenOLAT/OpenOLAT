@@ -152,21 +152,23 @@ public abstract class AbstractInfoPageGetStartedController extends BasicControll
 			startCtrl.getStartLink().setVisible(config.isBookAvailable());
 			startCtrl.getStartLink().setEnabled(config.isBookEnabled());
 			startCtrl.getStartLink().setIconRightCSS(null);
-			startCtrl.getStartLink().setCustomDisplayText(translate("book"));
+			if (isFullyBooked()) {
+				startCtrl.getStartLink().setPrimary(false);
+				startCtrl.getStartLink().setIconLeftCSS("o_icon o_icon_fully_booked");
+				startCtrl.getStartLink().setCustomDisplayText(translate("book.fully.booked"));
+			} else {
+				startCtrl.getStartLink().setCustomDisplayText(translate("book"));
+			}
 		}
 
 		if (config.isOffersAvailable()) {
 			showOffers(ureq, config.getAvailableMethods(), config.isOffersWebPublish(), config.getBookedIdentity());
 		}
 
-		if (config.isAvailabilityMessage()) {
+		if (config.isAvailabilityMessage() && offersCtrl != null) {
 			ParticipantsAvailabilityNum availabilityNum = config.getParticipantsAvailabilityNum();
-			if (availabilityNum.availability() == ParticipantsAvailability.fullyBooked) {
-				startCtrl.setError(getAvailabilityText(availabilityNum));
-			} else if (availabilityNum.availability() == ParticipantsAvailability.fewLeft) {
-				if (offersCtrl != null) {
-					offersCtrl.setWarning(getAvailabilityText(availabilityNum));
-				}
+			if (availabilityNum.availability() == ParticipantsAvailability.fewLeft) {
+				offersCtrl.setSeatsLeft(getAvailabilityText(availabilityNum));
 			}
 		}
 
@@ -185,6 +187,11 @@ public abstract class AbstractInfoPageGetStartedController extends BasicControll
 		boolean startCtrlVisible = startCtrl.getStartLink().isVisible();
 		startCtrl.getInitialComponent().setVisible(startCtrlVisible);
 		hasContent = hasContent || startCtrlVisible;
+	}
+	
+	private boolean isFullyBooked() {
+		return config.isAvailabilityMessage()
+				&& config.getParticipantsAvailabilityNum().availability() == ParticipantsAvailability.fullyBooked;
 	}
 
 	protected String getAvailabilityText(ParticipantsAvailabilityNum participantsAvailabilityNum) {

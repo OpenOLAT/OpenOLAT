@@ -51,24 +51,19 @@ public class ParticipantsAvailabilityNumRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof ParticipantsAvailabilityNum availabilityNum) {
 			if (renderer == null) {
-				if (availabilityNum.availability() == ParticipantsAvailability.fullyBooked || availabilityNum.availability() == ParticipantsAvailability.overbooked) {
-					target.append(getAvailabilityText(availabilityNum));
-				} else if (availabilityNum.availability() == ParticipantsAvailability.fewLeft) {
-					target.append(getAvailabilityText(availabilityNum));
+				if (getStateCss(availabilityNum.availability()) != null) {
+					target.append(ParticipantsAvailability.getText(reTranslator, availabilityNum));
 				} else if (availabilityNum.numAvailable() == 1) {
 					target.append(reTranslator.translate("book.seats.left.single"));
 				} else if (availabilityNum.numAvailable() < Integer.MAX_VALUE) {
 					target.append(reTranslator.translate("book.seats.left.multi", String.valueOf(availabilityNum.numAvailable())));
 				}
 			} else {
-				if (availabilityNum.availability() == ParticipantsAvailability.fullyBooked || availabilityNum.availability() == ParticipantsAvailability.overbooked) {
-					target.append("<div class=\"o_error_line o_nowrap\">");
+				String stateCss = getStateCss(availabilityNum.availability());
+				if (stateCss != null) {
+					target.append("<span class=\"o_labeled_light ").append(stateCss).append(" o_nowrap\">");
 					target.append(getAvailabilityText(availabilityNum));
-					target.append("</div>");
-				} else if (availabilityNum.availability() == ParticipantsAvailability.fewLeft) {
-					target.append("<div class=\"o_warning_line o_nowrap\">");
-					target.append(getAvailabilityText(availabilityNum));
-					target.append("</div>");
+					target.append("</span>");
 				} else if (availabilityNum.numAvailable() == 1) {
 					target.append(reTranslator.translate("book.seats.left.single"));
 				} else if (availabilityNum.numAvailable() < Integer.MAX_VALUE) {
@@ -76,6 +71,15 @@ public class ParticipantsAvailabilityNumRenderer implements FlexiCellRenderer {
 				}
 			}
 		}
+	}
+	
+	private String getStateCss(ParticipantsAvailability availability) {
+		return switch (availability) {
+		case overbooked -> "o_state_danger";
+		case fullyBooked -> "o_state_inactive";
+		case fewLeft -> "o_state_warning";
+		default -> null;
+		};
 	}
 	
 	private String getAvailabilityText(ParticipantsAvailabilityNum participantsAvailabilityNum) {

@@ -686,9 +686,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return;
 		}
 		
-		if (participantsAvailabilityNum.availability() == ParticipantsAvailability.fullyBooked) {
-			row.setAccessError(getAvailabilityText(participantsAvailabilityNum));
-		} else if (participantsAvailabilityNum.availability() == ParticipantsAvailability.fewLeft) {
+		if (participantsAvailabilityNum.availability() == ParticipantsAvailability.fewLeft) {
 			row.setAccessWarning(getAvailabilityText(participantsAvailabilityNum));
 		}
 	}
@@ -740,6 +738,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		String label;
 		String url;
 		boolean enabled;
+		boolean fullyBooked = false;
 		
 		CatalogEntrySecurityCallback secCallback = row.getSecCallback();
 		if (secCallback.isOpenAvailable()) {
@@ -749,8 +748,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 			url = row.getStartUrl();
 		} else if (secCallback.isBookAvailable()) {
 			cmd = "book";
-			label = "book";
 			enabled = secCallback.isBookEnabled();
+			fullyBooked = secCallback == CatalogEntrySecurityCallback.FULLY_BOOKED_CALLBACK;
+			label = fullyBooked? "book.fully.booked": "book";
 			url =  secCallback.isAutoBooking()? row.getStartUrl(): row.getInfoUrl();
 		} else {
 			return;
@@ -758,11 +758,15 @@ public class CatalogEntryListController extends FormBasicController implements A
 		
 		FormLink link = uifactory.addFormLink("start_" + row.getOlatResource().getKey(), cmd, label, null, null, Link.BUTTON_SMALL);
 		link.setUserObject(row);
-		link.setPrimary(true);
-		link.setElementCssClass("o_catalog_open");
-		link.setIconRightCSS("o_icon o_icon_start");
 		link.setUrl(url);
 		link.setEnabled(enabled);
+		link.setElementCssClass("o_catalog_open");
+		if (fullyBooked) {
+			link.setIconLeftCSS("o_icon o_icon_fully_booked");
+		} else {
+			link.setPrimary(true);
+			link.setIconRightCSS("o_icon o_icon_start");
+		}
 		row.setStartLink(link);
 	}
 	

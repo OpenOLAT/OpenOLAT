@@ -84,7 +84,6 @@ public class CatalogEntryRow {
 	private String accessInfo;
 	private String accessInfoIconCssClass;
 	private String accessWarning;
-	private String accessError;
 	private final Long maxParticipants;
 	private final Long numParticipants;
 	private final Integer sortPriority;
@@ -306,14 +305,6 @@ public class CatalogEntryRow {
 
 	public void setAccessWarning(String accessWarning) {
 		this.accessWarning = accessWarning;
-	}
-
-	public String getAccessError() {
-		return accessError;
-	}
-
-	public void setAccessError(String accessError) {
-		this.accessError = accessError;
 	}
 
 	public String getAuthors() {

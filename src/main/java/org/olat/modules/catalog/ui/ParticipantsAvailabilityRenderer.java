@@ -39,12 +39,8 @@ public class ParticipantsAvailabilityRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof CatalogEntryRow catalogEntryRow) {
-			if (StringHelper.containsNonWhitespace(catalogEntryRow.getAccessError())) {
-				target.append("<div class=\"o_ac_participant_availability_cell o_error_line o_nowrap\">");
-				target.append(catalogEntryRow.getAccessError());
-				target.append("</div>");
-			} else if (StringHelper.containsNonWhitespace(catalogEntryRow.getAccessWarning())) {
-				target.append("<div class=\"o_ac_participant_availability_cell o_warning_line o_nowrap\">");
+			if (StringHelper.containsNonWhitespace(catalogEntryRow.getAccessWarning())) {
+				target.append("<div class=\"o_catalog_seats_left o_tag o_state_critical o_state_light\">");
 				target.append(catalogEntryRow.getAccessWarning());
 				target.append("</div>");
 			}

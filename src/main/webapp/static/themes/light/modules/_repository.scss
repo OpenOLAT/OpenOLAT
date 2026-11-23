@@ -449,6 +449,9 @@
 	.o_ac_offer_message {
 		margin-bottom: math.div($o-radio-cards-gap, 2);
 		width: 100%;
+		&.o_catalog_seats_left {
+			width: fit-content;
+		}
 	}
 	.o_ac_offer_custom {
 		button {
@@ -476,10 +479,6 @@
 .o_ac_order_details .o_ac_order_header p {
 	font-size: 2em;
 	font-weight: 900;
-}
-
-.o_ac_participant_availability_cell {
-	max-width: fit-content;
 }
 
 .o_ac_order_header {

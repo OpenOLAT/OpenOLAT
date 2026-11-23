@@ -220,6 +220,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_flask { @include o-add-icon('flask');}
 .o_icon_form { @include o-add-icon('clipboard', false);}
 .o_icon_forward { @include o-add-icon('angles-right');}
+.o_icon_fully_booked { @include o-add-icon('user-group');}
 .o_icon_gear { @include o-add-icon('gear');}
 .o_icon_globe { @include o-add-icon('globe');}
 .o_icon_grade { @include o-add-icon('star');}
@@ -335,6 +336,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_num_participants { @include o-add-icon('user-group');}
 .o_icon_objectives { @include o-add-icon('bullseye');}
 .o_icon_order { @include o-add-icon('arrows-v');}
+.o_icon_overbooked { @include o-add-icon('circle-exclamation');}
 .o_icon_overridden { @include o-add-icon('pencil');}
 .o_icon_manager { @include o-add-icon('user-tie');}
 .o_icon_memo { @include o-add-icon('clipboard',true);}
@@ -519,6 +521,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_score_unbalanced { @include o-add-icon('scale-unbalanced-flip');}
 .o_icon_search { @include o-add-icon('search');}
 .o_icon_search_lookup { @include o-add-icon('magnifying-glass-plus');}
+.o_icon_seats_left { @include o-add-icon('user');}
 .o_icon_select { @include o-add-icon('check');}
 .o_icon_selected { @include o-add-icon('check');}
 .o_icon_selected_dot { @include o-add-icon('circle-dot', false); color: var(--o-state-danger-text);}
@@ -1005,13 +1008,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_status_success_icon { @include o-add-icon('check'); color: var(--o-state-success-text);}
 .o_ac_status_waiting_icon { @include o-add-icon('clock', false); color: var(--o-state-warning-text);}
 .o_ac_offer_active_icon { @include o-add-icon('eye'); color: var(--o-state-success-text);}
-.o_ac_offer_almost_fully_booked_icon { @include o-add-icon('circle-half-stroke'); }
 .o_ac_offer_bookable_icon { @include o-add-icon('cart-shopping'); }
 .o_ac_offer_finished_icon { @include o-add-icon('ban'); }
-.o_ac_offer_fully_booked_icon { @include o-add-icon('ban'); }
 .o_ac_offer_inactive_icon { @include o-add-icon('eye-slash'); color: var(--o-state-inactive-text);}
 .o_ac_offer_not_available_icon { @include o-add-icon('eye-slash'); }
-.o_ac_offer_overbooked_icon { @include o-add-icon('circle-exclamation'); }
 .o_ac_offer_pending_icon { @include o-add-icon('clock'); }
 .o_ac_order_pre { @include o-add-icon('cart-arrow-down'); }
 .o_ac_order_status_new_icon { @include o-add-icon('circle-plus');}

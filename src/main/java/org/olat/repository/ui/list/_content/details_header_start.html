@@ -6,11 +6,6 @@
 					$warning
 				</div>
 			#end
-			#if($r.isNotEmpty($error))
-				<div class="o_start_message o_error_line">
-					$error
-				</div>
-			#end
 			<div class="o_start_inner">
 				#set($adminOpenNotRendered = 1)
 				#if($r.available("start") && $r.visible("start"))

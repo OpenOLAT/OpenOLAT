@@ -13,9 +13,9 @@
 				$r.render("offerSelection")
 			</div>
 		#end
-		#if($r.isNotEmpty($warning))
-			<div class="o_ac_offer_message o_warning_line">
-				$warning
+		#if($r.isNotEmpty($seatsLeft))
+			<div class="o_ac_offer_message o_catalog_seats_left o_tag o_tag_large o_state_critical o_state_light">
+				$seatsLeft
 			</div>
 		#end
 		#if($r.isNotEmpty($error))
