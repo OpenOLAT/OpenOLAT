@@ -22,8 +22,10 @@ package org.olat.modules.roommanagement.manager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -56,6 +58,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class RoomManagementServiceImpl implements RoomManagementService {
 
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private BuildingDAO buildingDao;
 	@Autowired
@@ -355,8 +359,25 @@ public class RoomManagementServiceImpl implements RoomManagementService {
 		}
 		List<RoomBooking> sourceBookings = roomBookingDao.getBookingsForLectureBlock(source);
 		if (sourceBookings.isEmpty()) return 0;
+
+		// Only copy rooms which are still selectable: inactive rooms and, if the doer is known,
+		// rooms the doer has no access to (organisational restriction) are skipped
+		SearchRoomParameters params = new SearchRoomParameters();
+		params.setStatus(List.of(RoomStatus.active));
+		Roles doerRoles = null;
+		if (doer != null) {
+			params.setIdentity(doer);
+			doerRoles = securityManager.getRoles(doer);
+		}
+		Set<Long> copyableRoomKeys = searchRooms(params, doerRoles).stream()
+				.map(Room::getKey)
+				.collect(Collectors.toSet());
+
 		int copied = 0;
 		for (RoomBooking src : sourceBookings) {
+			if (!copyableRoomKeys.contains(src.getRoom().getKey())) {
+				continue;
+			}
 			RoomBooking tgt = roomBookingDao.create(src.getRoom(), target, target.getStartDate(), target.getEndDate());
 			tgt.setBufferBefore(src.getBufferBefore());
 			tgt.setBufferAfter(src.getBufferAfter());
