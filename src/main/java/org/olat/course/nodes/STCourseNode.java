@@ -43,6 +43,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameSettings;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
@@ -61,6 +63,7 @@ import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
@@ -74,6 +77,8 @@ import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.sp.SPPeekviewController;
 import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.st.STCourseNodeRunController;
+import org.olat.course.nodes.st.STDefaultsEditController;
+import org.olat.course.nodes.st.STModule;
 import org.olat.course.nodes.st.STPeekViewController;
 import org.olat.course.nodes.st.STReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
@@ -115,7 +120,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Mike Stock
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class STCourseNode extends AbstractAccessableCourseNode {
+public class STCourseNode extends AbstractAccessableCourseNode implements CourseNodeWithDefaults {
 	
 	private static final Logger log = Tracing.createLoggerFor(STCourseNode.class);
 	
@@ -426,9 +431,10 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
-			config.setBooleanEntry(STCourseNodeEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, Boolean.FALSE.booleanValue());
-			config.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE);
-			config.setIntValue(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 2);
+			STModule stModule = CoreSpringFactory.getImpl(STModule.class);
+			config.setBooleanEntry(STCourseNodeEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, false);
+			config.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, stModule.getDisplayType());
+			config.setIntValue(STCourseNodeEditController.CONFIG_KEY_COLUMNS, stModule.getColumns());
 
 			DeliveryOptions defaultOptions = DeliveryOptions.defaultWithGlossary();
 			config.set(SPEditController.CONFIG_KEY_DELIVERYOPTIONS, defaultOptions);
@@ -694,5 +700,23 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		}
 		return null;
 	}
-	
+
+	@Override
+	public Controller createDefaultsController(UserRequest ureq, WindowControl wControl) {
+		Translator fnGroupTranslator = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
+		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(getType());
+		String courseNodeTitle = fnGroupTranslator.translate(getGroup()) + " - <div class='" + CSSHelper.getIconCssClassFor(cnConfig.getIconCSSClass()) + "'></div>" + cnConfig.getLinkText(ureq.getLocale());
+		return new STDefaultsEditController(ureq, wControl, courseNodeTitle);
+	}
+
+	@Override
+	public String getCourseNodeConfigManualUrl() {
+		return "manual_user/learningresources/Course_Element_Structure";
+	}
+
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.content.name();
+	}
+
 }
