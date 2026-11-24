@@ -125,7 +125,7 @@ public class CourseWidgetController extends TableWidgetController
 		this.coachingSec = coachingSec;
 		mapperThumbnail = RepositoryEntryImageMapper.mapper210x140();
 		mapperThumbnailKey = mapperService.register(null, RepositoryEntryImageMapper.MAPPER_ID_210_140, mapperThumbnail);
-		completionCellRenderer = new ProgressBarCellRenderer(RenderStyle.horizontal, RenderSize.small, LabelFormat.none, BarColor.primary);
+		completionCellRenderer = new ProgressBarCellRenderer(RenderStyle.horizontal, RenderSize.small, LabelFormat.none, BarColor.neutral);
 		successStatusCellRenderer = new SuccessStatusCellRenderer(getLocale(), false);
 		
 		initForm(ureq);
@@ -351,6 +351,13 @@ public class CourseWidgetController extends TableWidgetController
 	private void cleanUp() {
 		removeAsListenerAndDispose(calloutCtrl);
 		calloutCtrl = null;
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if (!(fiSrc instanceof FormLink link && CMD_PARTICIPANTS.equals(link.getCmd()))) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
 	}
 	
 	@Override

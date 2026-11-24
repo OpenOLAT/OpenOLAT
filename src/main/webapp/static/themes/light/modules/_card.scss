@@ -503,7 +503,7 @@
 		min-width: 0;
 		display: grid;
 		gap: 10px;
-		padding: 5px;
+		padding: 10px 5px;
 	}
 	.o_dashboard_widget_row_entry {
 		display: flex;
@@ -577,6 +577,12 @@
 		tbody tr:first-child td {
 			border-top: 0;
 		}
+		&.table-hover > tbody > tr:hover > td {
+			background-color: var(--o-table-hover-bg);
+		}
+	}
+	.o_rendertype_custom .o_table_row:hover {
+		background-color: var(--o-table-hover-bg);
 	}
 	.o_table_wrapper.o_table_flexi {
 		.table, .o_table_body {

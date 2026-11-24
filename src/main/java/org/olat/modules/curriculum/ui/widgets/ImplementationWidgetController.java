@@ -427,6 +427,13 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 	}
 
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if (!(fiSrc instanceof FormLink link && CMD_STRUCTURE.equals(link.getCmd()))) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == showAllLink) {
 			if (showAllLink.getUserObject() instanceof String businessPath) {
