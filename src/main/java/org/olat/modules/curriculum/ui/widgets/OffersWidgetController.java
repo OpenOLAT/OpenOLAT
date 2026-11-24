@@ -19,24 +19,30 @@
  */
 package org.olat.modules.curriculum.ui.widgets;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.emptystate.EmptyState;
-import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateVariant;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dashboard.DashboardUIFactory;
+import org.olat.core.gui.control.generic.dashboard.MaxHeightScrollableDelegate;
+import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -44,13 +50,17 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumElementCatalogStatusEvaluator;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
-import org.olat.modules.taxonomy.TaxonomyModule;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferComparator;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.ui.OfferCatalogInfo;
 import org.olat.resource.accesscontrol.ui.OfferCatalogInfo.OfferCatalogStatus;
+import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,172 +69,188 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class OffersWidgetController extends FormBasicController {
+public class OffersWidgetController extends TableWidgetController {
 	
-	private FormLink detailsLink;
-
+	private static final String OFFERS_PATH = "[Offers:0]";
+	
+	private FormLayoutContainer catalogCont;
+	private FlexiTableElement offersTableEl;
+	private OffersWidgetDataModel offersTableModel;
+	
 	private CurriculumElement curriculumElement;
-
+	
 	@Autowired
 	private ACService acService;
 	@Autowired
-	private TaxonomyModule taxonomyModule;
+	private AccessControlModule acModule;
 	@Autowired
 	private CatalogV2Module catalogV2Module;
 	@Autowired
 	private CurriculumService curriculumService;
-
+	
 	public OffersWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
-		super(ureq, wControl, "offers_widget", Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(OfferCatalogInfo.class, getLocale(), getTranslator()));
-		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
-		setTranslator(Util.createPackageTranslator(DashboardUIFactory.class, getLocale(), getTranslator()));
 		this.curriculumElement = curriculumElement;
 		initForm(ureq);
 		loadModel();
 	}
-
+	
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		detailsLink = DashboardUIFactory.createDetailsLink(formLayout);
-		detailsLink.setUrl(BusinessControlFactory.getInstance().getRelativeURLFromBusinessPathString(
-				"[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElement.getKey() + "][Offers:0]"));
-		flc.contextPut("detailsComponentName", detailsLink.getComponent().getComponentName());
-	}
-
-	public void loadModel() {
-		curriculumElement = curriculumService.getCurriculumElement(curriculumElement);
-		loadOffers();
+	protected String getTitle() {
+		return "<i class=\"o_icon o_icon_catalog_intern\"> </i> " + translate("curriculum.offers");
 	}
 	
-	private void loadOffers() {
-		// Offer status
+	@Override
+	protected String createTopArea(FormLayoutContainer widgetCont) {
+		String page = Util.getPackageVelocityRoot(OffersWidgetController.class) + "/offers_widget_catalog.html";
+		catalogCont = FormLayoutContainer.createCustomFormLayout("catalogCont", getTranslator(), page);
+		catalogCont.setRootForm(mainForm);
+		widgetCont.add(catalogCont);
+		return catalogCont.getComponent().getComponentName();
+	}
+	
+	@Override
+	protected String createTable(FormLayoutContainer widgetCont) {
+		offersTableModel = new OffersWidgetDataModel(FlexiTableDataModelFactory.createFlexiTableColumnModel());
+		offersTableEl = uifactory.addTableElement(getWindowControl(), "offersTable", offersTableModel, 25, false, getTranslator(), widgetCont);
+		offersTableEl.setCustomizeColumns(false);
+		offersTableEl.setNumOfRowsEnabled(false);
+		offersTableEl.setRendererType(FlexiTableRendererType.custom);
+		offersTableEl.setCssDelegate(MaxHeightScrollableDelegate.DELEGATE);
+		VelocityContainer rowVC = createVelocityContainer("offers_widget_row");
+		rowVC.setDomReplacementWrapperRequired(false);
+		offersTableEl.setRowRenderer(rowVC, null);
+		offersTableEl.setEmptyStateConfig(EmptyStateConfig.builder()
+				.withVariant(EmptyStateVariant.auto)
+				.withIconCss("o_ac_offer_bookable_icon")
+				.withMessageTranslated(translate("widget.offers.empty"))
+				.build());
+		return offersTableEl.getComponent().getComponentName();
+	}
+	
+	@Override
+	protected List<String> createFooterButtons(FormLayoutContainer widgetCont) {
+		FormLink detailsLink = DashboardUIFactory.createDetailsLink(widgetCont);
+		setUrl(detailsLink, OFFERS_PATH, "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + curriculumElement.getKey() + "]" + OFFERS_PATH);
+		return List.of(detailsLink.getComponent().getComponentName());
+	}
+	
+	public void loadModel() {
+		curriculumElement = curriculumService.getCurriculumElement(curriculumElement);
 		CatalogStatusEvaluator statusEvaluator = CurriculumElementCatalogStatusEvaluator.create(catalogV2Module, curriculumElement.getElementStatus());
-		List<OfferCatalogInfo> offerCatalogInfos = acService.findOfferAndAccessByResource(curriculumElement.getResource(), true)
+		List<OfferAndAccessInfos> offersAndAccess = acService.findOfferAndAccessByResource(curriculumElement.getResource(), true)
 				.stream()
-				.map(OfferAndAccessInfos::offer)
-				.map(offer -> OfferCatalogInfo.create(offer, statusEvaluator))
+				.sorted(Comparator.comparing(OfferAndAccessInfos::offer, new OfferComparator()))
 				.toList();
 		
-		int numPending = 0;
-		int numBookable = 0;
-		int numFinished = 0;
-		int numNotAvailable = 0;
-		
-		Date pendingFrom = null;
-		boolean bookableEnds = true;
-		Date bookableTo = null;
-		
-		for (OfferCatalogInfo offerCatalogInfo : offerCatalogInfos) {
-			if (OfferCatalogInfo.OfferCatalogStatus.pending == offerCatalogInfo.getStatus()) {
-				numPending ++;
-				if (pendingFrom == null || pendingFrom.after(offerCatalogInfo.getFrom())) {
-					pendingFrom = offerCatalogInfo.getFrom();
-				}
-			} else if (OfferCatalogInfo.OfferCatalogStatus.bookable == offerCatalogInfo.getStatus()) {
-				numBookable ++;
-				if (offerCatalogInfo.getTo() == null) {
-					bookableEnds = false;
-				} else if (bookableTo == null || bookableTo.before(offerCatalogInfo.getTo())) {
-					bookableTo = offerCatalogInfo.getTo();
-				}
-			} else if (OfferCatalogInfo.OfferCatalogStatus.finished == offerCatalogInfo.getStatus()) {
-				numFinished ++;
-			} else if (OfferCatalogInfo.OfferCatalogStatus.notAvailable == offerCatalogInfo.getStatus()) {
-				numNotAvailable ++;
+		List<OfferCatalogInfo> offerCatalogInfos = new ArrayList<>(offersAndAccess.size());
+		List<OfferWidgetRow> rows = new ArrayList<>(offersAndAccess.size());
+		for (OfferAndAccessInfos offerAndAccess : offersAndAccess) {
+			OfferCatalogInfo offerCatalogInfo = OfferCatalogInfo.create(offerAndAccess.offer(), statusEvaluator);
+			offerCatalogInfos.add(offerCatalogInfo);
+			OfferWidgetRow row = forgeRow(offerAndAccess, offerCatalogInfo);
+			if (row != null) {
+				rows.add(row);
 			}
 		}
+		offersTableModel.setObjects(rows);
+		offersTableEl.reset(true, true, true);
 		
-		flc.contextPut("labelPending", OfferCatalogInfo.getStatusLightLabel(getTranslator(), OfferCatalogStatus.pending));
-		String translateNumPending = translateNumOffers(numPending);
-		if (numBookable < 1 && pendingFrom != null) {
-			long days = DateUtils.countDays(new Date(), pendingFrom);
-			if (days == 1) {
-				translateNumPending += " - <small>" + translate("curriculum.offers.offers.starts.single") + "</small>";
-			} else if (days > 1) {
-				translateNumPending += " - <small>" + translate("curriculum.offers.offers.starts.multi", String.valueOf(days)) + "</small>";
-			}
-		}
-		flc.contextPut("numPending", translateNumPending);
+		setFooterText(rows.size() == 1
+				? translate("widget.offers.footer.single", String.valueOf(rows.size()))
+				: translate("widget.offers.footer", String.valueOf(rows.size())));
 		
-		flc.contextPut("labelBookable", OfferCatalogInfo.getStatusLightLabel(getTranslator(), OfferCatalogStatus.bookable));
-		String translateNumBookable = translateNumOffers(numBookable);
-		if (numBookable > 0 && bookableEnds && bookableTo != null) {
-			long days = DateUtils.countDays(new Date(), bookableTo);
-			if (days == 1) {
-				translateNumBookable += " - <small>" + translate("curriculum.offers.offers.ends.single") + "</small>";
-			} else if (days > 1) {
-				translateNumBookable += " - <small>" + translate("curriculum.offers.offers.ends.multi", String.valueOf(days)) + "</small>";
-			}
-			
-		}
-		flc.contextPut("numBookable", translateNumBookable);
-		
-		flc.contextPut("labelFinished", OfferCatalogInfo.getStatusLightLabel(getTranslator(), OfferCatalogStatus.finished));
-		flc.contextPut("numFinished", translateNumOffers(numFinished));
-		
-		flc.contextPut("labelNotAvailable", OfferCatalogInfo.getStatusLightLabel(getTranslator(), OfferCatalogStatus.notAvailable));
-		flc.contextPut("numNotAvailable", translateNumOffers(numNotAvailable));
-		
-		
-		// Catalog status
+		loadCatalogStatus(offerCatalogInfos);
+	}
+	
+	private void loadCatalogStatus(List<OfferCatalogInfo> offerCatalogInfos) {
 		boolean fullyBooked = curriculumService.isMaxParticipantsReached(curriculumElement);
 		
 		List<OfferCatalogInfo> internalCatalogInfos = offerCatalogInfos.stream()
-				.filter(Objects::nonNull)
 				.filter(OfferCatalogInfo::isPublished)
 				.toList();
-		OfferCatalogStatus internalCatalogStatus = OfferCatalogInfo.getCatalogStatus(internalCatalogInfos, fullyBooked);
-		flc.contextPut("internalCatalogCss", OfferCatalogInfo.getLabelCss(internalCatalogStatus));
-		flc.contextPut("internalCatalogIconCss", OfferCatalogInfo.getIconCss(internalCatalogStatus));
-		flc.contextPut("internalCatalogLabelName", OfferCatalogInfo.getLabelName(getTranslator(), internalCatalogStatus));
+		putCatalogStatus("internal", OfferCatalogInfo.getCatalogStatus(internalCatalogInfos, fullyBooked));
 		
 		if (catalogV2Module.isWebPublishEnabled()) {
-			List<OfferCatalogInfo> externalCatalogInfos = offerCatalogInfos.stream()
-					.filter(Objects::nonNull)
-					.filter(OfferCatalogInfo::isPublished)
+			List<OfferCatalogInfo> externalCatalogInfos = internalCatalogInfos.stream()
 					.filter(OfferCatalogInfo::isWebPublished)
 					.toList();
-			OfferCatalogStatus externalCatalogStatus = OfferCatalogInfo.getCatalogStatus(externalCatalogInfos, fullyBooked);
-			flc.contextPut("externalCatalogCss", OfferCatalogInfo.getLabelCss(externalCatalogStatus));
-			flc.contextPut("externalCatalogIconCss", OfferCatalogInfo.getIconCss(externalCatalogStatus));
-			flc.contextPut("externalCatalogLabelName", OfferCatalogInfo.getLabelName(getTranslator(), externalCatalogStatus));
-		}
-		
-		
-		// Taxonomy
-		flc.contextPut("taxonomyEnabled", taxonomyModule.isEnabled());
-		if (taxonomyModule.isEnabled()) {
-			String taxonomyLevelTags = TaxonomyUIFactory.getTags(getTranslator(), curriculumService.getTaxonomy(curriculumElement));
-			flc.contextPut("taxonomyLevelTags", taxonomyLevelTags);
-			
-			EmptyState emptyTaxonomy = EmptyStateFactory.create("empty.taxonomy", flc.getFormItemComponent(), this);
-			emptyTaxonomy.setMessageI18nKey("curriculum.offers.taxonomy.empty");
-			emptyTaxonomy.setIconCss("o_icon_tag");
+			putCatalogStatus("external", OfferCatalogInfo.getCatalogStatus(externalCatalogInfos, fullyBooked));
 		}
 	}
 	
-	private String translateNumOffers(int numOffers) {
-		return numOffers == 1
-				? translate("curriculum.offers.offers.num.single")
-				: translate("curriculum.offers.offers.num.multi", String.valueOf(numOffers));
+	private void putCatalogStatus(String prefix, OfferCatalogStatus status) {
+		catalogCont.contextPut(prefix + "Css", OfferCatalogInfo.getLabelCss(status));
+		catalogCont.contextPut(prefix + "IconCss", OfferCatalogInfo.getIconCss(status));
+		catalogCont.contextPut(prefix + "LabelName", OfferCatalogInfo.getLabelName(getTranslator(), status));
 	}
-
+	
+	private OfferWidgetRow forgeRow(OfferAndAccessInfos offerAndAccess, OfferCatalogInfo offerCatalogInfo) {
+		Offer offer = offerAndAccess.offer();
+		OfferAccess offerAccess = offerAndAccess.offerAccess();
+		
+		String iconCss;
+		String typeName;
+		String price = null;
+		if (offer.isOpenAccess()) {
+			iconCss = "o_ac_openaccess_icon";
+			typeName = translate("offer.open.access.name");
+		} else if (offer.isGuestAccess()) {
+			iconCss = "o_ac_guest_icon";
+			typeName = translate("offer.guest.name");
+		} else {
+			AccessMethodHandler handler = offerAccess == null? null: acModule.getAccessMethodHandler(offerAccess.getMethod().getType());
+			if (handler == null) {
+				return null;
+			}
+			iconCss = offerAccess.getMethod().getMethodCssClass() + "_icon";
+			typeName = handler.getMethodName(getLocale());
+			if (handler.isPaymentMethod() && !offer.getPrice().isEmpty()) {
+				price = PriceFormat.fullFormatVat(getTranslator(), acModule, offer.getPrice());
+			}
+		}
+		
+		String statusHtml = OfferCatalogInfo.getStatusLightLabel(getTranslator(), offerCatalogInfo.getStatus());
+		return new OfferWidgetRow(iconCss, offer.getLabel(), typeName, price, statusHtml, getPeriod(offerCatalogInfo));
+	}
+	
+	private String getPeriod(OfferCatalogInfo offerCatalogInfo) {
+		Date now = new Date();
+		Date from = offerCatalogInfo.getFrom();
+		Date to = offerCatalogInfo.getTo();
+		if (from != null && from.after(now)) {
+			long days = DateUtils.countDays(now, from);
+			return days == 1
+					? translate("widget.offers.starts.in.single")
+					: translate("widget.offers.starts.in", String.valueOf(days));
+		}
+		if (to != null && to.after(now)) {
+			long days = DateUtils.countDays(now, to);
+			if (days == 0) {
+				return translate("widget.offers.ends.today");
+			}
+			return days == 1
+					? translate("widget.offers.ends.in.single")
+					: translate("widget.offers.ends.in", String.valueOf(days));
+		}
+		if (to != null) {
+			return translate("widget.offers.ended", Formatter.getInstance(getLocale()).formatDate(to));
+		}
+		return null;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == detailsLink) {
-			doOpenDetails(ureq);
+		if (source instanceof FormLink link && link.getUserObject() instanceof String path) {
+			doActivate(ureq, path);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-
-	private void doOpenDetails(UserRequest ureq) {
-		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString("[Offers:0]");
+	
+	private void doActivate(UserRequest ureq, String path) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(path);
 		fireEvent(ureq, new ActivateEvent(entries));
 	}
 	

@@ -1,0 +1,20 @@
+<div class="o_widget_offer_row">
+	<div class="o_widget_offer_type_icon"><i class="o_icon o_icon-fw $row.iconCss()"> </i></div>
+	<div class="o_widget_offer_title">
+		#if($r.isNotEmpty($row.label()))
+			<div class="o_widget_offer_label">$r.escapeHtml($row.label())</div>
+		#end
+		<div class="o_widget_offer_type_price">
+			<span class="o_widget_offer_type">$r.escapeHtml($row.typeName())</span>
+			#if($r.isNotEmpty($row.price()))
+				<span class="o_widget_offer_price">$row.price()</span>
+			#end
+		</div>
+	</div>
+	<div class="o_widget_offer_status">
+		$row.statusHtml()
+		#if($r.isNotEmpty($row.period()))
+			<div class="o_widget_offer_period">$row.period()</div>
+		#end
+	</div>
+</div>

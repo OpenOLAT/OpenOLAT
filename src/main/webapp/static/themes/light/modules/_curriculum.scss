@@ -202,75 +202,74 @@ a.o_validation_open_results {
 	text-transform: uppercase;
 }
 
-/* Use the same color and border as o_widget */
-.o_curriculum_overview {
-	.o_curriculum_offer_cards {
-		margin: 0 $o-dashboard-widget-base-margin;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-		gap: 10px;
-		h4 {
-			margin-top: 5px;
-			margin-bottom: 15px;
-		}
-	}
-	.o_curriculum_widget_catalog_cards {
-		margin: 0 $o-dashboard-widget-base-margin $o-dashboard-widget-base-margin $o-dashboard-widget-base-margin;
-		display: grid;
-		gap: 10px;
-			
-		.o_curriculum_widget_catalog_card {
-			display: grid;
-			grid-template-columns: 50% 50%;
-			
-			padding: 10px;
-			font-size: 125%;
-			text-align: left;
-			border-radius: $o-curriculum-widget-card-border-radius;
-			// tint of the state of the offer status (OO-10042)
-			&.o_ac_offer_bookable {
-				@extend %o_state_success_tint;
-			}
-			&.o_ac_offer_fully_booked {
-				@extend %o_state_critical_tint;
-			}
-			&.o_ac_offer_not_available {
-				@extend %o_state_inactive_tint;
-			}
-		}
-	}
+.o_curriculum_widget_catalog_cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 10px;
 	
-	.o_curriculum_offer_card {
-		padding: 10px;
+	.o_curriculum_widget_catalog_card {
+		padding: 10px 15px;
 		border: $o-curriculum-widget-card-border-width $o-curriculum-widget-card-border-style var(--o-curriculum-widget-card-border);
 		border-radius: $o-curriculum-widget-card-border-radius;
-		background-color: var(--o-bg);
+		background-color: var(--o-neutral-25);
+		.o_catalog_name {
+			font-size: 14px;
+		}
+		.o_catalog_status {
+			font-size: 130%;
+			font-weight: bold;
+			@include text-overflow();
+		}
+		&.o_ac_offer_bookable, &.o_ac_offer_fully_booked {
+			color: var(--o-sw-text);
+			border-color: var(--o-sw-text);
+			background-color: var(--o-sw-soft-bg);
+		}
+		&.o_ac_offer_bookable {
+			@extend %o_swatch_#{map-get($o-states, "success")};
+		}
+		&.o_ac_offer_fully_booked {
+			@extend %o_swatch_#{map-get($o-states, "critical")};
+		}
 	}
-	.o_curriculum_offer_card_content {
-		display: grid;
-		grid-template-columns: max-content auto;
-		row-gap: 5px;
-		.o_labeled_light {
-			margin-right: 15px;
-		}
-		.o_curriculum_offer_card_num {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: baseline;
-			column-gap: 5px;
-		}
+}
+.o_widget_offer_row {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	column-gap: 15px;
+	padding: 10px $o-dashboard-widget-base-margin;
+	
+	.o_widget_offer_type_icon {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		background-color: var(--o-brand-box-bg);
+		color: var(--o-primary-text);
 	}
-	.o_curriculum_taxonomy_card_content {
-		.o_tag {
-			display: inline-block;
-		}
-		.o_empty_state {
-			margin: 0;
-		}
-		.o_empty_msg {
-			font-size: 1.2em;
-			margin: 0;
-		}
+	.o_widget_offer_label {
+		font-size: 80%;
+		color: var(--o-text-muted);
+		@include text-overflow();
+	}
+	.o_widget_offer_type_price {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		column-gap: 10px;
+	}
+	.o_widget_offer_type {
+		font-size: 120%;
+	}
+	.o_widget_offer_status {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 5px;
+		text-align: right;
 	}
 }
 .o_members_widget_state {
