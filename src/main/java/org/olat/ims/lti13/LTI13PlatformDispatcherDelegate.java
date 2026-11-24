@@ -152,8 +152,8 @@ public class LTI13PlatformDispatcherDelegate {
 	 * @param response The HTTP response
 	 */
 	public void handleAuthorization(HttpServletRequest request, HttpServletResponse response) {
-		UserSession result = userSessionMgr.getUserSession(request);
-		Identity identity = result.getIdentity();
+		UserSession result = userSessionMgr.getUserSessionIfAlreadySet(request);
+		Identity identity = result == null ? null : result.getIdentity();
 		String messageHintString = request.getParameter("lti_message_hint");
 		Claims messageHint = null;
 		if(identity == null && StringHelper.isLong(messageHintString)) {
