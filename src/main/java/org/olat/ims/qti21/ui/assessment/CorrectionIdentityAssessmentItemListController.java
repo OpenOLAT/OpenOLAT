@@ -64,7 +64,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -412,15 +411,14 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	@Override
 	protected void doDispose() {
 		stackPanel.removeListener(this);
-		if(lockResult != null && lockResult.isSuccess()) {
-			doUnlock();
-		}
+		doUnlock();
         super.doDispose();
 	}
 	
 	private void doUnlock() {
 		if(lockResult != null && lockResult.isSuccess()) {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
+			lockResult = null;
 		}
 	}
 
@@ -567,8 +565,8 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		}
 		
 		// lock on item, need to check the lock on identity / test
-		String lockSubKey = "item-" + reloadItemSession.getKey();
-		OLATResourceable testOres = OresHelper.clone(model.getTestEntry().getOlatResource());
+		final String lockSubKey = model.lockSubKey(assessedIdentity, candidateSession, reloadItemSession);
+		final OLATResourceable testOres = model.lockResource();
 		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey, getWindow());
 		if(lockResult.isSuccess() || readOnly) {
 			if(nodes.size() == 1) {

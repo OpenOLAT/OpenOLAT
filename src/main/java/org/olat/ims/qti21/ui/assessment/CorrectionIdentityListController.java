@@ -59,8 +59,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentItemSession;
@@ -130,7 +128,6 @@ public class CorrectionIdentityListController extends FormBasicController {
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 
-	private LockResult lockResult;
 	private final boolean anonymous;
 	private final CorrectionOverviewModel model;
 	
@@ -412,16 +409,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		stackPanel.removeListener(this);
-		if(lockResult != null && lockResult.isSuccess()) {
-			doUnlock();
-		}
         super.doDispose();
-	}
-	
-	private void doUnlock() {
-		if(lockResult != null && lockResult.isSuccess()) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
-		}
 	}
 
 	@Override
@@ -442,7 +430,6 @@ public class CorrectionIdentityListController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(identityItemListCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.BACK_EVENT) {
-				doUnlock();
 				loadModel(false, true);
 				filterModel();
 				stackPanel.popController(identityItemListCtrl);

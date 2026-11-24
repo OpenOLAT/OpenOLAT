@@ -33,8 +33,10 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -42,6 +44,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
@@ -286,7 +289,7 @@ public class CorrectionOverviewModel {
 
 	public boolean isManualCorrection(AssessmentItemRef itemRef) {
 		String identifier = itemRef.getIdentifier().toString();
-		return manualCorrections.computeIfAbsent(identifier, id -> {
+		return manualCorrections.computeIfAbsent(identifier, _ -> {
 			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 			AssessmentItem item = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			List<Interaction> interactions = item.getItemBody().findInteractions();
@@ -313,12 +316,35 @@ public class CorrectionOverviewModel {
 		Boolean done = assessedIdentitiesDone.computeIfAbsent(assessedIdentity, identity -> {
 			if(getCourseNode() != null) {
 				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
-					.createAndInitUserCourseEnvironment(assessedIdentity, getCourseEnvironment());
+					.createAndInitUserCourseEnvironment(identity, getCourseEnvironment());
 				AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(getCourseNode(), assessedUserCourseEnv);
 				return scoreEval != null && scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done;
 			}
 			return Boolean.FALSE;
 		});
 		return done != null && done.booleanValue();
+	}
+	
+	public OLATResourceable lockResource() {
+		return OresHelper.clone(getTestEntry().getOlatResource());
+	}
+	
+	public String lockSubKey(Identity assessedIdentity, AssessmentTestSession testSession, AssessmentItemSession reloadItemSession) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("item-");
+		if(assessedIdentity != null) {
+			sb.append(assessedIdentity.getKey().toString());
+		} else if(StringHelper.containsNonWhitespace(testSession.getAnonymousIdentifier())) {
+			sb.append(testSession.getAnonymousIdentifier());
+		} else {
+			sb.append("unkown");
+		}
+		sb.append("-");
+		if(reloadItemSession != null) {
+			sb.append(reloadItemSession.getKey().toString());
+		}else {
+			sb.append("unkown");
+		}
+		return sb.toString();
 	}
 }

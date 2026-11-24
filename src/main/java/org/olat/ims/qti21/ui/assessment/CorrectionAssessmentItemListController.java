@@ -70,7 +70,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -431,6 +430,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	private void doUnlock() {
 		if(lockResult != null && lockResult.isSuccess()) {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
+			lockResult = null;
 		}
 	}
 	
@@ -510,13 +510,13 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				String cmd = se.getCommand();
 				CorrectionAssessmentItemRow row = tableModel.getObject(se.getIndex());
 				if(CMD_SELECT.equals(cmd)) {
-					doSelect(ureq, row, r -> true);// accept all
+					doSelect(ureq, row, _ -> true);// accept all
 				} else if(CMD_TO_REVIEW.equals(cmd)) {
 					doSelect(ureq, row, AssessmentItemListEntry::isToReview);
 				} else if(CMD_AUTO_CORRECTED.equals(cmd)) {
 					doSelect(ureq, row, entry -> !row.isManualCorrection() && entry.getManualScore() == null);
 				} else if(CMD_MANUALLY_CORRECTED.equals(cmd)) {
-					doSelect(ureq, row, entry -> row.isManualCorrection());
+					doSelect(ureq, row, _ -> row.isManualCorrection());
 				} else if(CMD_ADJUSTED.equals(cmd)) {
 					doSelect(ureq, row, entry -> !row.isManualCorrection() && entry.getManualScore() != null);
 				}
@@ -622,26 +622,26 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			reloadItemSession = qtiService.getAssessmentItemSession(listEntry.getItemSession());
 		}
 
-		// lock on item, need to check the lock on identity / test
-		String lockSubKey = "item-" + listEntry.getAssessedIdentity().getKey() + "-" + listEntry.getItemRef().getIdentifier().toString();
-		OLATResourceable testOres = OresHelper.clone(model.getTestEntry().getOlatResource());
-		lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey, getWindow());
-		if(lockResult.isSuccess()) {
-			Identity assessedIdentity = listEntry.getAssessedIdentity();
-			AssessmentTestSession candidateSession = listEntry.getTestSession();
-			TestSessionState testSessionState = qtiService.loadTestSessionState(listEntry.getTestSession());
+		Identity assessedIdentity = listEntry.getAssessedIdentity();
+		AssessmentTestSession candidateSession = listEntry.getTestSession();
+		TestSessionState testSessionState = qtiService.loadTestSessionState(candidateSession);
 
-			List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(itemRef.getIdentifier());
-			if(nodes.size() == 1) {
-				if(reloadItemSession == null) {
-					TestPlanNode itemNode = nodes.get(0);
-					String stringuifiedIdentifier = itemNode.getKey().getIdentifier().toString();
-					ParentPartItemRefs parentParts = AssessmentTestHelper
-							.getParentSection(itemNode.getKey(), testSessionState, model.getResolvedAssessmentTest());
-					reloadItemSession = qtiService
-							.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier, itemRef.getIdentifier().toString());
-				}
-				
+		List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(itemRef.getIdentifier());
+		if(nodes.size() == 1) {
+			if(reloadItemSession == null) {
+				TestPlanNode itemNode = nodes.get(0);
+				String stringuifiedIdentifier = itemNode.getKey().getIdentifier().toString();
+				ParentPartItemRefs parentParts = AssessmentTestHelper
+						.getParentSection(itemNode.getKey(), testSessionState, model.getResolvedAssessmentTest());
+				reloadItemSession = qtiService
+						.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier, itemRef.getIdentifier().toString());
+			}
+
+			// lock on item, need to check the lock on identity / test
+			final String lockSubKey = model.lockSubKey(assessedIdentity, candidateSession, reloadItemSession);
+			final OLATResourceable testOres = model.lockResource();
+			lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testOres, getIdentity(), lockSubKey, getWindow());
+			if(lockResult.isSuccess()) {
 				TestPlanNode itemNode = nodes.get(0);
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(itemNode.getKey());
 				AssessmentItemCorrection itemCorrection = new AssessmentItemCorrection(assessedIdentity, 
@@ -658,11 +658,14 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				updatePreviousNext();
 				
 				stackPanel.pushController(listEntry.getLabel(), identityItemCtrl);
+			} else {
+				String lockOwnerName = userManager.getUserDisplayName(lockResult.getOwner());
+				String mgs = lockResult.isDifferentWindows() ? "warning.assessment.item.locked.same.user" : "warning.assessment.item.locked";
+				showWarning(mgs, new String[] { lockOwnerName });
 			}
 		} else {
-			String lockOwnerName = userManager.getUserDisplayName(lockResult.getOwner());
-			String mgs = lockResult.isDifferentWindows() ? "warning.assessment.item.locked.same.user" : "warning.assessment.item.locked";
-			showWarning(mgs, new String[] { lockOwnerName });
+			getLogger().error("TestPlanNode of {} doesn't exist in test session: {}", itemRef.getIdentifier(), candidateSession.getKey());
+			showWarning("warning.test.plan.node.dont.exist");
 		}
 	}
 	
