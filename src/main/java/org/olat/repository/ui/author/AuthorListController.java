@@ -1166,9 +1166,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				|| row.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
 			return "o_entry_deleted";
 		}
-		if(row.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
-			return "o_entry_closed";
-		}
 		return null;
 	}
 	
