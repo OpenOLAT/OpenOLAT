@@ -71,6 +71,11 @@ public class LTI13Dispatcher implements Dispatcher {
 	private LTI13ToolDispatcherDelegate toolDelegate;
 	
 	@Override
+	public boolean isSessionRequired() {
+		return false;
+	}
+
+	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		final String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
