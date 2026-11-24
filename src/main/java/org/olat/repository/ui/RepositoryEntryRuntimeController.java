@@ -1014,9 +1014,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if (source == copyWrapperCtrl) {
 			cleanUpModals();
 		} else if(confirmRestoreCtrl == source) {
-			cmc.deactivate();
-			cleanUpModals();
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUpModals();
+			} else if(event == Event.DONE_EVENT) {
+				cmc.deactivate();
+				cleanUpModals();
 				doRestore(ureq);
 			}
 		} else if(confirmCloseCtrl == source) {
@@ -1387,14 +1390,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doRestore(UserRequest ureq) {
-		popToRoot(ureq);
-		
 		RepositoryEntry reloadedEntry = loadRepositoryEntry();
-		refreshRepositoryEntry(reloadedEntry);
-		reloadSecurity(ureq);
-		
+
 		EntryChangedEvent e = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.restored, "runtime");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+		doClose(ureq);
 	}
 	
 	protected void launchContent(UserRequest ureq) {

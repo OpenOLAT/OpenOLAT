@@ -115,7 +115,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 					|| ece.getChange() == Change.modifiedAtPublish
 					|| ece.getChange() == Change.modifiedDescription) {
 				authorListCtrl.addDirtyRows(ece.getRepositoryEntryKey());
-			} else if(ece.getChange() == Change.restored) {
+			} else if(ece.getChange() == Change.restored || ece.getChange() == Change.deleted) {
 				entriesDirty = true;
 			}
 		}
@@ -134,13 +134,15 @@ public class OverviewAuthoringController extends BasicController implements Acti
 					}
 				}
 			}
-			
 			if(entriesDirty) {
 				authorListCtrl.reloadRows();
 			} else {
 				authorListCtrl.reloadDirtyRows();
 			}
 		} else {
+			if(entriesDirty) {
+				authorListCtrl.reloadRows();
+			}
 			authorListCtrl.activate(ureq, entries, state);
 		}
 	}
