@@ -58,7 +58,7 @@ public class CurriculumImplementationWidgetController extends ImplementationWidg
 	}
 
 	@Override
-	protected void reload() {
+	public void reload() {
 		CurriculumElementInfosSearchParams searchParams = new CurriculumElementInfosSearchParams(getIdentity());
 		searchParams.setCurriculum(curriculum);
 		searchParams.setImplementationsOnly(true);

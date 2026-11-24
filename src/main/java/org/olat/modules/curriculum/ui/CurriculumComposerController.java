@@ -1036,6 +1036,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else if(source instanceof CurriculumElementDetailsController) {
 			if(event == Event.CHANGED_EVENT) {
 				loadModel();
+				fireEvent(ureq, event);
 			} else if(event instanceof CurriculumElementEvent cee) {
 				if(rootElement != null) {
 					fireEvent(ureq, event);

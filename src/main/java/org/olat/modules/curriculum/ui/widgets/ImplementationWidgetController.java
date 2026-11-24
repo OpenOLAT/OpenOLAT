@@ -130,7 +130,7 @@ public abstract class ImplementationWidgetController extends TableWidgetControll
 
 	protected abstract String getBaseBusinessPath();
 
-	protected abstract void reload();
+	public abstract void reload();
 
 	@Override
 	protected String createTopArea(FormLayoutContainer widgetCont) {

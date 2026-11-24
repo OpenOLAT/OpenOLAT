@@ -31,6 +31,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.overviewnav.OverviewNavigation;
 import org.olat.core.gui.components.overviewnav.OverviewNavigationFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -135,6 +136,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
+		toolbarPanel.addListener(this);
 		this.lecturesSecCallback = lecturesSecCallback;
 		this.certificationSecCallback = certificationSecCallback;
 		
@@ -191,6 +193,14 @@ public class CurriculumManagerRootController extends BasicController implements 
 		putInitialPanel(mainVC);
 	}
 	
+	@Override
+	protected void doDispose() {
+		if(toolbarPanel != null) {
+			toolbarPanel.removeListener(this);
+		}
+		super.doDispose();
+	}
+
 	private void initDashboard(UserRequest ureq) {
 		overviewCtrl = new DashboardController(ureq, getWindowControl(), "dashboard.course.planner");
 		overviewCtrl.setDashboardCss("o_curriculum_overview");
@@ -313,6 +323,13 @@ public class CurriculumManagerRootController extends BasicController implements 
 			doOpenRoomManagement(ureq);
 		} else if(source == importButton) {
 			doImportCurriculums(ureq);
+		} else if(source == toolbarPanel) {
+			if(event instanceof PopEvent pe
+					&& pe.getController() instanceof CurriculumComposerController) {
+				if(implementationWidgetCtrl != null) {
+					implementationWidgetCtrl.reload();
+				}
+			}
 		}
 	}
 	

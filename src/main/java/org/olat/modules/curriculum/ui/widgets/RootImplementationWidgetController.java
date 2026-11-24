@@ -54,7 +54,7 @@ public class RootImplementationWidgetController extends ImplementationWidgetCont
 	}
 
 	@Override
-	protected void reload() {
+	public void reload() {
 		CurriculumElementInfosSearchParams searchParams = new CurriculumElementInfosSearchParams(getIdentity());
 		searchParams.setImplementationsOnly(true);
 		List<CurriculumElementInfos> elementInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);

@@ -117,6 +117,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private CurriculumToDoListController todosCtrl;
 	
 	private Curriculum curriculum;
+	private boolean implementationsDirty;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
 	private final CertificationProgramSecurityCallback certificationSecCallback;
@@ -375,6 +376,10 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(implementationsCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				implementationsDirty = true;
+			}
 		}
 	}
 	
@@ -428,6 +433,11 @@ public class CurriculumDetailsController extends BasicController implements Acti
 						implementationsCtrl.activate(ureq, entries, null);
 					}
 				}
+			}
+			
+			if(implementationWidgetCtrl != null && implementationsDirty) {
+				implementationWidgetCtrl.reload();
+				implementationsDirty = false;
 			}
 		}
 	}
