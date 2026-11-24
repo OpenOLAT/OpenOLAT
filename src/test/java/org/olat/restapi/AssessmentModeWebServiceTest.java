@@ -35,13 +35,18 @@ import java.util.UUID;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.Tracing;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -58,11 +63,9 @@ import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -72,14 +75,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 
-	private static final Logger log = Tracing.createLoggerFor(AssessmentModeWebServiceTest.class);
-	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
+	@Autowired
+	private OrganisationService organisationService;
+	
+	private static Organisation otherUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(otherUnitTestOrganisation == null) {
+			otherUnitTestOrganisation = organisationService
+					.createOrganisation("Org-other-unit-test", "Org-other-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 	
 	@Test
 	public void getAssessmentModes()
@@ -102,13 +115,45 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		HttpResponse<InputStream> response = conn.execute(method);
 		Assert.assertEquals(200, response.statusCode());
 		
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response);
+		List<AssessmentModeVO> modeVoes = conn.parseList(response, AssessmentModeVO.class);
 		assertThat(modeVoes)
 			.isNotNull()
 			.isNotEmpty()
 			.extracting(vo -> vo.getKey())
 			.containsAnyOf(savedMode.getKey());
 		conn.close();
+	}
+	
+	@Test
+	public void getAssessmentModesOfOtherOrganisations()
+	throws IOException, URISyntaxException, InterruptedException {
+		Identity otherAdministrator = JunitTestHelper
+				.createAndPersistIdentityAsRndAdmin("other-admin", otherUnitTestOrganisation, JunitTestHelper.PWD);
+
+		// Create a course with an assessment in the default organisation
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
+		mode.setName("Assessment to not load");
+		mode.setBegin(new Date());
+		mode.setEnd(new Date());
+		mode.setTargetAudience(Target.course);
+		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(savedMode);
+		
+		RestConnection conn = new RestConnection(otherAdministrator.getUser().getNickName(), JunitTestHelper.PWD);	
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+		
+		List<AssessmentModeVO> modeVoes = conn.parseList(response, AssessmentModeVO.class);
+		Assertions.assertThat(modeVoes)
+			.isNotNull()
+			.isEmpty();
+		
+		conn.shutdown();
 	}
 	
 	@Test
@@ -172,7 +217,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		HttpResponse<InputStream> response = conn.execute(method);
 		Assert.assertEquals(200, response.statusCode());
 
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response);
+		List<AssessmentModeVO> modeVoes = conn.parseList(response, AssessmentModeVO.class);
 		assertThat(modeVoes)
 			.isNotNull()
 			.isNotEmpty()
@@ -186,7 +231,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		HttpRequest nothingMethod = conn.createGet(nothingRequest, MediaType.APPLICATION_JSON);
 		HttpResponse<InputStream> nothingResponse = conn.execute(nothingMethod);
 		Assert.assertEquals(200, nothingResponse.statusCode());
-		List<AssessmentModeVO> emptyVoes = parseAssessmentModeArray(nothingResponse);
+		List<AssessmentModeVO> emptyVoes = conn.parseList(nothingResponse, AssessmentModeVO.class);
 		assertThat(emptyVoes)
 			.isNotNull()
 			.isEmpty();
@@ -219,7 +264,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		HttpResponse<InputStream> response = conn.execute(method);
 		Assert.assertEquals(200, response.statusCode());
 
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response);
+		List<AssessmentModeVO> modeVoes = conn.parseList(response, AssessmentModeVO.class);
 		// Is our assessment mode in the list?
 		assertThat(modeVoes)
 			.isNotNull()
@@ -268,7 +313,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		HttpResponse<InputStream> response = conn.execute(method);
 		Assert.assertEquals(200, response.statusCode());
 
-		List<AssessmentModeVO> modeVoes = parseAssessmentModeArray(response);
+		List<AssessmentModeVO> modeVoes = conn.parseList(response, AssessmentModeVO.class);
 		// Is our assessment mode in the list?
 		assertThat(modeVoes)
 			.isNotNull()
@@ -323,6 +368,36 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(externalId, savedAssessmentMode.getExternalId());
 		Assert.assertEquals("all", savedAssessmentMode.getManagedFlagsString());
 		conn.close();
+	}
+	
+	@Test
+	public void createAssessmentModeFromAnOtherOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		Identity otherAdministrator = JunitTestHelper
+				.createAndPersistIdentityAsRndAdmin("other-admin", otherUnitTestOrganisation, JunitTestHelper.PWD);
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		AssessmentModeVO assessmentModeVo = new AssessmentModeVO();
+		assessmentModeVo.setRepositoryEntryKey(entry.getKey());
+		assessmentModeVo.setName("My other mode");
+		String externalId = UUID.randomUUID().toString();
+		assessmentModeVo.setExternalId(externalId);
+		assessmentModeVo.setManagedFlagsString("all");
+		assessmentModeVo.setTargetAudience(Target.course.name());
+		
+		Date begin = DateUtils.addDays(new Date(), 3);
+		assessmentModeVo.setBegin(begin);
+		assessmentModeVo.setEnd(DateUtils.addHours(begin, 2));
+		
+		RestConnection conn = new RestConnection(otherAdministrator.getUser().getNickName(), JunitTestHelper.PWD);	
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
+		HttpRequest method = conn.createPut(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		
+		conn.shutdown();
 	}
 	
 	@Test
@@ -471,13 +546,235 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		conn.close();
 	}
 	
-	protected List<AssessmentModeVO> parseAssessmentModeArray(HttpResponse<InputStream> entity) {
-		try(InputStream in=entity.body()) {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			return mapper.readValue(in, new TypeReference<List<AssessmentModeVO>>(){/* */});
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
+	@Test
+	public void getAssessmentModeByKeyFromOtherOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		Identity otherAdministrator = JunitTestHelper
+				.createAndPersistIdentityAsRndAdmin("other-admin", otherUnitTestOrganisation, JunitTestHelper.PWD);
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentMode savedMode = createAssessmentMode(entry, "Assessment to not read");
+
+		RestConnection conn = new RestConnection(otherAdministrator.getUser().getNickName(), JunitTestHelper.PWD);
+
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("assessmentmodes").path(savedMode.getKey().toString())
+				.build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.shutdown();
+	}
+
+	@Test
+	public void updateAssessmentModeFromOtherOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		Identity otherAdministrator = JunitTestHelper
+				.createAndPersistIdentityAsRndAdmin("other-admin", otherUnitTestOrganisation, JunitTestHelper.PWD);
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentMode savedMode = createAssessmentMode(entry, "Assessment to not update");
+
+		AssessmentModeVO assessmentModeVo = AssessmentModeVO.valueOf(savedMode);
+		assessmentModeVo.setName("Hacked assessment");
+
+		RestConnection conn = new RestConnection(otherAdministrator.getUser().getNickName(), JunitTestHelper.PWD);
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
+		HttpRequest method = conn.createPost(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(savedMode.getKey());
+		Assert.assertEquals("Assessment to not update", reloadedMode.getName());
+
+		conn.shutdown();
+	}
+
+	@Test
+	public void updateAssessmentModeUnknownKey()
+	throws IOException, URISyntaxException, InterruptedException {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		AssessmentModeVO assessmentModeVo = new AssessmentModeVO();
+		assessmentModeVo.setKey(-23l);
+		assessmentModeVo.setRepositoryEntryKey(entry.getKey());
+		assessmentModeVo.setName("Unknown assessment");
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
+		HttpRequest method = conn.createPost(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(404, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.shutdown();
+	}
+
+	@Test
+	public void deleteAssessmentModeFromOtherOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		Identity otherAdministrator = JunitTestHelper
+				.createAndPersistIdentityAsRndAdmin("other-admin", otherUnitTestOrganisation, JunitTestHelper.PWD);
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentMode savedMode = createAssessmentMode(entry, "Assessment to not delete");
+
+		RestConnection conn = new RestConnection(otherAdministrator.getUser().getNickName(), JunitTestHelper.PWD);
+
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("assessmentmodes").path(savedMode.getKey().toString())
+				.build();
+		HttpRequest method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		AssessmentMode notDeletedMode = assessmentModeMgr.getAssessmentModeById(savedMode.getKey());
+		Assert.assertNotNull(notDeletedMode);
+
+		conn.shutdown();
+	}
+
+	/**
+	 * The learn resource manager of an organisation can list, read, update
+	 * and delete the assessment modes of the courses of its organisation,
+	 * but doesn't see the one of other organisations.
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void learnResourceManagerOfOwnOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		IdentityWithLogin learnResourceManager = JunitTestHelper
+				.createAndPersistRndManager("lrm", otherUnitTestOrganisation, OrganisationRoles.learnresourcemanager);
+
+		RepositoryEntry ownEntry = JunitTestHelper.createAndPersistRepositoryEntry(otherUnitTestOrganisation);
+		AssessmentMode ownMode = createAssessmentMode(ownEntry, "Own assessment");
+		RepositoryEntry otherEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentMode otherMode = createAssessmentMode(otherEntry, "Assessment of an other organisation");
+
+		RestConnection conn = new RestConnection(learnResourceManager);
+
+		// List
+		URI listRequest = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
+		HttpRequest listMethod = conn.createGet(listRequest, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> listResponse = conn.execute(listMethod);
+		Assert.assertEquals(200, listResponse.statusCode());
+		List<AssessmentModeVO> modeVoes = conn.parseList(listResponse, AssessmentModeVO.class);
+		assertThat(modeVoes)
+			.extracting(AssessmentModeVO::getKey)
+			.containsExactly(ownMode.getKey());
+
+		// Read
+		URI ownModeUri = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("assessmentmodes").path(ownMode.getKey().toString()).build();
+		HttpRequest getMethod = conn.createGet(ownModeUri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> getResponse = conn.execute(getMethod);
+		Assert.assertEquals(200, getResponse.statusCode());
+		AssessmentModeVO ownModeVo = conn.parse(getResponse, AssessmentModeVO.class);
+		Assert.assertEquals(ownMode.getKey(), ownModeVo.getKey());
+
+		URI otherModeUri = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("assessmentmodes").path(otherMode.getKey().toString()).build();
+		HttpRequest getOtherMethod = conn.createGet(otherModeUri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> getOtherResponse = conn.execute(getOtherMethod);
+		Assert.assertEquals(403, getOtherResponse.statusCode());
+		ConnectionUtilities.consume(getOtherResponse);
+
+		// Update
+		ownModeVo.setName("Own assessment updated");
+		HttpRequest updateMethod = conn.createPost(listRequest, ownModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> updateResponse = conn.execute(updateMethod);
+		Assert.assertEquals(200, updateResponse.statusCode());
+		ConnectionUtilities.consume(updateResponse);
+		Assert.assertEquals("Own assessment updated", assessmentModeMgr.getAssessmentModeById(ownMode.getKey()).getName());
+
+		AssessmentModeVO otherModeVo = AssessmentModeVO.valueOf(otherMode);
+		otherModeVo.setName("Hacked assessment");
+		HttpRequest updateOtherMethod = conn.createPost(listRequest, otherModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> updateOtherResponse = conn.execute(updateOtherMethod);
+		Assert.assertEquals(403, updateOtherResponse.statusCode());
+		ConnectionUtilities.consume(updateOtherResponse);
+		Assert.assertEquals("Assessment of an other organisation", assessmentModeMgr.getAssessmentModeById(otherMode.getKey()).getName());
+
+		// Create
+		AssessmentModeVO newOtherModeVo = new AssessmentModeVO();
+		newOtherModeVo.setRepositoryEntryKey(otherEntry.getKey());
+		newOtherModeVo.setName("New assessment in other organisation");
+		newOtherModeVo.setTargetAudience(Target.course.name());
+		Date begin = DateUtils.addDays(new Date(), 3);
+		newOtherModeVo.setBegin(begin);
+		newOtherModeVo.setEnd(DateUtils.addHours(begin, 2));
+		HttpRequest createOtherMethod = conn.createPut(listRequest, newOtherModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> createOtherResponse = conn.execute(createOtherMethod);
+		Assert.assertEquals(403, createOtherResponse.statusCode());
+		ConnectionUtilities.consume(createOtherResponse);
+
+		// Delete
+		HttpRequest deleteOtherMethod = conn.createDelete(otherModeUri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> deleteOtherResponse = conn.execute(deleteOtherMethod);
+		Assert.assertEquals(403, deleteOtherResponse.statusCode());
+		ConnectionUtilities.consume(deleteOtherResponse);
+		Assert.assertNotNull(assessmentModeMgr.getAssessmentModeById(otherMode.getKey()));
+
+		HttpRequest deleteMethod = conn.createDelete(ownModeUri, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> deleteResponse = conn.execute(deleteMethod);
+		Assert.assertEquals(200, deleteResponse.statusCode());
+		ConnectionUtilities.consume(deleteResponse);
+		Assert.assertNull(assessmentModeMgr.getAssessmentModeById(ownMode.getKey()));
+
+		conn.shutdown();
+	}
+
+	/**
+	 * An administrator of an organisation can create an assessment mode
+	 * in a course of its organisation.
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void createAssessmentModeInOwnOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		Organisation organisation = organisationService
+				.createOrganisation("Org-admin-unit-test", "Org-admin-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		Identity orgAdministrator = JunitTestHelper
+				.createAndPersistIdentityAsRndAdmin("org-admin", organisation, JunitTestHelper.PWD);
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry(organisation);
+
+		AssessmentModeVO assessmentModeVo = new AssessmentModeVO();
+		assessmentModeVo.setRepositoryEntryKey(entry.getKey());
+		assessmentModeVo.setName("Mode of my organisation");
+		assessmentModeVo.setTargetAudience(Target.course.name());
+		Date begin = DateUtils.addDays(new Date(), 3);
+		assessmentModeVo.setBegin(begin);
+		assessmentModeVo.setEnd(DateUtils.addHours(begin, 2));
+
+		RestConnection conn = new RestConnection(orgAdministrator.getUser().getNickName(), JunitTestHelper.PWD);
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
+		HttpRequest method = conn.createPut(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(200, response.statusCode());
+
+		AssessmentModeVO savedAssessmentModeVo = conn.parse(response, AssessmentModeVO.class);
+		Assert.assertNotNull(savedAssessmentModeVo.getKey());
+		Assert.assertEquals(entry.getKey(), savedAssessmentModeVo.getRepositoryEntryKey());
+
+		AssessmentMode savedAssessmentMode = assessmentModeMgr.getAssessmentModeById(savedAssessmentModeVo.getKey());
+		Assert.assertEquals("Mode of my organisation", savedAssessmentMode.getName());
+
+		conn.shutdown();
+	}
+
+	private AssessmentMode createAssessmentMode(RepositoryEntry entry, String name) {
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
+		mode.setName(name);
+		mode.setBegin(new Date());
+		mode.setEnd(new Date());
+		mode.setTargetAudience(Target.course);
+		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(savedMode);
+		return savedMode;
 	}
 }

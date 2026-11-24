@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -67,7 +65,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 public class CourseAssessmentModeWebService {
 	
 	private RepositoryEntry entry;
-	private final boolean administrator;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -76,9 +73,8 @@ public class CourseAssessmentModeWebService {
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 	
-	public CourseAssessmentModeWebService(RepositoryEntry entry, boolean administrator) {
+	public CourseAssessmentModeWebService(RepositoryEntry entry) {
 		this.entry = entry;
-		this.administrator = administrator;
 	}
 	
 	/**
@@ -102,10 +98,7 @@ public class CourseAssessmentModeWebService {
 			@QueryParam("managed") @Parameter(description = "All modes with a managed flags set") Boolean managed,
 			@QueryParam("withExternalId") @Parameter(description = "All modes with an external ID set") Boolean withExternalId,
 			@QueryParam("running") @Parameter(description = "All modes in running status (and en status but the date is not checked)") Boolean running) {
-		if(!administrator) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
-		
+
 		SearchAssessmentModeParams params = new SearchAssessmentModeParams();
 		if(StringHelper.containsNonWhitespace(from)) {
 			params.setDateFrom(ObjectFactory.parseDate(from));
@@ -142,16 +135,14 @@ public class CourseAssessmentModeWebService {
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The resource not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getAssessmentMode(@PathParam("assessmentKey") Long assessmentKey, @Context HttpServletRequest request) {
-		if(!isAdministrator(request)) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
-
+	public Response getAssessmentMode(@PathParam("assessmentKey") Long assessmentKey) {
 		AssessmentMode assessmentMode = assessmentModeManager.getAssessmentModeById(assessmentKey);
 		if(assessmentMode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-
+		if(!assessmentMode.getRepositoryEntry().equals(entry)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 		AssessmentModeVO vo = AssessmentModeVO.valueOf(assessmentMode);
 		return Response.ok(vo).build();
 	}
@@ -189,9 +180,6 @@ public class CourseAssessmentModeWebService {
 	}
 	
 	public Response saveAssessmentMode(AssessmentModeVO assessmentModeVo, HttpServletRequest request) {
-		if(!isAdministrator(request)) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
 		Identity doer = getIdentity(request);
 		
 		AssessmentMode assessmentMode;
@@ -202,20 +190,14 @@ public class CourseAssessmentModeWebService {
 			return Response.serverError().status(Status.CONFLICT).build();	
 		} else {
 			assessmentMode = assessmentModeManager.getAssessmentModeById(assessmentModeVo.getKey());
+			if(assessmentMode == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();	
+			}
 			if(!assessmentMode.getRepositoryEntry().equals(entry)) {
 				return Response.serverError().status(Status.CONFLICT).build();	
 			}
 		}
 		return AssessmentModeWebService.saveAssessmentMode(assessmentModeVo, assessmentMode,
 				assessmentModeManager, curriculumService, businessGroupService, doer);
-	}
-	
-	private boolean isAdministrator(HttpServletRequest request) {
-		try {
-			Roles roles = getRoles(request);
-			return (roles.isAdministrator() || roles.isLearnResourceManager());
-		} catch (Exception e) {
-			return false;
-		}
 	}
 }

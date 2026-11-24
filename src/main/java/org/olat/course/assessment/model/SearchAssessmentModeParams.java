@@ -22,6 +22,8 @@ package org.olat.course.assessment.model;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.id.OrganisationRef;
+
 /**
  * 
  * Initial date: 06.02.2015<br>
@@ -44,6 +46,7 @@ public class SearchAssessmentModeParams {
 	private Long repositoryEntryKey;
 
 	private List<String> allowedModeStatus;
+	private List<OrganisationRef> organisations;
 
 	public Date getDateFrom() {
 		return dateFrom;
@@ -129,5 +132,13 @@ public class SearchAssessmentModeParams {
 	 */
 	public void setAllowedModeStatus(List<String> allowedModeStatus) {
 		this.allowedModeStatus = allowedModeStatus;
+	}
+
+	public List<OrganisationRef> getOrganisations() {
+		return organisations;
+	}
+
+	public void setOrganisations(List<OrganisationRef> organisations) {
+		this.organisations = organisations;
 	}
 }

@@ -370,8 +370,10 @@ public class CourseWebService {
 	@Path("assessmentmodes")
 	public CourseAssessmentModeWebService getAssessmentModeWebService(@Context HttpServletRequest request) {
 		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		boolean administrator = isManager(request);
-		CourseAssessmentModeWebService service = new CourseAssessmentModeWebService(courseRe, administrator);
+		if (!isManager(request, OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name())) {
+			throw new WebApplicationException(Response.Status.FORBIDDEN);
+		}
+		CourseAssessmentModeWebService service = new CourseAssessmentModeWebService(courseRe);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
@@ -1602,21 +1604,19 @@ public class CourseWebService {
 	}
 	
 	private boolean isManager(HttpServletRequest request) {
-		UserRequest ureq = getUserRequest(request);
-		Identity identity = ureq.getIdentity();
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		return repositoryService.hasRoleExpanded(identity, entry,
-				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+		return isManager(request, OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
 				GroupRoles.owner.name());
 	}
 	
 	private boolean isManagerWithLectures(HttpServletRequest request) {
-		UserRequest ureq = getUserRequest(request);
-		Identity identity = ureq.getIdentity();
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		return repositoryService.hasRoleExpanded(identity, entry,
-				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
+		return isManager(request, OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
 				OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name());
+	}
+	
+	private boolean isManager(HttpServletRequest request, String... roles) {
+		Identity identity = getIdentity(request);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		return repositoryService.hasRoleExpanded(identity, entry, roles);
 	}
 	
 	public static boolean isCourseAccessible(ICourse course, HttpServletRequest request) {

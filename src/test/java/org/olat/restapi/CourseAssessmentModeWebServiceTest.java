@@ -38,10 +38,14 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.httpclient.ConnectionUtilities;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -49,6 +53,7 @@ import org.olat.course.assessment.restapi.AssessmentModeVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,9 +68,13 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 	private static final Logger log = Tracing.createLoggerFor(AssessmentModeWebServiceTest.class);
 
 	private static RepositoryEntry courseEntry;
+	private static Identity otherAdministrator;
+	private static Organisation otherUnitTestOrganisation;
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	
@@ -76,6 +85,13 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 				Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 				courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation);
 			}
+			
+			if(otherUnitTestOrganisation == null) {
+				otherUnitTestOrganisation = organisationService
+						.createOrganisation("Org-other-unit-test-course", "Org-other-unit-test-course", "", null, null, JunitTestHelper.getDefaultActor());
+				otherAdministrator = JunitTestHelper.createAndPersistIdentityAsRndAdmin("course-other-admin", otherUnitTestOrganisation, JunitTestHelper.PWD);
+			}
+			
 			dbInstance.closeSession();
 		} catch (Exception e) {
 			log.error("Exception in setUp(): ", e);
@@ -86,14 +102,7 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 	public void getAssessmentModes()
 	throws IOException, URISyntaxException, InterruptedException {
 		
-		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(courseEntry);
-		mode.setName("Assessment to load");
-		mode.setBegin(new Date());
-		mode.setEnd(new Date());
-		mode.setTargetAudience(Target.course);
-		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(savedMode);
+		AssessmentMode mode = createAssessmentModeForCourseEntry();
 		
 		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
@@ -108,12 +117,31 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 			.isNotNull()
 			.isNotEmpty()
 			.extracting(vo -> vo.getKey())
-			.containsAnyOf(savedMode.getKey());	
+			.containsAnyOf(mode.getKey());	
 		
 		for(AssessmentModeVO modeVo:modeVoes) {
 			Assert.assertEquals(courseEntry.getKey(), modeVo.getRepositoryEntryKey());
 		}
 		conn.close();
+	}
+	
+	@Test
+	public void getAssessmentModesFormOtherOrganisations()
+	throws IOException, URISyntaxException, InterruptedException {
+		
+		AssessmentMode mode = createAssessmentModeForCourseEntry();
+		Assert.assertNotNull(mode);
+		
+		RestConnection conn = new RestConnection(otherAdministrator.getUser().getNickName(), JunitTestHelper.PWD);			
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("assessmentmodes").build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+		
+		conn.shutdown();
 	}
 	
 	@Test
@@ -147,6 +175,27 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("Get course assessment", modeVo.getName());
 		conn.close();
 
+	}
+	
+	@Test
+	public void getAssessmentModeByKeyFromOtherOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		
+		AssessmentMode mode = createAssessmentModeForCourseEntry();
+		
+		RestConnection conn = new RestConnection(otherAdministrator.getUser().getNickName(), JunitTestHelper.PWD);			
+		
+		// Search with the external ID
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("assessmentmodes").path(mode.getKey().toString())
+				.build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.shutdown();
 	}
 	
 	@Test
@@ -265,7 +314,110 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(updatedAssessmentMode.isRestrictAccessElements());
 		Assert.assertEquals("90604173081887,90604173081892", updatedAssessmentMode.getElementList());
 		Assert.assertEquals("90604173081892", updatedAssessmentMode.getStartElement());
-		conn.close();
 
+		conn.close();
+	}
+	
+	/**
+	 * Read the assessment mode of course A through the path of course B.
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void getAssessmentModeByKeyThroughOtherCourse()
+	throws IOException, URISyntaxException, InterruptedException {
+		AssessmentMode mode = createAssessmentModeForCourseEntry();
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
+		RepositoryEntry otherCourseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(otherCourseEntry.getOlatResource().getResourceableId().toString())
+				.path("assessmentmodes").path(mode.getKey().toString())
+				.build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.shutdown();
+	}
+
+	@Test
+	public void updateAssessmentModeFromOtherOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		AssessmentMode mode = createAssessmentModeForCourseEntry();
+
+		AssessmentModeVO assessmentModeVo = AssessmentModeVO.valueOf(mode);
+		assessmentModeVo.setName("Hacked course assessment");
+
+		RestConnection conn = new RestConnection(otherAdministrator.getUser().getNickName(), JunitTestHelper.PWD);
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("assessmentmodes").build();
+		HttpRequest method = conn.createPost(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
+		Assert.assertEquals(mode.getName(), reloadedMode.getName());
+
+		conn.shutdown();
+	}
+
+	@Test
+	public void getAssessmentModesAsLearnResourceManagerOfOtherOrganisation()
+	throws IOException, URISyntaxException, InterruptedException {
+		createAssessmentModeForCourseEntry();
+		IdentityWithLogin learnResourceManager = JunitTestHelper
+				.createAndPersistRndManager("course-other-lrm", otherUnitTestOrganisation, OrganisationRoles.learnresourcemanager);
+
+		RestConnection conn = new RestConnection(learnResourceManager.getUser().getNickName(), JunitTestHelper.PWD);
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("assessmentmodes").build();
+		HttpRequest method = conn.createGet(request, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(403, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.shutdown();
+	}
+
+	@Test
+	public void updateAssessmentModeUnknownKey()
+	throws IOException, URISyntaxException, InterruptedException {
+		AssessmentModeVO assessmentModeVo = new AssessmentModeVO();
+		assessmentModeVo.setKey(-24l);
+		assessmentModeVo.setRepositoryEntryKey(courseEntry.getKey());
+		assessmentModeVo.setName("Unknown course assessment");
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(courseEntry.getOlatResource().getResourceableId().toString())
+				.path("assessmentmodes").build();
+		HttpRequest method = conn.createPost(request, assessmentModeVo, MediaType.APPLICATION_JSON);
+		HttpResponse<InputStream> response = conn.execute(method);
+		Assert.assertEquals(404, response.statusCode());
+		ConnectionUtilities.consume(response);
+
+		conn.shutdown();
+	}
+
+	private AssessmentMode createAssessmentModeForCourseEntry() {
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(courseEntry);
+		mode.setName("Assessment to not load");
+		mode.setBegin(new Date());
+		mode.setEnd(new Date());
+		mode.setTargetAudience(Target.course);
+		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(savedMode);
+		return mode;
 	}
 }
