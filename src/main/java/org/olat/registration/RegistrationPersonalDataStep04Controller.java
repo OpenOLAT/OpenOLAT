@@ -59,7 +59,7 @@ public class RegistrationPersonalDataStep04Controller extends StepFormBasicContr
 		boolean username = invitation == null;
 
 		registrationPersonalDataCtrl = new RegistrationPersonalDataController(ureq, getWindowControl(), runContext, i18nModule.getLocaleKey(getLocale()),
-				proposedUsername, firstName, lastName, email, user, false, username, rootForm);
+				proposedUsername, firstName, lastName, email, user, false, username, invitation != null, rootForm);
 		initForm(ureq);
 	}
 

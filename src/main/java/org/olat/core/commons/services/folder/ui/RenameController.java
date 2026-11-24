@@ -48,6 +48,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RenameController extends FormBasicController {
 
+	private static final int MAX_LENGTH = 255;
+	
 	private TextElement titleEl;
 	private TextElement filenameEl;
 	
@@ -96,6 +98,9 @@ public class RenameController extends FormBasicController {
 			filenameEl.setValue(filename);
 			if (!StringHelper.containsNonWhitespace(filename)) {
 				filenameEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(filename.length() > MAX_LENGTH) {
+				filenameEl.setErrorKey("form.error.toolong", Integer.toString(MAX_LENGTH));
 				allOk &= false;
 			} else if (!FileUtils.validateFilename(filename)) {
 				if (vfsItem instanceof VFSContainer) {

@@ -46,6 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CreateFolderController extends FormBasicController {
+	
+	private static final int MAX_LENGTH = 255;
 
 	private TextElement textElementEl;
 
@@ -89,6 +91,9 @@ public class CreateFolderController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(name)) {
 			textElementEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else if(name.length() > MAX_LENGTH) {
+			textElementEl.setErrorKey("form.error.toolong", Integer.toString(MAX_LENGTH));
+			allOk &= false;
 		} else {
 			if (!FileUtils.validateFilename(name)) {
 				textElementEl.setErrorKey("cf.name.notvalid");
@@ -96,7 +101,7 @@ public class CreateFolderController extends FormBasicController {
 			} else {
 				VFSItem item = currentContainer.resolve(name);
 				if (item != null) {
-					textElementEl.setErrorKey("cf.exists", new String[] {name});
+					textElementEl.setErrorKey("cf.exists", name);
 					allOk &= false;
 				}
 			}

@@ -102,6 +102,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private final String lastName;
 	private final boolean userInUse;
 	private final boolean username;
+	private final boolean emailReadOnly;
 	private final PasskeyLevels requiredLevel;
 	private final SyntaxValidator passwordSyntaxValidator;
 	private final SyntaxValidator usernameSyntaxValidator;
@@ -125,7 +126,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 
 	public RegistrationPersonalDataController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, String languageKey,
 											  String proposedUsername, String firstName, String lastName,
-											  String email, User invUser, boolean userInUse, boolean username, Form mainForm) {
+											  String email, User invUser, boolean userInUse, boolean username, boolean emailReadOnly, Form mainForm) {
 		super(ureq, wControl, "registration_personal_data", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		this.runContext = runContext;
 		this.invUser = invUser;
@@ -143,6 +144,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 		this.email = email;
 		this.userInUse = userInUse;
 		this.username = username;
+		this.emailReadOnly = emailReadOnly;
 		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
@@ -294,6 +296,9 @@ public class RegistrationPersonalDataController extends FormBasicController {
 			
 			if (UserConstants.EMAIL.equals(userPropertyHandler.getName()) && fi instanceof TextElement ft) {
 				ft.setValue(email);
+				if(emailReadOnly && fi.isEnabled()) {
+					fi.setEnabled(false);// Ensure the email is read-only after being validated
+				}
 			} else if (UserConstants.FIRSTNAME.equals(userPropertyHandler.getName()) && fi instanceof TextElement ft) {
 				ft.setValue(firstName);
 			} else if (UserConstants.LASTNAME.equals(userPropertyHandler.getName()) && fi instanceof TextElement ft) {

@@ -21,7 +21,7 @@ package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.RubricsComparison.Attribute;
@@ -29,7 +29,7 @@ import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.RubricTableController;
-import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
+import org.olat.modules.forms.ui.model.EvaluationFormControllerReportFormItemElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 
 /**
@@ -62,8 +62,8 @@ public class RubricTableHandler implements EvaluationFormReportHandler {
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof Rubric rubric) {
-			Controller ctrl = new RubricTableController(ureq, windowControl, rubric, filter, reportHelper);
-			return new EvaluationFormControllerReportElement(ctrl);
+			FormBasicController ctrl = new RubricTableController(ureq, windowControl, rootForm, rubric, filter, reportHelper);
+			return new EvaluationFormControllerReportFormItemElement(ctrl);
 		}
 		return null;
 	}
