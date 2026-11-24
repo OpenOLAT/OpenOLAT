@@ -61,8 +61,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.fileresource.types.ImageFileResource;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -422,6 +422,21 @@ public class JunitTestHelper {
 		return createAndPersistIdentityAsLearnResourceManager(login);
 	}
 
+	/**
+	 * Create an identity with the roles user and learn resource manager
+	 * in the specified organisation only.
+	 *
+	 * @param prefixLogin The prefix of the login
+	 * @param organisation The organisation
+	 * @param pwd The password
+	 * @return The identity
+	 */
+	public static final IdentityWithLogin createAndPersistRndManager(String prefixLogin, Organisation organisation, OrganisationRoles role) {
+		Identity identity = createAndPersistIdentityAsRndUser(prefixLogin, organisation, JunitTestHelper.PWD);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, role, identity);
+		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
+		return new IdentityWithLogin(identity, identity.getUser().getNickName(), JunitTestHelper.PWD);
+	}
 
 	public static Identity createAndPersistIdentityAsRndCurriculumManager(String prefix) {
 		String login = getRandomizedLoginName(prefix);
@@ -489,11 +504,29 @@ public class JunitTestHelper {
 		return createAndPersistRepositoryEntry(initialAuthor, r, membersOnly);
 	}
 	
+	/**
+	 * Create a repository entry linked to the specified organisation.
+	 *
+	 * @param organisation The organisation of the entry
+	 * @return The repository entry
+	 */
+	public static final RepositoryEntry createAndPersistRepositoryEntry(Organisation organisation) {
+		OLATResourceManager resourceManager = OLATResourceManager.getInstance();
+		String resourceName = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resourceName, CodeHelper.getForeverUniqueID());
+		OLATResource r =  resourceManager.createOLATResourceInstance(ores);
+		resourceManager.saveOLATResource(r);
+		return createAndPersistRepositoryEntry("Florian Gnägi", r, false, organisation);
+	}
+
 	public static final RepositoryEntry createAndPersistRepositoryEntry(String initialAuthor, OLATResource r, boolean membersOnly) {
+		return createAndPersistRepositoryEntry(initialAuthor, r, membersOnly, getDefaultOrganisation());
+	}
+
+	private static final RepositoryEntry createAndPersistRepositoryEntry(String initialAuthor, OLATResource r, boolean membersOnly, Organisation organisation) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		Organisation defOrganisation = getDefaultOrganisation();
 		RepositoryEntry re = repositoryService.create(null, initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null,
-				r, RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, defOrganisation);
+				r, RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, organisation);
 		if(!membersOnly) {
 			re.setPublicVisible(true);
 		}
