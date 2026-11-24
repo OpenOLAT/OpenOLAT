@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -52,8 +53,8 @@ public class CountTableController extends FormBasicController {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public CountTableController(UserRequest ureq, WindowControl wControl, CountDataSource dataSource) {
-		super(ureq, wControl, LAYOUT_HORIZONTAL);
+	public CountTableController(UserRequest ureq, WindowControl wControl, Form rootForm, CountDataSource dataSource) {
+		super(ureq, wControl, LAYOUT_HORIZONTAL, null, rootForm);
 		this.dataSource = dataSource;
 		initForm(ureq);
 	}

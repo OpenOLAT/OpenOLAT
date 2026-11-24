@@ -58,7 +58,7 @@ public class DateInputLegendTextHandler implements EvaluationFormReportHandler {
 			DateResponseFormatter responseFormatter = createFormatter(ureq, dateInput);
 			TextInputLegendTextDataSource dataSource = new TextInputLegendTextDataSource(dateInput.getId(), filter,
 					reportHelper, responseFormatter);
-			Controller ctrl = new TextInputLegendTextController(ureq, windowControl, dataSource, reportHelper);
+			Controller ctrl = new TextInputLegendTextController(ureq, windowControl, rootForm, dataSource, reportHelper);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;

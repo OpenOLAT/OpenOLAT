@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,9 +46,9 @@ public class LegendTextFixedController extends FormBasicController {
 	private final LegendTextDataSource dataSource;
 	private final ReportHelper reportHelper;
 
-	public LegendTextFixedController(UserRequest ureq, WindowControl wControl, LegendTextDataSource dataSource,
-			ReportHelper reportHelper) {
-		super(ureq, wControl, "legend_text_fixed");
+	public LegendTextFixedController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			LegendTextDataSource dataSource, ReportHelper reportHelper) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "legend_text_fixed", rootForm);
 		this.dataSource = dataSource;
 		this.reportHelper = reportHelper;
 		initForm(ureq);

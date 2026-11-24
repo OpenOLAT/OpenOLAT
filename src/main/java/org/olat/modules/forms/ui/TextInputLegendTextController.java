@@ -21,6 +21,7 @@ package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -48,8 +49,8 @@ public class TextInputLegendTextController extends BasicController {
 	private final LegendTextDataSource dataSource;
 	private final ReportHelper reportHelper;
 
-	public TextInputLegendTextController(UserRequest ureq, WindowControl wControl, TextInputLegendTextDataSource dataSource,
-			ReportHelper reportHelper) {
+	public TextInputLegendTextController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			TextInputLegendTextDataSource dataSource, ReportHelper reportHelper) {
 		super(ureq, wControl);
 		this.dataSource = dataSource;
 		this.reportHelper = reportHelper;
@@ -67,7 +68,7 @@ public class TextInputLegendTextController extends BasicController {
 			mainVC.contextPut("noText", translate("textinput.no.text"));
 		}
 		
-		legendTextCtrl = new LegendTextFixedController(ureq, wControl, dataSource, reportHelper);
+		legendTextCtrl = new LegendTextFixedController(ureq, wControl, rootForm, dataSource, reportHelper);
 		mainVC.put("legend.text", legendTextCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);

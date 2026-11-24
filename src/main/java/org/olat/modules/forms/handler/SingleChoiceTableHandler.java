@@ -21,7 +21,7 @@ package org.olat.modules.forms.handler;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.SessionFilter;
@@ -29,7 +29,7 @@ import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.ui.CountTableController;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.CountDataSource;
-import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
+import org.olat.modules.forms.ui.model.EvaluationFormControllerReportFormItemElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.forms.ui.model.SingleChoiceDataSource;
 
@@ -52,8 +52,8 @@ public class SingleChoiceTableHandler implements EvaluationFormReportHandler {
 		if (element instanceof SingleChoice singleChoice) {
 			if (singleChoice.getChoices().size() > 0) {
 				CountDataSource dataSource = new SingleChoiceDataSource(singleChoice, filter);
-				Controller ctrl = new CountTableController(ureq, windowControl, dataSource);
-				return new EvaluationFormControllerReportElement(ctrl);
+				FormBasicController ctrl = new CountTableController(ureq, windowControl, rootForm, dataSource);
+				return new EvaluationFormControllerReportFormItemElement(ctrl);
 			}
 		}
 		return null;
