@@ -7,8 +7,6 @@
 </span>
 <span class="o_lecture_time">$row.time</span>
 <span class="o_title o_dashboard_widget_row_title">$r.escapeHtml($row.title)</span>
-#if($r.isNotEmpty($row.location))
-	<span class="o_row_location"><i class="o_icon o_icon_location"></i> $r.escapeHtml($row.location)</span>
-#elseif($row.isOnlineMeeting())
-	<span class="o_row_location"><i class="o_icon o_vc_icon"></i> $r.translate("lecture.online.meeting")</span>
+#if($r.isNotEmpty($row.location) || $r.isNotEmpty($row.rooms))
+	<span class="o_row_location"><i class="o_icon #if($row.isOnlineMeeting()) o_vc_icon #else o_icon_location #end"></i> #if($r.isNotEmpty($row.location))$r.escapeHtml($row.location)#end#if($r.isNotEmpty($row.location) && $r.isNotEmpty($row.rooms)) <span class="o_spacer">&middot;</span> #end#if($r.isNotEmpty($row.rooms))$r.escapeHtml($row.rooms)#end</span>
 #end

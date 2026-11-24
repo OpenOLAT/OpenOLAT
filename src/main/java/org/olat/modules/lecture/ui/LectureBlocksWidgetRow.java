@@ -37,6 +37,7 @@ public class LectureBlocksWidgetRow {
 	private String day;
 	private String title;
 	private String location;
+	private String rooms;
 	private boolean onlineMeeting;
 	private String time;
 	private FormLink titleLink;
@@ -106,6 +107,14 @@ public class LectureBlocksWidgetRow {
 		this.location = location;
 	}
 	
+	public String getRooms() {
+		return rooms;
+	}
+
+	public void setRooms(String rooms) {
+		this.rooms = rooms;
+	}
+
 	public boolean isOnlineMeeting() {
 		return onlineMeeting;
 	}

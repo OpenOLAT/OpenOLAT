@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -59,6 +61,11 @@ import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
 import org.olat.modules.lecture.ui.component.LectureBlocksWidgetRenderer;
+import org.olat.modules.roommanagement.Room;
+import org.olat.modules.roommanagement.RoomBooking;
+import org.olat.modules.roommanagement.RoomManagementModule;
+import org.olat.modules.roommanagement.RoomManagementService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -78,6 +85,11 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 	protected FormLink backButton;
 	protected FormLink forwardButton;
 	protected FormLink showAllLink;
+
+	@Autowired
+	private RoomManagementModule roomManagementModule;
+	@Autowired
+	private RoomManagementService roomManagementService;
 
 	public LectureBlocksWidgetController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -215,19 +227,52 @@ public abstract class LectureBlocksWidgetController extends TableWidgetControlle
 
 	protected abstract LectureBlockRef loadNextScheduledBlock();
 
+	private Map<Long, String> loadRooms(List<LectureBlock> lectureBlocks) {
+		if (!roomManagementModule.isEnabled() || lectureBlocks.isEmpty()) {
+			return Map.of();
+		}
+
+		List<Long> keys = lectureBlocks.stream().map(LectureBlock::getKey).toList();
+		return roomManagementService.getBookings(keys).stream()
+				.map(booking -> Map.entry(booking.getLectureBlock().getKey(), getRoomName(booking)))
+				.filter(entry -> StringHelper.containsNonWhitespace(entry.getValue()))
+				.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.joining(", "))));
+	}
+
+	private String getRoomName(RoomBooking booking) {
+		Room room = booking.getRoom();
+		return StringHelper.containsNonWhitespace(room.getExternalRef())? room.getExternalRef(): room.getDescription();
+	}
+
+	private String getLocation(LectureBlock lectureBlock, boolean onlineMeeting) {
+		if (StringHelper.containsNonWhitespace(lectureBlock.getLocation())) {
+			return lectureBlock.getLocation();
+		}
+		if (onlineMeeting) {
+			return StringHelper.containsNonWhitespace(lectureBlock.getMeetingTitle())
+					? lectureBlock.getMeetingTitle()
+					: translate("lecture.online.meeting");
+		}
+		return null;
+	}
+
 	private void updateTable(List<LectureBlock> lectureBlocks, LectureBlockRef nextScheduledBlock) {
 		lectureBlocks.sort(Comparator.comparing(LectureBlock::getStartDate));
 		
 		Date currentDay = null;
 		Date selectedDate = DateUtils.getStartOfDay(dayNavEl.getSelectedDate());
 		String scrollToId = null;
+		Map<Long, String> roomsByBlock = loadRooms(lectureBlocks);
 		List<LectureBlocksWidgetRow> rows = new ArrayList<>(lectureBlocks.size());
 		for (LectureBlock lectureBlock : lectureBlocks) {
 			LectureBlocksWidgetRow row = new LectureBlocksWidgetRow();
 			row.setKey(lectureBlock.getKey());
 			row.setTitle(lectureBlock.getTitle());
-			row.setLocation(lectureBlock.getLocation());
-			row.setOnlineMeeting(lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null);
+			boolean onlineMeeting = lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null
+					|| StringHelper.containsNonWhitespace(lectureBlock.getMeetingUrl());
+			row.setOnlineMeeting(onlineMeeting);
+			row.setLocation(getLocation(lectureBlock, onlineMeeting));
+			row.setRooms(roomsByBlock.get(lectureBlock.getKey()));
 			row.setTime(formatTime(lectureBlock));
 			
 			if (!DateUtils.isSameDay(currentDay, lectureBlock.getStartDate())) {
