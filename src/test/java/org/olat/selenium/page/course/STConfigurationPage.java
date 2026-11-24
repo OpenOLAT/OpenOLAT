@@ -49,8 +49,8 @@ public class STConfigurationPage {
 		By displayTypeBy = By.xpath("//fieldset[contains(@class,'o_sel_st_overview_settings')]//div[contains(@class,'o_sel_st_display_type')]//input[@type='radio'][@value='" + type + "']");
 		OOGraphene.click(displayTypeBy, browser);
 
-		if(type == DisplayType.system || type == DisplayType.peekview) {
-			By displayTwoColumnsBy = By.xpath("//fieldset[contains(@class,'o_sel_st_overview_settings')]//input[@type='checkbox'][@name='displayTwoColumns']");
+		if(type == DisplayType.peekview) {
+			By displayTwoColumnsBy = By.xpath("//fieldset[contains(@class,'o_sel_st_overview_settings')]//input[@type='radio'][@name='form.peekview.filter']");
 			OOGraphene.waitElement(displayTwoColumnsBy, browser);	
 		} else {
 			OOGraphene.waitBusy(browser);
