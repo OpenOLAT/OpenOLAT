@@ -28,6 +28,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -79,9 +80,9 @@ public class RubricTableController extends FormBasicController {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public RubricTableController(UserRequest ureq, WindowControl wControl, Rubric rubric, SessionFilter filter,
-			ReportHelper reportHelper) {
-		super(ureq, wControl, LAYOUT_HORIZONTAL);
+	public RubricTableController(UserRequest ureq, WindowControl wControl, Form rootForm, Rubric rubric,
+			SessionFilter filter, ReportHelper reportHelper) {
+		super(ureq, wControl, LAYOUT_HORIZONTAL, null, rootForm);
 		this.rubric = rubric;
 		this.filter = filter;
 		this.reportHelper = reportHelper;
@@ -297,7 +298,7 @@ public class RubricTableController extends FormBasicController {
 			String componentName = "o_sl_com_" + slider.getId().substring(0, 10);
 			LegendTextFixedController legendTextCtrl = null;
 			if (!sessionTexts.isEmpty()) {
-				legendTextCtrl = new LegendTextFixedController(ureq, getWindowControl(), LegendTextDataSource.of(sessionTexts) , reportHelper);
+				legendTextCtrl = new LegendTextFixedController(ureq, getWindowControl(), mainForm, LegendTextDataSource.of(sessionTexts) , reportHelper);
 				listenTo(legendTextCtrl);
 				commentsCont.put(componentName, legendTextCtrl.getInitialComponent());
 			}

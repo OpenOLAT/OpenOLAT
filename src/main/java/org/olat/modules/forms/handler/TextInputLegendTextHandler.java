@@ -54,7 +54,7 @@ public class TextInputLegendTextHandler implements EvaluationFormReportHandler {
 					ureq.getLocale());
 			TextInputLegendTextDataSource dataSource = new TextInputLegendTextDataSource(textInput.getId(), filter,
 					reportHelper, responseFormatter);
-			Controller ctrl = new TextInputLegendTextController(ureq, windowControl, dataSource, reportHelper);
+			Controller ctrl = new TextInputLegendTextController(ureq, windowControl, rootForm, dataSource, reportHelper);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;
