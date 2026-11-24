@@ -107,7 +107,7 @@ implements SortableFlexiTableDataModel<RevisionRow> {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != download && this != restore && this != delete;
 		}
 
 		@Override

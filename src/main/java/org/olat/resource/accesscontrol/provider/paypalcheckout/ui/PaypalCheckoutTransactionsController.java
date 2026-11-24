@@ -101,7 +101,6 @@ public class PaypalCheckoutTransactionsController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.status,
 				new PaypalCheckoutTransactionStatusRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.date));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.status));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.paypalOrderNr, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.amount));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.orderNr, "select"));

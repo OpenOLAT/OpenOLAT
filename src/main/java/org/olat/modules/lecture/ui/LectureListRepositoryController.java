@@ -946,9 +946,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 
 	private void selectScope(UserRequest ureq) {
 		boolean asc = !scopeInPast();
-		FlexiTableSortOptions options = new FlexiTableSortOptions();
-		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), asc));
-		tableEl.setSortSettings(options);
+		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(BlockCols.date.name(), asc)));
 		
 		initFiltersPresets();
 		tableEl.setSelectedFilterTab(ureq, allTab);

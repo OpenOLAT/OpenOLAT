@@ -127,7 +127,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>{
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != recordings && this != select && this != confirm && this != commands;
 		}
 
 		@Override

@@ -281,10 +281,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		tableEl.setRendererType(renderType);
 		tableEl.setAndLoadPersistedPreferences(ureq, "page-list-v2-".concat(preferencesName));
 		
-		FlexiTableSortOptions options = new FlexiTableSortOptions();
-		options.setFromColumnModel(true);
-		options.setDefaultOrderBy(new SortKey(null, false));
-		tableEl.setSortSettings(options);
+		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(PageCols.date.sortKey(), false)));
 	}
 	
 	protected void initColumns(FlexiTableColumnModel columnsModel) {

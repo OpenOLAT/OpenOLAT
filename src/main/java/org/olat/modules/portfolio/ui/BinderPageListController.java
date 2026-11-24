@@ -85,6 +85,7 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
+import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
@@ -242,10 +243,7 @@ public class BinderPageListController extends AbstractPageListController {
 			layoutCont.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 		}
 
-		FlexiTableSortOptions options = new FlexiTableSortOptions();
-		options.setFromColumnModel(true);
-		options.setDefaultOrderBy(new SortKey(null, false));
-		tableEl.setSortSettings(options);
+		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(PageCols.date.sortKey(), false)));
 		
 		previousSectionLink = uifactory.addFormLink("section.paging.previous", formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		previousSectionLink.setVisible(false);

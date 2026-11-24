@@ -166,7 +166,7 @@ public class PositionCategoryController extends FormBasicController implements P
 		tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 				.withMessageI18nKey("category.table.empty")
 				.build());
-		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(CategoryCols.category.name(), true)));
+		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(CategoryCols.category.sortKey(), true)));
 	}
 	
 	private void loadSystemModel() {

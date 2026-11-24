@@ -19,10 +19,12 @@
  */
 package org.olat.admin.sysinfo.model;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -30,7 +32,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -51,8 +55,31 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<LargeFilesTableContentRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<LargeFilesTableContentRow> views = new LargeFilesSortDelegate(orderBy, this, locale).sort();
 			super.setObjects(views);
+		}
+	}
+	
+	private static class LargeFilesSortDelegate extends SortableFlexiTableModelDelegate<LargeFilesTableContentRow> {
+		
+		public LargeFilesSortDelegate(SortKey orderBy, LargeFilesTableModel tableModel, Locale locale) {
+			super(orderBy, tableModel, locale);
+		}
+		
+		@Override
+		protected void sort(List<LargeFilesTableContentRow> rows) {
+			LargeFilesTableColumns column = LargeFilesTableColumns.values()[getColumnIndex()];
+			if(column == LargeFilesTableColumns.author) {
+				rows.sort(Comparator.comparing(row -> displayName(row.getFileInitializedBy()), Comparator.nullsLast(getCollator())));
+			} else if(column == LargeFilesTableColumns.lockedBy) {
+				rows.sort(Comparator.comparing(row -> displayName(row.getLockedBy()), Comparator.nullsLast(getCollator())));
+			} else {
+				super.sort(rows);
+			}
+		}
+		
+		private static String displayName(Identity identity) {
+			return identity == null ? null : CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(identity);
 		}
 	}
 
@@ -149,7 +176,7 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != sendMail;
 		}
 
 		@Override

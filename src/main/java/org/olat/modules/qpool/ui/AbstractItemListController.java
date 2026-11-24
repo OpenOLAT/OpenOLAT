@@ -252,7 +252,6 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setSelectAllEnable(true);
 		itemsTable.setMultiSelect(true);
 		itemsTable.setSearchEnabled(true);
-		itemsTable.setSortSettings(new FlexiTableSortOptions(true));
 		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
 		itemsTable.setExportEnabled(true);
 		itemsTable.setAndLoadPersistedPreferences(ureq, "qpool-list-" + prefsKey + "-v2");

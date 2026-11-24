@@ -100,7 +100,7 @@ implements SortableFlexiTableDataModel<DeletedFileRow> {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != download && this != restore;
 		}
 
 		@Override

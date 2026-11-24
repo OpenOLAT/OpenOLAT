@@ -210,8 +210,8 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 
 	public enum InPreparationCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		creationDate("cif.displayname"),
-		lastModified("cif.displayname"),
+		creationDate("orderby.creationDate"),
+		lastModified("orderby.lastModified"),
 		displayName("cif.displayname"),
 		externalId("table.header.externalid"),
 		externalRef("table.header.externalref"),

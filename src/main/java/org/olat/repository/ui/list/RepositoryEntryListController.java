@@ -242,8 +242,10 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), false, null,
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.select.ordinal(),
-				true, OrderBy.displayname.name()));
+		DefaultFlexiColumnModel displayNameCol = new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.select.ordinal(),
+				true, OrderBy.title.name());
+		displayNameCol.setHeaderLabel(translate("orderby.title"));
+		columnsModel.addFlexiColumnModel(displayNameCol);
 		if(repositoryModule.isManagedRepositoryEntries()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(),
 				true, OrderBy.externalId.name()));
@@ -295,8 +297,10 @@ public class RepositoryEntryListController extends FormBasicController
 			columnsModel.addFlexiColumnModel(successStatusColumnModel);
 		}
 		if(repositoryModule.isRatingEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
-				true, OrderBy.rating.name()));
+			DefaultFlexiColumnModel ratingsCol = new DefaultFlexiColumnModel(false, Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
+				true, OrderBy.rating.name());
+			ratingsCol.setHeaderLabel(translate("orderby.rating"));
+			columnsModel.addFlexiColumnModel(ratingsCol);
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.open.i18nKey(), Cols.open.ordinal()));
 		
@@ -510,14 +514,12 @@ public class RepositoryEntryListController extends FormBasicController
 		sorters.add(new FlexiTableSort(translate("orderby.completion"), OrderBy.completion.name()));
 		sorters.add(FlexiTableSort.SPACER);
 		sorters.add(new FlexiTableSort(translate("orderby.title"), OrderBy.title.name()));
-		sorters.add(new FlexiTableSort(translate("orderby.lifecycle"), OrderBy.lifecycle.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.author"), OrderBy.author.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), OrderBy.creationDate.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.lastModified"), OrderBy.lastModified.name()));
 		if(repositoryModule.isRatingEnabled()) {
 			sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
 		}
-		sorters.add(new FlexiTableSort(translate("sort.relevance"), OrderBy.automatic.name()));
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
 		options.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
