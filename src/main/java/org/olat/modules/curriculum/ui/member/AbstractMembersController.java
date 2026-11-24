@@ -512,10 +512,11 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		Identity member = securityManager.loadIdentityByKey(row.getIdentityKey());
 		
+		boolean withOrders = curriculumElement.getParent() == null;
 		boolean canManagerUsers = secCallback.canManageCurriculumElementUsers(curriculumElement);
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null,
 				withEdit && canManagerUsers, withAcceptDecline && canManagerUsers, canManagerUsers,
-				true, false, true, true, true, canManagerUsers, false, false);
+				true, false, true, withOrders, true, canManagerUsers, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, curriculumElement, elements, member, config);
 		detailsCtrl.setUserObject(row);

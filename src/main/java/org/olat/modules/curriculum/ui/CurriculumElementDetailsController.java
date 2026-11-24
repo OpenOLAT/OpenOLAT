@@ -611,7 +611,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}
 		
 		// Reports
-		if(secCallback.canCurriculumReports(curriculum)) {	
+		if(secCallback.canCurriculumReports(curriculum) && curriculumElement.getParent() == null) {	
 			tabPane.addTab(ureq, translate("curriculum.reports"), uureq -> {
 				reportsCtrl = new CurriculumReportsController(uureq, getWindowControl(),
 						null, curriculum, curriculumElement, ArchiveType.CURRICULUMELEMENT, TITLE_SIZE);
