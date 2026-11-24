@@ -320,7 +320,7 @@ public class CourseWidgetController extends TableWidgetController
 		
 		FormLink titleLink = uifactory.addFormLink("title_" + row.getKey(), CMD_OPEN, "", tableEl, Link.NONTRANSLATED);
 		titleLink.setInnerComponent(linkVC);
-		titleLink.setElementCssClass("o_link_plain o_row_select");
+		titleLink.setElementCssClass("o_link_plain o_dashboard_widget_row_link");
 		setUrl(titleLink, "[RepositoryEntry:" + row.getKey() + "]");
 		row.setTitleLink(titleLink);
 		

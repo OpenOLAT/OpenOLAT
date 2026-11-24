@@ -22,7 +22,6 @@ package org.olat.modules.curriculum.ui.widgets;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -31,34 +30,18 @@ import org.olat.resource.OLATResource;
  *
  */
 public record CourseWidgetRow(RepositoryEntry entry, boolean template, FormLink openLink, FormLink instantiateTemplateLink,
-		String url, String thumbnailUrl, String statusHtml) {
+		String thumbnailUrl, String technicalType, String statusHtml, String executionPeriod) {
 
 	public Long getKey() {
 		return entry.getKey();
-	}
-
-	public OLATResource getOlatResource() {
-		return entry.getOlatResource();
 	}
 
 	public boolean isThumbnailAvailable() {
 		return StringHelper.containsNonWhitespace(thumbnailUrl);
 	}
 	
-	public String getDisplayname() {
-		return entry.getDisplayname();
-	}
-	
 	public String getExternalRef() {
 		return entry.getExternalRef();
-	}
-
-	public FormLink getOpenLink() {
-		return openLink;
-	}
-	
-	public FormLink getInstantiateTemplateLink() {
-		return instantiateTemplateLink;
 	}
 
 	@Override

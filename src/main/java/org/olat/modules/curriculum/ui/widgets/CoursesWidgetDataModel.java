@@ -20,7 +20,6 @@
 package org.olat.modules.curriculum.ui.widgets;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
@@ -31,47 +30,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  */
 public class CoursesWidgetDataModel extends DefaultFlexiTableDataModel<CourseWidgetRow> {
 
-	private static final EntriesCols[] COLS = EntriesCols.values();
-	
 	public CoursesWidgetDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		CourseWidgetRow entryRow = getObject(row);
-		return switch(COLS[col]) {
-			case key -> entryRow.getKey();
-			case displayName -> entryRow.getDisplayname();
-			case externalRef -> entryRow.getExternalRef();
-			default -> "ERROR";
-		};
+		return getObject(row);
 	}
 
-	public enum EntriesCols implements FlexiSortableColumnDef {
-		key("table.header.key"),
-		displayName("table.header.title"),
-		externalRef("table.header.identifier");
-		
-		private final String i18nKey;
-		
-		private EntriesCols(String i18nKey) {
-			this.i18nKey = i18nKey;
-		}
-		
-		@Override
-		public String i18nHeaderKey() {
-			return i18nKey;
-		}
-
-		@Override
-		public boolean sortable() {
-			return false;
-		}
-
-		@Override
-		public String sortKey() {
-			return name();
-		}
-	}
 }

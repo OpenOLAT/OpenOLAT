@@ -2164,13 +2164,11 @@ The light theme has these defaults. "Sass default" is `-` for a token with a ref
 | Course site and repository | `--o-ac-billing-address-border` | `o-neutral(250)` | `var(--o-neutral-250)` |
 | Course site and repository | `--o-ac-billing-address-temporary-bg` | `$o-ac-ba-no-ident-bg-color` | `var(--o-white)` |
 | Curriculum | `--o-curriculum-avatar-bg` | - | `var(--o-primary)` |
-| Curriculum | `--o-curriculum-widget-template-label` | - | `var(--o-text)` |
 | Curriculum | `--o-curriculum-element-inactive` | `$o-curriculum-element-inactive-color` | `var(--o-neutral-500)` |
 | Curriculum | `--o-curriculum-avatar-fg` | `$o-curriculum-avatar-color` | `var(--o-white)` |
 | Curriculum | `--o-curriculum-widget-card-border` | `o-neutral(250)` | `var(--o-neutral-250)` |
 | Curriculum | `--o-curriculum-widget-border` | `o-neutral(150)` | `var(--o-neutral-150)` |
 | Curriculum | `--o-curriculum-widget-bg` | `$o-curriculum-widget-bg-color` | `var(--o-panel-bg)` |
-| Curriculum | `--o-curriculum-widget-template-label-bg` | `$o-curriculum-widget-template-label-bg` | `var(--o-white)` |
 | Curriculum | `--o-curriculum-import-error-bg` | `$o-curriculum-import-bg-error` | `var(--o-neutral-25)` |
 | Curriculum | `--o-curriculum-import-new-bg` | `$o-curriculum-import-bg-new` | `var(--o-neutral-50)` |
 | Curriculum | `--o-curriculum-import-changed-bg` | `$o-curriculum-import-bg-changed` | `var(--o-neutral-25)` |
@@ -2857,7 +2855,6 @@ The drop shadow below the navigation bar has no token: its geometry differs per 
 | `edu-type-*-course` (8), `entry-benefit`, `proj-timeline-overdue`, `proj-timeline-today`, `authentication-level{1,2,3}` | `bg` | 4.5:1 |
 | `lp-pagination-done-fg` | `lp-pagination-done-bg` | 4.5:1 |
 | `curriculum-avatar-fg` | `curriculum-avatar-bg` | 4.5:1 |
-| `curriculum-widget-template-label` | `curriculum-widget-template-label-bg` | 4.5:1 |
 | `highscore-rank-first`, `highscore-rank-second`, `highscore-rank-third` | `highscore-podium-<place>-bg` and its stops `-stop-1`, `-stop-2`, `-stop-4` | 3:1 (large number) |
 | `user-initials-fg` | `user-initials-base-bg` | 4.5:1 |
 | `content-fieldset-legend`, `lecture-excluded`, `creditpoint-withdraw`, `creditpoint-deposit`, `course-quota-intern-quota`, `course-quota-intern`, `course-quota-extern`, `todo-overdue`, `quality-unrated`, `forum-quote`, `citation-quote`, `qti-bad-response` | `bg` | 4.5:1 |

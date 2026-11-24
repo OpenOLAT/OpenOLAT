@@ -204,101 +204,6 @@ a.o_validation_open_results {
 
 /* Use the same color and border as o_widget */
 .o_curriculum_overview {
-	.o_curriculum_course_cards {
-		margin: 0 $o-dashboard-widget-base-margin;
-		.o_table_flexi.o_rendertype_custom .o_table_row.row {
-			padding: 0;
-			margin: 0;
-			width: 100%;
-		}
-	
-	}
-	.o_curriculum_course_card {
-		display: grid;
-		grid-template-columns: 120px 1fr auto;
-		gap: 10px;
-		padding: 5px;
-		border: $o-curriculum-widget-card-border-width $o-curriculum-widget-card-border-style var(--o-curriculum-widget-card-border);
-		border-radius: $o-curriculum-widget-card-border-radius;
-		background-color: var(--o-bg);
-		
-		h4 {
-			font-size: $font-size-h4;
-			margin: 3px 0;
-			flex-grow: 2;
-		}
-		
-		.o_thumbnail, .o_visual_not_available {
-			width: 120px;
-			height: 80px;
-			
-			img {
-				display: block;
-				width: 120px;
-				height: 80px;
-				object-fit: cover;
-			}
-		}
-		
-		.o_visual_not_available {
-			background: $o-not-available-bg; // o-color-keep(gradient)
-			background-repeat:no-repeat;
-			background-position:50% 50%;		
-			background-size: contain;
-		}
-		
-		&.o_template_course {
-			border: var(--o-box-warning-border);
-			border-style: dashed;
-			background-color: var(--o-box-warning-bg);
-		}
-	}
-	
-	.o_thumbnail_file_img {
-		width: 120px;
-		height: 80px;
-		
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		overflow: hidden;
-	}
-	
-	
-	.o_curriculum_course_card_labels {
-		margin-top: -75px;
-		margin-left: 5px;
-	}
-	
-	.o_curriculum_course_card_label {
-		@extend %o_labeled;
-		
-		&.o_curriculum_label_template {
-			background-color: var(--o-curriculum-widget-template-label-bg) ;
-			color: var(--o-curriculum-widget-template-label);
-		}
-	}
-	
-	.o_card_meta {
-		display: flex;
-		flex-direction: column;
-		justify-content: start;
-		
-		h4 ~ small {
-			order: 1;
-		}
-		
-		> * {
-			order: 2;
-		}
-	}
-	
-	.o_card_cmds {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-	}
-	
 	.o_curriculum_offer_cards {
 		margin: 0 $o-dashboard-widget-base-margin;
 		display: grid;
@@ -554,6 +459,44 @@ a.o_validation_open_results {
 					}
 				}
 			}
+		}
+	}
+}
+.o_widget_course_row {
+	&.o_widget_course_template {
+		background-color: var(--o-box-warning-bg);
+	}
+	.o_dashboard_widget_row_link {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.o_row_status_period {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 2px;
+		white-space: nowrap;
+		.o_labeled_light {
+			margin-top: 0;
+		}
+		.o_row_execution_period {
+			margin-top: auto;
+		}
+	}
+	.o_row_template {
+		display: flex;
+		align-items: center;
+	}
+	
+	@container (max-width: 400px) {
+		.o_dashboard_widget_row_link {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.o_row_status_period,
+		.o_row_template {
+			display: none;
+		}
+		.o_title {
+			@include o-dashboard-widget-row-title-clamp();
 		}
 	}
 }

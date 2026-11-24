@@ -1,7 +1,7 @@
-<div class="o_coaching_widget_course_row">
+<div class="o_dashboard_widget_row o_coaching_widget_course_row">
 	$r.render($row.getTitleName())
 	#if($r.available($row.getParticipantsName()))
-		<div class="o_row_participants">
+		<div class="o_dashboard_widget_row_aside o_row_participants">
 			$r.render($row.getParticipantsName())
 		</div>
 	#end

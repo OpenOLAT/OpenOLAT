@@ -206,3 +206,11 @@
 	background: -webkit-linear-gradient(top, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
 	background: linear-gradient(to bottom, var(--o-#{$name}-stop-1) 0%,var(--o-#{$name}-stop-2) 50%,var(--o-#{$name}) 51%,var(--o-#{$name}-stop-4) 100%);
 }
+
+@mixin o-dashboard-widget-row-title-clamp() {
+	font-size: 16px;
+	white-space: wrap;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}

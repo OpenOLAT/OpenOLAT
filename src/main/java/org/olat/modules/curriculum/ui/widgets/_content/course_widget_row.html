@@ -1,0 +1,8 @@
+<div class="o_dashboard_widget_row o_widget_course_row#if($row.template()) o_widget_course_template#end">
+	$r.render($row.openLink().getComponent().getComponentName())
+	#if($r.isNotNull($row.instantiateTemplateLink()))
+		<div class="o_dashboard_widget_row_aside">
+			$r.render($row.instantiateTemplateLink().getComponent().getComponentName())
+		</div>
+	#end
+</div>

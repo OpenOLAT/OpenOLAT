@@ -1193,19 +1193,16 @@ $o-token-layer-component: (
 	"ac-billing-address-temporary-bg":             ($o-ac-ba-no-ident-bg-color, ()),
 	// Curriculum
 	"curriculum-avatar-bg":                       "primary",
-	"curriculum-widget-template-label":           "text",
 	// the text of an inactive or a deleted element, the text of an avatar, the
 	// borders of a card and of a widget (width and style
 	// $o-curriculum-widget-card-border-width, -style,
-	// $o-curriculum-widget-border-width, -style), the fill of a widget and
-	// of the template label, the fill of an import row: error, new, changed,
-	// ignored
+	// $o-curriculum-widget-border-width, -style), the fill of a widget, the
+	// fill of an import row: error, new, changed, ignored
 	"curriculum-element-inactive":                 ($o-curriculum-element-inactive-color, ()),
 	"curriculum-avatar-fg":                        ($o-curriculum-avatar-color, ()),
 	"curriculum-widget-card-border":               (o-neutral(250), ()),
 	"curriculum-widget-border":                    (o-neutral(150), ()),
 	"curriculum-widget-bg":                        ($o-curriculum-widget-bg-color, ("panel-bg",)),
-	"curriculum-widget-template-label-bg":         ($o-curriculum-widget-template-label-bg, ()),
 	"curriculum-import-error-bg":                  ($o-curriculum-import-bg-error, ()),
 	"curriculum-import-new-bg":                    ($o-curriculum-import-bg-new, ()),
 	"curriculum-import-changed-bg":                ($o-curriculum-import-bg-changed, ()),
@@ -2401,7 +2398,6 @@ $o-token-contrast-pairs: (
 	("coursesite-progress-icon", "bg", 3),
 	("entry-benefit", "bg", 4.5),
 	("curriculum-avatar-fg", "curriculum-avatar-bg", 4.5),
-	("curriculum-widget-template-label", "curriculum-widget-template-label-bg", 4.5),
 	("highscore-rank-first", "highscore-podium-first-bg", 3),
 	("highscore-rank-first", "highscore-podium-first-bg-stop-1", 3),
 	("highscore-rank-first", "highscore-podium-first-bg-stop-2", 3),
