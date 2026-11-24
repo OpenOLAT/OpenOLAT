@@ -35,6 +35,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
@@ -163,9 +164,18 @@ public class AssessmentModeDAO {
 			sb.and().append("mode.repositoryEntry.key=:entryKey");
 		}
 
-		if (params.getAllowedModeStatus() != null) {
+		if(params.getAllowedModeStatus() != null) {
 			sb.and().append("(mode.statusString in :allowedModeStatus")
 					.append(" or mode.endWithFollowupTime>=current_date)");
+		}
+		
+		if(params.getOrganisations() != null && !params.getOrganisations().isEmpty()) {
+			sb.and()
+			  .append(" exists (select reToGroup.key from repoentrytogroup as reToGroup")
+			  .append("  inner join reToGroup.group as rGroup")
+			  .append("  inner join organisation as org on (org.group.key=rGroup.key)")
+			  .append("  where reToGroup.entry.key=v.key and org.key in (:organisationKeys)")
+			  .append(")");
 		}
 		
 		sb.append(" order by mode.beginWithLeadTime desc ");
@@ -198,6 +208,12 @@ public class AssessmentModeDAO {
 		}
 		if (params.getAllowedModeStatus() != null) {
 			query.setParameter("allowedModeStatus", params.getAllowedModeStatus());
+		}
+		if(params.getOrganisations() != null && !params.getOrganisations().isEmpty()) {
+			List<Long> organisationKeys = params.getOrganisations().stream()
+					.map(OrganisationRef::getKey)
+					.toList();
+			query.setParameter("organisationKeys", organisationKeys);
 		}
 		return query.getResultList();
 	}

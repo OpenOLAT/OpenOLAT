@@ -19,8 +19,8 @@
  */
 package org.olat.course.assessment.restapi;
 
-import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,9 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -118,6 +120,13 @@ public class AssessmentModeWebService {
 		if(!isAdministrator(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+
+		Roles roles = getRoles(request);
+		List<OrganisationRef> organisations = roles
+				.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+		if(organisations.isEmpty()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 		
 		SearchAssessmentModeParams params = new SearchAssessmentModeParams();
 		if(StringHelper.containsNonWhitespace(from)) {
@@ -133,9 +142,9 @@ public class AssessmentModeWebService {
 		params.setWithExternalId(withExternalId);
 		params.setRunning(running);
 		params.setRepositoryEntryKey(repositoryEntryKey);
+		params.setOrganisations(organisations);
 		
 		List<AssessmentMode> assessmentModes = assessmentModeManager.findAssessmentMode(params);
-
 		List<AssessmentModeVO> voList = new ArrayList<>(assessmentModes.size());
 		for(AssessmentMode assessmentMode:assessmentModes) {
 			voList.add(AssessmentModeVO.valueOf(assessmentMode));
@@ -163,6 +172,9 @@ public class AssessmentModeWebService {
 		AssessmentMode assessmentMode = assessmentModeManager.getAssessmentModeById(assessmentKey);
 		if(assessmentMode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isAdministratorOf(assessmentMode.getRepositoryEntry(), request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		AssessmentModeVO vo = AssessmentModeVO.valueOf(assessmentMode);
@@ -234,7 +246,7 @@ public class AssessmentModeWebService {
 	}
 	
 
-	public Response saveAssessmentMode(AssessmentModeVO assessmentModeVo, HttpServletRequest request) {
+	private Response saveAssessmentMode(AssessmentModeVO assessmentModeVo, HttpServletRequest request) {
 		if(!isAdministrator(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -247,9 +259,18 @@ public class AssessmentModeWebService {
 				log.warn("Repository entry key {} for assessment mode not found", assessmentModeVo.getRepositoryEntryKey());
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
+			if(!isAdministratorOf(entry, request)) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
+			}
 			assessmentMode = assessmentModeManager.createAssessmentMode(entry);
 		} else {
 			assessmentMode = assessmentModeManager.getAssessmentModeById(assessmentModeVo.getKey());
+			if(assessmentMode == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			if(!isAdministratorOf(assessmentMode.getRepositoryEntry(), request)) {
+				return Response.serverError().status(Status.FORBIDDEN).build();
+			}
 		}
 		return saveAssessmentMode(assessmentModeVo, assessmentMode,
 				assessmentModeManager, curriculumService, businessGroupService, doer);
@@ -400,6 +421,9 @@ public class AssessmentModeWebService {
 		if(modeToDelete == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
+		if(!isAdministratorOf(modeToDelete.getRepositoryEntry(), request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 		assessmentModeManager.delete(modeToDelete);
 		return Response.serverError().status(Status.OK).build();
 	}
@@ -411,5 +435,11 @@ public class AssessmentModeWebService {
 		} catch (Exception e) {
 			return false;
 		}
+	}
+	
+	private boolean isAdministratorOf(RepositoryEntry entry, HttpServletRequest request) {
+		Identity identity = getIdentity(request);
+		return repositoryService.hasRoleExpanded(identity, entry,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
 	}
 }
