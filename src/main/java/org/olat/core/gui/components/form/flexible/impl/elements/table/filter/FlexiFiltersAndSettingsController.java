@@ -143,9 +143,9 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 		
 		String sortIcon = null;
 		if(sortKey != null && sortKey.isAsc()) {
-			sortIcon = "o_icon o_icon_sort_asc";
+			sortIcon = "o_icon o_icon_sort_order_asc";
 		} else if(sortKey != null && !sortKey.isAsc()) {
-			sortIcon = "o_icon o_icon_sort_desc";
+			sortIcon = "o_icon o_icon_sort_order_desc";
 		}
 		sortLink.getComponent().setIconRightCSS(sortIcon);
 	}

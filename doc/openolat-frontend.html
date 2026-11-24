@@ -984,7 +984,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 &lt;div class="o_table_toolbar o_table_batch_hide clearfix"&gt;     <span style="color:#6c7086">&lt;!-- Search + tools row --&gt;</span>
   &lt;div class="o_table_search o_noprint"&gt;...&lt;/div&gt;
   &lt;div class="o_table_tools o_noprint"&gt;
-    &lt;div class="btn-group"&gt;&lt;a class="btn btn-default"&gt;Sort&lt;/a&gt;&lt;/div&gt;
+    &lt;div class="btn-group o_table_sort"&gt;...&lt;/div&gt;             <span style="color:#6c7086">&lt;!-- Sort split button, see 23.8 --&gt;</span>
     &lt;div class="btn-group"&gt;&lt;a class="btn btn-default"&gt;Columns&lt;/a&gt;&lt;/div&gt;
     &lt;div class="btn-group"&gt;&lt;a class="btn btn-default"&gt;Download&lt;/a&gt;&lt;/div&gt;
     &lt;div class="btn-group o_table_settings"&gt;...&lt;/div&gt;
@@ -1006,7 +1006,7 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
       &lt;thead&gt;&lt;tr&gt;
         &lt;th class="o_multiselect o_table_checkall o_col_sticky_left"&gt;...&lt;/th&gt;
         &lt;th class="o_col_favorit"&gt;&lt;a&gt;Favorit&lt;/a&gt;&lt;/th&gt;
-        &lt;th&gt;&lt;a&gt;Typ &lt;i class="o_icon o_icon_sort_asc"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/th&gt;
+        &lt;th aria-sort="ascending"&gt;&lt;a class="o_orderby o_orderby_asc"&gt;Typ&lt;/a&gt;&lt;/th&gt;
         &lt;th class="o_col_displayname"&gt;&lt;a&gt;Titel&lt;/a&gt;&lt;/th&gt;
         &lt;th class="o_col_sticky_right o_col_action"&gt;...&lt;/th&gt;
       &lt;/tr&gt;&lt;/thead&gt;
@@ -1669,10 +1669,30 @@ $o-swatches     <span style="color:#6c7086">per hue: bg, fg, border, soft-bg, so
 <thead><tr><th>Class</th><th>Description</th></tr></thead>
 <tbody>
 <tr><td><code>a.o_orderby</code></td><td>Sortable column header link (nowrap, no underline)</td></tr>
-<tr><td><code>o_orderby_asc</code></td><td>Ascending sort indicator (caret-up icon via :after)</td></tr>
-<tr><td><code>o_orderby_desc</code></td><td>Descending sort indicator (caret-down icon via :after)</td></tr>
+<tr><td><code>o_orderby_asc</code></td><td>Ascending sort indicator (<code>arrow-up-short-wide</code> icon via :after). The <code>&lt;th&gt;</code> has <code>aria-sort="ascending"</code></td></tr>
+<tr><td><code>o_orderby_desc</code></td><td>Descending sort indicator (<code>arrow-down-short-wide</code> icon via :after). The <code>&lt;th&gt;</code> has <code>aria-sort="descending"</code></td></tr>
+<tr><td><code>o_table_sort</code></td><td>Sort split button (<code>btn-group</code>) in <code>o_table_tools</code></td></tr>
+<tr><td><code>o_table_sort_dir</code></td><td>Left part of the split button: current sort, a click toggles the direction</td></tr>
+<tr><td><code>o_icon_sort_order_asc</code> / <code>o_icon_sort_order_desc</code></td><td>Direction icons in the split button, the sort menu, the table settings and the legacy <code>TableSortRenderer</code></td></tr>
 </tbody>
 </table>
+
+<p>The sort split button (<code>AbstractFlexiTableRenderer.renderSortSplitButton</code>):</p>
+<pre><code>&lt;div class="btn-group o_table_sort"&gt;
+  &lt;button type="button" class="btn btn-default o_table_sort_dir"
+      aria-label="Sorted by &amp;quot;Title&amp;quot;, ascending. Change to descending."&gt;
+    &lt;i class="o_icon o_icon-fw o_icon_sort_order_asc" aria-hidden="true"&gt;&lt;/i&gt; &lt;span&gt;Title&lt;/span&gt;
+  &lt;/button&gt;
+  &lt;button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+      aria-haspopup="menu" aria-expanded="false" aria-label="Sort table"&gt;
+    &lt;i class="o_icon o_icon_caret" aria-hidden="true"&gt;&lt;/i&gt;
+  &lt;/button&gt;
+  &lt;ul class="dropdown-menu dropdown-menu-right" role="menu"&gt;
+    &lt;li role="none"&gt;&lt;a role="menuitemradio" aria-checked="false"&gt;Relevance&lt;/a&gt;&lt;/li&gt;   &lt;!-- area 1 --&gt;
+    &lt;li class="divider" role="separator"&gt;&lt;/li&gt;
+    &lt;li role="none"&gt;&lt;a role="menuitemradio" aria-checked="true"&gt;Title&lt;/a&gt;&lt;/li&gt;        &lt;!-- area 2 --&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</code></pre>
 
 <!-- ==================== SECTION 24: CARDS ==================== -->
 <h2 id="css-cards">24. Cards &amp; Widgets</h2>

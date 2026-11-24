@@ -70,9 +70,9 @@ public class FlexiSortController extends FormBasicController {
 				link.setUserObject(sort);
 				if(selectedSortKey != null && selectedSortKey.getKey().equals(sort.getSortKey().getKey())) {
 					if(selectedSortKey.isAsc()) {
-						link.setIconLeftCSS("o_icon o_icon_sort_asc");
+						link.setIconLeftCSS("o_icon o_icon_sort_order_asc");
 					} else {
-						link.setIconLeftCSS("o_icon o_icon_sort_desc");
+						link.setIconLeftCSS("o_icon o_icon_sort_order_desc");
 					}
 				}
 				sortLinks.add(link);

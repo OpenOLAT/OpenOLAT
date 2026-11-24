@@ -68,9 +68,9 @@ class TableSortRenderer extends DefaultComponentRenderer {
 				
 				if(sortedCD == cd) {
 					if(asc) {
-						sb.append("<i class='o_icon o_icon_sort_asc'></i> ");
+						sb.append("<i class='o_icon o_icon_sort_order_asc'></i> ");
 					} else {
-						sb.append("<i class='o_icon o_icon_sort_desc'></i> ");
+						sb.append("<i class='o_icon o_icon_sort_order_desc'></i> ");
 					}
 				}
 				

@@ -870,6 +870,30 @@ options.setDefaultOrderBy(new SortKey(MyCols.name.name(), true));  // ascending 
 tableEl.setSortSettings(options);
 ```
 
+The default sort alone shows no sort button. The sort button is a split button in the table toolbar. The left part shows the current sort and toggles the direction. The right part opens the sort menu. The table shows the sort button when these conditions are true:
+
+- The sort options have `fromColumnModel` set, or a list of `FlexiTableSort` entries.
+- The table has rows.
+
+The sort menu has two areas:
+
+1. The `FlexiTableSort` entries of the sort options. Use them for combined criteria that no column has, for example relevance. The menu leaves out an entry if its sort key belongs to a sortable column.
+2. All sortable columns, in the order of the column model. The framework adds them.
+
+The framework adds the divider between the two areas. You do not need `FlexiTableSort.SPACER`.
+
+```java
+// Sort button with the sortable columns only
+tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(MyCols.name.name(), true)));
+
+// Sort button with a combined criterion in area 1
+FlexiTableSortOptions options = new FlexiTableSortOptions(List.of(new FlexiTableSort(translate("sort.relevance"), "relevance")));
+options.setDefaultOrderBy(new SortKey("relevance", true));
+tableEl.setSortSettings(options);
+```
+
+Accessibility: the header of the sorted column has `aria-sort`. The menu entries are `menuitemradio` with `aria-checked`. The direction button has an `aria-label` with the column and the direction. A table with a card layout (`FlexiTableRendererType.custom`) has no column headers, so the sort button is the only way to sort its rows.
+
 ### 9.5 Filters
 
 Filters narrow the displayed rows. Available filter types:

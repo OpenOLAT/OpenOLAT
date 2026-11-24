@@ -734,11 +734,11 @@ a.o_orderby, a.o_orderby:hover {
 	}
 	
 	&.o_orderby_asc {
-		@include o-add-icon('caret-up', true, false);
+		@include o-add-icon('arrow-up-short-wide', true, false);
 	}
 	
 	&.o_orderby_desc {
-		@include o-add-icon('caret-down', true, false);
+		@include o-add-icon('arrow-down-short-wide', true, false);
 	}
 }
 

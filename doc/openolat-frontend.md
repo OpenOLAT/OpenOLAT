@@ -552,7 +552,7 @@ A full FlexiTable with all features enabled has this overall layout. Each sectio
 <div class="o_table_toolbar o_table_batch_hide clearfix">     <!-- Search + tools row -->
   <div class="o_table_search o_noprint">...</div>
   <div class="o_table_tools o_noprint">
-    <div class="btn-group"><a class="btn btn-default">Sort</a></div>
+    <div class="btn-group o_table_sort">...</div>             <!-- Sort split button, see 23.8 -->
     <div class="btn-group"><a class="btn btn-default">Columns</a></div>
     <div class="btn-group"><a class="btn btn-default">Download</a></div>
     <div class="btn-group o_table_settings">...</div>
@@ -576,7 +576,7 @@ A full FlexiTable with all features enabled has this overall layout. Each sectio
       <thead><tr>
         <th class="o_multiselect o_table_checkall o_col_sticky_left">...</th>
         <th class="o_col_favorit"><a>Favorit</a></th>
-        <th><a>Typ <i class="o_icon o_icon_sort_asc"></i></a></th>
+        <th aria-sort="ascending"><a class="o_orderby o_orderby_asc">Typ</a></th>
         <th class="o_col_displayname"><a>Titel</a></th>
         <th class="o_col_sticky_right o_col_action">...</th>
       </tr></thead>
@@ -1136,8 +1136,31 @@ When the table scrolls, shadow indicators appear on sticky columns via the `o_sc
 | Class | Description |
 |---|---|
 | `a.o_orderby` | Sortable column header link (nowrap, no underline) |
-| `o_orderby_asc` | Ascending sort indicator (caret-up icon via :after) |
-| `o_orderby_desc` | Descending sort indicator (caret-down icon via :after) |
+| `o_orderby_asc` | Ascending sort indicator (`arrow-up-short-wide` icon via :after). The `<th>` has `aria-sort="ascending"` |
+| `o_orderby_desc` | Descending sort indicator (`arrow-down-short-wide` icon via :after). The `<th>` has `aria-sort="descending"` |
+| `o_table_sort` | Sort split button (`btn-group`) in `o_table_tools` |
+| `o_table_sort_dir` | Left part of the split button: current sort, a click toggles the direction |
+| `o_icon_sort_order_asc` / `o_icon_sort_order_desc` | Direction icons in the split button, the sort menu, the table settings and the legacy `TableSortRenderer` |
+
+The sort split button (`AbstractFlexiTableRenderer.renderSortSplitButton`):
+
+```html
+<div class="btn-group o_table_sort">
+  <button type="button" class="btn btn-default o_table_sort_dir"
+      aria-label="Sorted by &quot;Title&quot;, ascending. Change to descending.">
+    <i class="o_icon o_icon-fw o_icon_sort_order_asc" aria-hidden="true"></i> <span>Title</span>
+  </button>
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+      aria-haspopup="menu" aria-expanded="false" aria-label="Sort table">
+    <i class="o_icon o_icon_caret" aria-hidden="true"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-right" role="menu">
+    <li role="none"><a role="menuitemradio" aria-checked="false">Relevance</a></li>   <!-- area 1 -->
+    <li class="divider" role="separator"></li>
+    <li role="none"><a role="menuitemradio" aria-checked="true">Title</a></li>        <!-- area 2 -->
+  </ul>
+</div>
+```
 
 ## 24. Cards & Widgets
 

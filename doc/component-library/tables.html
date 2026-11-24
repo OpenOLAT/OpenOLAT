@@ -70,9 +70,9 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>FlexiTable - Basic</h3>
-      <p>The standard FlexiTable with wrapper, header row with sortable columns, and data rows. This is the primary table component in OpenOlat, rendered by <code>FlexiTableClassicRenderer</code>.</p>
+      <p>The standard FlexiTable with wrapper, header row with sortable columns, and data rows. This is the primary table component in OpenOlat, rendered by <code>FlexiTableClassicRenderer</code>. The toolbar shows the sort split button: the left part shows the current sort and toggles the direction, the menu lists combined criteria (area 1) and the sortable columns (area 2). The sorted column header has <code>aria-sort</code>.</p>
       <div class="cl-classes">
-        <code>o_table_wrapper</code> <code>o_table_flexi</code> <code>table</code> <code>table-striped</code> <code>table-hover</code> <code>table-condensed</code> <code>o_icon_sort_asc</code> <code>o_icon_sort_desc</code>
+        <code>o_table_wrapper</code> <code>o_table_flexi</code> <code>table</code> <code>table-striped</code> <code>table-hover</code> <code>table-condensed</code> <code>o_orderby</code> <code>o_orderby_asc</code> <code>o_table_sort</code> <code>o_table_sort_dir</code> <code>o_icon_sort_order_asc</code> <code>o_icon_sort_order_desc</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -84,6 +84,16 @@
                 <span>10 Entries</span>
               </div>
               <div class="o_table_tools o_noprint">
+                <div class="btn-group o_table_sort">
+                  <button type="button" class="btn btn-default o_table_sort_dir" aria-label="Sorted by &quot;Title&quot;, ascending. Change to descending."><i class="o_icon o_icon-fw o_icon_sort_order_asc" aria-hidden="true"> </i> <span>Title</span></button>
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="menu" aria-expanded="false" aria-label="Sort table"><i class="o_icon o_icon_caret" aria-hidden="true"> </i></button>
+                  <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                    <li role="none"><a role="menuitemradio" aria-checked="false" href="#" onclick="return false"><i class="o_icon o_icon-fw" aria-hidden="true"> </i> Relevance</a></li>
+                    <li class="divider" role="separator"></li>
+                    <li role="none"><a role="menuitemradio" aria-checked="true" href="#" onclick="return false"><i class="o_icon o_icon-fw o_icon_sort_order_asc" aria-hidden="true"> </i> Title</a></li>
+                    <li role="none"><a role="menuitemradio" aria-checked="false" href="#" onclick="return false"><i class="o_icon o_icon-fw" aria-hidden="true"> </i> Last modified</a></li>
+                  </ul>
+                </div>
                 <div class="btn-group o_table_settings">
                   <a href="#" class="btn btn-default btn-xs" onclick="return false"><i class="o_icon o_icon_actions"></i></a>
                 </div>
@@ -93,10 +103,10 @@
             <table class="table table-striped table-hover table-condensed">
               <thead>
                 <tr>
-                  <th class="o_col_sticky_left"><a href="#" onclick="return false">Title <i class="o_icon o_icon_sort_asc"></i></a></th>
+                  <th class="o_col_sticky_left" aria-sort="ascending"><a class="o_orderby o_orderby_asc" href="#" onclick="return false">Title</a></th>
                   <th><a href="#" onclick="return false">Type</a></th>
                   <th><a href="#" onclick="return false">Author</a></th>
-                  <th><a href="#" onclick="return false">Last modified <i class="o_icon o_icon_sort_desc"></i></a></th>
+                  <th><a class="o_orderby" href="#" onclick="return false">Last modified</a></th>
                 </tr>
               </thead>
               <tbody>
@@ -137,6 +147,22 @@
       &lt;span&gt;10 Entries&lt;/span&gt;
     &lt;/div&gt;
     &lt;div class="o_table_tools o_noprint"&gt;
+      &lt;div class="btn-group o_table_sort"&gt;
+        &lt;button type="button" class="btn btn-default o_table_sort_dir"
+            aria-label="Sorted by &amp;quot;Title&amp;quot;, ascending. Change to descending."&gt;
+          &lt;i class="o_icon o_icon-fw o_icon_sort_order_asc" aria-hidden="true"&gt;&lt;/i&gt; &lt;span&gt;Title&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+            aria-haspopup="menu" aria-expanded="false" aria-label="Sort table"&gt;
+          &lt;i class="o_icon o_icon_caret" aria-hidden="true"&gt;&lt;/i&gt;
+        &lt;/button&gt;
+        &lt;ul class="dropdown-menu dropdown-menu-right" role="menu"&gt;
+          &lt;li role="none"&gt;&lt;a role="menuitemradio" aria-checked="false"&gt;Relevance&lt;/a&gt;&lt;/li&gt;
+          &lt;li class="divider" role="separator"&gt;&lt;/li&gt;
+          &lt;li role="none"&gt;&lt;a role="menuitemradio" aria-checked="true"&gt;Title&lt;/a&gt;&lt;/li&gt;
+          &lt;li role="none"&gt;&lt;a role="menuitemradio" aria-checked="false"&gt;Last modified&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
       &lt;div class="btn-group o_table_settings"&gt;
         &lt;a href="#" class="btn btn-default btn-xs"&gt;&lt;i class="o_icon o_icon_actions"&gt;&lt;/i&gt;&lt;/a&gt;
       &lt;/div&gt;
@@ -145,8 +171,8 @@
   &lt;table class="table table-striped table-hover table-condensed"&gt;
     &lt;thead&gt;
       &lt;tr&gt;
-        &lt;th class="o_col_sticky_left"&gt;
-          &lt;a href="#"&gt;Title &lt;i class="o_icon o_icon_sort_asc"&gt;&lt;/i&gt;&lt;/a&gt;
+        &lt;th class="o_col_sticky_left" aria-sort="ascending"&gt;
+          &lt;a class="o_orderby o_orderby_asc" href="#"&gt;Title&lt;/a&gt;
         &lt;/th&gt;
         &lt;th&gt;&lt;a href="#"&gt;Type&lt;/a&gt;&lt;/th&gt;
         &lt;th&gt;&lt;a href="#"&gt;Author&lt;/a&gt;&lt;/th&gt;
@@ -664,10 +690,10 @@
                 <thead>
                   <tr>
                     <th><input type="checkbox"></th>
-                    <th>Title <i class="o_icon o_icon_sort_asc"></i></th>
+                    <th aria-sort="ascending"><a class="o_orderby o_orderby_asc" href="#" onclick="return false">Title</a></th>
                     <th>Type</th>
                     <th>Author</th>
-                    <th>Last modified <i class="o_icon o_icon_sort_desc"></i></th>
+                    <th><a class="o_orderby" href="#" onclick="return false">Last modified</a></th>
                     <th></th>
                   </tr>
                 </thead>
@@ -759,10 +785,10 @@
       &lt;thead&gt;
         &lt;tr&gt;
           &lt;th&gt;&lt;input type="checkbox"&gt;&lt;/th&gt;
-          &lt;th&gt;Title &lt;i class="o_icon o_icon_sort_asc"&gt;&lt;/i&gt;&lt;/th&gt;
+          &lt;th aria-sort="ascending"&gt;&lt;a class="o_orderby o_orderby_asc" href="#"&gt;Title&lt;/a&gt;&lt;/th&gt;
           &lt;th&gt;Type&lt;/th&gt;
           &lt;th&gt;Author&lt;/th&gt;
-          &lt;th&gt;Last modified &lt;i class="o_icon o_icon_sort_desc"&gt;&lt;/i&gt;&lt;/th&gt;
+          &lt;th&gt;&lt;a class="o_orderby" href="#"&gt;Last modified&lt;/a&gt;&lt;/th&gt;
           &lt;th&gt;&lt;/th&gt;
         &lt;/tr&gt;
       &lt;/thead&gt;

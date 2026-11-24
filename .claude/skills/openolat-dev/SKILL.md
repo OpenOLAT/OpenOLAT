@@ -215,6 +215,8 @@ options.setDefaultOrderBy(new SortKey(Cols.name.name(), true));
 tableEl.setSortSettings(options);
 ```
 
+**Sort button:** the default sort alone shows no sort button. `new FlexiTableSortOptions(true, defaultKey)` shows the split button with all sortable columns. A list of `FlexiTableSort` entries adds combined criteria (e.g. relevance) as area 1 above the columns; do not add the columns or `FlexiTableSort.SPACER` yourself. A card layout (`FlexiTableRendererType.custom`) has no column headers, so give it a sort button.
+
 **Row callouts and focus:** if an action in a row callout reloads the table, directly or after a modal or confirm dialog, the data model implements `KeyedFlexiTableDataModel<T>`. `getObjectKey(T object)` returns a key that is unique per row and stable across `loadModel()`: normally the key of the row entity, not a parent key; a composite String when the same entity can appear in two rows. The interface looks up the row and skips missing rows (lazy data source models); check only a wrapped entity that can be `null`. The table renders the key as `data-row-key`, and after a reload in the same request the focus returns to the trigger of the same entity, even when the row moved. Tables whose callouts only navigate, download or show information do not need it.
 
 ```java

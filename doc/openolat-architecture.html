@@ -1708,6 +1708,25 @@ FlexiTableSortOptions sortOptions = <span class="kw">new</span> FlexiTableSortOp
 sortOptions.setDefaultOrderBy(<span class="kw">new</span> SortKey(<span class="str">"name"</span>, <span class="kw">true</span>));  <span class="cmt">// ascending by name</span>
 tableEl.setSortSettings(sortOptions);</code></pre>
 
+<p>The default sort alone shows no sort button. The sort button is a split button in the table toolbar. The left part shows the current sort and toggles the direction. The right part opens the sort menu. The table shows the sort button when the sort options have <code>fromColumnModel</code> set or a list of <code>FlexiTableSort</code> entries, and when the table has rows.</p>
+
+<p>The sort menu has two areas:</p>
+<ol>
+<li>The <code>FlexiTableSort</code> entries of the sort options. Use them for combined criteria that no column has, for example relevance. The menu leaves out an entry if its sort key belongs to a sortable column.</li>
+<li>All sortable columns, in the order of the column model. The framework adds them.</li>
+</ol>
+<p>The framework adds the divider between the two areas. You do not need <code>FlexiTableSort.SPACER</code>.</p>
+
+<pre><code><span class="cmt">// Sort button with the sortable columns only</span>
+tableEl.setSortSettings(<span class="kw">new</span> FlexiTableSortOptions(<span class="kw">true</span>, <span class="kw">new</span> SortKey(<span class="str">"name"</span>, <span class="kw">true</span>)));
+
+<span class="cmt">// Sort button with a combined criterion in area 1</span>
+FlexiTableSortOptions options = <span class="kw">new</span> FlexiTableSortOptions(List.of(<span class="kw">new</span> FlexiTableSort(translate(<span class="str">"sort.relevance"</span>), <span class="str">"relevance"</span>)));
+options.setDefaultOrderBy(<span class="kw">new</span> SortKey(<span class="str">"relevance"</span>, <span class="kw">true</span>));
+tableEl.setSortSettings(options);</code></pre>
+
+<p>Accessibility: the header of the sorted column has <code>aria-sort</code>. The menu entries are <code>menuitemradio</code> with <code>aria-checked</code>. The direction button has an <code>aria-label</code> with the column and the direction. A table with a card layout (<code>FlexiTableRendererType.custom</code>) has no column headers, so the sort button is the only way to sort its rows.</p>
+
 <h3>9.5 Filters</h3>
 
 <p>FlexiTable supports two levels of filtering: <strong>filter tabs</strong> (top-level categories, like &ldquo;All&rdquo; / &ldquo;Active&rdquo; / &ldquo;Archived&rdquo;) and <strong>extended filters</strong> (dropdown, text, multi-select, date range filters within a tab). Both fire events to the controller when the user changes a selection.</p>

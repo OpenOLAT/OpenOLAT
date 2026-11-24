@@ -362,13 +362,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(!empty && ftE.isSortEnabled()) {
 			List<FlexiTableSort> sorts = ftE.getSorts();
 			if(sorts != null && !sorts.isEmpty()) {
-				sb.append("<div class='btn-group'>");
-				renderFormItem(renderer, sb, ftE.getSortOrderButton(), ubu, translator, renderResult, null);
-				sb.append("</div> ");
+				renderSortSplitButton(sb, ftE.getComponent(), sorts, translator);
 			}
-		}
-		if(ftE.getSortOrderButton() != null) {
-			ftE.getSortOrderButton().getComponent().setDirty(false);
 		}
 		
 		// view custom / table
@@ -426,6 +421,53 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("</div>");
 		
 		sb.append("</div>");
+	}
+	
+	private void renderSortSplitButton(StringOutput sb, FlexiTableComponent ftC, List<FlexiTableSort> sorts, Translator translator) {
+		FlexiTableElementImpl ftE = ftC.getFormItem();
+		Form theForm = ftE.getRootForm();
+		String dispatchId = ftC.getFormDispatchId();
+		String menuId = dispatchId.concat("_sort");
+		FlexiTableSort selected = ftE.getSelectedSort();
+		
+		sb.append("<div class='btn-group o_table_sort'>");
+		if(selected != null) {
+			boolean asc = selected.getSortKey().isAsc();
+			String ariaLabel = translator.translate(asc ? "sort.direction.asc" : "sort.direction.desc", selected.getLabel());
+			sb.append("<button type='button' id='").append(dispatchId).append("_sortdir' class='btn btn-default o_table_sort_dir' aria-label=\"")
+			  .appendHtmlAttributeEscaped(ariaLabel).append("\" onclick=\"")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, false, true, true,
+					  new NameValuePair("sort", selected.getSortKey().getKey()), new NameValuePair("asc", asc ? "desc" : "asc")))
+			  .append("\"><i class='o_icon o_icon-fw ").append(getSortIconCss(asc)).append("' aria-hidden='true'> </i> <span>")
+			  .appendHtmlEscaped(selected.getLabel()).append("</span></button>");
+		}
+		
+		String title = translator.translate("aria.sort");
+		sb.append("<button type='button' id='").append(menuId).append("' class='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-haspopup='menu' aria-expanded='false' title=\"")
+		  .appendHtmlAttributeEscaped(title).append("\" aria-label=\"").appendHtmlAttributeEscaped(title).append("\">")
+		  .append("<i class='o_icon o_icon-fw o_icon_sort_menu' aria-hidden='true'> </i>", selected == null)
+		  .append("<i class='o_icon o_icon_caret' aria-hidden='true'> </i></button>")
+		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu' aria-labelledby='").append(menuId).append("'>");
+		for(FlexiTableSort sort:sorts) {
+			if(FlexiTableSort.SPACER.equals(sort)) {
+				sb.append("<li class='divider' role='separator'></li>");
+			} else {
+				String key = sort.getSortKey().getKey();
+				boolean checked = selected != null && key.equals(selected.getSortKey().getKey());
+				boolean asc = !checked || !selected.getSortKey().isAsc();
+				sb.append("<li role='none'><a role='menuitemradio' aria-checked='").append(checked).append("' href=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, false, true, true,
+						  new NameValuePair("sort", key), new NameValuePair("asc", asc ? "asc" : "desc")))
+				  .append("\" draggable=\"false\"><i class='o_icon o_icon-fw")
+				  .append(" ").append(getSortIconCss(selected != null && selected.getSortKey().isAsc()), checked)
+				  .append("' aria-hidden='true'> </i> ").appendHtmlEscaped(sort.getLabel()).append("</a></li>");
+			}
+		}
+		sb.append("</ul></div> ");
+	}
+	
+	private String getSortIconCss(boolean asc) {
+		return asc ? "o_icon_sort_order_asc" : "o_icon_sort_order_desc";
 	}
 	
 	private boolean hasSettingsButton(FlexiTableElementImpl ftE) {

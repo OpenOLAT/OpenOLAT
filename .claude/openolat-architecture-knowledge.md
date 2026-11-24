@@ -91,6 +91,7 @@ Data-driven table component with server-side sorting, filtering, pagination.
 Pattern: Define columns enum implementing `FlexiSortableColumnDef`, create `DefaultFlexiTableDataModel<Row>` subclass, add `FlexiTableElement` via `uifactory.addTableElement()`.
 
 - Default sort: `FlexiTableSortOptions.setDefaultOrderBy(new SortKey(...))` + `tableEl.setSortSettings(options)`
+- Sort button (split button, toolbar): shown only with `fromColumnModel=true` or a `FlexiTableSort` list. Menu = list entries (area 1, combined criteria) + divider + sortable columns (area 2, added by the framework). Header of the sorted column has `aria-sort`
 - Empty state: `tableEl.setEmptyStateConfig(EmptyStateConfig.builder()...build())`
 - Filters: `setFilters(true, List<FlexiTableExtendedFilter>, customPresets, alwaysExpanded)`; filter tabs `setFilterTabs()`
 - Preferences: `setAndLoadPersistedPreferences(ureq, id)`

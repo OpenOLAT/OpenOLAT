@@ -548,11 +548,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_radar_chart { @include o-add-icon('chart-line');}
 .o_icon_split { @include o-add-icon('unlink');}
 .o_icon_sort { @include o-add-icon('sort');}
-.o_icon_sort_asc { @include o-add-icon('sort-asc');}
-.o_icon_sort_desc { @include o-add-icon('sort-desc');}
 .o_icon_sort_amount_asc { @include o-add-icon('sort-amount-asc');}
 .o_icon_sort_amount_desc { @include o-add-icon('sort-amount-desc');}
 .o_icon_sort_menu { @include o-add-icon('sort-amount-asc');}
+.o_icon_sort_order_asc { @include o-add-icon('arrow-up-short-wide');}
+.o_icon_sort_order_desc { @include o-add-icon('arrow-down-short-wide');}
 .o_icon_square { @include o-add-icon('square');}
 .o_icon_square_rss { @include o-add-icon('square-rss');}
 .o_icon_star { @include o-add-icon('star');}

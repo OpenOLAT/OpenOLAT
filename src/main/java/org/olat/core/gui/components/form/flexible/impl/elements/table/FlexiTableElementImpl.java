@@ -147,8 +147,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private VelocityContainer rowRenderer;
 	private VelocityContainer detailsRenderer;
 
-	private FormLink sortOrderButton;
-	private FlexiTableSortOrderController sortOrderCtrl;
 	private FormLink customButton;
 	private FormLink exportButton;
 	private FormLink extendedSearchButton;
@@ -219,14 +217,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		String dispatchId = component.getDispatchID();
-		sortOrderButton = new FormLinkImpl(dispatchId.concat("_sortOrderButton"), "rSortOrderButton", "", Link.BUTTON + Link.NONTRANSLATED);
-		sortOrderButton.setTranslator(translator);
-		sortOrderButton.setIconLeftCSS("o_icon o_icon_sort_menu o_icon-lg");
-		sortOrderButton.setIconRightCSS("o_icon o_icon_caret o_icon-sm");
-		sortOrderButton.setAriaDialogOpener();
-		sortOrderButton.setTitle(translator.translate("aria.sort"));
-		components.put("rSortOrder", sortOrderButton);
-
 		customButton = new FormLinkImpl(dispatchId.concat("_customButton"), "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
 		customButton.setIconLeftCSS("o_icon o_icon_customize");
@@ -650,33 +640,60 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	public List<FlexiTableSort> getSorts() {
-		List<FlexiTableSort> sorts;
-		if(sortOptions == null) {
-			sorts = Collections.<FlexiTableSort>emptyList();
-		} else if(sortOptions.getSorts() != null && !sortOptions.getSorts().isEmpty()) {
-			sorts = sortOptions.getSorts();
-		} else if(sortOptions.isFromColumnModel()) {
+		if(sortOptions == null || (sortOptions.getSorts().isEmpty() && !sortOptions.isFromColumnModel())) {
+			return Collections.emptyList();
+		}
+		
+		Set<String> columnSortKeys = new HashSet<>();
+		List<FlexiTableSort> columnSorts = new ArrayList<>();
+		FlexiTableColumnModel columnModel = getTableDataModel().getTableColumnModel();
+		for(int i=0; i<columnModel.getColumnCount(); i++) {
+			FlexiColumnModel fcm = columnModel.getColumnModel(i);
+			if(fcm.isSortable() && fcm.getSortKey() != null) {
+				columnSortKeys.add(fcm.getSortKey());
+				columnSorts.add(new FlexiTableSort(getHeaderLabel(fcm), fcm.getSortKey()));
+			}
+		}
+		
+		List<FlexiTableSort> sorts = new ArrayList<>(sortOptions.getSorts().stream()
+				.filter(sort -> !FlexiTableSort.SPACER.equals(sort) && !columnSortKeys.contains(sort.getSortKey().getKey()))
+				.toList());
+		if(!sorts.isEmpty() && !columnSorts.isEmpty()) {
+			sorts.add(FlexiTableSort.SPACER);
+		}
+		sorts.addAll(columnSorts);
+		return sorts;
+	}
+	
+	/**
+	 * @return The current sort with its label, from the sort options or from
+	 * 		any sortable column (hidden ones too), or null
+	 */
+	public FlexiTableSort getSelectedSort() {
+		if(sortOptions == null || orderBy == null || orderBy.length == 0 || orderBy[0] == null || orderBy[0].getKey() == null) {
+			return null;
+		}
+		
+		SortKey current = orderBy[0];
+		String label = sortOptions.getSorts().stream()
+				.filter(sort -> current.getKey().equals(sort.getSortKey().getKey()))
+				.map(FlexiTableSort::getLabel)
+				.findFirst().orElse(null);
+		if(label == null) {
 			FlexiTableColumnModel columnModel = getTableDataModel().getTableColumnModel();
-			
-			int cols = columnModel.getColumnCount();
-			sorts = new ArrayList<>(cols);
-			for(int i=0; i<cols; i++) {
+			for(int i=0; i<columnModel.getColumnCount() && label == null; i++) {
 				FlexiColumnModel fcm = columnModel.getColumnModel(i);
-				if (fcm.isSortable() && fcm.getSortKey() != null) {
-					String header;
-					if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
-						header = fcm.getHeaderLabel();
-					} else {
-						header = translator.translate(fcm.getHeaderKey());
-					}
-					sorts.add(new FlexiTableSort(header, fcm.getSortKey()));
+				if(fcm.isSortable() && current.getKey().equals(fcm.getSortKey())) {
+					label = getHeaderLabel(fcm);
 				}
 			}
-			sortOptions.setSorts(sorts);
-		} else {
-			sorts = Collections.<FlexiTableSort>emptyList();
 		}
-		return sorts; 
+		return label == null ? null : new FlexiTableSort(label, new SortKey(current.getKey(), current.isAsc()));
+	}
+	
+	private String getHeaderLabel(FlexiColumnModel fcm) {
+		return StringHelper.containsNonWhitespace(fcm.getHeaderLabel())
+				? fcm.getHeaderLabel() : translator.translate(fcm.getHeaderKey());
 	}
 
 	@Override
@@ -685,7 +702,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(options.getDefaultOrderBy() != null) {
 			SortKey defaultOrder = options.getDefaultOrderBy();
 			orderBy = new SortKey[]{ defaultOrder };
-			selectSortOption(defaultOrder.getKey(), defaultOrder.isAsc());
 		}
 	}
 
@@ -1082,10 +1098,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return searchEl;
 	}
 
-	public FormLink getSortOrderButton() {
-		return sortOrderButton;
-	}
-
 	public FormLink getCustomButton() {
 		return customButton;
 	}
@@ -1324,9 +1336,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doUnSelectAllColumn(ureq, Integer.parseInt(deselectAllColumn));
 		} else if(StringHelper.isLong(rowClicked) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			getRootForm().fireFormEvent(ureq, new SelectionEvent(FlexiTableElement.ROW_CLICK_EVENT, Integer.parseInt(rowClicked), this, FormEvent.ONCLICK));
-		} else if(sortOrderButton != null
-				&& sortOrderButton.getFormDispatchId().equals(dispatchuri)) {
-			doSetSortOrder(ureq);
 		} else if(customButton != null
 				&& customButton.getFormDispatchId().equals(dispatchuri)) {
 			//snap the request
@@ -1436,19 +1445,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
-		} else if(sortOrderCtrl == source) {
-			if (event instanceof FlexiTableSortOrderController.SortOrderEvent sortOrderEvent) {
-				sort(sortOrderEvent.getSort().getSortKey().getKey(), !sortOrderEvent.getSort().getSortKey().isAsc());
-				saveCustomSettings(ureq);
-			}
-			callout.deactivate();
-			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
 		settingsCtrl = cleanUp(settingsCtrl);
-		sortOrderCtrl = cleanUp(sortOrderCtrl);
 		cmc = cleanUp(cmc);
 		callout = cleanUp(callout);
 	}
@@ -1543,7 +1544,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		}
 		reorderMultiSelectIndex();
-		selectSortOption(sortKey, asc);
 		component.setDirty(true);
 	}
 	
@@ -1570,7 +1570,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		}
 		reorderMultiSelectIndex();
-		selectSortOption(sortKey.getKey(), sortKey.isAsc());
 		component.setDirty(true);
 	}
 	
@@ -1600,28 +1599,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				Object obj = dataModel.getObject(i);
 				if(obj != null && selectedObjects.contains(obj)) {
 					multiSelectedIndex.put(Integer.valueOf(i), obj);
-				}
-			}
-		}
-	}
-	
-	private void selectSortOption(String sortKey, boolean asc) {
-		if(sortOptions != null) {
-			for(FlexiTableSort sort:sortOptions.getSorts()) {
-				boolean selected = sort.getSortKey().getKey().equals(sortKey);
-				sort.setSelected(selected);
-				if(selected) {
-					sort.getSortKey().setAsc(asc);
-					if (sortOrderButton != null) {
-						sortOrderButton.setI18nKey(sort.getLabel());
-						if (asc) {
-							sortOrderButton.setIconLeftCSS("o_icon o_icon_sort_amount_asc o_icon-lg");
-						} else {
-							sortOrderButton.setIconLeftCSS("o_icon o_icon_sort_amount_desc o_icon-lg");
-						}
-					}
-				} else {
-					sort.getSortKey().setAsc(false);
 				}
 			}
 		}
@@ -1846,15 +1823,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 
-	protected void doSetSortOrder(UserRequest ureq) {
-		sortOrderCtrl = new FlexiTableSortOrderController(ureq, wControl, this);
-		sortOrderCtrl.addControllerListener(this);
-		callout = new CloseableCalloutWindowController(ureq, wControl, sortOrderCtrl.getInitialComponent(),
-				sortOrderButton, translator.translate("sort.settings"), true, "o_sel_flexi_sort_order_callout");
-		callout.activate();
-		callout.addControllerListener(this);
-	}
-
 	protected void customizeCallout(UserRequest ureq) {
 		Choice choice = getColumnListAndTheirVisibility();
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, translator.translate("customize.columns"), false);
@@ -2068,7 +2036,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		
 		if(sortKey != null) {
 			orderBy = new SortKey[]{ new SortKey(sortKey, tablePrefs.isSortDirection()) };
-			selectSortOption(sortKey, tablePrefs.isSortDirection());
 		}
 	}
 	
@@ -2456,9 +2423,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(searchEl != null) {
 			allOk &= searchEl.validate();
 		}
-		if(sortOrderButton != null) {
-			allOk &= sortOrderButton.validate();
-		}
 		if(customButton != null) {
 			allOk &= customButton.validate();
 		}
@@ -2549,7 +2513,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	protected void rootFormAvailable() {
-		rootFormAvailable(sortOrderButton);
 		rootFormAvailable(customButton);
 		rootFormAvailable(settingsButton);
 		rootFormAvailable(exportButton);

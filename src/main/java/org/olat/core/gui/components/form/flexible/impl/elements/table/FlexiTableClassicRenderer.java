@@ -207,6 +207,10 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			}
 			sb.append("'");
 		}
+		String ariaSort = getAriaSort(ftC, fcm);
+		if(ariaSort != null) {
+			sb.append(" aria-sort='").append(ariaSort).append("'");
+		}
 		sb.append(">");
 		// sort is not defined
 		if (!fcm.isSortable() || fcm.getSortKey() == null) {
@@ -255,6 +259,15 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			sb.append("</a>");
 		}
 		sb.append("</th>");
+	}
+	
+	private String getAriaSort(FlexiTableComponent ftC, FlexiColumnModel fcm) {
+		SortKey[] orderBy = ftC.getFormItem().getOrderBy();
+		if(fcm.isSortable() && fcm.getSortKey() != null && orderBy != null && orderBy.length > 0
+				&& orderBy[0] != null && fcm.getSortKey().equals(orderBy[0].getKey())) {
+			return orderBy[0].isAsc() ? "ascending" : "descending";
+		}
+		return null;
 	}
 	
 	private void renderHeaderText(FlexiColumnModel fcm, Translator translator, StringOutput sb) {

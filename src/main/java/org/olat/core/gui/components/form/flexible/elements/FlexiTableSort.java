@@ -33,7 +33,6 @@ public class FlexiTableSort {
 	
 	private final String label;
 	private final SortKey sortKey;
-	private boolean selected;
 	
 	public FlexiTableSort(String label, SortKey sortKey) {
 		this.label = label;
@@ -51,14 +50,6 @@ public class FlexiTableSort {
 
 	public SortKey getSortKey() {
 		return sortKey;
-	}
-
-	public boolean isSelected() {
-		return selected;
-	}
-
-	public void setSelected(boolean selected) {
-		this.selected = selected;
 	}
 
 	@Override
