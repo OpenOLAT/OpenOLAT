@@ -31,6 +31,7 @@ import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -48,6 +49,8 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.site.CoachSite;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,6 +79,8 @@ public class UserInfoProfileController extends BasicController {
 	private HomePageConfigManager homePageConfigManager;
 	@Autowired
 	private InstantMessagingService imService;
+	@Autowired
+	private CoachingService coachingService;
 
 	public UserInfoProfileController(UserRequest ureq, WindowControl wControl, UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
 		super(ureq, wControl);
@@ -126,6 +131,16 @@ public class UserInfoProfileController extends BasicController {
 			chatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
 		}
 
+		if (profileConfig.isCoachingLinkEnabled() && isCoachingLinkAvailable()) {
+			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(
+					"[CoachSite:0][People:0][Participants:0][Identity:" + portraitUser.getIdentityKey() + "]");
+			ExternalLink coachingLink = LinkFactory.createExternalLink("user.info.coaching", "user.info.coaching", url);
+			coachingLink.setCssClass("btn btn-xs btn-default");
+			coachingLink.setTooltip(translate("user.info.coaching"));
+			coachingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_coaching_tool");
+			mainVC.put("user.info.coaching", coachingLink);
+		}
+		
 		if (profileConfig.isUserManagementLinkEnabled()) {
 			List<Organisation> manageableOrganisations = organisationService.getOrganisations(
 					getIdentity(), ureq.getUserSession().getRoles(),
@@ -140,11 +155,20 @@ public class UserInfoProfileController extends BasicController {
 					ExternalLink userManagementLink = LinkFactory.createExternalLink("user.info.user.management", "user.info.user.management", url);
 					userManagementLink.setCssClass("btn btn-xs btn-default");
 					userManagementLink.setTooltip(translate("user.info.user.management"));
-					userManagementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
+					userManagementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user_management");
 					mainVC.put("user.info.user.management", userManagementLink);
 				}
 			}
 		}
+	}
+	
+	private boolean isCoachingLinkAvailable() {
+		if (portraitUser.getIdentityKey().equals(getIdentity().getKey())) {
+			return false;
+		}
+		ChiefController chiefCtrl = getWindowControl().getWindowBackOffice().getChiefController();
+		return chiefCtrl != null && chiefCtrl.hasStaticSite(CoachSite.class)
+				&& coachingService.isParticipantCoachedBy(getIdentity(), portraitUser::getIdentityKey);
 	}
 	
 	private String getStatusCss(PortraitUser portraitUser) {

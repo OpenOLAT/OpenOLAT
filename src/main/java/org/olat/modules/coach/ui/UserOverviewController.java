@@ -90,7 +90,9 @@ import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.HomePageDisplayController;
 import org.olat.user.ProfileAndHomePageEditController;
+import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UserPropertiesInfoController;
 import org.olat.user.ui.admin.UserAccountController;
 import org.olat.user.ui.data.UserDataController;
@@ -192,6 +194,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private ACService acService;
 	@Autowired
 	private CreditPointModule creditPointModule;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 								  Object statEntry, Identity mentee, int index, int numOfStudents, String role, 
@@ -276,7 +280,9 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		mainVC.contextPut("relationAndName", relationAndName);
 
 		// Add user details
-		UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), identity);
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
+		profileConfig.setCoachingLinkEnabled(false);
+		UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), identity, profileConfig);
 		listenTo(infoCtrl);
 		mainVC.put("userDetails", infoCtrl.getInitialComponent());
 	}

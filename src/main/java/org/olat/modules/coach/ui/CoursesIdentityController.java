@@ -158,6 +158,7 @@ public class CoursesIdentityController extends BasicController implements NextPr
 
 	private void initPortrait(UserRequest ureq) {
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
+		profileConfig.setCoachingLinkEnabled(false);
 		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), assessedIdentity);
 		CoachedIdentityInfoController profile = new CoachedIdentityInfoController(ureq, getWindowControl(),
 				assessedIdentity, profileConfig, portraitUser);

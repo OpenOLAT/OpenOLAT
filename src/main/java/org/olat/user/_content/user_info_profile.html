@@ -23,6 +23,9 @@
 				#if($r.available("user.info.chat") && $r.visible("user.info.chat"))
 					$r.render("user.info.chat")
 				#end
+				#if($r.available("user.info.coaching") && $r.visible("user.info.coaching"))
+					$r.render("user.info.coaching")
+				#end
 				#if($r.available("user.info.user.management") && $r.visible("user.info.user.management"))
 					$r.render("user.info.user.management")
 				#end

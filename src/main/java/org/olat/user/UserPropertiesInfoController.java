@@ -65,6 +65,12 @@ public class UserPropertiesInfoController extends UserInfoController {
 	}
 	
 	public UserPropertiesInfoController(UserRequest ureq, WindowControl wControl, Identity infoIdentity,
+			UserInfoProfileConfig profileConfig) {
+		super(ureq, wControl, null, null);
+		init(ureq, infoIdentity, null, null, profileConfig);
+	}
+	
+	public UserPropertiesInfoController(UserRequest ureq, WindowControl wControl, Identity infoIdentity,
 			String customUsageIdentifier, LabelValues additionalLabelValues) {
 		super(ureq, wControl, null, null);
 		init(ureq, infoIdentity, customUsageIdentifier, additionalLabelValues, null);

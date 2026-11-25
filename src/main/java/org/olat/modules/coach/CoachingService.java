@@ -65,6 +65,12 @@ public interface CoachingService {
 	
 	public boolean hasResourcesAsOwner(IdentityRef identity, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
 	
+	/**
+	 * @return true if the participant is in the list "My participants" of the
+	 * 		coaching tool of the coach (as owner, coach or master coach)
+	 */
+	public boolean isParticipantCoachedBy(IdentityRef coach, IdentityRef participant);
+	
 	
 	/**
 	 * @param coach The coach or owner

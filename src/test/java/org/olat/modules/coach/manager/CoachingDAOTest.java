@@ -24,6 +24,7 @@ import static org.olat.test.JunitTestHelper.random;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -1583,6 +1584,160 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertFalse(canCourseParticipantAsCoach);
 		boolean canCourseParticipantAsOwner = coachingDAO.isMember(courseParticipant, GroupRoles.owner, RepositoryEntryStatusEnum.preparationToClosed());
 		Assert.assertFalse(canCourseParticipantAsOwner);
+	}
+	
+	@Test
+	public void isParticipantCoachedByCourseCoach() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherRe = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-2");
+		Identity otherParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-3");
+		Identity otherCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-4");
+		repositoryService.addRole(coach, re, GroupRoles.coach.name());
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		repositoryService.addRole(otherParticipant, otherRe, GroupRoles.participant.name());
+		repositoryService.addRole(otherCoach, re, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
+		List<CoachingRoles> roles = List.of(CoachingRoles.owner, CoachingRoles.coach, CoachingRoles.mastercoach);
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, roles, participant)).isTrue();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, List.of(CoachingRoles.coach), participant)).isTrue();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, roles, otherParticipant)).isFalse();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(participant, roles, coach)).isFalse();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, roles, otherCoach)).isFalse();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, List.of(CoachingRoles.owner), participant)).isFalse();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, List.of(), participant)).isFalse();
+	}
+	
+	@Test
+	public void isParticipantCoachedByCourseCoachStatus() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-5");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-6");
+		repositoryService.addRole(coach, re, GroupRoles.coach.name());
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.preparation);
+		dbInstance.commitAndCloseSession();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, List.of(CoachingRoles.coach), participant)).isFalse();
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.coachpublished);
+		dbInstance.commitAndCloseSession();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, List.of(CoachingRoles.coach), participant)).isTrue();
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.trash);
+		dbInstance.commitAndCloseSession();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, List.of(CoachingRoles.coach), participant)).isFalse();
+	}
+	
+	@Test
+	public void isParticipantCoachedByOwner() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-7");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-8");
+		repositoryService.addRole(owner, re, GroupRoles.owner.name());
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(owner, List.of(CoachingRoles.owner), participant)).isTrue();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(owner, List.of(CoachingRoles.coach, CoachingRoles.mastercoach), participant)).isFalse();
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.preparation);
+		dbInstance.commitAndCloseSession();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(owner, List.of(CoachingRoles.owner), participant)).isTrue();
+		
+		re = repositoryManager.setStatus(re, RepositoryEntryStatusEnum.trash);
+		dbInstance.commitAndCloseSession();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(owner, List.of(CoachingRoles.owner), participant)).isFalse();
+	}
+	
+	@Test
+	public void isParticipantCoachedByOwnerOfBusinessGroupParticipant() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-9");
+		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-10");
+		Identity groupParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-11");
+		Identity courseParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-12");
+		repositoryService.addRole(owner, re, GroupRoles.owner.name());
+		repositoryService.addRole(courseParticipant, re, GroupRoles.participant.name());
+		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Coached-by-grp", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group, re);
+		businessGroupRelationDao.addRole(groupParticipant, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		List<CoachingRoles> roles = List.of(CoachingRoles.owner, CoachingRoles.coach, CoachingRoles.mastercoach);
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(owner, roles, groupParticipant)).isTrue();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(owner, roles, courseParticipant)).isTrue();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(groupCoach, roles, groupParticipant)).isTrue();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(groupCoach, roles, courseParticipant)).isFalse();
+	}
+	
+	@Test
+	public void isParticipantCoachedByMasterCoach() {
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-13");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-14");
+		Curriculum curriculum = curriculumService.createCurriculum("Cur-coached-by", "Curriculum coached by", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-coached-by", "Element coached by",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach, JunitTestHelper.getDefaultActor());
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		URL courseUrl = JunitTestHelper.class.getResource("file_resources/curriculum_course.zip");
+		RepositoryEntry course = JunitTestHelper.deployCourse(null, "Course coached by", RepositoryEntryStatusEnum.published, courseUrl);
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+		
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(masterCoach, List.of(CoachingRoles.mastercoach), participant)).isTrue();
+		Assertions.assertThat(coachingDAO.isParticipantCoachedBy(masterCoach, List.of(CoachingRoles.owner, CoachingRoles.coach), participant)).isFalse();
+	}
+	
+	/**
+	 * The quick check must agree with the participants list of the coaching tool.
+	 */
+	@Test
+	public void isParticipantCoachedByMatchesParticipantsList() {
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-15");
+		repositoryService.addRole(coach, re1, GroupRoles.coach.name());
+		repositoryService.addRole(coach, re2, GroupRoles.owner.name());
+		List<Identity> identities = new ArrayList<>();
+		for(int i=0; i<6; i++) {
+			Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-list-" + i);
+			repositoryService.addRole(identity, i % 3 == 0 ? re1 : (i % 3 == 1 ? re2 : re3), GroupRoles.participant.name());
+			identities.add(identity);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		List<CoachingRoles> roles = List.of(CoachingRoles.owner, CoachingRoles.coach);
+		List<Long> listedKeys = coachingDAO.loadParticipantsCoursesStatistics(coach, roles, null, null, List.of(), Locale.ENGLISH)
+				.stream()
+				.map(ParticipantStatisticsEntry::getIdentityKey)
+				.toList();
+		for(Identity identity:identities) {
+			Assertions.assertThat(coachingDAO.isParticipantCoachedBy(coach, roles, identity))
+				.as("Identity %s", identity.getName())
+				.isEqualTo(listedKeys.contains(identity.getKey()));
+		}
+		Assertions.assertThat(listedKeys).hasSize(4);
+	}
+	
+	@Test
+	public void isParticipantCoachedByService() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-16");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Coached-by-17");
+		repositoryService.addRole(coach, re, GroupRoles.coach.name());
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		Assertions.assertThat(coachingService.isParticipantCoachedBy(coach, participant)).isTrue();
+		Assertions.assertThat(coachingService.isParticipantCoachedBy(participant, coach)).isFalse();
 	}
 	
 	/**

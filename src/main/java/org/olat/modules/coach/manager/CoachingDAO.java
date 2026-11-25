@@ -182,6 +182,56 @@ public class CoachingDAO {
 		return !firstKey.isEmpty();
 	}
 	
+	/**
+	 * Same membership semantics as the participants list of
+	 * {@link #loadParticipantsCoursesStatistics}, but stops at the first hit.
+	 */
+	public boolean isParticipantCoachedBy(IdentityRef coach, List<CoachingRoles> roles, IdentityRef participant) {
+		boolean asOwner = roles.contains(CoachingRoles.owner);
+		List<String> coachRoles = CoachingRoles.intersect(roles, List.of(CoachingRoles.coach, CoachingRoles.mastercoach)).stream()
+				.map(CoachingRoles::name)
+				.toList();
+		if(!asOwner && coachRoles.isEmpty()) {
+			return false;
+		}
+		
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select participantMember.key from repositoryentry as re")
+		  .append(" inner join re.groups as reToGroup")
+		  .append(" inner join reToGroup.group as participantGroup")
+		  .append(" inner join participantGroup.members as participantMember")
+		  .append(" where participantMember.identity.key=:participantKey and participantMember.role='participant'")
+		  .append(" and (");
+		if(asOwner) {
+			sb.append("(re.status ").in(RepositoryEntryStatusEnum.preparationToClosed())
+			  .append(" and exists (select ownerMember.key from repoentrytogroup as ownerRel")
+			  .append("  inner join ownerRel.group as ownerGroup")
+			  .append("  inner join ownerGroup.members as ownerMember")
+			  .append("  where ownerRel.entry.key=re.key and ownerMember.identity.key=:coachKey and ownerMember.role='owner'")
+			  .append("))");
+		}
+		if(!coachRoles.isEmpty()) {
+			if(asOwner) {
+				sb.append(" or ");
+			}
+			sb.append("(re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+			  .append(" and exists (select coachMember.key from bgroupmember as coachMember")
+			  .append("  where coachMember.group.key=participantGroup.key and coachMember.identity.key=:coachKey and coachMember.role in (:coachRoles)")
+			  .append("))");
+		}
+		sb.append(")");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("participantKey", participant.getKey())
+				.setParameter("coachKey", coach.getKey());
+		if(!coachRoles.isEmpty()) {
+			query.setParameter("coachRoles", coachRoles);
+		}
+		return !query.setFirstResult(0).setMaxResults(1).getResultList().isEmpty();
+	}
+	
 	public boolean hasResourcesAsOwner(IdentityRef identity, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
 		String sb = """
 			select v.key from repositoryentry v

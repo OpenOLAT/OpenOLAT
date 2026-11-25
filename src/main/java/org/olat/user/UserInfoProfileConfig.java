@@ -29,6 +29,7 @@ public class UserInfoProfileConfig {
 	
 	private boolean showIdentityStatus = false;
 	private boolean chatEnabled = false;
+	private boolean coachingLinkEnabled = true;
 	private boolean userManagementLinkEnabled = true;
 
 	public boolean isShowIdentityStatus() {
@@ -47,6 +48,14 @@ public class UserInfoProfileConfig {
 		this.chatEnabled = chatEnabled;
 	}
 
+	public boolean isCoachingLinkEnabled() {
+		return coachingLinkEnabled;
+	}
+	
+	public void setCoachingLinkEnabled(boolean coachingLinkEnabled) {
+		this.coachingLinkEnabled = coachingLinkEnabled;
+	}
+	
 	public void setUserManagementLinkEnabled(boolean userManagementLinkEnabled) {
 		this.userManagementLinkEnabled = userManagementLinkEnabled;
 	}

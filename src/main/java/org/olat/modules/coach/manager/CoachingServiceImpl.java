@@ -148,6 +148,14 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
+	public boolean isParticipantCoachedBy(IdentityRef coach, IdentityRef participant) {
+		List<CoachingRoles> roles = curriculumModule.isEnabled()
+				? List.of(CoachingRoles.owner, CoachingRoles.coach, CoachingRoles.mastercoach)
+				: List.of(CoachingRoles.owner, CoachingRoles.coach);
+		return coachingDao.isParticipantCoachedBy(coach, roles, participant);
+	}
+	
+	@Override
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student, boolean fetch) {
 		return coachingDao.getStudentsCourses(coach, student, fetch);
 	}

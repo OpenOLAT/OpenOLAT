@@ -631,6 +631,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_unselected { @include o-add-icon('question');}
 .o_icon_undo { @include o-add-icon('undo');}
 .o_icon_user { @include o-add-icon('user');}
+.o_icon_user_management { @include o-add-icon('user-gear');}
 .o_icon_user_vip { @include o-add-icon('graduation-cap');}
 .o_icon_user_anonymous { @include o-add-icon('question');}
 .o_icon_user_authentication { @include o-add-icon('user-shield');}
