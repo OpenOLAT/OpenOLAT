@@ -116,7 +116,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 		EnumMap<CurriculumRoles,Boolean> usedRoles = updateRolesColumnsVisibility(getRolesDetailsRows());
 		
 		Map<Long,MemberRolesDetailsRow> rowsMap = rows.stream()
-				.collect(Collectors.toMap(MemberRolesDetailsRow::getKey, r -> r, (u, v) -> u));
+				.collect(Collectors.toMap(MemberRolesDetailsRow::getKey, r -> r, (u, _) -> u));
 		for(MembershipModification modification:modifications) {
 			CurriculumElement element = modification.curriculumElement();
 			MemberRolesDetailsRow row = rowsMap.get(element.getKey());
@@ -209,14 +209,14 @@ public class MemberRolesDetailsController extends FormBasicController {
 		// Memberships
 		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(curriculum, member);
 		Map<Long, CurriculumElementMembership> membershipsMap = memberships.stream()
-				.collect(Collectors.toMap(CurriculumElementMembership::getCurriculumElementKey, u -> u, (u, v) -> u));
+				.collect(Collectors.toMap(CurriculumElementMembership::getCurriculumElementKey, u -> u, (u, _) -> u));
 		
 		// Reservations
 		List<ResourceReservation> reservations = acService.getReservations(member);
 		Map<ResourceToRoleKey,ResourceReservation> reservationsMap = reservations.stream()
 				.filter(reservation -> StringHelper.containsNonWhitespace(reservation.getType()))
 				.filter(reservation -> reservation.getType().startsWith(CurriculumService.RESERVATION_PREFIX))
-				.collect(Collectors.toMap(reservation -> new ResourceToRoleKey(ResourceToRoleKey.reservationToRole(reservation.getType()), reservation.getResource()) , r -> r, (u, v) -> u));
+				.collect(Collectors.toMap(reservation -> new ResourceToRoleKey(ResourceToRoleKey.reservationToRole(reservation.getType()), reservation.getResource()) , r -> r, (u, _) -> u));
 		
 		// History
 		CurriculumElementMembershipHistorySearchParameters searchParams = new CurriculumElementMembershipHistorySearchParameters();
@@ -224,7 +224,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 		searchParams.setIdentities(List.of(member));
 		List<CurriculumElementMembershipHistory> curriculumHistory = curriculumService.getCurriculumElementMembershipsHistory(searchParams);
 		Map<Long, CurriculumElementMembershipHistory> historyMap = curriculumHistory.stream()
-				.collect(Collectors.toMap(CurriculumElementMembershipHistory::getCurriculumElementKey, u -> u, (u, v) -> u));
+				.collect(Collectors.toMap(CurriculumElementMembershipHistory::getCurriculumElementKey, u -> u, (u, _) -> u));
 
 		List<MemberRolesDetailsRow> rows = new ArrayList<>();
 		Map<Long, MemberRolesDetailsRow> rowsMap = new HashMap<>();

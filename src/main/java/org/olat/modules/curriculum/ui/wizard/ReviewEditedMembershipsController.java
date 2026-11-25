@@ -194,7 +194,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 				.map(id -> new ReviewEditedMembershipsRow(id, userPropertyHandlers, getLocale()))
 				.toList();
 		Map<Long,ReviewEditedMembershipsRow> identityKeyToRows = rows.stream()
-				.collect(Collectors.toMap(ReviewEditedMembershipsRow::getIdentityKey, r -> r, (u, v) -> u));
+				.collect(Collectors.toMap(ReviewEditedMembershipsRow::getIdentityKey, r -> r, (u, _) -> u));
 		
 		List<MembershipModification> modifications = membersContext.getModifications();
 		for(ReviewEditedMembershipsRow row:rows) {
@@ -246,7 +246,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 	private void loadStatusFromReservations(Map<Long,ReviewEditedMembershipsRow> identityKeyToRows) {
 		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
 		Map<OLATResource,CurriculumElement> resourceToCurriculumElements = curriculumElements.stream()
-				.collect(Collectors.toMap(CurriculumElement::getResource, c -> c, (u, v) -> u));
+				.collect(Collectors.toMap(CurriculumElement::getResource, c -> c, (u, _) -> u));
 		List<OLATResource> resources = membersContext.getAllCurriculumElementsResources();
 		List<ResourceReservation> reservations = acService.getReservations(resources);
 		for(ResourceReservation reservation:reservations) {

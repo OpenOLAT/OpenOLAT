@@ -1141,6 +1141,7 @@ public class CurriculumElementDAO {
 				inner join fetch el.group as baseGroup
 				left join fetch el.parent as parent
 				left join fetch el.type as type
+				left join fetch el.resource as resource
 				where curriculum.key=:curriculumKey and locate(el.materializedPathKeys,:materializedPath) = 1""";
 		  
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
@@ -1160,6 +1161,7 @@ public class CurriculumElementDAO {
 				inner join fetch el.group as baseGroup
 				left join fetch el.parent as parent
 				left join fetch el.type as type
+				left join fetch el.resource as resource
 				where curriculum.key=:curriculumKey and el.parent.key is null""");
 		
 		List<String> statusList = new ArrayList<>();
@@ -1208,6 +1210,7 @@ public class CurriculumElementDAO {
 			inner join fetch baseGroup.members as member
 			left join fetch el.implementation as impl
 			left join fetch el.type as type
+			left join fetch el.resource as resource
 			where member.identity.key=:memberKey
 			and curriculum.key in (select mcur.curKey from mcurriculums as mcur)""";
 		
