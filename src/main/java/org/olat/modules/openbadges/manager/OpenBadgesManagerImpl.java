@@ -714,6 +714,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		targetClass.setIssuer(cloneIssuerString(sourceClass.getIssuer(), targetClass.getEntry()));
 		targetClass.setImage(OpenBadgesFactory.createBadgeClassFileName(targetClass.getUuid(), sourceClass.getImage()));
 		targetClass.setVerificationMethod(sourceClass.getVerificationMethod());
+		targetClass.setBadgeOrganization(sourceClass.getBadgeOrganization());
 	}
 
 	private BadgeClass cloneBadgeClass(BadgeClass sourceClass, RepositoryEntry targetEntry, Identity author,
