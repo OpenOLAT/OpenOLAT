@@ -84,8 +84,8 @@ public abstract class UserInfoController extends FormBasicController {
 
 		Boolean oneCol = Boolean.valueOf(itemsCont.getFormComponents().size() < 2);
 		itemsCont.contextPut("oneCol", oneCol);
-		Boolean treeCols = Boolean.valueOf(itemsCont.getFormComponents().size() > 4);
-		itemsCont.contextPut("threeCols", treeCols);
+		Boolean threeCols = Boolean.valueOf(itemsCont.getFormComponents().size() > 2);
+		itemsCont.contextPut("threeCols", threeCols);
 	}
 
 	/*

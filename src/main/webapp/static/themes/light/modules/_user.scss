@@ -406,7 +406,11 @@
 		.o_user_info {
 			grid-template-columns: 1fr 2px 2fr;
 			&:has(.o_user_info_items_3cols) {
-				grid-template-columns: minmax(240px, 1fr) 2px 3fr;
+				// Wider than the 280px of o-profile-container, so the profile is not stacked.
+				grid-template-columns: minmax(281px, 1fr) 2px 3fr;
+				&:is(.o_user_admin_info *) {
+					grid-template-columns: minmax(240px, 1fr) 2px 3fr;
+				}
 			}
 			
 			.o_user_info_divider {
