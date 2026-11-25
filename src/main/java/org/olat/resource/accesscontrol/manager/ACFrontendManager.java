@@ -1629,7 +1629,7 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(), offerLabel,
 					rawOrder.getPrice(), rawOrder.getPriceLines(), rawOrder.getCancellationFee(),
 					rawOrder.getCancellationFeeLines(), rawOrder.isBillingAddressProposal(),
-					rawOrder.getBillingAddressIdentifier(), rawOrder.getPurchaseOrderNumber(), rawOrder.getComment(),
+					rawOrder.getBillingAddressIdentifier(), rawOrder.getBillingAddressCustomerNumber(), rawOrder.getPurchaseOrderNumber(), rawOrder.getComment(),
 					rawOrder.getCreationDate(), orderStatus, finalStatus, rawOrder.getDeliveryKey(),
 					resourceDisplayName, costCenteryName, costCenteryAccount, rawOrder.getUsername(),
 					rawOrder.getUserProperties(), orderMethods);

@@ -19,7 +19,9 @@
  */
 package org.olat.user.propertyhandlers;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.CoreSpringFactory;
@@ -34,6 +36,27 @@ import org.olat.core.id.User;
  *
  */
 public class CustomerNumberPropertyHandler extends Generic127CharTextPropertyHandler {
+	
+	public static List<UserPropertyHandler> filterDisabled(List<UserPropertyHandler> userPropertyHandlers) {
+		if (CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled()) {
+			return userPropertyHandlers;
+		}
+		return userPropertyHandlers.stream()
+				.filter(userPropertyHandler -> !(userPropertyHandler instanceof CustomerNumberPropertyHandler))
+				.collect(Collectors.toList());
+	}
+	
+	public static String i18nColumnLabelKey(UserPropertyHandler userPropertyHandler) {
+		return userPropertyHandler instanceof CustomerNumberPropertyHandler
+				? "table.name.customerNumber.user"
+				: userPropertyHandler.i18nColumnDescriptorLabelKey();
+	}
+	
+	public static String i18nFormLabelKey(UserPropertyHandler userPropertyHandler) {
+		return userPropertyHandler instanceof CustomerNumberPropertyHandler
+				? "form.name.customerNumber.user"
+				: userPropertyHandler.i18nFormElementLabelKey();
+	}
 
 	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser, FormItemContainer formItemContainer) {

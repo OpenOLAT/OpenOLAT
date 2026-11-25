@@ -50,6 +50,7 @@ public class UserRow extends UserPropertiesRow implements IdentityOrganisationsR
 	private List<MembershipModification> modifications;
 	private ModificationStatusSummary modificationSummary;
 	private BillingAddress billingAddress;
+	private OrganisationWithParents billingAddressOrganisation;
 	private boolean noBillingAddressAvailable;
 	private boolean multiBillingAddressAvailable;
 	
@@ -115,6 +116,14 @@ public class UserRow extends UserPropertiesRow implements IdentityOrganisationsR
 		this.billingAddress = billingAddress;
 	}
 
+	public OrganisationWithParents getBillingAddressOrganisation() {
+		return billingAddressOrganisation;
+	}
+	
+	public void setBillingAddressOrganisation(OrganisationWithParents billingAddressOrganisation) {
+		this.billingAddressOrganisation = billingAddressOrganisation;
+	}
+	
 	@Override
 	public boolean isNoBillingAddressAvailable() {
 		return noBillingAddressAvailable;

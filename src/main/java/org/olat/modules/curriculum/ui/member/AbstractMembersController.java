@@ -89,6 +89,7 @@ import org.olat.resource.accesscontrol.ui.OrderCommentRenderer;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -163,7 +164,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser));
 
 		detailsVC = createVelocityContainer("member_details");
 		
@@ -206,7 +207,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 			String action = UserConstants.NICKNAME.equals(name) || UserConstants.FIRSTNAME.equals(name) || UserConstants.LASTNAME.equals(name)
 					? TOGGLE_DETAILS_CMD : null;
 			boolean visible = userManager.isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(),
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, CustomerNumberPropertyHandler.i18nColumnLabelKey(userPropertyHandler),
 					colIndex, action, true, "userProp-" + colIndex));
 			colIndex++;
 		}

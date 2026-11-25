@@ -93,6 +93,7 @@ import org.olat.modules.curriculum.ui.member.CurriculumPeopleTableModel.PeopleCo
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.ResourceReservationsIdentityInfos;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -156,7 +157,7 @@ public class CurriculumPeopleController extends FormBasicController implements A
 		organisationsEnabled = organisationModule.isEnabled();
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser));
 		
 		initForm(ureq);
 		loadModel();
@@ -175,7 +176,7 @@ public class CurriculumPeopleController extends FormBasicController implements A
 			String action = UserConstants.NICKNAME.equals(name) || UserConstants.FIRSTNAME.equals(name) || UserConstants.LASTNAME.equals(name)
 					? SELECT_CMD : null;
 			boolean visible = userManager.isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(),
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, CustomerNumberPropertyHandler.i18nColumnLabelKey(userPropertyHandler),
 					colIndex, action, true, id));
 			colIndex++;
 			if(UserConstants.LASTNAME.equals(name)) {

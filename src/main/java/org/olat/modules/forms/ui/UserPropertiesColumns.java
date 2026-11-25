@@ -28,6 +28,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbookStyles;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport.UserColumns;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -49,7 +50,7 @@ public class UserPropertiesColumns implements UserColumns {
 	@Override
 	public void addHeaderColumns(Row row, AtomicInteger col, OpenXMLWorkbookStyles styles) {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			String header = userPropertyTranslator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey());
+			String header = userPropertyTranslator.translate(CustomerNumberPropertyHandler.i18nColumnLabelKey(userPropertyHandler));
 			row.addCell(col.getAndIncrement(), header, styles.getBottomAlignStyle());
 		}
 	}

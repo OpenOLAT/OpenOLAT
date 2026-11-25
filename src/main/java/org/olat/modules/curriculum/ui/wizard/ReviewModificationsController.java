@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -86,6 +88,7 @@ import org.olat.resource.accesscontrol.ui.BillingAddressSelectionController;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.admin.IdentityOrganisationsCellRenderer;
 import org.olat.user.ui.organisation.OrganisationsSmallListController;
@@ -126,6 +129,10 @@ public class ReviewModificationsController extends StepFormBasicController imple
 	private CurriculumService curriculumService;
 	@Autowired
 	private UserPortraitService userPortraitService;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public ReviewModificationsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, MembersContext membersContext) {
@@ -139,7 +146,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		detailsVC = createVelocityContainer("member_details");
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser);
+		userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser));
 
 		initForm(ureq);
 		loadModel();
@@ -159,14 +166,20 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			String action = UserConstants.NICKNAME.equals(name) || UserConstants.FIRSTNAME.equals(name) || UserConstants.LASTNAME.equals(name)
 					? TOGGLE_DETAILS_CMD : null;
 			boolean visible = userManager.isMandatoryUserProperty(AbstractMembersController.usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(),
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, CustomerNumberPropertyHandler.i18nColumnLabelKey(userPropertyHandler),
 					colIndex, action, true, "userProp-" + colIndex));
 			colIndex++;
 		}
 		
 		if (membersContext.isNeedBillingAddress()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserOverviewCols.organisation, new IdentityOrganisationsCellRenderer()));
+			if (organisationModule.isCustomerNumberEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserOverviewCols.orgCustomerNumber));
+			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserOverviewCols.billingAddress, new BillingAddressCellRenderer(getLocale(), true)));
+			if (organisationModule.isCustomerNumberEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserOverviewCols.billingAddressCustomerNumber));
+			}
 		}
 		
 		DefaultFlexiColumnModel numCol = new DefaultFlexiColumnModel(UserOverviewCols.numOfModifications,
@@ -296,7 +309,27 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			billingAddress = uniqueUserBillingAddress;
 			membersContext.getIdentityKeyToBillingAddress().put(row.getIdentity().getKey(), uniqueUserBillingAddress);
 		}
+		setBillingAddress(row, billingAddress);
+	}
+	
+	private void setBillingAddress(UserRow row, BillingAddress billingAddress) {
 		row.setBillingAddress(billingAddress);
+		row.setBillingAddressOrganisation(getBillingAddressOrganisation(row, billingAddress));
+	}
+	
+	private OrganisationWithParents getBillingAddressOrganisation(UserRow row, BillingAddress billingAddress) {
+		if (billingAddress == null || billingAddress.getOrganisation() == null) {
+			return null;
+		}
+		Long organisationKey = billingAddress.getOrganisation().getKey();
+		if (row.getOrganisations() != null) {
+			for (OrganisationWithParents organisation : row.getOrganisations()) {
+				if (organisationKey.equals(organisation.getKey())) {
+					return organisation;
+				}
+			}
+		}
+		return new OrganisationWithParents(organisationService.getOrganisation(billingAddress.getOrganisation()), List.of(), 0);
 	}
 	
 	private void forge(UserRow row) {
@@ -495,7 +528,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 	}
 	
 	private void updateBillingAddress(UserRequest ureq, UserRow row, BillingAddress billingAddress) {
-		row.setBillingAddress(billingAddress);
+		setBillingAddress(row, billingAddress);
 		membersContext.getIdentityKeyToBillingAddress().put(row.getIdentityKey(), billingAddress);
 		tableEl.reset(false, false, true);
 		validateFormLogic(ureq);

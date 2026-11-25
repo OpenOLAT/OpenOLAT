@@ -82,7 +82,7 @@ public class ACOrderDAO {
 	
 	private static final Set<String> findNativeOrderItemsOrderBys = Set.of("order_id", "total_currency_code", "total_amount",
 			"cancellation_fee_amount", "billing_address_key", "billing_address_organisation_key", "billing_address_identity_key",
-			"billing_address_identifier", "purchase_order_number", "comment", "creationdate", "o_status", "delivery_id",
+			"billing_address_identifier", "billing_address_customer_number", "purchase_order_number", "comment", "creationdate", "o_status", "delivery_id",
 			"total_lines_amount", "cancellation_fee_lines_amount", "resDisplaynames", "labels ", "cost_center_names",
 			"cost_center_accounts", "trxStatus", "trxMethodIds", "pspTrxStatus", "checkoutTrxStatus", "checkoutTrxPaypalStatus",
 			"delivery_ident_id", "delivery_ident_name", "delivery_user_id");
@@ -354,6 +354,7 @@ public class ACOrderDAO {
 		  .append("  min(billingAddress.fk_organisation) as billing_address_organisation_key,")
 		  .append("  min(billingAddress.fk_identity) as billing_address_identity_key,")
 		  .append("  billingAddress.a_identifier as billing_address_identifier,")
+		  .append("  billingAddress.a_customer_number as billing_address_customer_number,")
 		  .append("  o.purchase_order_number as purchase_order_number,")
 		  .append("  o.order_comment as comment,")
 		  .append("  o.creationdate as creationdate,")
@@ -452,7 +453,7 @@ public class ACOrderDAO {
 			sb.append(")");
 		}
 		
-		sb.append(" group by o.order_id, billingAddress.a_identifier");
+		sb.append(" group by o.order_id, billingAddress.a_identifier, billingAddress.a_customer_number");
 		if(dbInstance.isOracle()) {
 			sb.append(", o.total_currency_code, o.total_amount, o.cancellation_fee_amount, o.purchase_order_number ,o.creationdate, o.order_status, o.fk_delivery_id");
 		}
@@ -551,6 +552,7 @@ public class ACOrderDAO {
 			Number billingAddressOrganisationKey = ((Number)order[pos++]);
 			Number billingAddressIdentityKey = ((Number)order[pos++]);
 			String billingAddressIdentifier = (String)order[pos++];
+			String billingAddressCustomerNumber = (String)order[pos++];
 			String purchseOrderNumber = (String)order[pos++];
 			String comment = (String)order[pos++];
 			Date creationDate = PersistenceHelper.extractDate(order, pos++);
@@ -584,7 +586,7 @@ public class ACOrderDAO {
 			
 			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), label, totalCurrencyCode,
 					orderAmount, orderCancellationFee, orderAmountLines, orderCancellationFeeLines,
-					billingAddressProposal, billingAddressIdentifier, purchseOrderNumber, comment, creationDate,
+					billingAddressProposal, billingAddressIdentifier, billingAddressCustomerNumber, purchseOrderNumber, comment, creationDate,
 					orderStatus, deliveryKey, resourceName, costCenterName, costCenterAccount, trxStatus, trxMethodIds,
 					pspTrxStatus, checkoutTrxStatus, checkoutOrderTrxStatus, username, userProperties);
 			items.add(item);

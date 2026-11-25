@@ -41,6 +41,7 @@ import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoController;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -99,7 +100,7 @@ public class MemberUserDetailsController extends UserInfoController {
 			String value = userPropertyHandler.getUserProperty(user, getLocale());
 			if(StringHelper.containsNonWhitespace(value)) {
 				value = StringHelper.escapeHtml(value);
-				String i18nLabel = userPropertyHandler.i18nFormElementLabelKey();
+				String i18nLabel = CustomerNumberPropertyHandler.i18nFormLabelKey(userPropertyHandler);
 				uifactory.addStaticTextElement(name, i18nLabel, value, itemsCont);
 			}
 		}

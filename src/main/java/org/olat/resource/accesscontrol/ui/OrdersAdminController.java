@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -97,6 +98,7 @@ import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.PresetDelegate;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -153,6 +155,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	
 	/**
@@ -172,7 +176,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+		userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		methods = acService.getAvailableMethods();
 		
@@ -222,7 +226,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			String propName = userPropertyHandler.getName();
 			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
 
-			FlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
+			FlexiColumnModel col = new DefaultFlexiColumnModel(visible, CustomerNumberPropertyHandler.i18nColumnLabelKey(userPropertyHandler), colIndex, true, propName);
 			columnsModel.addFlexiColumnModel(col);
 		}
 		
@@ -236,6 +240,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		if (isWithInvoice) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFees, new CancellationFeesRenderer()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer(getLocale())));
+			if (organisationModule.isCustomerNumberEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressCustomerNumber));
+			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));

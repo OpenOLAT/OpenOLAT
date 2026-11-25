@@ -23,6 +23,7 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -112,6 +113,8 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private UserManager userManager;
 	@Autowired
 	private AccessControlModule acModule;
+	@Autowired
+	private OrganisationModule organisationModule;
 
 	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity, OrdersSettings settings, ViewAs viewAs) {
 		super(ureq, wControl, "orders_identity");
@@ -168,6 +171,9 @@ public class OrdersController extends FormBasicController implements Activateabl
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
 			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer(getLocale())));
+			if (organisationModule.isCustomerNumberEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressCustomerNumber));
+			}
 			if (settings.canEditOrder()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));

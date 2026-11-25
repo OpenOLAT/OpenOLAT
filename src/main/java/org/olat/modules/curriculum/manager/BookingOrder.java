@@ -61,6 +61,7 @@ public class BookingOrder {
 	private BillingAddress billingAddress;
 	private String billingAddressOrgId;
 	private String billingAddressOrgName;
+	private String billingAddressOrgCustomerNumber;
 	private AccessMethod accessMethod;
 	private String transactionStatus;
 	private String paypalTransactionStatus;
@@ -290,6 +291,14 @@ public class BookingOrder {
 		this.billingAddressOrgName = billingAddressOrgName;
 	}
 
+	public String getBillingAddressOrgCustomerNumber() {
+		return billingAddressOrgCustomerNumber;
+	}
+	
+	public void setBillingAddressOrgCustomerNumber(String billingAddressOrgCustomerNumber) {
+		this.billingAddressOrgCustomerNumber = billingAddressOrgCustomerNumber;
+	}
+	
 	public void setAccessMethod(AccessMethod accessMethod) {
 		this.accessMethod = accessMethod;
 	}

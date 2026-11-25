@@ -77,8 +77,10 @@ implements SortableFlexiTableDataModel<UserRow>, KeyedFlexiTableDataModel<UserRo
 			return switch(COLS[col]) {
 				case modifications -> row.getModificationSummary();
 				case role -> row.getRoles();
-				case organisation -> row.getOrganisations();
+				case organisation -> row.getBillingAddressOrganisation() != null ? List.of(row.getBillingAddressOrganisation()) : row.getOrganisations();
+				case orgCustomerNumber -> row.getBillingAddressOrganisation() != null ? row.getBillingAddressOrganisation().getOrganisation().getCustomerNumber() : null;
 				case billingAddress -> row;
+				case billingAddressCustomerNumber -> row.getBillingAddress() != null ? row.getBillingAddress().getCustomerNumber() : null;
 				case numOfModifications -> getNumOfModifications(row);
 				case tools -> row.getToolsLink();
 				default -> "ERROR";
@@ -101,7 +103,9 @@ implements SortableFlexiTableDataModel<UserRow>, KeyedFlexiTableDataModel<UserRo
 		modifications("table.header.activity"),
 		role("table.header.current.roles"),
 		organisation("table.header.organisations"),
+		orgCustomerNumber("table.header.org.customer.number"),
 		billingAddress("table.header.billing.address"),
+		billingAddressCustomerNumber("table.header.billing.address.customer.number"),
 		numOfModifications("table.header.add.access"),
 		tools("action.more");
 		

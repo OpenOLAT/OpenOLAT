@@ -45,6 +45,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -336,7 +337,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 
 	@Override
 	protected List<UserPropertyHandler> getUserPropertyHandlers() {
-		return filterDisabledUserPropertyHandlers(CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false));
+		return CustomerNumberPropertyHandler.filterDisabled(CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false));
 	}
 	
 	private int findPropertyIndex(String propertyName, List<UserPropertyHandler> userPropertyHandlers) { 

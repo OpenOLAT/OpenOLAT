@@ -81,6 +81,7 @@ import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.ui.OfferSurveyParticipationListTableModel.OfferSurveyParticipationCols;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -129,8 +130,8 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 		this.survey = survey;
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(
-				CurriculumElementMemberUsersController.class.getCanonicalName(), isAdministrativeUser);
+		userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(
+				CurriculumElementMemberUsersController.class.getCanonicalName(), isAdministrativeUser));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
 		initForm(ureq);
@@ -154,7 +155,8 @@ public class OfferSurveyParticipationListController extends FormBasicController 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		int colIndex = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, userPropertyHandler.i18nColumnDescriptorLabelKey(),
+			boolean visible = !(userPropertyHandler instanceof CustomerNumberPropertyHandler);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, CustomerNumberPropertyHandler.i18nColumnLabelKey(userPropertyHandler),
 					colIndex, null, false, null));
 			colIndex++;
 		}

@@ -86,6 +86,7 @@ import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -348,8 +349,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgId());
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgName());
 		if(customerNumberEnabled) {
-			row.addCell(pos++, billingAddress == null || billingAddress.getOrganisation() == null
-					? null : billingAddress.getOrganisation().getCustomerNumber());
+			row.addCell(pos++, bookingOrder.getBillingAddressOrgCustomerNumber());
 		}
 		
 		if(withProgressAndStatus) {
@@ -528,7 +528,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 
 	@Override
 	protected List<UserPropertyHandler> getUserPropertyHandlers() {
-		return filterDisabledUserPropertyHandlers(CoreSpringFactory.getImpl(UserManager.class)
+		return CustomerNumberPropertyHandler.filterDisabled(CoreSpringFactory.getImpl(UserManager.class)
 				.getUserPropertyHandlersFor(AbstractReportConfiguration.PROPS_IDENTIFIER, false));
 	}
 

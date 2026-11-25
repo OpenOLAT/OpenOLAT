@@ -69,6 +69,7 @@ import org.olat.modules.curriculum.ui.wizard.UsersOverviewTableModel.UserOvervie
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.admin.IdentityOrganisationsCellRenderer;
 import org.olat.user.ui.organisation.OrganisationsSmallListController;
@@ -118,7 +119,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		detailsVC = createVelocityContainer("member_details");
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser);
+		userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser));
 
 		initForm(ureq);
 		loadModel();
@@ -135,7 +136,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 			String action = UserConstants.NICKNAME.equals(name) || UserConstants.FIRSTNAME.equals(name) || UserConstants.LASTNAME.equals(name)
 					? TOGGLE_DETAILS_CMD : null;
 			boolean visible = userManager.isMandatoryUserProperty(AbstractMembersController.usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(),
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, CustomerNumberPropertyHandler.i18nColumnLabelKey(userPropertyHandler),
 					colIndex, action, true, "userProp-" + colIndex));
 			colIndex++;
 		}

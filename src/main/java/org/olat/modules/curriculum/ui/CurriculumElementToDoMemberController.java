@@ -75,6 +75,7 @@ import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
 import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -117,8 +118,8 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 		this.elements = elements;
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(
-				AbstractMembersController.usageIdentifyer, isAdministrativeUser);
+		userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(
+				AbstractMembersController.usageIdentifyer, isAdministrativeUser));
 
 		initForm(ureq);
 	}
@@ -138,7 +139,7 @@ public class CurriculumElementToDoMemberController extends FormBasicController {
 			UserPropertyHandler handler = userPropertyHandlers.get(i);
 			boolean visible = userManager.isMandatoryUserProperty(AbstractMembersController.usageIdentifyer, handler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible,
-					handler.i18nColumnDescriptorLabelKey(), colIndex, true, "userProp-" + colIndex));
+					CustomerNumberPropertyHandler.i18nColumnLabelKey(handler), colIndex, true, "userProp-" + colIndex));
 			colIndex++;
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role));

@@ -573,6 +573,7 @@
 								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyCustomerNumber" />
 								<ref bean="userPropertyEmail" />
 							</list>
 						</property>

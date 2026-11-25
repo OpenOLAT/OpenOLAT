@@ -26,6 +26,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -69,6 +70,8 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 	private ACService acService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Autowired
 	private CurriculumAccountingDAO curriculumAccountingDao;
@@ -252,7 +255,39 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 			.hasSize(0);
 	}
 	
+	@Test
+	public void bookingOrdersBillingAddressOrgCustomerNumber() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("account-cn-1");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("account-cn-2");
+		Organisation organisation = JunitTestHelper.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-ACCOUNTING-CN", "Curriculum accounting CN", "Curriculum", false, organisation);
+		curriculumService.addMember(curriculum, owner, CurriculumRoles.curriculumowner);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-cn", "Element customer number",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Organisation billingOrganisation = organisationService.createOrganisation("Billing org", "billing-org-cn", null, null, null, JunitTestHelper.getDefaultActor());
+		billingOrganisation.setCustomerNumber("ORG-4711");
+		billingOrganisation = organisationService.updateOrganisation(billingOrganisation);
+		BillingAddress billingAddress = acService.createBillingAddress(billingOrganisation, null);
+		createOrder(id, element.getResource(), "offer-cn", billingAddress);
+		
+		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+		searchParams.setIdentity(owner);
+		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, new ArrayList<>());
+		Assertions.assertThat(bookingOrders)
+			.map(BookingOrder::getBillingAddressOrgCustomerNumber)
+			.containsExactly("ORG-4711");
+	}
+	
 	private AccessResult createOrder(Identity delivery, OLATResource resource, String offerLabel, boolean withBillingAddress) {
+		BillingAddress billingAddress = withBillingAddress
+				? acService.createBillingAddress(null, delivery)
+				: null;
+		return createOrder(delivery, resource, offerLabel, billingAddress);
+	}
+	
+	private AccessResult createOrder(Identity delivery, OLATResource resource, String offerLabel, BillingAddress billingAddress) {
 		// Make an offer
 		Offer offer = acService.createOffer(resource, "Access curriculum element");
 		offer.setLabel(offerLabel);
@@ -260,9 +295,6 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 		List<AccessMethod> methods = acService.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		offerAccess = acService.saveOfferAccess(offerAccess);
-		BillingAddress billingAddress = withBillingAddress
-				? acService.createBillingAddress(null, delivery)
-				: null;
 		dbInstance.commitAndCloseSession();
 		
 		// Book the curriculum

@@ -39,6 +39,7 @@ import org.olat.resource.accesscontrol.manager.BookingOrdersSearchParams;
 import org.olat.resource.accesscontrol.model.UserOrder;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -160,6 +161,6 @@ public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfigu
 
 	@Override
 	protected List<UserPropertyHandler> getUserPropertyHandlers() {
-		return filterDisabledUserPropertyHandlers(CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false));
+		return CustomerNumberPropertyHandler.filterDisabled(CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false));
 	}
 }

@@ -95,6 +95,7 @@ import org.olat.resource.accesscontrol.OfferToSurvey;
 import org.olat.resource.accesscontrol.ui.OfferSurveyExportFactory.SurveyExportInfos;
 import org.olat.resource.accesscontrol.ui.OfferSurveyListTableModel.OfferSurveyCols;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -156,8 +157,8 @@ public class OfferSurveyListController extends FormBasicController implements Fl
 		detailsVC = createVelocityContainer("offer_survey_details");
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(
-				CurriculumElementMemberUsersController.class.getCanonicalName(), isAdministrativeUser);
+		userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(
+				CurriculumElementMemberUsersController.class.getCanonicalName(), isAdministrativeUser));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
 		initForm(ureq);

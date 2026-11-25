@@ -54,7 +54,7 @@ public class IdentityOrganisationsCellRenderer implements FlexiCellRenderer, Act
 			List<OrganisationWithParents> organisations = (List<OrganisationWithParents>)cellValue;
 			if(!organisations.isEmpty()) {
 				OrganisationWithParents organisation = organisations.get(0);
-				String escapedTitle = parentLineToString(organisation);
+				String escapedTitle = StringHelper.escapeForHtmlAttribute(parentLineToString(organisation));
 				String escapedName = StringHelper.escapeHtml(organisation.getDisplayName());
 				target.append("<span title='").append(escapedTitle).append("'>")
 				      .append(escapedName).append("</span>");
@@ -70,10 +70,10 @@ public class IdentityOrganisationsCellRenderer implements FlexiCellRenderer, Act
 		List<Organisation> parents = organisation.getParents();
 		StringBuilder sb = new StringBuilder(128);
 		for(Organisation parent:parents) {
-			sb.append(StringHelper.escapeHtml(parent.getDisplayName()))
+			sb.append(parent.getDisplayName())
 			  .append(" / ");
 		}
-		sb.append(StringHelper.escapeHtml(organisation.getDisplayName()));
+		sb.append(organisation.getDisplayName());
 		return sb.toString();
 	}
 	

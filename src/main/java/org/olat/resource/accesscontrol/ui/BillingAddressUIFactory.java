@@ -37,7 +37,7 @@ public class BillingAddressUIFactory {
 		StringBuilder description = new StringBuilder();
 		if (CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled()
 				&& StringHelper.containsNonWhitespace(billingAddress.getCustomerNumber())) {
-			appendAddressLine(description, translator.translate("billing.address.customer.number") + ": " + billingAddress.getCustomerNumber());
+			appendAddressLine(description, translator.translate("billing.address.customer.number.short") + ": " + billingAddress.getCustomerNumber());
 		}
 		appendAddressLine(description, billingAddress.getNameLine1());
 		appendAddressLine(description, billingAddress.getNameLine2());

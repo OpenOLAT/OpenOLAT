@@ -34,6 +34,7 @@ import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoController;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.CustomerNumberPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,7 +67,7 @@ public class CurriculumMemberInfoController extends UserInfoController {
 
 		User user = member.getUser();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(CurriculumPeopleController.usageIdentifyer, isAdministrativeUser);
+		List<UserPropertyHandler> userPropertyHandlers = CustomerNumberPropertyHandler.filterDisabled(userManager.getUserPropertyHandlersFor(CurriculumPeopleController.usageIdentifyer, isAdministrativeUser));
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 			String name = userPropertyHandler.getName();
 			if(UserConstants.NICKNAME.equals(name) || UserConstants.EMAIL.equals(name)
@@ -77,7 +78,7 @@ public class CurriculumMemberInfoController extends UserInfoController {
 			String value = userPropertyHandler.getUserProperty(user, getLocale());
 			if(StringHelper.containsNonWhitespace(value)) {
 				value = StringHelper.escapeHtml(value);
-				String i18nLabel = userPropertyHandler.i18nFormElementLabelKey();
+				String i18nLabel = CustomerNumberPropertyHandler.i18nFormLabelKey(userPropertyHandler);
 				uifactory.addStaticTextElement(name, i18nLabel, value, itemsCont);
 			}
 		}

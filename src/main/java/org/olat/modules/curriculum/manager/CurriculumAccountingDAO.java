@@ -148,7 +148,7 @@ public class CurriculumAccountingDAO {
 		sb.append("select distinct cur.key, cur.displayName, cur.identifier, ");
 		sb.append(" curOrg.identifier, curOrg.displayName, ");
 		sb.append(" ce.key, ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ce.location, ");
-		sb.append(" o, billingAddress, billingAddressOrg.identifier, billingAddressOrg.displayName, ");
+		sb.append(" o, billingAddress, billingAddressOrg.identifier, billingAddressOrg.displayName, billingAddressOrg.customerNumber, ");
 		sb.append(" trx.statusStr, p_trx.status, c_trx.status, m, ");
 		sb.append(" offer.label, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account, ");
 		sb.append(" orderer.key ");
@@ -301,6 +301,10 @@ public class CurriculumAccountingDAO {
 		
 		if (objects[srcIdx++] instanceof String billingAddressOrgName) {
 			bookingOrder.setBillingAddressOrgName(billingAddressOrgName);
+		}
+		
+		if (objects[srcIdx++] instanceof String billingAddressOrgCustomerNumber) {
+			bookingOrder.setBillingAddressOrgCustomerNumber(billingAddressOrgCustomerNumber);
 		}
 		
 		// transaction

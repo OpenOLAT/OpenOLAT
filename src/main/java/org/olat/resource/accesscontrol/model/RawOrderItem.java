@@ -43,6 +43,7 @@ public class RawOrderItem {
 	private final Price cancellationFeeLines;
 	private final boolean billingAddressProposal;
 	private final String billingAddressIdentifier;
+	private final String billingAddressCustomerNumber;
 	private final String purchaseOrderNumber;
 	private final String comment;
 	private final Date creationDate;
@@ -63,7 +64,7 @@ public class RawOrderItem {
 	
 	public RawOrderItem(Long orderKey, String orderNr, String label, String totalCurrencyCode,
 			BigDecimal orderAmount, BigDecimal orderCancellationFee, BigDecimal orderAmountLines, BigDecimal orderCancellationFeeLines,
-			boolean billingAddressProposal, String billingAddressIdentifier, String purchaseOrderNumber,
+			boolean billingAddressProposal, String billingAddressIdentifier, String billingAddressCustomerNumber, String purchaseOrderNumber,
 			String comment, Date creationDate, String orderStatus, Long deliveryKey, String resourceName,
 			String costCenterName, String costCenterAccount, String trxStatus, String trxMethodIds, String pspTrxStatus,
 			String checkoutTrxStatus, String checkoutOrderTrxStatus, String username, String[] userProperties) {
@@ -76,6 +77,7 @@ public class RawOrderItem {
 		this.cancellationFeeLines = new PriceImpl(orderCancellationFeeLines, totalCurrencyCode);
 		this.billingAddressProposal = billingAddressProposal;
 		this.billingAddressIdentifier = billingAddressIdentifier;
+		this.billingAddressCustomerNumber = billingAddressCustomerNumber;
 		this.purchaseOrderNumber = purchaseOrderNumber;
 		this.comment = comment;
 		this.creationDate = creationDate;
@@ -129,6 +131,10 @@ public class RawOrderItem {
 		return billingAddressIdentifier;
 	}
 
+	public String getBillingAddressCustomerNumber() {
+		return billingAddressCustomerNumber;
+	}
+	
 	public String getPurchaseOrderNumber() {
 		return purchaseOrderNumber;
 	}

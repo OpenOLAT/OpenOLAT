@@ -377,6 +377,29 @@ public class ACOrderManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findOrderItemsBillingAddressCustomerNumber() {
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "TestCustomerNumber");
+		offer = acService.save(offer);
+		Order order = acOrderManager.createOrder(ident1);
+		OrderPart part = acOrderManager.addOrderPart(order);
+		acOrderManager.addOrderLine(part, offer);
+		order = acOrderManager.save(order);
+		BillingAddress billingAddress = acService.createBillingAddress(JunitTestHelper.getDefaultOrganisation(), null);
+		billingAddress.setCustomerNumber("D-10234");
+		billingAddress = acService.updateBillingAddress(billingAddress);
+		acService.addBillingAddress(order, billingAddress);
+		dbInstance.commitAndCloseSession();
+		
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null,
+				null, false, false, ViewAs.ALL, null, 0, -1, null);
+		
+		Assertions.assertThat(items)
+			.extracting(RawOrderItem::getBillingAddressCustomerNumber)
+			.containsExactly("D-10234");
+	}
+	
+	@Test
 	public void findOrderItemsAllParameters() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Find-1");
 		OLATResource randomOres = createResource();

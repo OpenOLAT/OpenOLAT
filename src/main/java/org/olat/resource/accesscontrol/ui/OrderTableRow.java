@@ -173,6 +173,10 @@ public class OrderTableRow implements BillingAddressCellValue {
 		return item.getBillingAddressIdentifier();
 	}
 
+	public String getBillingAddressCustomerNumber() {
+		return item.getBillingAddressCustomerNumber();
+	}
+	
 	public String getPurchaseOrderNumber() {
 		return item.getPurchaseOrderNumber();
 	}

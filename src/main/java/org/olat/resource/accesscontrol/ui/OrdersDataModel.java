@@ -82,6 +82,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 			case purchaseOrderNumber -> order.getPurchaseOrderNumber();
 			case comment -> order.getComment();
 			case billingAddressIdentifier -> order;
+			case billingAddressCustomerNumber -> order.getBillingAddressCustomerNumber();
 			case summary -> order.getResourceDisplayname();
 			case tools -> order.getToolsLink();
 			default -> order;
@@ -140,6 +141,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		purchaseOrderNumber("order.purchase.number", "purchase_order_number"),
 		comment("table.header.order.comment", "comment"),
 		billingAddressIdentifier("billing.address", "billing_address_identifier"),
+		billingAddressCustomerNumber("billing.address.customer.number.obj", "billing_address_customer_number"),
 		summary("order.summary", "resDisplaynames"),
 		status("order.status", "o_status"),
 		tools("action.more", null);
