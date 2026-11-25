@@ -67,6 +67,12 @@ import org.olat.login.auth.AuthenticationProvider;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.webauthn.OLATWebAuthnManager;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.project.ProjectModule;
+import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.quality.QualityModule;
+import org.olat.modules.selectus.RecruitingModule;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -99,8 +105,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private SingleSelection userAccountExpirationUnitEl;
 	private FormLink searchButton;
 
-	private List<String> roleKeys;
-	private List<String> roleValues;
 	private SelectionValues authKeysValues;
 	private String[] extraSearchKeys;
 	private String[] extraSearchValues;
@@ -117,6 +121,18 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	@Autowired
 	private WebDAVModule webDAVModule;
 	@Autowired
+	private ProjectModule projectModule;
+	@Autowired
+	private QualityModule qualityModule;
+	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
+	private QuestionPoolModule poolModule;
+	@Autowired
+	private RecruitingModule selectusModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
 	private OAuthLoginModule oauthLoginModule;
 
 	/**
@@ -131,12 +147,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		this.isAdministrativeUser = isAdministrativeUser;
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(formIdentifyer, true);
 		this.manageableOrganisations = new ArrayList<>(manageableOrganisations);
-		
-		roleKeys = OrganisationRoles.toList(OrganisationRoles.values());
-		roleValues = new ArrayList<>(roleKeys.size());
-		for(int i=0; i<roleKeys.size(); i++) {
-			roleValues.add(translate("search.form.constraint.".concat(roleKeys.get(i))));
-		}
 		
 		extraSearchKeys = new String[] { "no-resources", "no-eff-statements" };
 		extraSearchValues = new String[] { translate("no.resource"), translate("no.eff.statement") };
@@ -419,8 +429,31 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		organisations = uifactory.addObjectSelectionElement("organisations", "search.form.title.organisations",
 				formLayout, getWindowControl(), true, organisationSource);
 		
-		roles = uifactory.addCheckboxesDropdown("roles", "search.form.title.roles", formLayout,
-				roleKeys.toArray(new String[roleKeys.size()]), roleValues.toArray(new String[roleValues.size()]));
+		SelectionValues rolesPK = new SelectionValues();
+		initRolesSelectionValues(rolesPK, OrganisationRoles.user, OrganisationRoles.invitee, OrganisationRoles.guest,
+				OrganisationRoles.author, OrganisationRoles.learnresourcemanager);
+		if(poolModule.isEnabled()) {
+			initRolesSelectionValues(rolesPK, OrganisationRoles.poolmanager);
+		}
+		initRolesSelectionValues(rolesPK, OrganisationRoles.linemanager, OrganisationRoles.educationmanager);
+		if(curriculumModule.isEnabled()) {
+			initRolesSelectionValues(rolesPK, OrganisationRoles.curriculummanager);
+		}
+		if(projectModule.isEnabled()) {
+			initRolesSelectionValues(rolesPK, OrganisationRoles.projectmanager);
+		}
+		if(lectureModule.isEnabled()) {
+			initRolesSelectionValues(rolesPK, OrganisationRoles.lecturemanager);
+		}
+		if(qualityModule.isEnabled()) {
+			initRolesSelectionValues(rolesPK, OrganisationRoles.qualitymanager);
+		}
+		if(selectusModule.isEnabled()) {
+			initRolesSelectionValues(rolesPK, OrganisationRoles.selectusmanager);
+		}
+		initRolesSelectionValues(rolesPK, OrganisationRoles.usermanager, OrganisationRoles.rolesmanager, OrganisationRoles.groupmanager);
+		initRolesSelectionValues(rolesPK, OrganisationRoles.principal, OrganisationRoles.administrator, OrganisationRoles.sysadmin);
+		roles = uifactory.addCheckboxesDropdown("roles", "search.form.title.roles", formLayout, rolesPK.keys(), rolesPK.values());
 
 		uifactory.addSpacerElement("space2", formLayout, false);
 		auth = uifactory.addCheckboxesVertical("auth", "search.form.title.authentications", formLayout,
@@ -480,7 +513,12 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		searchButton = uifactory.addFormLink("search", formLayout, Link.BUTTON);
 		searchButton.setElementCssClass("o_sel_user_search_button");
 		searchButton.addActionListener(FormEvent.ONCLICK);
-		
+	}
+	
+	private void initRolesSelectionValues(SelectionValues rolesPK, OrganisationRoles... roles) {
+		for(OrganisationRoles role:roles) {
+			rolesPK.add(SelectionValues.entry(role.name(), translate("search.form.constraint.".concat(role.name()))));
+		}
 	}
 	
 	@Override

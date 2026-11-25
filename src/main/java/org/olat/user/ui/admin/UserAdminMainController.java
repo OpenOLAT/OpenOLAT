@@ -709,30 +709,30 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		if (isAdministrator) {
 			buildTreeNodeRole(accessNode, OrganisationRoles.user);
 			buildTreeNodeRole(accessNode, OrganisationRoles.author);
-			buildTreeNodeRole(accessNode, OrganisationRoles.groupmanager);
-			if(lectureModule.isEnabled()) {
-				buildTreeNodeRole(accessNode, OrganisationRoles.lecturemanager);
+			buildTreeNodeRole(accessNode, OrganisationRoles.learnresourcemanager);
+			if(poolModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.poolmanager);
+			}
+			buildTreeNodeRole(accessNode, OrganisationRoles.linemanager);
+			buildTreeNodeRole(accessNode, OrganisationRoles.educationmanager);
+			if(curriculumModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.curriculummanager);
 			}
 			if(projectModule.isEnabled()) {
 				buildTreeNodeRole(accessNode, OrganisationRoles.projectmanager);
 			}
+			if(lectureModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.lecturemanager);
+			}
 			if(qualityModule.isEnabled()) {
 				buildTreeNodeRole(accessNode, OrganisationRoles.qualitymanager);
 			}
-			if(poolModule.isEnabled()) {
-				buildTreeNodeRole(accessNode, OrganisationRoles.poolmanager);
-			}
-			buildTreeNodeRole(accessNode, OrganisationRoles.usermanager);
-			buildTreeNodeRole(accessNode, OrganisationRoles.rolesmanager);
-			if(curriculumModule.isEnabled()) {
-				buildTreeNodeRole(accessNode, OrganisationRoles.curriculummanager);
-			}
-			buildTreeNodeRole(accessNode, OrganisationRoles.learnresourcemanager);
-			buildTreeNodeRole(accessNode, OrganisationRoles.linemanager);
-			buildTreeNodeRole(accessNode, OrganisationRoles.educationmanager);
 			if(selectusModule.isEnabled()) {
 				buildTreeNodeRole(accessNode, OrganisationRoles.selectusmanager);
 			}
+			buildTreeNodeRole(accessNode, OrganisationRoles.usermanager);
+			buildTreeNodeRole(accessNode, OrganisationRoles.rolesmanager);
+			buildTreeNodeRole(accessNode, OrganisationRoles.groupmanager);
 			buildTreeNodeRole(accessNode, OrganisationRoles.principal);
 			buildTreeNodeRole(accessNode, OrganisationRoles.administrator);
 			buildTreeNodeRole(accessNode, OrganisationRoles.sysadmin);

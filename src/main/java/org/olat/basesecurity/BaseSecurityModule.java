@@ -51,12 +51,14 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	
 	private static final OrganisationRoles[] privacyRoles = new OrganisationRoles[]{
 			OrganisationRoles.user, OrganisationRoles.author,
-			OrganisationRoles.usermanager, OrganisationRoles.rolesmanager,
-			OrganisationRoles.groupmanager, OrganisationRoles.learnresourcemanager,
-			OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager, OrganisationRoles.selectusmanager,
-			OrganisationRoles.lecturemanager, OrganisationRoles.projectmanager, OrganisationRoles.qualitymanager,
-			OrganisationRoles.linemanager, OrganisationRoles.educationmanager, OrganisationRoles.principal,
-			OrganisationRoles.administrator, OrganisationRoles.sysadmin
+			OrganisationRoles.learnresourcemanager, OrganisationRoles.poolmanager,
+			OrganisationRoles.linemanager, OrganisationRoles.educationmanager,
+			OrganisationRoles.curriculummanager, OrganisationRoles.projectmanager,
+			OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
+			OrganisationRoles.selectusmanager, OrganisationRoles.usermanager,
+			OrganisationRoles.rolesmanager, OrganisationRoles.groupmanager, 
+			OrganisationRoles.principal, OrganisationRoles.administrator,
+			OrganisationRoles.sysadmin
 	};
 
 	private static final String USERSEARCH_ADMINPROPS_USERS = "userSearchAdminPropsForUsers";

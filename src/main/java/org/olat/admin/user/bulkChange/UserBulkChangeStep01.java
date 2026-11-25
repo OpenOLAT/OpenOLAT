@@ -244,12 +244,12 @@ class UserBulkChangeStep01 extends BasicStep {
 			}
 			if(roles.isRolesManager() || roles.isAdministrator()) {
 				OrganisationRoles[] roleArr = new OrganisationRoles[] {
-						OrganisationRoles.usermanager, OrganisationRoles.rolesmanager,
-						OrganisationRoles.groupmanager, OrganisationRoles.learnresourcemanager,
-						OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager,
+						OrganisationRoles.learnresourcemanager, OrganisationRoles.poolmanager,
+						OrganisationRoles.linemanager, OrganisationRoles.educationmanager,
+						OrganisationRoles.curriculummanager, OrganisationRoles.projectmanager,
 						OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
-						OrganisationRoles.projectmanager, OrganisationRoles.linemanager,
-						OrganisationRoles.educationmanager, OrganisationRoles.selectusmanager,
+						OrganisationRoles.selectusmanager, OrganisationRoles.usermanager,
+						OrganisationRoles.rolesmanager, OrganisationRoles.groupmanager,
 						OrganisationRoles.principal
 				};
 

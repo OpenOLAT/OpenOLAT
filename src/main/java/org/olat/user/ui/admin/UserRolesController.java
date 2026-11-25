@@ -99,19 +99,19 @@ public class UserRolesController extends FormBasicController {
 	private final static OrganisationRoles[] ORDERED_ROLES = {
 			OrganisationRoles.author,
 			OrganisationRoles.learnresourcemanager,
+			OrganisationRoles.poolmanager,
 			OrganisationRoles.linemanager,
 			OrganisationRoles.educationmanager,
-			OrganisationRoles.principal,
-			OrganisationRoles.lecturemanager,
 			OrganisationRoles.curriculummanager,
 			OrganisationRoles.projectmanager,
+			OrganisationRoles.lecturemanager,
 			OrganisationRoles.qualitymanager,
 			OrganisationRoles.selectusmanager,
 			OrganisationRoles.usermanager,
 			OrganisationRoles.rolesmanager,
-			OrganisationRoles.administrator,
 			OrganisationRoles.groupmanager,
-			OrganisationRoles.poolmanager,
+			OrganisationRoles.principal,
+			OrganisationRoles.administrator,
 			OrganisationRoles.sysadmin
 	};
 
