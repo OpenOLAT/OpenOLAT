@@ -735,14 +735,17 @@ tr.o_rm_room_preselected {
 /* Dashboard */
 .o_lecture_widget_row {
 	display: grid;
-	grid-template-columns: 3px minmax(3.5em, auto) minmax(0, 1fr) auto;
+	grid-template-columns: 3px 3.5em minmax(0, 1fr) auto;
 	grid-template-areas:
 		"status time title rollcall"
 		"status .    loc   .";
 	align-items: baseline;
 	column-gap: 10px;
 	position: relative;
-	
+
+	&:has(.o_lecture_time_ampm) {
+		grid-template-columns: 3px 4.5em minmax(0, 1fr) auto;
+	}
 	&:not(:has(.o_row_rollcall)) .o_row_select {
 		grid-column-end: -1;
 	}
@@ -752,7 +755,7 @@ tr.o_rm_room_preselected {
 		grid-template-columns: subgrid;
 		grid-template-rows: subgrid;
 		align-items: baseline;
-		padding: 5px 0;
+		padding: 8px 0;
 		position: static;
 		&::before {
 			content: '';
@@ -840,7 +843,7 @@ tr.o_rm_room_preselected {
 		z-index: 2;
 
 		flex: 0 0 54px;
-		padding: 2px 10px;
+		padding: 8px 10px;
 		border-top: 1px solid var(--o-table-border);
 
 		display: flex;
