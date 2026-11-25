@@ -1698,7 +1698,6 @@ create table o_as_user_course_infos (
    visit int4,
    activity float8 default 0,
    run int8 default 1,
-   timespend int8,
    fk_identity int8,
    fk_resource_id int8,
    unique(fk_identity, fk_resource_id),

@@ -1730,7 +1730,6 @@ create table o_as_user_course_infos (
    visit number(20),
    activity binary_double default 0,
    run number(20) default 1 not null,
-   timespend number(20),
    fk_identity number(20),
    fk_resource_id number(20),
    CONSTRAINT u_o_as_user_course_infos UNIQUE (fk_identity, fk_resource_id),
