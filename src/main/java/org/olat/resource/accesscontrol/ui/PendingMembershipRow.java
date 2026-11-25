@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 
 /**
  * Initial date: 2025-09-05<br>
@@ -37,6 +38,7 @@ public class PendingMembershipRow {
 	private final Date end;
 	private final String type;
 	private final Date confirmationUntil;
+	private final ConfirmationByEnum confirmationBy;
 	private final Long curriculumElementKey;
 	private final Long reservationKey;
 
@@ -46,12 +48,14 @@ public class PendingMembershipRow {
 	private MemberDetailsController detailsCtrl;
 
 	public PendingMembershipRow(String title, String extRef, Date begin, Date end, String type,
-								Date confirmationUntil, Long curriculumElementKey, Long reservationKey) {
+			 					ConfirmationByEnum confirmationBy, Date confirmationUntil,
+								Long curriculumElementKey, Long reservationKey) {
 		this.title = title;
 		this.extRef = extRef;
 		this.begin = begin;
 		this.end = end;
 		this.type = type;
+		this.confirmationBy = confirmationBy;
 		this.confirmationUntil = confirmationUntil;
 		this.curriculumElementKey = curriculumElementKey;
 		this.reservationKey = reservationKey;
@@ -75,6 +79,10 @@ public class PendingMembershipRow {
 
 	public String getType() {
 		return type;
+	}
+	
+	public ConfirmationByEnum getConfirmationBy() {
+		return confirmationBy;
 	}
 
 	public Date getConfirmationUntil() {

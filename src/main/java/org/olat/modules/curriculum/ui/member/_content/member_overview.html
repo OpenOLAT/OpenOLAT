@@ -11,5 +11,10 @@
 </div>
 <div class="o_block_bottom">
 	$r.render("portrait")
+	#if($pendingMembershipWarning)
+	<div class="o_warning_with_icon">
+		$pendingMembershipWarning $r.render("pendingMembershipWarningLink")
+	</div>
+	#end
 </div>
 $r.render("memberTabP")

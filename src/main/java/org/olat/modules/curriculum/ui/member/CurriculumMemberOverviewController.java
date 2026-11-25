@@ -37,6 +37,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.security.ViewCreditPointsRightProvider;
+import org.olat.modules.coach.ui.UserOverviewController;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
@@ -47,6 +48,7 @@ import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
 import org.olat.modules.curriculum.ui.component.NextEvent;
 import org.olat.modules.curriculum.ui.component.PreviousEvent;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ViewAs;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.PortraitUser;
@@ -65,14 +67,20 @@ public class CurriculumMemberOverviewController extends BasicController {
 
 	private Link nextButton;
 	private Link previousButton;
+	private Link confirmationLink;
 	private TabbedPane memberTabP;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
 	
+	private int orderTabIndex;
 	private final Identity member;
 	private final List<String> selectedRights;
 	private final CurriculumSecurityCallback secCallback;
 	
+	private UserOrderController userOrderCtrl;
+	
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -85,7 +93,8 @@ public class CurriculumMemberOverviewController extends BasicController {
 	public CurriculumMemberOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			Identity member, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, Util
-				.createPackageTranslator(CurriculumManagerRootController.class, ureq.getLocale()));
+				.createPackageTranslator(CurriculumManagerRootController.class, ureq.getLocale(),
+						Util.createPackageTranslator(UserOverviewController.class, ureq.getLocale())));
 		this.member = member;
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
@@ -98,6 +107,7 @@ public class CurriculumMemberOverviewController extends BasicController {
 		
 		initTab(ureq);
 		initSlide();
+		initPendingMembershipWarning();
 		
 		putInitialPanel(mainVC);
 	}
@@ -121,6 +131,24 @@ public class CurriculumMemberOverviewController extends BasicController {
 		mainVC.put("portrait", profile.getInitialComponent());
 	}
 	
+	private void initPendingMembershipWarning() {
+		long pendingMembershipCount = acService.getCurriculumReservations(member, getIdentity()).stream().count();
+		if (pendingMembershipCount > 1) {
+			String warning = translate("warning.pending.membership.plural", Long.toString(pendingMembershipCount));
+			mainVC.contextPut("pendingMembershipWarning", warning);
+		} else if (pendingMembershipCount == 1) {
+			String warning = translate("warning.pending.membership.singular");
+			mainVC.contextPut("pendingMembershipWarning", warning);
+		} else {
+			mainVC.contextRemove("pendingMembershipWarning");
+		}
+		if (pendingMembershipCount > 0) {
+			confirmationLink = LinkFactory.createToolLink("go.to.confirmation", translate("go.to.confirmation"), this);
+			confirmationLink.setIconRightCSS("o_icon o_icon-fw o_icon_start");
+			mainVC.put("pendingMembershipWarningLink", confirmationLink);
+		}
+	}
+	
 	private void initTab(UserRequest ureq) {
 		memberTabP = new TabbedPane("memberTabP", getLocale());
 		memberTabP.addListener(this);
@@ -135,11 +163,11 @@ public class CurriculumMemberOverviewController extends BasicController {
 			return implementationsCtrl.getInitialComponent();
 		});
 		
-		memberTabP.addTab(ureq, translate("tab.bookings"), uureq -> {
-			Controller accessCtr = new UserOrderController(uureq, getWindowControl(), member,
+		orderTabIndex = memberTabP.addTab(ureq, translate("tab.bookings"), uureq -> {
+			userOrderCtrl = new UserOrderController(uureq, getWindowControl(), member,
 					ViewAs.CURRICULUM_AS_MANAGER, true);
-			listenTo(accessCtr);
-			return accessCtr.getInitialComponent();
+			listenTo(userOrderCtrl);
+			return userOrderCtrl.getInitialComponent();
 		});
 		
 		if (creditPointModule.isEnabled() && selectedRights.contains(ViewCreditPointsRightProvider.RELATION_RIGHT)
@@ -159,6 +187,8 @@ public class CurriculumMemberOverviewController extends BasicController {
 			fireEvent(ureq, new PreviousEvent(member));
 		} else if (source == nextButton) {
 			fireEvent(ureq, new NextEvent(member));
+		} else if (source == confirmationLink) {
+			doConfirmation(ureq) ;
 		}
 	}
 	
@@ -167,5 +197,10 @@ public class CurriculumMemberOverviewController extends BasicController {
 		if(event instanceof ActivateEvent) {
 			fireEvent(ureq, event);
 		}
+	}
+	
+	private void doConfirmation(UserRequest ureq) {
+		memberTabP.setSelectedPane(ureq, orderTabIndex);
+		userOrderCtrl.goToPendingMemberships(ureq);
 	}
 }

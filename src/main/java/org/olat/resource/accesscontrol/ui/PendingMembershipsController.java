@@ -66,6 +66,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.curriculum.ui.component.ConfirmationByCellRenderer;
 import org.olat.modules.curriculum.ui.member.AcceptDeclineMembershipsController;
 import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
@@ -133,6 +134,10 @@ public class PendingMembershipsController extends FormBasicController implements
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PendingMembershipCol.end, dateWithDayFlexiCellRenderer));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PendingMembershipCol.type));
 		DateFlexiCellRenderer dateCellRenderer = new DateFlexiCellRenderer(getLocale());
+		if(viewAs == ViewAs.CURRICULUM_AS_MANAGER) {
+			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PendingMembershipCol.confirmationBy,
+				new ConfirmationByCellRenderer(getTranslator())));
+		}
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PendingMembershipCol.confirmationUntil, dateCellRenderer));
 
 		DefaultFlexiColumnModel acceptColumn = new DefaultFlexiColumnModel(PendingMembershipCol.accept.i18nHeaderKey(), 
@@ -334,7 +339,8 @@ public class PendingMembershipsController extends FormBasicController implements
 		PendingMembershipRow row = new PendingMembershipRow(curriculumElement.getDisplayName(), curriculumElement.getIdentifier(),
 				curriculumElement.getBeginDate(), curriculumElement.getEndDate(),
 				curriculumElement.getType() != null ? curriculumElement.getType().getDisplayName() : "",
-				reservation.getExpirationDate(), curriculumElement.getKey(), reservation.getKey());
+				reservation.getConfirmableBy(), reservation.getExpirationDate(), curriculumElement.getKey(),
+				reservation.getKey());
 		
 		forgeLinks(row);
 		return row;

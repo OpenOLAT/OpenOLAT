@@ -65,6 +65,7 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 			case begin -> row.getBegin();
 			case end -> row.getEnd();
 			case type -> row.getType();
+			case confirmationBy -> row.getConfirmationBy();
 			case confirmationUntil -> row.getConfirmationUntil();
 			case accept -> row.getAcceptLink();
 			case decline -> row.getDeclineLink();
@@ -78,6 +79,7 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 		begin("table.header.begin"),
 		end("table.header.end"),
 		type("table.header.type"),
+		confirmationBy("table.header.confirmation.by"),
 		confirmationUntil("table.header.confirmation.until"),
 		accept("accept"),
 		decline("decline"),
