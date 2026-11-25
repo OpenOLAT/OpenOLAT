@@ -232,6 +232,67 @@ public class PList {
 		}
 	}
 	
+	/**
+	 * Read the value associated with the specified key in the root dictionary.
+	 *
+	 * @param key The key
+	 * @return The value as string ("true" or "false" for boolean values, the text
+	 * 		content for string, integer, real, date and data values) or null if the key
+	 * 		was not found
+	 */
+	public String getValue(String key) {
+		return getValue(rootDict, key);
+	}
+
+	/**
+	 * Read the value associated with the specified key in the specified dictionary.
+	 *
+	 * @param dictElement The dictionary
+	 * @param key The key
+	 * @return The value as string ("true" or "false" for boolean values, the text
+	 * 		content for string, integer, real, date and data values) or null if the key
+	 * 		was not found
+	 */
+	public String getValue(Element dictElement, String key) {
+		Element valueElement = getValueElement(dictElement, key);
+		if(valueElement == null) {
+			return null;
+		}
+
+		String nodeName = valueElement.getNodeName();
+		if("true".equalsIgnoreCase(nodeName) || "false".equalsIgnoreCase(nodeName)) {
+			return nodeName.toLowerCase();
+		}
+		return valueElement.getTextContent();
+	}
+
+	/**
+	 * Search the element holding the value associated with the specified key
+	 * in the specified dictionary.
+	 *
+	 * @param dictElement The dictionary
+	 * @param key The key
+	 * @return The value element (string, integer, true, false, array, dict...) or null if not found
+	 */
+	public Element getValueElement(Element dictElement, String key) {
+		if(dictElement == null || key == null) {
+			return null;
+		}
+
+		Element previousElement = null;
+		for(Node node=dictElement.getFirstChild(); node != null; node=node.getNextSibling()) {
+			if(node instanceof Element element) {
+				if(previousElement != null
+						&& "key".equalsIgnoreCase(previousElement.getNodeName())
+						&& key.equals(previousElement.getTextContent())) {
+					return element;
+				}
+				previousElement = element;
+			}
+		}
+		return null;
+	}
+
 	public String toPlistString() throws TransformerException  {
 		DOMSource domSource = new DOMSource(doc);
 		TransformerFactory tf = XMLFactories.newTransformerFactory();

@@ -31,8 +31,8 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.SafeExamBrowserValidator;
 import org.olat.course.assessment.model.SafeExamBrowserCheck;
 import org.olat.course.assessment.model.SafeExamBrowserProbe;
-import org.olat.course.assessment.model.SafeExamBrowserStatus;
 import org.olat.course.assessment.model.SafeExamBrowserProbe.Source;
+import org.olat.course.assessment.model.SafeExamBrowserStatus;
 
 /**
  * Shared code of the assessment mode and assessment inspection guards
@@ -119,8 +119,8 @@ public class SafeExamBrowserGuardHelper {
 					translator.translate("seb.version.desc", StringHelper.escapeHtml(getMinimalVersion(check, assessmentModule))),
 					false, false);
 			case WRONG_CONFIG -> new SafeExamBrowserDialog(cssStatus, translator.translate("seb.config.title"),
-					translator.translate(configDownloadAllowed ? "seb.config.desc" : "seb.config.desc.supervision"),
-					false, configDownloadAllowed);
+					translator.translate("seb.config.desc.supervision"),
+					false, false);
 			default -> null;
 		};
 	}
