@@ -194,6 +194,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 							infos.setRecentLaunch(now);
 							infos.setVisit(1);
 							infos.setRun(1);
+							infos.setTimeSpend(0L);
 							infos.setActivity(activityIncrement(now));
 							infos.setResource(courseResource);
 							dbInstance.getCurrentEntityManager().persist(infos);

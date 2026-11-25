@@ -44,7 +44,7 @@ public interface UserCourseInformations {
 	
 	public int getRun();
 	
-	public long getTimeSpend();
+	public Long getTimeSpend();
 	
 	public Identity getIdentity();
 	

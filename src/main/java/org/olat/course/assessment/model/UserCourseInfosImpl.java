@@ -84,8 +84,8 @@ public class UserCourseInfosImpl implements UserCourseInformations, Persistable,
 
 	@Column(name="visit", nullable=false, insertable=true, updatable=true)
 	private int visit;
-	@Column(name="timespend", nullable=false, insertable=true, updatable=true)
-	private long timeSpend;
+	@Column(name="timespend", nullable=true, insertable=true, updatable=true)
+	private Long timeSpend;
 	@Column(name="activity", nullable=false, insertable=true, updatable=true)
 	private double activity;
 	
@@ -163,11 +163,11 @@ public class UserCourseInfosImpl implements UserCourseInformations, Persistable,
 	}
 
 	@Override
-	public long getTimeSpend() {
+	public Long getTimeSpend() {
 		return timeSpend;
 	}
 
-	public void setTimeSpend(long timeSpend) {
+	public void setTimeSpend(Long timeSpend) {
 		this.timeSpend = timeSpend;
 	}
 
