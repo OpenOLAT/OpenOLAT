@@ -27,6 +27,7 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -137,28 +138,25 @@ public class ACReservationDAO {
 		String query = """
 				select new org.olat.resource.accesscontrol.model.ResourceReservationsIdentityInfos(reservation.identity.key, count(distinct reservation.key))
 				from resourcereservation as reservation
-				inner join reservation.resource rsrc
-				inner join curriculumelement curEl on (rsrc.key=curEl.resource.key)
+				inner join curriculumelement curEl on (reservation.resource.key=curEl.resource.key)
 				inner join curEl.curriculum cur
-				inner join cur.group curGroup
-				inner join curGroup.members curMembership
-				where rsrc.resName=:resourceType
-				and (
-				exists (select orgMember.key from organisation org
+				where cur.organisation.key in (select org.key from organisation org
 				  inner join org.group baseGroup
 				  inner join baseGroup.members orgMember
-				  where cur.organisation.key=org.key and orgMember.identity.key=:identityKey and orgMember.role=:role
-				) or (
-				  curMembership.identity.key=:identityKey and curMembership.role=:elrole
-				))
+				  where cur.organisation.key=org.key and orgMember.identity.key=:identityKey and orgMember.role in (:orgroles)
+				)
+				or cur.key in (select ownercur.key from curriculum as ownercur
+				  inner join ownercur.group as oGroup
+				  inner join oGroup.members as owner
+				  where owner.identity.key=:identityKey and owner.role=:orole
+				)
 				group by reservation.identity.key""";
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, ResourceReservationsIdentityInfos.class)
-				.setParameter("resourceType", "CurriculumElement")
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("role", CurriculumRoles.curriculummanager.name())
-				.setParameter("elrole", CurriculumRoles.curriculumowner.name())
+				.setParameter("orgroles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
+				.setParameter("orole", CurriculumRoles.curriculumowner.name())
 				.getResultList();
 	}
 	
@@ -166,6 +164,34 @@ public class ACReservationDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadReservationsByIdentity", ResourceReservation.class)
 				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public List<ResourceReservation> loadCurriculumReservations(IdentityRef identity, IdentityRef manager) {
+		String query = """
+				select reservation from resourcereservation as reservation
+				inner join curriculumelement as el on (reservation.resource.key=el.resource.key)
+				inner join el.curriculum as cur
+				where reservation.identity.key=:identityKey
+				and (
+				  cur.key in (select ownercur.key from curriculum as ownercur
+				  inner join ownercur.group as oGroup
+				  inner join oGroup.members as owner
+				  where owner.identity.key=:managerKey and owner.role=:orole)
+				 or
+				  cur.key in (select managercur.key from curriculum as managercur
+				  inner join managercur.organisation as org
+				  inner join org.group as orgGroup
+				  inner join orgGroup.members as manager
+				  where manager.identity.key=:managerKey and manager.role in (:orgroles)
+				))""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, ResourceReservation.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("managerKey", manager.getKey())
+				.setParameter("orole", CurriculumRoles.curriculumowner.name())
+				.setParameter("orgroles", List.of(OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.curriculummanager.name()))
 				.getResultList();
 	}
 	
@@ -181,7 +207,6 @@ public class ACReservationDAO {
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
 				.setParameter("date", date, TemporalType.TIMESTAMP)
 				.getResultList();
-		
 	}
 	
 	public List<ResourceReservation> loadExpiredReservation(Date defaultDate) {

@@ -287,7 +287,12 @@ public class PendingMembershipsController extends FormBasicController implements
 	}
 	
 	private void loadModel() {
-		List<ResourceReservation> reservations = acService.getReservationsWithOrders(identity, viewAs, getIdentity()).stream()
+		// Curriculum managers can see all reservations
+		List<ResourceReservation> reservations = viewAs == ViewAs.CURRICULUM_AS_MANAGER
+				? acService.getCurriculumReservations(identity, getIdentity())
+				: acService.getReservationsWithOrders(identity, viewAs, getIdentity());
+		
+		reservations = reservations.stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getType()))
 				.filter(r -> r.getType().startsWith(CurriculumService.RESERVATION_PREFIX))
 				.toList();

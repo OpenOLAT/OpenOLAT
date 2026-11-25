@@ -295,6 +295,8 @@ public interface ACService {
 	 */
 	public List<ResourceReservation> getReservations(IdentityRef identity);
 	
+	public List<ResourceReservation> getCurriculumReservations(IdentityRef identity, IdentityRef curriculumManager);
+	
 	/**
 	 * Load the resource per user for the specified manager (curriculum owner or curriculum manager),
 	 * 

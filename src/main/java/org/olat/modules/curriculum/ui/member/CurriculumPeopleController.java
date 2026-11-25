@@ -278,12 +278,6 @@ public class CurriculumPeopleController extends FormBasicController implements A
 		tabs.add(curriculumElementOwnersTab);
 		rolesToTab.put(CurriculumRoles.curriculumelementowner, curriculumElementOwnersTab);
 		
-		FlexiFiltersTab curriculumOwnersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CurriculumRoles.curriculumowner.name(), translate("search.role.owner"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLES,
-						List.of(CurriculumRoles.curriculumowner.name()))));
-		tabs.add(curriculumOwnersTab);
-		rolesToTab.put(CurriculumRoles.curriculumowner, curriculumOwnersTab);
-
 		tableEl.setFilterTabs(true, tabs);
 	}
     

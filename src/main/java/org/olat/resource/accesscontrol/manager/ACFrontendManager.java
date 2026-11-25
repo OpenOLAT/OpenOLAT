@@ -1013,6 +1013,11 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	}
 	
 	@Override
+	public List<ResourceReservation> getCurriculumReservations(IdentityRef identity, IdentityRef viewerIdentity) {
+		return reservationDao.loadCurriculumReservations(identity, viewerIdentity);
+	}
+
+	@Override
 	public List<ResourceReservationsIdentityInfos> getCurriculumReservationsManagedBy(Identity manager) {
 		return reservationDao.loadCurriculumReservations(manager);
 	}
