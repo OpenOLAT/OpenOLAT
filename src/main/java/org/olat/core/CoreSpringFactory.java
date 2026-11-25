@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.servlet.ServletContext;
@@ -134,6 +133,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	 *            otherwise an NoSuchBeanDefinitionException will be thrown
 	 * @return The bean
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T> T getImpl(Class<T> interfaceClass) {
 		ApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
 		if(context == null) {
@@ -143,20 +143,19 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 		
 		if(idToBeans.containsKey(interfaceClass)) {
 			String id = idToBeans.get(interfaceClass);
-			@SuppressWarnings("unchecked")
 			T bean = (T)context.getBean(id);
 			if(bean != null) {
 				return bean;
 			}
 		}
 		
-		Map<String, T> m = context.getBeansOfType(interfaceClass);
-		if (m.size() == 1)  {
-			Entry<String,T> e =m.entrySet().iterator().next();
-			idToBeans.put(interfaceClass, e.getKey());
-			return e.getValue();
+		String[] m = context.getBeanNamesForType(interfaceClass);
+		if (m != null && m.length == 1)  {
+			String name = m[0];
+			idToBeans.put(interfaceClass, name);
+			return (T)context.getBean(name);
 		}
-		throw new OLATRuntimeException("found " + m.size() + " bean for: "+ interfaceClass +". Calling this method should only find one bean!", null);
+		throw new OLATRuntimeException("found " + (m == null ? "all" : m.length) + " bean(s) for: "+ interfaceClass +". Calling this method should only find one bean!", null);
 	}
 
 	/**
