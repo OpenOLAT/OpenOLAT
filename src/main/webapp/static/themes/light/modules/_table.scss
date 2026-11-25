@@ -152,7 +152,6 @@
 		position: sticky;
 		background: var(--o-bg);
 		z-index: 1; /* above normal columns that are positioned */
-		transition: 0.3s background;
 	}
 	.o_col_sticky_left {
 		left: 0;
