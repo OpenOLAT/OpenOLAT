@@ -859,14 +859,13 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	/**
 	 * "Preparation" is not offered as a Status filter option on the
-	 * redesigned selection dialog's "My wiki" / "Shared with me" tabs - their
-	 * query never returns a preparation entry either.
+	 * redesigned selection dialog's "Shared with me" tab - its query never
+	 * returns a preparation entry either.
 	 */
 	private void refreshStatusFilterOptions(FlexiFiltersTab tab) {
 		if(lifecycleValues == null) return;
 
-		boolean excludePreparation = configuration.isRedesignedSelectionDialog()
-				&& (tab == myTab || tab == sharedWithMeTab);
+		boolean excludePreparation = configuration.isRedesignedSelectionDialog() && tab == sharedWithMeTab;
 		lifecycleValues.clear();
 		for(RepositoryEntryStatusEnum status:computeOfferableStatus(excludePreparation)) {
 			lifecycleValues.add(SelectionValues.entry(status.name(), translate(status.i18nKey())));

@@ -631,8 +631,8 @@ public class RepositoryEntryAuthorQueries {
 			
 			RepositoryEntryStatusEnum[] ownedStatus = params.getStatus() != null
 					? params.getStatus() : RepositoryEntryStatusEnum.preparationToClosed();
-			if (params.isRestrictStatusToReviewToPublished()) {
-				ownedStatus = reviewToPublishedOnly(ownedStatus);
+			if (params.isExcludeDecommissionedStatus()) {
+				ownedStatus = nonDecommissionedStatus(ownedStatus);
 			}
 			sb.in(ownedStatus);
 		}
