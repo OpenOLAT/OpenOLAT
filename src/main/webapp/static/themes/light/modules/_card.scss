@@ -503,7 +503,7 @@
 		min-width: 0;
 		display: grid;
 		gap: 10px;
-		padding: 8px 5px;
+		padding: 8px;
 	}
 	.o_dashboard_widget_row_entry {
 		display: flex;
@@ -535,7 +535,7 @@
 	.o_dashboard_widget_row_aside {
 		z-index: 1;
 		flex-shrink: 0;
-		padding: 5px;
+		padding: 5px 8px 5px 5px;
 	}
 }
 .o_dashboard_table_widget {
@@ -607,6 +607,9 @@
 				}
 				&::before {
 					margin-bottom: -10px;
+				}
+				&::after {
+					margin-top: -10px;
 				}
 				&.o_scrollable_top::before {
 					top: 0;
