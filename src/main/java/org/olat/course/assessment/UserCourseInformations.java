@@ -44,8 +44,6 @@ public interface UserCourseInformations {
 	
 	public int getRun();
 	
-	public Long getTimeSpend();
-	
 	public Identity getIdentity();
 	
 	public OLATResource getResource();

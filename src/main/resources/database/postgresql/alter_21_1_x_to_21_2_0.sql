@@ -44,6 +44,7 @@ create unique index idx_mcp_prof_to_org_uniq_idx on o_mcp_profile_to_organisatio
 
 -- User course infos
 alter table o_as_user_course_infos add column activity float8 default 0;
+alter table o_as_user_course_infos drop column timespend;
 
 -- Topic broker
 alter table o_tb_topic add column t_execution_type varchar(16) default 'period' not null;
