@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.manager.EventLinkValidator;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.gui.UserRequest;
@@ -158,7 +159,10 @@ public class ExternalLinksController extends FormBasicController {
 					link.getUrl().setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				} else {
-					try {
+					if(!EventLinkValidator.isHttpUri(url.trim())) {
+						link.getUrl().setErrorKey("tab.links.extern.url.scheme");
+						allOk &= false;
+					} else try {
 						String host = new URL(url).getHost();
 						if(host == null) {
 							link.getUrl().setErrorKey("tab.links.extern.url.invalid");

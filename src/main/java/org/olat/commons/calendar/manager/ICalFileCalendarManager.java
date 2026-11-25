@@ -66,6 +66,7 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
@@ -829,9 +830,10 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			calEvent.setColor(colorProperty.getValue());
 		}
 		
-		// links if any
+		// links if any, the URI and the icon class are untrusted, see EventLinkValidator
 		List<Property> linkProperties = event.getProperties(ICAL_X_OLAT_LINK);
 		List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
+		String rootUri = linkProperties.isEmpty() ? null : Settings.getServerContextPathURI();
 		for (Iterator<Property> iter = linkProperties.iterator(); iter.hasNext();) {
 			XProperty linkProperty = (XProperty) iter.next();
 			if (linkProperty != null) {
@@ -847,8 +849,11 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 					if (st.hasMoreElements()) { 
 						iconCss = st.nextToken();
 					}
-					KalendarEventLink eventLink = new KalendarEventLink(provider, id, displayName, uri, iconCss);
-					kalendarEventLinks.add(eventLink);
+					KalendarEventLink eventLink = EventLinkValidator.validLink(
+							new KalendarEventLink(provider, id, displayName, uri, iconCss), rootUri, "iCalendar X-OLAT-LINK");
+					if (eventLink != null) {
+						kalendarEventLinks.add(eventLink);
+					}
 				}
 			}
 		}

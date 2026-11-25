@@ -34,9 +34,11 @@ import jakarta.ws.rs.core.Response;
 
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.commons.calendar.manager.EventLinkValidator;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.restapi.support.MediaTypeVariants;
 
@@ -72,10 +74,13 @@ public class CalendarWSHelper {
         EventLinkVO[] links = event.getLinks();
         if(links != null && links.length > 0) {
         	List<KalendarEventLink> kalendarLinks = new ArrayList<>(links.length);
+        	String rootUri = Settings.getServerContextPathURI();
         	for(EventLinkVO link:links) {
-        		KalendarEventLink kalendarLink = new KalendarEventLink(link.getProvider(), link.getId(),
-        				link.getDisplayName(), link.getUri(), link.getIconCssClass());
-        		kalendarLinks.add(kalendarLink);
+        		KalendarEventLink kalendarLink = EventLinkValidator.validLink(new KalendarEventLink(link.getProvider(), link.getId(),
+        				link.getDisplayName(), link.getUri(), link.getIconCssClass()), rootUri, "REST API");
+        		if(kalendarLink != null) {
+        			kalendarLinks.add(kalendarLink);
+        		}
         	}
         	kalEvent.setKalendarEventLinks(kalendarLinks);
         }

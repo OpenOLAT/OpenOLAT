@@ -210,7 +210,7 @@ public class CalendarEntryLinksController extends FormBasicController {
 
 	private CalendarEntryLinkRow forgeRow(CalendarEntryLinkRow calEntryLinkRow, String title, String url) {
 		TextElement linkTitleEl = uifactory.addTextElement("linkTitle_" + calEntryLinkRow.getKey(), calEntryLinkRow.getCalendarEntryLinkType().i18nKey(), 100, title, flc);
-		String linkUrl = "<span class='o_copy_code o_nowrap'><input type='text' value='" + url + "' onclick='this.select()'/></span>";
+		String linkUrl = "<span class='o_copy_code o_nowrap'><input type='text' value=\"" + StringHelper.escapeHtml(url) + "\" onclick='this.select()'/></span>";
 		StaticTextElement linkUrlEl = uifactory.addStaticTextElement("linkUrl_" + calEntryLinkRow.getKey(), "cal.entry.link.url", linkUrl, flc);
 		linkUrlEl.setEnabled(false);
 		calEntryLinkRow.setLinkTitleEl(linkTitleEl);

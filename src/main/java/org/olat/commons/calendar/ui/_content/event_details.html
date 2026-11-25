@@ -35,8 +35,8 @@
 					<li class="o_nowrap">$r.render(${link.getLink().getComponentName()})</li>
 				#else
 					<li class="o_nowrap">
-						<a href="$link.uri" title="$link.title" class="o_nowrap" target="_blank">
-							<i class="$link.cssClass"></i>
+						<a href="$r.escapeHtml($link.uri)" title="$r.escapeHtml($link.title)" class="o_nowrap" target="_blank" rel="noopener noreferrer">
+							<i class="$r.escapeHtml($link.cssClass)"></i>
 							<span>$r.escapeHtml($link.displayName)</span>
 						</a>
 					</li>

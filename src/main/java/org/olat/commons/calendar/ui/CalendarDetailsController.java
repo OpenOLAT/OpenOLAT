@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.calendar.manager.EventLinkValidator;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -143,31 +144,27 @@ public class CalendarDetailsController extends BasicController {
 		if (kalendarEventLinks != null && !kalendarEventLinks.isEmpty()) {
 			String rootUri = Settings.getServerContextPathURI();
 			for (KalendarEventLink link: kalendarEventLinks) {
-				LinkWrapper wrapper = new LinkWrapper();
-				
 				String uri = link.getURI();
-				String iconCssClass = link.getIconCssClass();
-				if(!StringHelper.containsNonWhitespace(iconCssClass)) {
+				// external links only with http or https, see EventLinkValidator
+				if(!EventLinkValidator.isAllowedUri(uri, rootUri)) {
+					continue;
+				}
+				
+				LinkWrapper wrapper = new LinkWrapper();
+				String iconCssClass = EventLinkValidator.validIconCssClass(link.getIconCssClass());
+				if(iconCssClass == null && link.getDisplayName() != null) {
 					String displayName = link.getDisplayName();
-					iconCssClass = CSSHelper.createFiletypeIconCssClassFor(displayName);
+					iconCssClass = EventLinkValidator.validIconCssClass(CSSHelper.createFiletypeIconCssClassFor(displayName));
 				}
 				
 				wrapper.setUri(uri);
 				wrapper.setDisplayName(link.getDisplayName());
-				wrapper.setTitle(StringHelper.escapeHtml(link.getDisplayName()));
-				if (StringHelper.containsNonWhitespace(iconCssClass)) {
+				wrapper.setTitle(link.getDisplayName());
+				if (iconCssClass != null) {
 					wrapper.setCssClass(iconCssClass);
 				}
-
-				if(uri.startsWith(rootUri)) {
-					//intern link with absolute URL
-					wrapper.setIntern(true);
-				} else if(uri.contains("://")) {
-					//extern link with absolute URL
-					wrapper.setIntern(false);
-				} else {
-					wrapper.setIntern(true);
-				}
+				// intern links: URL of this server, business path or path of this server
+				wrapper.setIntern(EventLinkValidator.isInternal(uri, rootUri));
 				if(wrapper.isIntern()) {
 					Link ooLink = LinkFactory.createLink("link-intern-" + CodeHelper.getRAMUniqueID(), "intern.link", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 					String displayName = link.getDisplayName();
