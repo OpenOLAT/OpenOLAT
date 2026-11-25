@@ -171,9 +171,18 @@ public class CopyServiceImpl implements CopyService {
 		// For easier handling, put all nodes into a map with their identifier
 		Map<String, CopyCourseOverviewRow> sourceCourseNodesMap = context.getCourseNodesMap();
 		
+		// Add to organisations
+		List<Organisation> selectedOrgs = getSelectedOrgs(context);
+		List<Organisation> targetOrgs = selectedOrgs != null
+				? selectedOrgs
+				: reToGroupDao.getOrganisations(Collections.singletonList(sourceEntry));
+		
+		Organisation firstOrganisation = targetOrgs != null && !targetOrgs.isEmpty()
+				? targetOrgs.get(0)
+				: null;
 		RepositoryEntryRuntimeType runtimeType = context.isSaveAsTemplate() ? RepositoryEntryRuntimeType.template : RepositoryEntryRuntimeType.standalone;
 		RepositoryEntry target = repositoryService.create(context.getExecutingIdentity(), null, sourceEntry.getResourcename(), context.getDisplayName(),
-				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, runtimeType, null);
+				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, runtimeType, firstOrganisation);
 		
 		// Override defaults for template
 		if (context.isSaveAsTemplate()) {
@@ -203,21 +212,21 @@ public class CopyServiceImpl implements CopyService {
 				target.getTaxonomyLevels().add(relation);
 			}
 		}
-		
-		// Add to organisations
-		List<Organisation> selectedOrgs = getSelectedOrgs(context);
-		List<Organisation> targetOrgs = selectedOrgs != null ? selectedOrgs : reToGroupDao.getOrganisations(Collections.singletonList(sourceEntry));
-		if (targetOrgs != null) {
-			for (Organisation targetOrg : targetOrgs) {
+
+		// The first organisation is already added by RepositoryService.create()
+		if (targetOrgs != null && targetOrgs.size() > 1) {
+			for (int i=1; i<targetOrgs.size(); i++) {
+				Organisation targetOrg = targetOrgs.get(i);
 				RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(targetOrg, target, false);
 				target.getOrganisations().add(orgRelation);
 				RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(targetOrg.getGroup(), target, false);
 				target.getGroups().add(grpRelation);
 			}
 		}
-
 		
 		target = dbInstance.getCurrentEntityManager().merge(target);
+		dbInstance.commit();
+		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
 
 		// Copy the license

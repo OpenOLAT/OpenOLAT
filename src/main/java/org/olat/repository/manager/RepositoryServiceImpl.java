@@ -333,12 +333,20 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 	
 	@Override
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate, List<Organisation> selectedOrgs, boolean canCopy, boolean canDownload) {
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate, List<Organisation> selectedOrgs,
+			boolean canCopy, boolean canDownload) {
+	
+		List<Organisation> targetOrgs = selectedOrgs != null
+				? selectedOrgs
+				: getOrganisations(sourceEntry);
+		Organisation defOrganisation = targetOrgs.isEmpty()
+				? null
+				: targetOrgs.get(0);
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
 				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, 
-				copyAsTemplate ? RepositoryEntryRuntimeType.template : sourceEntry.getRuntimeType(), null);
+				copyAsTemplate ? RepositoryEntryRuntimeType.template : sourceEntry.getRuntimeType(), defOrganisation);
 
 		if (copyAsTemplate) {
 			copyEntry.setCanCopy(canCopy);
@@ -366,8 +374,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			copyEntry.getTaxonomyLevels().add(relation);
 		}
 
-		List<Organisation> targetOrgs = selectedOrgs != null ? selectedOrgs : getOrganisations(sourceEntry);
-		for (Organisation targetOrg : targetOrgs) {
+		for (int i=1; i<targetOrgs.size(); i++) {
+			Organisation targetOrg = targetOrgs.get(i);
 			RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(targetOrg, copyEntry, false);
 			copyEntry.getOrganisations().add(orgRelation);
 			RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(targetOrg.getGroup(), copyEntry, false);
@@ -375,7 +383,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 
 		copyEntry = dbInstance.getCurrentEntityManager().merge(copyEntry);
-
+		dbInstance.commit();
+		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
 		copyEntry = handler.copy(author, sourceEntry, copyEntry);
 		

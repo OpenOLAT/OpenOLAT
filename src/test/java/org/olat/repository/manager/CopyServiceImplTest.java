@@ -25,14 +25,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -107,6 +110,8 @@ public class CopyServiceImplTest extends OlatTestCase {
 	private RepositoryEntryLifecycleDAO lifecycleDAO;
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private RoomManagementService roomManagementService;
 	
@@ -328,6 +333,24 @@ public class CopyServiceImplTest extends OlatTestCase {
 		Assert.assertTrue(sourceOwners.size() > 0);
 		Assert.assertTrue(targetOwners.size() > 0);
 		Assert.assertEquals(sourceOwners, targetOwners);
+	}
+	
+	@Test
+	public void copyOrganisations() {
+		Organisation org1 = organisationService.createOrganisation("To copy a course 1", "copy-course-1", null, null, null, author);
+		Organisation org2 = organisationService.createOrganisation("To copy a course 2", "copy-course-2", null, null, null, author);
+		Organisation org3 = organisationService.createOrganisation("To copy a course 3", "copy-course-3", null, null, null, author);
+		dbInstance.commitAndCloseSession();
+		
+		CopyCourseContext context = createContext();
+		context.setSelectedOrgKeys(Set.of(org1.getKey(), org2.getKey(), org3.getKey()));
+		
+		target = copyService.copyLearningPathCourse(context);
+		
+		List<Organisation> organisations = repositoryService.getOrganisations(target);
+		Assertions.assertThat(organisations)
+			.hasSize(3)
+			.containsExactlyInAnyOrder(org1, org2, org3);
 	}
 	
 	@Test 
