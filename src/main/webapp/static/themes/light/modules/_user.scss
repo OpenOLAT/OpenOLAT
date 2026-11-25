@@ -628,6 +628,11 @@ div.o_skype_button {
 			border-top-right-radius: 0;
 			border-bottom-right-radius: 0;
 		}
+		&:has(+ .o_roles_structure_button) {
+			a, button {
+				border-right-color: var(--o-btn-default-border);
+			}
+		}
 		button {
 			>span {
 				display: flex;
