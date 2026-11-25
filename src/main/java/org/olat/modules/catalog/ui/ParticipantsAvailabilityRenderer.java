@@ -40,7 +40,7 @@ public class ParticipantsAvailabilityRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof CatalogEntryRow catalogEntryRow) {
 			if (StringHelper.containsNonWhitespace(catalogEntryRow.getAccessWarning())) {
-				target.append("<div class=\"o_catalog_seats_left o_tag o_state_critical o_state_light\">");
+				target.append("<div class=\"o_catalog_seats_left o_labeled o_state_critical o_state_dark\">");
 				target.append(catalogEntryRow.getAccessWarning());
 				target.append("</div>");
 			}
