@@ -1503,7 +1503,7 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>viterows</artifactId>
-			<version>10.3.1</version>
+			<version>10.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.dhatim</groupId>
