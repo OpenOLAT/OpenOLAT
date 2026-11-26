@@ -640,15 +640,15 @@ public class CalendarTest extends OlatRestTestCase {
 		cal.add(Calendar.HOUR_OF_DAY, 1);
 		event.setEnd(cal.getTime());
 		ZonedDateTime end = DateUtils.toZonedDateTime(cal.getTime());
-		event.setSubject(random());
+		event.setSubject("subject" + random());
 		event.setAllDayEvent(true);
-		event.setDescription(random());
-		event.setExternalId(random());
-		event.setExternalSource(random());
-		event.setLocation(random());
-		event.setColor(random());
+		event.setDescription("desc" + random());
+		event.setExternalId("ext-id-" + random());
+		event.setExternalSource("ext-source-" + random());
+		event.setLocation("location" + random());
+		event.setColor("blue-light");
 		event.setManagedFlags(CalendarManagedFlag.description.name());
-		event.setLiveStreamUrl(random());
+		event.setLiveStreamUrl("https://live.frentix.com/stream");
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString())
 				.path("calendars").path(calendar.getId()).path("event").build();
