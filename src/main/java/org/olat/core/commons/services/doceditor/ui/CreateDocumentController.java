@@ -60,8 +60,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CreateDocumentController extends FormBasicController {
-
-	private static final int MAX_LENGTH = 255;
 	
 	private SingleSelection docTypeEl;
 	private TextElement titleEl;
@@ -153,8 +151,8 @@ public class CreateDocumentController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(docName)) {
 			docNameEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
-		} else if(docName.length() > MAX_LENGTH) {
-			docNameEl.setErrorKey("form.error.toolong", Integer.toString(MAX_LENGTH));
+		} else if(!FileUtils.isFilenameLengthSafe(getFileName())) {// docName and extension
+			docNameEl.setErrorKey("form.error.filename.toolong");
 			allOk &= false;
 		} else {
 			// update in GUI so user sees how we optimized
