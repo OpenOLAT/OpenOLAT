@@ -65,6 +65,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -76,6 +77,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.catalog.ui.BookedEvent;
+import org.olat.modules.catalog.ui.CatalogBCFactory;
+import org.olat.modules.catalog.ui.CatalogCurriculumElementSingleCourseHeaderConfig;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -86,6 +89,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumElementCalendarController;
+import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.curriculum.ui.ImplementationsListConfig;
 import org.olat.modules.curriculum.ui.component.CurriculumRolesComparator;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
@@ -134,6 +138,7 @@ public class ImplementationsListController extends FormBasicController implement
 	
 	private int counter;
 	private ImplementationController implementationCtrl;
+	private CurriculumElementInfosController infosCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
 
 
@@ -470,6 +475,11 @@ public class ImplementationsListController extends FormBasicController implement
 				doCloseImplementation();
 				fireEvent(ureq, event);
 			}
+		} else if(infosCtrl == source) {
+			if(event instanceof LeavingEvent || event instanceof BookedEvent) {
+				doCloseInfos();
+				fireEvent(ureq, event);
+			}
 		}
 	}
 
@@ -506,17 +516,57 @@ public class ImplementationsListController extends FormBasicController implement
 		stackPanel.popUpToController(this);
 		loadModel();
 	}
+
+	private void doCloseInfos() {
+		removeAsListenerAndDispose(infosCtrl);
+		infosCtrl = null;
+
+		stackPanel.popUpToController(this);
+		loadModel();
+	}
 	
 	private void doOpenImplementation(UserRequest ureq, ImplementationRow row) {
 		CurriculumElement element = curriculumService.getCurriculumElement(row);
-		
-		CurriculumSecurityCallback secCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementation", element.getKey());
-		WindowControl swControl = addToHistory(ureq, ores, null);
-		implementationCtrl = new ImplementationController(ureq, swControl, stackPanel, assessedIdentity,
-				element.getCurriculum(), element, secCallback, config);
-		listenTo(implementationCtrl);
-		stackPanel.pushController(element.getDisplayName(), implementationCtrl);
+
+		if(element.isSingleCourseImplementation()) {
+			// A single-course implementation has no structure worth drilling into:
+			// its title link goes straight to its info page.
+			doOpenImplementationDetails(ureq, element);
+		} else {
+			CurriculumSecurityCallback secCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementation", element.getKey());
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			implementationCtrl = new ImplementationController(ureq, swControl, stackPanel, assessedIdentity,
+					element.getCurriculum(), element, secCallback, config);
+			listenTo(implementationCtrl);
+			stackPanel.pushController(element.getDisplayName(), implementationCtrl);
+		}
+	}
+
+	private void doOpenImplementationDetails(UserRequest ureq, CurriculumElement element) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(element);
+
+		removeAsListenerAndDispose(infosCtrl);
+
+		OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+
+		RepositoryEntry entry = null;
+		BasicDetailsHeaderConfig headerConfig;
+		if (!config.withCatalogDetailsHeader()) {
+			headerConfig = new BasicDetailsHeaderConfig(getIdentity());
+		} else {
+			List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+			entry = entries.size() == 1 ? entries.get(0) : null;
+			headerConfig = new CatalogCurriculumElementSingleCourseHeaderConfig(curriculumElement, entry, getIdentity(), ureq.getUserSession().getRoles());
+			headerConfig.hideOpenButtons();
+		}
+		infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, headerConfig);
+		listenTo(infosCtrl);
+		addToHistory(ureq, infosCtrl);
+
+		stackPanel.pushController(curriculumElement.getDisplayName(), infosCtrl);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 	}
 	
 	private void forgeCalendarsLinks(List<ImplementationRow> rows) {
