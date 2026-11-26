@@ -48,7 +48,6 @@ import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoSegmentCategoryImpl;
 import org.olat.modules.video.model.VideoSegmentImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-01-30<br>
