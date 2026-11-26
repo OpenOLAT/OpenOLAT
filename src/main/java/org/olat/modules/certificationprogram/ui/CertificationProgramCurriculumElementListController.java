@@ -61,6 +61,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.FooterModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -77,6 +78,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.ReferencesController;
+import org.olat.modules.curriculum.ui.SingleCourseImplementationSelectionController;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -111,16 +113,17 @@ implements Activateable2, FlexiTableComponentDelegate {
 	private CurriculumElementTableModel tableModel;
 	
 	private int counter = 0;
-	private CertificationProgram certificationProgram;
+	private final CertificationProgram certificationProgram;
 	private final CertificationProgramSecurityCallback secCallback;
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private FooterModalController footerCmc;
 	private ReferencesController referencesCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ConfirmationController confirmRemoveElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private CurriculumElementListController curriculumElementListController;
+	private SingleCourseImplementationSelectionController curriculumElementSelectionCtrl;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -309,11 +312,13 @@ implements Activateable2, FlexiTableComponentDelegate {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(curriculumElementListController == source) {
-			if(event == FormEvent.DONE_EVENT) {
+		if(curriculumElementSelectionCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				CurriculumElement element = curriculumElementSelectionCtrl.getSelectedElement();
+				certificationProgramService.addCurriculumElementToCertificationProgram(certificationProgram, element, getIdentity());
 				loadModel();
 			}
-			cmc.deactivate();
+			footerCmc.deactivate();
 			cleanUp();
 		} else if(confirmRemoveElementCtrl == source) {
 			if(event == FormEvent.DONE_EVENT
@@ -323,23 +328,25 @@ implements Activateable2, FlexiTableComponentDelegate {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(cmc == source || footerCmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(curriculumElementListController);
+		removeAsListenerAndDispose(curriculumElementSelectionCtrl);
 		removeAsListenerAndDispose(confirmRemoveElementCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
-		curriculumElementListController = null;
+		removeAsListenerAndDispose(footerCmc);
+		curriculumElementSelectionCtrl = null;
 		confirmRemoveElementCtrl = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
+		footerCmc = null;
 	}
 	
 	@Override
@@ -388,13 +395,16 @@ implements Activateable2, FlexiTableComponentDelegate {
 	}
 	
 	private void doAddCurriculumElement(UserRequest ureq) {
-		curriculumElementListController = new CurriculumElementListController(ureq, getWindowControl(), certificationProgram);
-		listenTo(curriculumElementListController);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), curriculumElementListController.getInitialComponent(),
-				true, translate("select.certification.program"));
-		listenTo(cmc);
-		cmc.activate();
+		removeAsListenerAndDispose(footerCmc);
+		removeAsListenerAndDispose(curriculumElementSelectionCtrl);
+
+		curriculumElementSelectionCtrl = new SingleCourseImplementationSelectionController(ureq, getWindowControl(), secCallback);
+		listenTo(curriculumElementSelectionCtrl);
+
+		footerCmc = new FooterModalController(getWindowControl(), translate("close"), curriculumElementSelectionCtrl.getBodyComponent(),
+				curriculumElementSelectionCtrl.getFooterComponent(), translate("select.certification.program"));
+		listenTo(footerCmc);
+		footerCmc.activate();
 	}
 	
 	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElementRow row) {

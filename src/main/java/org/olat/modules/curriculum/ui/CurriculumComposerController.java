@@ -311,7 +311,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		
-		if(secCallback.canNewCurriculumElement(curriculum)) {
+		if(!config.isSelectionMode() && secCallback.canNewCurriculumElement(curriculum)) {
 			newElementMenu = uifactory.addDropdownMenu("add.curriculum.element.menu", "add.curriculum.element.menu", null, formLayout, getTranslator());
 			newElementMenu.setElementCssClass("o_sel_curriculum_new_elements");
 			newElementMenu.setIconCSS("o_icon o_icon-fw o_icon_add");
@@ -353,7 +353,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		DefaultFlexiColumnModel nameCol;
 		if(config.isFlat()) {
-			nameCol = new DefaultFlexiColumnModel(ElementCols.displayName, "select");
+			nameCol = new DefaultFlexiColumnModel(ElementCols.displayName, config.isSelectionMode() ? null : "select");
 		} else {
 			TreeNodeFlexiCellRenderer treeNodeRenderer = new ElementTreeNodeFlexiCellRenderer("select");
 			treeNodeRenderer.setPush(true);
@@ -370,26 +370,26 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(curriculum == null, ElementCols.curriculum,
-				CMD_SELECT_CURRICULUM));
+				config.isSelectionMode() ? null : CMD_SELECT_CURRICULUM));
 		DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfMembers, CMD_MEMBERS));
+				ElementCols.numOfMembers, config.isSelectionMode() ? null : CMD_MEMBERS));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isFlat(),
-				ElementCols.numOfPending, CMD_PENDING));
+				ElementCols.numOfPending, config.isSelectionMode() ? null : CMD_PENDING));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isDefaultNumOfParticipants(),
-				ElementCols.numOfParticipants, CurriculumRoles.participant.name()));
+				ElementCols.numOfParticipants, config.isSelectionMode() ? null : CurriculumRoles.participant.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfCoaches, CurriculumRoles.coach.name()));
+				ElementCols.numOfCoaches, config.isSelectionMode() ? null : CurriculumRoles.coach.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfMasterCoaches, CurriculumRoles.mastercoach.name()));
+				ElementCols.numOfMasterCoaches, config.isSelectionMode() ? null : CurriculumRoles.mastercoach.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfOwners, CurriculumRoles.owner.name()));
+				ElementCols.numOfOwners, config.isSelectionMode() ? null : CurriculumRoles.owner.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfCurriculumElementOwners, CurriculumRoles.curriculumelementowner.name()));
+				ElementCols.numOfCurriculumElementOwners, config.isSelectionMode() ? null : CurriculumRoles.curriculumelementowner.name()));
 		if(config.isWithMixMaxColumn()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.minMaxParticipants,
 				new MinMaxParticipantsCellRenderer()));
@@ -406,25 +406,28 @@ public class CurriculumComposerController extends FormBasicController implements
 					new TaxonomyPathsRenderer(getLocale())));
 		}
 		
-		boolean withOptions = curriculum != null;
-		DefaultFlexiColumnModel calendarsCol = new DefaultFlexiColumnModel(withOptions, ElementCols.calendars);
-		calendarsCol.setIconHeader("o_icon o_icon-lg o_icon_calendar");
-		columnsModel.addFlexiColumnModel(calendarsCol);
-		
-		DefaultFlexiColumnModel lecturesCol = new DefaultFlexiColumnModel(withOptions, ElementCols.lectures);
-		lecturesCol.setIconHeader("o_icon o_icon-lg o_icon_lecture");
-		columnsModel.addFlexiColumnModel(lecturesCol);
-		if (qualityModule.isEnabled()) {
-			DefaultFlexiColumnModel qualityCol = new DefaultFlexiColumnModel(withOptions, ElementCols.qualityPreview);
-			qualityCol.setIconHeader("o_icon o_icon-lg o_icon_qual_preview");
-			columnsModel.addFlexiColumnModel(qualityCol);
-		}
-		
-		DefaultFlexiColumnModel progressCol = new DefaultFlexiColumnModel(withOptions, ElementCols.learningProgress);
-		progressCol.setIconHeader("o_icon o_icon-lg o_icon_progress");
-		columnsModel.addFlexiColumnModel(progressCol);
+		if(!config.isSelectionMode()) {
+			boolean withOptions = curriculum != null;
+			DefaultFlexiColumnModel calendarsCol = new DefaultFlexiColumnModel(withOptions, ElementCols.calendars);
+			calendarsCol.setIconHeader("o_icon o_icon-lg o_icon_calendar");
+			columnsModel.addFlexiColumnModel(calendarsCol);
 
-		if(secCallback.canEditCurriculumElements(curriculum) || (!managed && secCallback.canManageCurriculumElementsUsers(curriculum))) {
+			DefaultFlexiColumnModel lecturesCol = new DefaultFlexiColumnModel(withOptions, ElementCols.lectures);
+			lecturesCol.setIconHeader("o_icon o_icon-lg o_icon_lecture");
+			columnsModel.addFlexiColumnModel(lecturesCol);
+			if (qualityModule.isEnabled()) {
+				DefaultFlexiColumnModel qualityCol = new DefaultFlexiColumnModel(withOptions, ElementCols.qualityPreview);
+				qualityCol.setIconHeader("o_icon o_icon-lg o_icon_qual_preview");
+				columnsModel.addFlexiColumnModel(qualityCol);
+			}
+
+			DefaultFlexiColumnModel progressCol = new DefaultFlexiColumnModel(withOptions, ElementCols.learningProgress);
+			progressCol.setIconHeader("o_icon o_icon-lg o_icon_progress");
+			columnsModel.addFlexiColumnModel(progressCol);
+		}
+
+		if(!config.isSelectionMode() && (secCallback.canEditCurriculumElements(curriculum)
+				|| (!managed && secCallback.canManageCurriculumElementsUsers(curriculum)))) {
 			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ElementCols.tools));
 		}
 		
@@ -438,7 +441,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");		
-		if(secCallback.canNewCurriculumElement(curriculum)) {
+		if(!config.isSelectionMode() && secCallback.canNewCurriculumElement(curriculum)) {
 			tableEl.setEmptyStateConfig(EmptyStateConfig.builder()
 					.withMessageI18nKey("table.curriculum.element.empty")
 					.withHintI18nKey("table.curriculum.element.empty.hint")
@@ -461,28 +464,38 @@ public class CurriculumComposerController extends FormBasicController implements
 		String tablePrefsId = getTablePrefsId();
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
 		
-		bulkCreateToDoButton = uifactory.addFormLink("todo.bulk.create", formLayout, Link.BUTTON);
-		bulkCreateToDoButton.setVisible(false);
-		tableEl.addBatchButton(bulkCreateToDoButton);
-		tableEl.setMultiSelect(true);
-		
-		if(secCallback.canEditCurriculumElements(curriculum)) {
-			bulkChangeTypeButton = uifactory.addFormLink("type.bulk.change", formLayout, Link.BUTTON);
-			tableEl.addBatchButton(bulkChangeTypeButton);
+		if(config.isSelectionMode()) {
+			tableEl.setSelection(true, false, true);
+		} else {
+			tableEl.setMultiSelect(true);
 		}
 
-		if(rootElement == null && secCallback.canExportCurriculums()) {
-			bulkExportButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
-			tableEl.addBatchButton(bulkExportButton);
-		}
-		
-		if(secCallback.canNewCurriculumElement(curriculum) && config.isFlat()) {
-			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
-			tableEl.addBatchButton(bulkDeleteButton);
+		if(!config.isSelectionMode()) {
+			bulkCreateToDoButton = uifactory.addFormLink("todo.bulk.create", formLayout, Link.BUTTON);
+			bulkCreateToDoButton.setVisible(false);
+			tableEl.addBatchButton(bulkCreateToDoButton);
+
+			if(secCallback.canEditCurriculumElements(curriculum)) {
+				bulkChangeTypeButton = uifactory.addFormLink("type.bulk.change", formLayout, Link.BUTTON);
+				tableEl.addBatchButton(bulkChangeTypeButton);
+			}
+
+			if(rootElement == null && secCallback.canExportCurriculums()) {
+				bulkExportButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
+				tableEl.addBatchButton(bulkExportButton);
+			}
+
+			if(secCallback.canNewCurriculumElement(curriculum) && config.isFlat()) {
+				bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+				tableEl.addBatchButton(bulkDeleteButton);
+			}
 		}
 	}
 	
 	private String getTablePrefsId() {
+		if(config.isSelectionMode()) {
+			return "cur-select-single-course-impl-v1";
+		}
 		if(rootElement != null) {
 			return "curriculum-composer-v8";
 		}
@@ -612,7 +625,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		tabs.add(relevantTab);
 		map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
 
-		if(config.isImplementationsOnly()) {
+		if(!config.isSelectionMode() && config.isImplementationsOnly()) {
 			FlexiFiltersTab pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_MEMBERSHIPS_TAB_ID, translate("filter.pending.memberships"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_PENDING_MEMBERSHIPS, "true")));
 			pendingTab.setFiltersExpanded(true);
@@ -620,19 +633,21 @@ public class CurriculumComposerController extends FormBasicController implements
 			map.put(PENDING_MEMBERSHIPS_TAB_ID.toLowerCase(), pendingTab);
 		}
 
-		for(CurriculumElementStatus status:CurriculumElementStatus.visibleAdmin()) {
-			if(status == CurriculumElementStatus.deleted
-					|| (rootElement != null && (status == CurriculumElementStatus.provisional || status == CurriculumElementStatus.confirmed))
-					|| (rootElement == null && status == CurriculumElementStatus.active)) {
-				continue;
+		if(!config.isSelectionMode()) {
+			for(CurriculumElementStatus status:CurriculumElementStatus.visibleAdmin()) {
+				if(status == CurriculumElementStatus.deleted
+						|| (rootElement != null && (status == CurriculumElementStatus.provisional || status == CurriculumElementStatus.confirmed))
+						|| (rootElement == null && status == CurriculumElementStatus.active)) {
+					continue;
+				}
+
+				FlexiFiltersTab statusTab = FlexiFiltersTabFactory.tabWithImplicitFilters(status.name(), translate("filter." + status.name()),
+						TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+								List.of(status.name()))));
+				statusTab.setFiltersExpanded(true);
+				tabs.add(statusTab);
+				map.put(status.name(), statusTab);
 			}
-			
-			FlexiFiltersTab statusTab = FlexiFiltersTabFactory.tabWithImplicitFilters(status.name(), translate("filter." + status.name()),
-					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-							List.of(status.name()))));
-			statusTab.setFiltersExpanded(true);
-			tabs.add(statusTab);
-			map.put(status.name(), statusTab);
 		}
 		statusTabMap = Map.copyOf(map);
 		
@@ -653,11 +668,33 @@ public class CurriculumComposerController extends FormBasicController implements
 		toolbarPanel.removeListener(this);
         super.doDispose();
 	}
-	
+
+	/**
+	 * Only meaningful in selection mode ({@link CurriculumComposerConfig#isSelectionMode()}),
+	 * where rows are checked via {@code tableEl.setSelection(true, false, true)} rather than
+	 * navigated into.
+	 */
+	public List<CurriculumElementRow> getMultiSelectedRows() {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<CurriculumElementRow> rows = new ArrayList<>(selections.size());
+		for(Integer index:selections) {
+			CurriculumElementRow row = tableModel.getObject(index.intValue());
+			if(row != null) {
+				rows.add(row);
+			}
+		}
+		return rows;
+	}
+
 	void loadModel() {
 		CurriculumElementInfosSearchParams searchParams = getSearchParams();
 		
 		List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
+		if(config.isSelectionMode()) {
+			elements = elements.stream()
+					.filter(infos -> infos.curriculumElement().isSingleCourseImplementation())
+					.collect(Collectors.toList());
+		}
 		if(rootElement == null) {
 			loadViewOnlyImplementations(elements);
 		} else {

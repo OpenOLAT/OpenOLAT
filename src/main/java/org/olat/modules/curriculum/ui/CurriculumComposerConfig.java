@@ -30,26 +30,40 @@ public class CurriculumComposerConfig {
 	private boolean flat = false;
 	private boolean implementationsOnly = false;
 	private boolean defaultNumOfParticipants = false;
-	
+	private boolean selectionMode = false;
+
 	private String title;
 	private int titleSize;
 	private String titleIconCssClass;
 	private String helpUrl;
-	
+
 	private boolean withMixMaxColumn = false;
-	
+
 	public static CurriculumComposerConfig curriculumView() {
 		CurriculumComposerConfig config = new CurriculumComposerConfig();
 		config.setFlat(false);
 		config.setImplementationsOnly(true);
 		return config;
 	}
-	
+
 	public static CurriculumComposerConfig implementationsView() {
 		CurriculumComposerConfig config = new CurriculumComposerConfig();
 		config.setFlat(true);
 		config.setImplementationsOnly(true);
 		config.setWithMixMaxColumn(true);
+		return config;
+	}
+
+	/**
+	 * Configuration for the implementation picker: restricts the composer to
+	 * CPL Implementation (SingleCourse) elements, selectable in a modal
+	 * rather than navigable (used by the Certification program editor).
+	 */
+	public static CurriculumComposerConfig selectSingleCourseImplementation() {
+		CurriculumComposerConfig config = new CurriculumComposerConfig();
+		config.setFlat(true);
+		config.setImplementationsOnly(true);
+		config.setSelectionMode(true);
 		return config;
 	}
 
@@ -109,5 +123,13 @@ public class CurriculumComposerConfig {
 
 	public void setWithMixMaxColumn(boolean withMixMaxColumn) {
 		this.withMixMaxColumn = withMixMaxColumn;
+	}
+
+	public boolean isSelectionMode() {
+		return selectionMode;
+	}
+
+	public void setSelectionMode(boolean selectionMode) {
+		this.selectionMode = selectionMode;
 	}
 }
