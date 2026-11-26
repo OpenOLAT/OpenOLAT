@@ -175,7 +175,11 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow, Rel
 	public Date getEndDate() {
 		return element.getEndDate();
 	}
-	
+
+	public Date getCreationDate() {
+		return element.getCreationDate();
+	}
+
 	public CurriculumElementStatus getStatus() {
 		CurriculumElementStatus status = element.getElementStatus();
 		return status == null ? CurriculumElementStatus.active : status;

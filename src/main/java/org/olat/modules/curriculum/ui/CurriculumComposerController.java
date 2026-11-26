@@ -362,34 +362,43 @@ public class CurriculumComposerController extends FormBasicController implements
 		nameCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(nameCol);
 		
-		DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(ElementCols.structure);
-		structureCol.setIconHeader("o_icon o_icon-lg o_icon_structure");
-		structureCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(structureCol);
+		if(!config.isSelectionMode()) {
+			DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(ElementCols.structure);
+			structureCol.setIconHeader("o_icon o_icon-lg o_icon_structure");
+			structureCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(structureCol);
+		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(curriculum == null, ElementCols.curriculum,
 				config.isSelectionMode() ? null : CMD_SELECT_CURRICULUM));
 		DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate, dateRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate, dateRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.type));
+		if(!config.isSelectionMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate, dateRenderer));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate, dateRenderer));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.type));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfMembers, config.isSelectionMode() ? null : CMD_MEMBERS));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isFlat(),
-				ElementCols.numOfPending, config.isSelectionMode() ? null : CMD_PENDING));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isDefaultNumOfParticipants(),
-				ElementCols.numOfParticipants, config.isSelectionMode() ? null : CurriculumRoles.participant.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfCoaches, config.isSelectionMode() ? null : CurriculumRoles.coach.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfMasterCoaches, config.isSelectionMode() ? null : CurriculumRoles.mastercoach.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfOwners, config.isSelectionMode() ? null : CurriculumRoles.owner.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfCurriculumElementOwners, config.isSelectionMode() ? null : CurriculumRoles.curriculumelementowner.name()));
+		if(config.isSelectionMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.creationDate, dateRenderer));
+		}
+		if(!config.isSelectionMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+					ElementCols.numOfMembers, CMD_MEMBERS));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isFlat(),
+					ElementCols.numOfPending, CMD_PENDING));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isDefaultNumOfParticipants(),
+					ElementCols.numOfParticipants, CurriculumRoles.participant.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+					ElementCols.numOfCoaches, CurriculumRoles.coach.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+					ElementCols.numOfMasterCoaches, CurriculumRoles.mastercoach.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+					ElementCols.numOfOwners, CurriculumRoles.owner.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+					ElementCols.numOfCurriculumElementOwners, CurriculumRoles.curriculumelementowner.name()));
+		}
 		if(config.isWithMixMaxColumn()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.minMaxParticipants,
 				new MinMaxParticipantsCellRenderer()));
@@ -454,7 +463,7 @@ public class CurriculumComposerController extends FormBasicController implements
 					.withIconCss("o_icon_curriculum_element")
 					.build());
 		}
-		tableEl.setExportEnabled(true);
+		tableEl.setExportEnabled(!config.isSelectionMode());
 		tableEl.setSearchEnabled(true);
 		tableEl.setSortEnabled(config.isFlat());
 		
@@ -542,19 +551,21 @@ public class CurriculumComposerController extends FormBasicController implements
 				FILTER_STATUS, statusValues, true);
 		filters.add(statusFilter);
 		
-		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
-		SelectionValues typesValues = new SelectionValues();
-		for(CurriculumElementType type:types) {
-			typesValues.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
+		if(!config.isSelectionMode()) {
+			List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
+			SelectionValues typesValues = new SelectionValues();
+			for(CurriculumElementType type:types) {
+				typesValues.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
+			}
+			typesValues.sort(SelectionValues.VALUE_ASC);
+			FlexiTableMultiSelectionFilter typeFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
+					FILTER_TYPE, typesValues, true);
+			filters.add(typeFilter);
+
+			FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("filter.date.range"),
+					FILTER_PERIOD, true, false, getLocale());
+			filters.add(periodFilter);
 		}
-		typesValues.sort(SelectionValues.VALUE_ASC);
-		FlexiTableMultiSelectionFilter typeFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
-				FILTER_TYPE, typesValues, true);
-		filters.add(typeFilter);
-		
-		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("filter.date.range"),
-				FILTER_PERIOD, true, false, getLocale());
-		filters.add(periodFilter);
 		
 		if(taxonomyEnabled) {
 			List<TaxonomyRef> taxonomies = curriculumModule.getTaxonomyRefs();
@@ -566,7 +577,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		
-		if(config.isImplementationsOnly()) {
+		if(!config.isSelectionMode() && config.isImplementationsOnly()) {
 			SelectionValues pendingValues = new SelectionValues();
 			pendingValues.add(SelectionValues.entry("true", translate("filter.pending.memberships")));
 			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.pending.memberships"),

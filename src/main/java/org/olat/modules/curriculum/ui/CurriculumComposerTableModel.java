@@ -361,6 +361,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			case curriculum -> getCurriculum(element);
 			case beginDate -> element.getBeginDate();
 			case endDate -> element.getEndDate();
+			case creationDate -> element.getCreationDate();
 			case type -> element.getCurriculumElementTypeDisplayName();
 			case resources -> element.getResources();
 			case structure -> element.getStructureLink();
@@ -405,6 +406,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		curriculum("table.header.curriculum"),
 		beginDate("table.header.begin.date"),
 		endDate("table.header.end.date"),
+		creationDate("table.header.created"),
 		type("table.header.type"),
 		resources("table.header.resources"),
 		numOfMembers("table.header.num.of.members"),
