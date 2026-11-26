@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -77,6 +78,11 @@ public class FileUtils {
 	
 	// the following is for cleaning up file I/O stuff ... so it works fine on NFS
 	public static final int BSIZE = 8*1024;
+	
+	/**
+	 * This is the limit of 255 bytes - some buffer for revisions which add 10 characters
+	 */
+	public static final int MAX_FILENAME_SIZE = 230;
 
 	// matches files and folders of type:
 	// bla, bla1, bla12, bla.html, bla1.html, bla12.html
@@ -1089,6 +1095,11 @@ public class FileUtils {
 			
 		}
 		return isMeta;
+	}
+	
+	public static boolean isFilenameLengthSafe(String filename) {
+		if(filename == null) return false;
+		return filename.getBytes(StandardCharsets.UTF_8).length <= MAX_FILENAME_SIZE;
 	}
 	
 	public static String checksumSha256(File file) {
