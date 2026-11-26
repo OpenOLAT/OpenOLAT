@@ -315,7 +315,7 @@ public class SitesConfigurationController extends FormBasicController {
 				enableSiteEl.setEnabled(false);
 				altControllerEl.setEnabled(false);
 				secCallbackEl.setEnabled(false);
-			} else if(SITE_COACHING_TOOL.equals(id) && repositoryModule.isMyCoursesParticipantsOnly() && siteDef.isEnabled()) {
+			} else if(SITE_COACHING_TOOL.equals(id) && repositoryModule.isMyCoursesParticipantsOnly() && siteDef.isEnabled() && config.isEnabled()) {
 				enableSiteEl.setEnabled(false);
 			}
 		}
