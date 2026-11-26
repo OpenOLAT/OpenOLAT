@@ -34,7 +34,6 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class QualityDataCollectionSearchParams {
 	
-	private Date startDateAfter;
 	private Date startDateBefore;
 	private List<Long> formEntryKeys;
 	private List<QualityDataCollectionTopicType> topicTypes;
@@ -43,16 +42,7 @@ public class QualityDataCollectionSearchParams {
 	private List<Long> generatorKeys;
 	private Long generatorProviderKey;
 	private boolean fetchGenerator;
-	private Boolean generatorOverrideAvailable;
 	
-	public Date getStartDateAfter() {
-		return startDateAfter;
-	}
-
-	public void setStartDateAfter(Date startDateAfter) {
-		this.startDateAfter = startDateAfter;
-	}
-
 	public Date getStartDateBefore() {
 		return startDateBefore;
 	}
@@ -119,14 +109,6 @@ public class QualityDataCollectionSearchParams {
 
 	public void setFetchGenerator(boolean fetchGenerator) {
 		this.fetchGenerator = fetchGenerator;
-	}
-
-	public Boolean getGeneratorOverrideAvailable() {
-		return generatorOverrideAvailable;
-	}
-
-	public void setGeneratorOverrideAvailable(Boolean generatorOverrideAvailable) {
-		this.generatorOverrideAvailable = generatorOverrideAvailable;
 	}
 
 }

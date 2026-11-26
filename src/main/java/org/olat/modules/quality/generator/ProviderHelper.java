@@ -19,16 +19,8 @@
  */
 package org.olat.modules.quality.generator;
 
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
-
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import org.olat.core.util.StringHelper;
 
@@ -40,8 +32,6 @@ import org.olat.core.util.StringHelper;
  */
 public class ProviderHelper {
 
-	private static final String DELIMITER = ",";
-	
 	public static Date subtractDays(Date date, String daysToAdd) {
 		int days = Integer.parseInt(daysToAdd);
 		Calendar c = Calendar.getInstance();
@@ -110,42 +100,6 @@ public class ProviderHelper {
 			}
 		}
 		return 0;
-	}
-	
-	public static long toLongOrZero(String value) {
-		if (StringHelper.containsNonWhitespace(value)) {
-			try {
-				return Long.parseLong(value);
-			} catch (NumberFormatException e) {
-				return 0;
-			}
-		}
-		return 0;
-	}
-	
-	public static String concatDaysOfWeek(List<DayOfWeek> daysOfWeek) {
-		if (daysOfWeek == null || daysOfWeek.isEmpty()) return null;
-		
-		return daysOfWeek.stream().map(DayOfWeek::name).collect(joining(DELIMITER));
-		
-	}
-	
-	public static List<DayOfWeek> splitDaysOfWeek(String config) {
-		if (!StringHelper.containsNonWhitespace(config)) return new ArrayList<>(0);
-		
-		return Arrays.stream(config.split(DELIMITER)).map(DayOfWeek::valueOf).collect(toList());
-	}
-	
-
-	public static List<LocalDate> generateDaysInRange(LocalDate startDate, LocalDate endDate) {
-		if (startDate == null || endDate == null) return new ArrayList<>(0);
-		
-		List<LocalDate> datesInRange = new ArrayList<>();
-		while (!startDate.isAfter(endDate)) {
-			datesInRange.add(startDate);
-			startDate = startDate.plusDays(1);
-		}
-		return datesInRange;
 	}
 	
 }

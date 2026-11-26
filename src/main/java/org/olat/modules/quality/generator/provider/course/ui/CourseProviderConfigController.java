@@ -27,10 +27,7 @@ import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateInteger;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateIsMandatory;
 
-import java.time.DayOfWeek;
-import java.time.format.TextStyle;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
@@ -42,13 +39,11 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.quality.generator.ProviderHelper;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.course.CourseProvider;
@@ -70,11 +65,9 @@ public class CourseProviderConfigController extends ProviderConfigController {
 	
 	private static final String TRIGGER_DATE_BEGIN = "config.trigger.date.begin";
 	private static final String TRIGGER_DATE_END = "config.trigger.date.end";
-	private static final String TRIGGER_DAILY = "config.trigger.daily";
 	private static final String TRIGGER_KEYS[] = {
 			TRIGGER_DATE_BEGIN,
-			TRIGGER_DATE_END,
-			TRIGGER_DAILY
+			TRIGGER_DATE_END
 	};
 	private static final String ROLES_PREFIX = "config.roles.";
 	private static final String ROLES_OWNER_KEY = ROLES_PREFIX + GroupRoles.owner.name();
@@ -89,10 +82,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 	private TextElement titleEl;
 	private SingleSelection triggerTypeEl;
 	private TextElement dueDateDaysEl;
-	private MultipleSelectionElement daysOfWeekEl;
-	private FormLayoutContainer timeCont;
-	private TextElement startHourEl;
-	private TextElement startMinuteEl;
 	private TextElement durationEl;
 	private TextElement invitationDaysEl;
 	private TextElement reminder1DaysEl;
@@ -142,9 +131,7 @@ public class CourseProviderConfigController extends ProviderConfigController {
 				translateAll(getTranslator(), TRIGGER_KEYS));
 		triggerTypeEl.addActionListener(FormEvent.ONCHANGE);
 		String triggerType = configs.getValue(CourseProvider.CONFIG_KEY_TRIGGER);
-		if (CourseProvider.CONFIG_KEY_TRIGGER_DAILY.equals(triggerType)) {
-			triggerTypeEl.select(TRIGGER_DAILY, true);
-		} else if (CourseProvider.CONFIG_KEY_TRIGGER_BEGIN.equals(triggerType)) {
+		if (CourseProvider.CONFIG_KEY_TRIGGER_BEGIN.equals(triggerType)) {
 			triggerTypeEl.select(TRIGGER_DATE_BEGIN, true);
 		} else {
 			triggerTypeEl.select(TRIGGER_DATE_END, true);
@@ -154,32 +141,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		String dueDateDays = configs.getValue(CourseProvider.CONFIG_KEY_DUE_DATE_DAYS);
 		dueDateDaysEl = uifactory.addTextElement("config.due.date.days", 4, dueDateDays, formLayout);
 		dueDateDaysEl.setHelpText(translate("config.due.date.days.help"));
-		
-		// daily days of week
-		DayOfWeek[] dayOfWeeks = DayOfWeek.values();
-		SelectionValues dayOfWeekKV = new SelectionValues();
-		for (int i = 0; i < dayOfWeeks.length; i++) {
-			dayOfWeekKV.add(SelectionValues.entry(dayOfWeeks[i].name(), dayOfWeeks[i].getDisplayName(TextStyle.FULL_STANDALONE, getLocale())));
-		}
-		daysOfWeekEl = uifactory.addCheckboxesHorizontal("config.days.of.week", formLayout, dayOfWeekKV.keys(), dayOfWeekKV.values());
-		String dayOfWeekConfig = configs.getValue(CourseProvider.CONFIG_KEY_DAILY_WEEKDAYS);
-		List<DayOfWeek> selectedDaysOfWeek = ProviderHelper.splitDaysOfWeek(dayOfWeekConfig);
-		for (DayOfWeek selectedDayOfWeek: selectedDaysOfWeek) {
-			daysOfWeekEl.select(selectedDayOfWeek.name(), true);
-		}
-		
-		// daily time
-		String timePage = velocity_root + "/time.html";
-		timeCont = uifactory.addCustomFormLayout("time", "config.start.time", timePage, formLayout);
-		
-		String dailyHour = configs.getValue(CourseProvider.CONFIG_KEY_DAILY_HOUR);
-		startHourEl = uifactory.addTextElement("config.start.hour", null, 2, dailyHour, timeCont);
-		startHourEl.setDomReplacementWrapperRequired(false);
-		startHourEl.setDisplaySize(2);
-		String dailyMinute = configs.getValue(CourseProvider.CONFIG_KEY_DAILY_MINUTE);
-		startMinuteEl = uifactory.addTextElement("config.start.minute", null, 2, dailyMinute, timeCont);
-		startMinuteEl.setDomReplacementWrapperRequired(false);
-		startMinuteEl.setDisplaySize(2);
 
 		// duration
 		String duration = configs.getValue(CourseProvider.CONFIG_KEY_DURATION_HOURS);
@@ -226,10 +187,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		
 		boolean dueDate = TRIGGER_DATE_BEGIN.equals(triggerType) || TRIGGER_DATE_END.equals(triggerType);
 		dueDateDaysEl.setVisible(dueDate);
-		
-		boolean daily = TRIGGER_DAILY.equals(triggerType);
-		daysOfWeekEl.setVisible(daily);
-		timeCont.setVisible(daily);
 		flc.setDirty(true);
 	}
 
@@ -238,9 +195,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		boolean enabled = !readOnly;
 		triggerTypeEl.setEnabled(enabled);
 		dueDateDaysEl.setEnabled(enabled);
-		daysOfWeekEl.setEnabled(enabled);
-		startHourEl.setEnabled(enabled);
-		startMinuteEl.setEnabled(enabled);
 		titleEl.setEnabled(enabled);
 		invitationDaysEl.setEnabled(enabled);
 		reminder1DaysEl.setEnabled(enabled);
@@ -278,10 +232,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		case TRIGGER_DATE_END:
 			allOk &= validateIsMandatory(dueDateDaysEl) && validateInteger(dueDateDaysEl, -10000, 10000);
 			break;
-		case TRIGGER_DAILY:
-			allOk &= validateIsMandatory(startHourEl) && validateInteger(startHourEl, 0, 23);
-			allOk &= validateIsMandatory(startMinuteEl) && validateInteger(startMinuteEl, 0, 59);
-			break;
 		default:
 			//
 		}
@@ -298,9 +248,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		titleEl.clearError();
 		triggerTypeEl.clearError();
 		dueDateDaysEl.clearError();
-		daysOfWeekEl.clearError();
-		startHourEl.clearError();
-		startMinuteEl.clearError();
 		invitationDaysEl.clearError();
 		reminder1DaysEl.clearError();
 		reminder2DaysEl.clearError();
@@ -325,16 +272,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		case TRIGGER_DATE_END:
 			configs.setValue(CourseProvider.CONFIG_KEY_TRIGGER, CourseProvider.CONFIG_KEY_TRIGGER_END);
 			configs.setValue(CourseProvider.CONFIG_KEY_DUE_DATE_DAYS, dueDateDays);
-			break;
-		case TRIGGER_DAILY:
-			configs.setValue(CourseProvider.CONFIG_KEY_TRIGGER, CourseProvider.CONFIG_KEY_TRIGGER_DAILY);
-			List<DayOfWeek> daysOfWeek = daysOfWeekEl.getSelectedKeys().stream().map(DayOfWeek::valueOf).collect(Collectors.toList());
-			String daysOfWeekConfig = ProviderHelper.concatDaysOfWeek(daysOfWeek);
-			configs.setValue(CourseProvider.CONFIG_KEY_DAILY_WEEKDAYS, daysOfWeekConfig);
-			String startHour = startHourEl.getValue();
-			configs.setValue(CourseProvider.CONFIG_KEY_DAILY_HOUR, startHour);
-			String startMinute = startMinuteEl.getValue();
-			configs.setValue(CourseProvider.CONFIG_KEY_DAILY_MINUTE, startMinute);
 			break;
 		default:
 			configs.setValue(CourseProvider.CONFIG_KEY_TRIGGER, null);
@@ -369,9 +306,6 @@ public class CourseProviderConfigController extends ProviderConfigController {
 
 	private void clearTriggerConfigs() {
 		configs.setValue(CourseProvider.CONFIG_KEY_DUE_DATE_DAYS, null);
-		configs.setValue(CourseProvider.CONFIG_KEY_DAILY_WEEKDAYS, null);
-		configs.setValue(CourseProvider.CONFIG_KEY_DAILY_HOUR, null);
-		configs.setValue(CourseProvider.CONFIG_KEY_DAILY_MINUTE, null);
 	}
 
 }

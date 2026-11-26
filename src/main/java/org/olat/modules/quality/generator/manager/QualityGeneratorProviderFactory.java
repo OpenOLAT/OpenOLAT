@@ -26,7 +26,7 @@ import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
 
-import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.provider.fallback.FallbackProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,8 +71,8 @@ public class QualityGeneratorProviderFactory {
 		return providers.values();
 	}
 	
-	boolean isAvailable(QualityGenerator generator) {
-		QualityGeneratorProvider provider = getProvider(generator.getType());
+	boolean isAvailable(QualityGeneratorProviderReferenceable providerRef) {
+		QualityGeneratorProvider provider = getProvider(providerRef.getType());
 		if (FALLBACK_PROVIDER_TYPE.equals(provider.getType())) {
 			return false;
 		}

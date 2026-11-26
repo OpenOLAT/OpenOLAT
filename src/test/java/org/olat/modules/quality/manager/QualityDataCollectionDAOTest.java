@@ -75,8 +75,6 @@ import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
-import org.olat.modules.quality.generator.QualityGeneratorOverride;
-import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
@@ -103,8 +101,6 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private QualityService qualityService;
-	@Autowired
-	private QualityGeneratorService generatorService;
 	@Autowired
 	private QualityContextDAO qualityContextDao;
 	@Autowired
@@ -484,11 +480,11 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		sut.updateDataCollection(dataCollection4);
 		
 		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
-		searchParams.setStartDateAfter(dueDate);
+		searchParams.setGeneratorRef(generator);
 		searchParams.setStartDateBefore(DateUtils.addDays(dueDate, 3));
 		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
 		
-		assertThat(collections).containsExactlyInAnyOrder(dataCollection2, dataCollection3);
+		assertThat(collections).containsExactlyInAnyOrder(dataCollection1, dataCollection2, dataCollection3);
 	}
 	
 	@Test
@@ -572,28 +568,6 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(collections)
 				.containsExactlyInAnyOrder(dataCollection1, dataCollection2)
 				.doesNotContain(dataCollectionOtherKey, dataCollectionNoKey);
-	}
-	
-	@Test
-	public void shouldFilterByGeneratorOverrideAvailable() {
-		QualityGenerator generator = qualityTestHelper.createGenerator();
-		QualityDataCollection dataCollection1 = sut.createDataCollection(generator, null);
-		QualityDataCollection dataCollection2 = sut.createDataCollection(generator, null);
-		QualityDataCollection dataCollection3 = sut.createDataCollection(generator, null);
-		QualityGeneratorOverride override = generatorService.createOverride(null, random(), generator, 1l);
-		override.setDataCollection(dataCollection3);
-		generatorService.updateOverride(null, override);
-		dbInstance.commitAndCloseSession();
-		
-		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
-		searchParams.setGeneratorKeys(List.of(generator.getKey()));
-		assertThat(sut.loadDataCollections(searchParams)).containsExactlyInAnyOrder(dataCollection1, dataCollection2, dataCollection3);
-		
-		searchParams.setGeneratorOverrideAvailable(Boolean.TRUE);
-		assertThat(sut.loadDataCollections(searchParams)).containsExactlyInAnyOrder(dataCollection3);
-		
-		searchParams.setGeneratorOverrideAvailable(Boolean.FALSE);
-		assertThat(sut.loadDataCollections(searchParams)).containsExactlyInAnyOrder(dataCollection1, dataCollection2);
 	}
 	
 	@Test

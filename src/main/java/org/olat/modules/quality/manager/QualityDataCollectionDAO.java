@@ -235,9 +235,6 @@ public class QualityDataCollectionDAO {
 	}
 	
 	private void appendWhere(QueryBuilder sb, QualityDataCollectionSearchParams searchParams) {
-		if (searchParams.getStartDateAfter() != null) {
-			sb.and().append("collection.start >= :startDateAfter");
-		}
 		if (searchParams.getStartDateBefore() != null) {
 			sb.and().append("collection.start <= :startDateBefore");
 		}
@@ -253,13 +250,6 @@ public class QualityDataCollectionDAO {
 		if (searchParams.getGeneratorProviderKey() != null) {
 			sb.and().append("collection.generatorProviderKey = :generatorProviderKey");
 		}
-		if (searchParams.getGeneratorOverrideAvailable() != null) {
-			sb.and().append("collection.key ").append("not ", !searchParams.getGeneratorOverrideAvailable()).append("in (");
-			sb.append("select override.dataCollection.key");
-			sb.append("  from qualitygeneratoroverride override");
-			sb.append(" where override.dataCollection.key is not null");
-			sb.append(")");
-		}
 		if (searchParams.getTopicIdentityRef() != null) {
 			sb.and().append("collection.topicIdentity.key = :topicIdentityKey");
 		}
@@ -270,9 +260,6 @@ public class QualityDataCollectionDAO {
 
 	private void appendParameters(TypedQuery<QualityDataCollection> query,
 			QualityDataCollectionSearchParams searchParams) {
-		if (searchParams.getStartDateAfter()!= null) {
-			query.setParameter("startDateAfter", searchParams.getStartDateAfter());
-		}
 		if (searchParams.getStartDateBefore()!= null) {
 			query.setParameter("startDateBefore", searchParams.getStartDateBefore());
 		}

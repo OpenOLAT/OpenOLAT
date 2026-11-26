@@ -69,3 +69,6 @@ alter table o_user add column lastmodified timestamp;
 update o_user set lastmodified = coalesce(creationdate, current_timestamp) where lastmodified is null;
 alter table o_user alter column lastmodified set not null;
 create index idx_user_lastmod_idx on o_user (lastmodified);
+
+-- Quality management: course generator without start trigger "Daily"
+update o_qual_generator set q_type='course-daily-removed', q_enabled=false where q_type='course-provider' and id in (select fk_generator from o_qual_generator_config where q_identifier='trigger.type' and q_value='trigger.daily');

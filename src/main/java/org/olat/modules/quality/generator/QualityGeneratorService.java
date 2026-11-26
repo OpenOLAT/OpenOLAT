@@ -66,6 +66,8 @@ public interface QualityGeneratorService {
 
 	public String getProviderDisplayName(QualityGeneratorProviderReferenceable providerRef, Locale locale);
 	
+	public boolean isProviderAvailable(QualityGeneratorProviderReferenceable providerRef);
+	
 	public ProviderConfigController getConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGenerator generator);
 

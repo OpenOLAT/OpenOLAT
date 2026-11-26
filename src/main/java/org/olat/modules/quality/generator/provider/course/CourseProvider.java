@@ -22,13 +22,6 @@ package org.olat.modules.quality.generator.provider.course;
 import static org.olat.modules.quality.generator.ProviderHelper.addDays;
 import static org.olat.modules.quality.generator.ProviderHelper.subtractDays;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,12 +46,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityDataCollectionSearchParams;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminderType;
@@ -88,7 +79,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -107,10 +97,6 @@ public class CourseProvider implements QualityGeneratorProvider {
 	public static final String CONFIG_KEY_TRIGGER_BEGIN = "due.date.begin.type";
 	public static final String CONFIG_KEY_TRIGGER_END = "due.date.end.type";
 	public static final String CONFIG_KEY_DUE_DATE_DAYS = "due.date.days";
-	public static final String CONFIG_KEY_TRIGGER_DAILY = "trigger.daily";
-	public static final String CONFIG_KEY_DAILY_HOUR = "daily.hour";
-	public static final String CONFIG_KEY_DAILY_MINUTE = "daily.minute";
-	public static final String CONFIG_KEY_DAILY_WEEKDAYS = "daily.weekdays";
 	public static final String CONFIG_KEY_DURATION_HOURS = "duration.hours";
 	public static final String CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS = "invitation.after.dc.start.days";
 	public static final String CONFIG_KEY_REMINDER1_AFTER_DC_DAYS = "reminder1.after.dc.start.days";
@@ -121,8 +107,6 @@ public class CourseProvider implements QualityGeneratorProvider {
 	public static final String CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION = "educational.type.exclusion";
 	public static final String EDUCATIONAL_TYPE_EXCLUSION_DELIMITER = ",";
 	public static final String CONFIG_KEY_PREVIEW_EDIT_QM_RESTRICTED = "preview.edit.qm.restricted";
-	
-	private static final DateFormat dailyIdentitfierDateFormat = new SimpleDateFormat("yyyyMMdd");
 
 	@Autowired
 	private CourseProviderDAO providerDao;
@@ -209,8 +193,6 @@ public class CourseProvider implements QualityGeneratorProvider {
 		String trigger = configs.getValue(CONFIG_KEY_TRIGGER);
 		if (CONFIG_KEY_TRIGGER_BEGIN.equals(trigger) || CONFIG_KEY_TRIGGER_END.equals(trigger)) {
 			provideByDueDate(generator, configs, overrides, fromDate, toDate, searchParams, strategy);
-		} else if (CONFIG_KEY_TRIGGER_DAILY.equals(trigger)) {
-			provideDaily(generator, configs, fromDate, toDate, searchParams, overrides, strategy);
 		}
 	}
 	
@@ -291,162 +273,6 @@ public class CourseProvider implements QualityGeneratorProvider {
 	
 	String getDueDateIdentifier(QualityGeneratorRef generator, RepositoryEntryRef courseEntry) {
 		return generator.getKey() + "::" + courseEntry.getKey();
-	}
-	
-	private void provideDaily(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate,
-			SearchParameters searchParams, QualityGeneratorOverrides overrides, CourseProviderStrategy strategy) {
-		List<Date> dcStarts = getDailyStarts(configs, fromDate, toDate, searchParams);
-		if (dcStarts.isEmpty()) {
-			return;
-		}
-		
-		List<RepositoryEntry> courseEntries = loadCourses(generator, searchParams);
-		
-		QualityDataCollectionSearchParams dcSearchParams = new QualityDataCollectionSearchParams();
-		dcSearchParams.setGeneratorRef(generator);
-		dcSearchParams.setStartDateAfter(DateUtils.getStartOfDay(dcStarts.get(0)));
-		dcSearchParams.setGeneratorOverrideAvailable(Boolean.FALSE);
-		List<QualityDataCollection> dataCollections = qualityService.loadDataCollections(dcSearchParams);
-		
-		List<QualityGeneratorOverride> manualStartInRangeOverrides = overrides.getOverrides(generator, fromDate, toDate);
-		
-		for (Date dcStart : dcStarts) {
-			for (RepositoryEntry courseEntry: courseEntries) {
-				if (dataCollectionNotGenerated(courseEntry, dcStart, dataCollections)) {
-					QualityGeneratorOverride override = null;
-					boolean provide = false;
-					
-					String identifier = getDailyIdentifier(generator, courseEntry, dcStart);
-					QualityGeneratorOverride startOverride = overrides.getOverride(identifier);
-					if (startOverride != null) {
-						if (startOverride.getStart() != null) {
-							int durationHours = ProviderHelper.toIntOrZero(configs.getValue(CourseProvider.CONFIG_KEY_DURATION_HOURS));
-							Date dcEnd = ProviderHelper.addHours(startOverride.getStart(), durationHours);
-							if (startOverride.getStart().before(toDate) && dcEnd.after(fromDate)) {
-								provide = true;
-								override = startOverride;
-								manualStartInRangeOverrides.remove(override);
-							}
-						}
-					} else {
-						if (lifecycleValidAt(courseEntry, dcStart)) {
-							provide = true;
-						}
-					}
-					
-					if (provide) {
-						strategy.provide(generator, configs, override, dcStart, courseEntry);
-					}
-				}
-			}
-		}
-		
-		provideDailyOverrideToRange(generator, configs, searchParams, strategy, manualStartInRangeOverrides);
-	}
-
-	private void provideDailyOverrideToRange(QualityGenerator generator, QualityGeneratorConfigs configs,
-			SearchParameters searchParams, CourseProviderStrategy strategy,
-			List<QualityGeneratorOverride> manualStartInRangeOverrides) {
-		if (manualStartInRangeOverrides.isEmpty()) {
-			return;
-		}
-		
-		List<Long> repoEntryKeys = manualStartInRangeOverrides.stream()
-				.map(QualityGeneratorOverride::getGeneratorProviderKey)
-				.distinct()
-				.collect(Collectors.toList());
-		if (searchParams.getWhiteListKeys() != null) {
-			repoEntryKeys.retainAll(searchParams.getWhiteListKeys());
-		}
-		if (repoEntryKeys.isEmpty()) {
-			return;
-		}
-		SearchParameters seachParameters = getSeachParameters(configs, searchParams.getOrganisationRefs(), repoEntryKeys, false, true);
-		List<RepositoryEntry> courseEntries = loadCourses(generator, seachParameters);
-		
-		for (QualityGeneratorOverride override : manualStartInRangeOverrides) {
-			for (RepositoryEntry courseEntry : courseEntries) {
-				if (override.getGeneratorProviderKey().equals(courseEntry.getKey())) {
-					String[] identParts = override.getIdentifier().split("::");
-					if (identParts.length == 3) {
-						try {
-							Date date = dailyIdentitfierDateFormat.parse(identParts[2]);
-							strategy.provide(generator, configs, override, date, courseEntry);
-						} catch (ParseException e) {
-							log.warn("Generator {}", generator.getKey(), e);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	String getDailyIdentifier(QualityGenerator generator, RepositoryEntry courseEntry, Date dcStart) {
-		return generator.getKey() + "::" + courseEntry.getKey() + "::" + dailyIdentitfierDateFormat.format(dcStart);
-	}
-
-	private List<Date> getDailyStarts(QualityGeneratorConfigs configs, Date fromDate, Date toDate, SearchParameters searchParams) {
-		LocalDate startDate = fromDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		LocalDate endDate = toDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		List<LocalDate> daysInRange = ProviderHelper.generateDaysInRange(startDate, endDate);
-		removeIfUnwantedDayOfWeek(daysInRange, configs);
-		List<LocalDateTime> startDateTimes = addStartTime(daysInRange, configs);
-		removeIfPlusDurationInPast(startDateTimes, configs);
-		if (searchParams.isExcludeFutureBegins()) {
-			removeIfIsInFuture(startDateTimes);
-		}
-		List<Date> dcStarts = startDateTimes.stream().map(dt -> Date.from(dt.atZone(ZoneId.systemDefault()).toInstant())).collect(Collectors.toList());
-		return dcStarts;
-	}
-
-	private void removeIfUnwantedDayOfWeek(List<LocalDate> daysInRange, QualityGeneratorConfigs configs) {
-		String daysOfWeekConfig = configs.getValue(CONFIG_KEY_DAILY_WEEKDAYS);
-		List<DayOfWeek> daysOfWeek = ProviderHelper.splitDaysOfWeek(daysOfWeekConfig);
-		daysInRange.removeIf(d -> !daysOfWeek.contains(d.getDayOfWeek()));
-	}
-	
-	private List<LocalDateTime> addStartTime(List<LocalDate> dates, QualityGeneratorConfigs configs) {
-		String hourConfig = configs.getValue(CONFIG_KEY_DAILY_HOUR);
-		final int hour = ProviderHelper.toIntOrZero(hourConfig);
-		String minuteConfig = configs.getValue(CONFIG_KEY_DAILY_MINUTE);
-		final int minute = ProviderHelper.toIntOrZero(minuteConfig);
-		
-		return dates.stream().map(date -> date.atTime(hour, minute)).collect(Collectors.toList());
-	}
-	
-	private void removeIfPlusDurationInPast(List<LocalDateTime> dateTimes, QualityGeneratorConfigs configs) {
-		String durationConfig = configs.getValue(CONFIG_KEY_DURATION_HOURS);
-		final long duration = ProviderHelper.toLongOrZero(durationConfig);
-		
-		LocalDateTime now = LocalDateTime.now();
-		dateTimes.removeIf(date -> date.plusHours(duration).isBefore(now));
-	}
-
-	private void removeIfIsInFuture(List<LocalDateTime> dateTimes) {
-		LocalDateTime now = LocalDateTime.now();
-		dateTimes.removeIf(date -> date.isAfter(now));
-	}
-	
-	private boolean lifecycleValidAt(RepositoryEntry courseEntry, Date dcStart) {
-		RepositoryEntryLifecycle lifecycle = courseEntry.getLifecycle();
-		if (lifecycle == null) {
-			return true;
-		}
-		if (lifecycle.getValidFrom() != null && DateUtils.getStartOfDay(lifecycle.getValidFrom()).after(DateUtils.getStartOfDay(dcStart))) {
-			return false;
-		}
-		if (lifecycle.getValidTo() != null && DateUtils.getStartOfDay(lifecycle.getValidTo()).before(DateUtils.getStartOfDay(dcStart))) {
-			return false;
-		}
-		return true;
-	}
-
-	private boolean dataCollectionNotGenerated(RepositoryEntry courseEntry, Date dcStart, List<QualityDataCollection> dataCollections) {
-		return !dataCollections.stream()
-				.filter(dc -> dc.getGeneratorProviderKey().equals(courseEntry.getKey()))
-				.filter(dc -> DateUtils.isSameDay(dc.getStart(), dcStart))
-				.findFirst()
-				.isPresent();
 	}
 
 	public QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
@@ -660,11 +486,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 			preview.setGenerator(generator);
 			preview.setGeneratorProviderKey(courseEntry.getKey());
 			preview.setFormEntry(generator.getFormEntry());
-			if (CONFIG_KEY_TRIGGER_DAILY.equals(configs.getValue(CONFIG_KEY_TRIGGER))) {
-				preview.setIdentifier(getDailyIdentifier(generator, courseEntry, generatedStart));
-			} else {
-				preview.setIdentifier(getDueDateIdentifier(generator, courseEntry));
-			}
+			preview.setIdentifier(getDueDateIdentifier(generator, courseEntry));
 			
 			List<Organisation> courseOrganisations = getOrganisations(courseEntry);
 			preview.setOrganisations(courseOrganisations);
@@ -705,12 +527,12 @@ public class CourseProvider implements QualityGeneratorProvider {
 		
 		private List<Organisation> getOrganisations(RepositoryEntryRef courseEntry) {
 			return repoKeyToOrganisations.computeIfAbsent(courseEntry.getKey(),
-					key -> repositoryService.getOrganisations(courseEntry));
+					_ -> repositoryService.getOrganisations(courseEntry));
 		}
 		
 		private List<Identity> getParticipants(RepositoryEntryRef courseEntry) {
 			return repoKeyToParticipants.computeIfAbsent(courseEntry.getKey(),
-					key -> repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, roleNames));
+					_ -> repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, roleNames));
 		}
 		
 	}

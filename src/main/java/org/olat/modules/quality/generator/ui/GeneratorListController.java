@@ -37,7 +37,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -49,6 +52,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -117,7 +124,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 				"o_icon o_icon-lg o_icon_qual_gen_enabled", "o_icon o_icon-lg o_icon_qual_gen_disabled",
 				"generator.enabled.hover", "generator.disabled.hover");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratorCols.enabled, enabledRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratorCols.title, CMD_EDIT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, GeneratorCols.title, CMD_EDIT, new TitleCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratorCols.providerName));
 		DefaultFlexiColumnModel numDataCollectionsColumn = new DefaultFlexiColumnModel(GeneratorCols.numberDataCollections);
 		numDataCollectionsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -141,7 +148,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 		List<GeneratorRow> rows = new ArrayList<>(generators.size());
 		for (QualityGeneratorView generator: generators) {
 			String providerName = generatorService.getProviderDisplayName(generator, getLocale());
-			GeneratorRow row = new GeneratorRow(generator, providerName);
+			GeneratorRow row = new GeneratorRow(generator, providerName, generatorService.isProviderAvailable(generator));
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);
@@ -272,6 +279,9 @@ public class GeneratorListController extends FormBasicController implements Tool
 	}
 
 	private void doEditGenerator(UserRequest ureq, QualityGenerator generator) {
+		if (!generatorService.isProviderAvailable(generator)) {
+			return;
+		}
 		WindowControl bwControl = addToHistory(ureq, generator, null);
 		generatorCtrl = new GeneratorController(ureq, bwControl, stackPanel, generator);
 		listenTo(generatorCtrl);
@@ -319,4 +329,21 @@ public class GeneratorListController extends FormBasicController implements Tool
         super.doDispose();
 	}
 
+	private class TitleCellRenderer extends StaticFlexiCellRenderer {
+		
+		TitleCellRenderer() {
+			super(CMD_EDIT, new TextFlexiCellRenderer());
+		}
+		
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if (dataModel.getObject(row).isProviderAvailable()) {
+				super.render(renderer, target, cellValue, row, source, ubu, translator);
+			} else {
+				getLabelDelegate().render(renderer, target, cellValue, row, source, ubu, translator);
+			}
+		}
+	}
+	
 }

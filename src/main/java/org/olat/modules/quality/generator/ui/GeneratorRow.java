@@ -32,10 +32,12 @@ class GeneratorRow {
 	
 	private final QualityGeneratorView generator;
 	private final String providerName;
+	private final boolean providerAvailable;
 
-	GeneratorRow(QualityGeneratorView generator, String providerName) {
+	GeneratorRow(QualityGeneratorView generator, String providerName, boolean providerAvailable) {
 		this.generator = generator;
 		this.providerName = providerName;
+		this.providerAvailable = providerAvailable;
 	}
 	
 	QualityGeneratorRef getGeneratorRef() {
@@ -54,6 +56,10 @@ class GeneratorRow {
 		return providerName;
 	}
 
+	boolean isProviderAvailable() {
+		return providerAvailable;
+	}
+	
 	Long getNumberDataCollections() {
 		return generator.getNumberDataCollections();
 	}

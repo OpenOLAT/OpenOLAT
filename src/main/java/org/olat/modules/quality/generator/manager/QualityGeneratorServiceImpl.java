@@ -175,6 +175,11 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	}
 
 	@Override
+	public boolean isProviderAvailable(QualityGeneratorProviderReferenceable providerRef) {
+		return providerFactory.isAvailable(providerRef);
+	}
+	
+	@Override
 	public ProviderConfigController getConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGenerator generator) {
 		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
