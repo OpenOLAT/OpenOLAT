@@ -360,7 +360,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public String getColorAsRgb(String colorId) {
-		Swatch swatch = colorService.resolve(colorId, ColorFamily.COLOR_SERVICE);
+		// a key of the set M (e.g. "blue"), a badge colour (e.g. "gold") or an old key (e.g. "lightblue")
+		Swatch swatch = colorService.resolveStored(colorId, ColorFamily.COLOR_SERVICE);
 		return colorService.getBackgroundColor(swatch, Palette.WHITE);
 	}
 

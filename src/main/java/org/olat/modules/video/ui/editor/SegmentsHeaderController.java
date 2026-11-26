@@ -29,7 +29,6 @@ import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,6 +42,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
@@ -74,8 +74,6 @@ public class SegmentsHeaderController extends FormBasicController {
 	private HeaderCommandsController commandsController;
 	private CloseableCalloutWindowController ccwc;
 	private final SimpleDateFormat timeFormat;
-	@Autowired
-	private ColorService colorService;
 
 	public SegmentsHeaderController(UserRequest ureq, WindowControl wControl, long videoDurationInSeconds, boolean restrictedEdit) {
 		super(ureq, wControl, "segments_header");
@@ -271,7 +269,7 @@ public class SegmentsHeaderController extends FormBasicController {
 			category.setId(UUID.randomUUID().toString());
 			category.setLabel(translate("form.segment.category.label.new"));
 			category.setTitle(translate("form.segment.category.title.new"));
-			category.setColor(colorService.getColors().get(0));
+			category.setColor(VideoModule.DEFAULT_MARKER_COLOR);
 			segments.getCategories().add(category);
 		}
 

@@ -9,7 +9,8 @@
 <script>
 "use strict";
 
-function positionBottomOrTopCallout(target, callout) {
+## alignment: center (default), edge or targetWidth, see CalloutSettings.CalloutAlignment
+function positionBottomOrTopCallout(target, callout, alignment) {
 	if (target.length === 0 || callout.length === 0) {
 		return;
 	}
@@ -19,14 +20,29 @@ function positionBottomOrTopCallout(target, callout) {
 	var targetHeight = target.outerHeight();
 	// If target is a wide object (e.g. a full-width button in a form on a wide screen),
 	// let the popup's width grow to that width.
-	if (targetWidth > 450) {
+	if (alignment === 'targetWidth') {
+		// like a dropdown menu: exactly as wide as the target
+		callout.css({'max-width': targetWidth + 'px', 'min-width': targetWidth + 'px', 'width': targetWidth + 'px', 'padding-left': 0, 'padding-right': 0});
+	} else if (alignment === 'edge') {
+		// the content box starts exactly at the edge of the target
+		callout.css({'padding-left': 0, 'padding-right': 0});
+	} else if (targetWidth > 450) {
 		callout.css({'max-width': targetWidth + 'px', 'width': targetWidth + 'px', 'padding-left': 0, 'padding-right': 0});
 	}
 	var calloutWidth = callout.outerWidth();
 	var calloutHeight = callout.outerHeight();
 
-	var idealLeft = targetOffset.left + (targetWidth - calloutWidth) / 2;
 	var docWidth = jQuery(document).width();
+	var idealLeft = targetOffset.left + (targetWidth - calloutWidth) / 2;
+	if (alignment === 'targetWidth') {
+		idealLeft = targetOffset.left;
+	} else if (alignment === 'edge') {
+		// the left edge of the target, the right edge if there is no room on the right
+		idealLeft = targetOffset.left;
+		if (idealLeft + calloutWidth > docWidth - 5) {
+			idealLeft = targetOffset.left + targetWidth - calloutWidth;
+		}
+	}
 	// clamp into the viewport, e.g. for a target close to the left or right edge
 	var left = Math.max(5, Math.min(idealLeft, docWidth - calloutWidth - 5));
 
@@ -35,6 +51,12 @@ function positionBottomOrTopCallout(target, callout) {
 	var topDist = topPos;
 	var bottomDist = window.innerHeight - (bottomPos + calloutHeight - jQuery(document).scrollTop());
 	var showBottom = bottomDist > topDist;
+	if (alignment === 'edge' || alignment === 'targetWidth') {
+		// like a dropdown menu: below the target, above it only if there is no room below
+		// (neither fits: the side with more room)
+		var topRoom = topPos - jQuery(document).scrollTop();
+		showBottom = bottomDist >= 0 || (topRoom < 0 && bottomDist > topRoom);
+	}
 
 	callout.offset({left: left, top: showBottom ? bottomPos : topPos});
 	if (showBottom) {
@@ -96,10 +118,11 @@ jQuery(function() {
 					});
 				}
 			} else if (orientation === 'bottomOrTop') {
-				positionBottomOrTopCallout(targetEl, callout);
+				var alignment = '$!alignment';
+				positionBottomOrTopCallout(targetEl, callout, alignment);
 				## the target can be re-rendered while the callout is open: query it again
 				var reposition = function() {
-					positionBottomOrTopCallout(jQuery('#$guimsgtarget,#o_c$guimsgtarget'), callout);
+					positionBottomOrTopCallout(jQuery('#$guimsgtarget,#o_c$guimsgtarget'), callout, alignment);
 				};
 				if (window.ResizeObserver) {
 					new ResizeObserver(reposition).observe(callout[0]);

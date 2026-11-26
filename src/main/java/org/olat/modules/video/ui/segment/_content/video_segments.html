@@ -13,14 +13,14 @@
 
 <div class="o_video_me_segments">
 	#foreach ($segment in $segments)
-	<div class="o_video_me_segment o_video_me_colored_area ${segment.getColor()}"
+	<div class="o_video_me_segment o_video_me_colored_area $!{segment.getColor()}"
 		 style="left: ${segment.getLeft()}; width: ${segment.getWidth()};">
 		${segment.getLabel()}
 	</div>
 	#end
 
 	#if ($showSegmentBox)
-	<div class="o_video_me_segment_textbox o_video_colored_area ${segmentStyle}"
+	<div class="o_video_me_segment_textbox o_video_colored_area $!{segmentStyle}"
 		 style="background-color: #efefef; left: ${segmentBoxLeft}; bottom: 30px; padding: 4px;">
 		<span style="font-weight: bold; font-size: 13px;">${segmentLabelTitle}</span><br/>
 		<span style="color: #808080; font-size: 11px;">${segmentDuration}</span>

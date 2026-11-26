@@ -35,6 +35,23 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 public class CalendarWSHelperTest {
 
 	@Test
+	public void transferValidColor() {
+		Assert.assertEquals("blue", transferColor("blue"));
+		Assert.assertEquals("cobaltblue", transferColor(" cobaltblue "));
+		// lower case, matches the key "blue" of the colour set M
+		Assert.assertEquals("blue", transferColor("Blue"));
+	}
+
+	@Test
+	public void transferInvalidColor() {
+		Assert.assertNull(transferColor("blue\" onmouseover=\"alert(1)"));
+		Assert.assertNull(transferColor("blue;background:url(x)"));
+		Assert.assertNull(transferColor("blue\r\nX-INJECTED:1"));
+		Assert.assertNull(transferColor(""));
+		Assert.assertNull(transferColor(null));
+	}
+
+	@Test
 	public void transferLinks() {
 		EventVO eventVo = new EventVO();
 		eventVo.setLinks(new EventLinkVO[] {
@@ -54,6 +71,14 @@ public class CalendarWSHelperTest {
 		Assert.assertEquals("o_icon_link", links.get(1).getIconCssClass());
 		Assert.assertEquals("4", links.get(2).getId());
 		Assert.assertNull(links.get(2).getIconCssClass());
+	}
+
+	private static String transferColor(String color) {
+		EventVO eventVo = new EventVO();
+		eventVo.setColor(color);
+		KalendarEvent kalEvent = new KalendarEvent();
+		CalendarWSHelper.transfer(eventVo, kalEvent);
+		return kalEvent.getColor();
 	}
 
 	private static EventLinkVO link(String id, String uri, String iconCssClass) {

@@ -15,13 +15,13 @@
 	@include o-make-message-box(var(--o-box-tip-bg), var(--o-box-tip-border));
 }
 .o_tip_with_icon, %o_tip_with_icon { 
-	@include o-make-message-box(var(--o-box-tip-bg), var(--o-box-tip-border), 'hand-point-up');
+	@include o-make-message-box(var(--o-box-tip-bg), var(--o-box-tip-border), 'hand-point-up', var(--o-box-tip-icon));
 }
 .o_important, %o_important { 
 	@include o-make-message-box(var(--o-box-important-bg), var(--o-box-important-border)); 
 }
 .o_important_with_icon, %o_important_with_icon { 
-	@include o-make-message-box(var(--o-box-important-bg), var(--o-box-important-border), 'circle-exclamation');
+	@include o-make-message-box(var(--o-box-important-bg), var(--o-box-important-border), 'circle-exclamation', var(--o-box-important-icon));
 }
 .o_success, %o_success { 
 	@include o-make-message-box(var(--o-box-success-bg), var(--o-box-success-border));

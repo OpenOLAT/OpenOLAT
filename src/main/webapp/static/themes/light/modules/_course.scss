@@ -3,28 +3,30 @@
 	background-image: repeating-linear-gradient(135deg, transparent 0%, transparent 47%, var(--o-red-500), transparent 53%, transparent 100%);
 }
 
-// Colour categories: each o_colcat_<key> sets the swatch tokens --o-sw-*
-// through $o-swatch-aliases (_palette.scss). See below in o_cn_styled as well.
-// Admin-defined categories bring their own rules and are not affected.
-#{o-swatch-alias-selector("o_colcat_", ".o_colcat_bg")} {
+// Colour categories: a category of the colour chooser and a predefined
+// category store the swatch class o_swatch_<key> (a hue or a theme colour),
+// which sets the swatch tokens --o-sw-* (_swatches.scss). See below in
+// o_cn_styled as well. Admin-defined categories with other classes bring
+// their own rules and are not affected.
+#{o-swatch-selector(".o_colcat_bg")} {
 	background-color: var(--o-sw-bg);
 	color: var(--o-sw-fg);
+	// the border of a label (o_labeled o_colcat_bg o_swatch_<key>) in the swatch colour
+	border-color: var(--o-sw-border);
 }
-#{o-swatch-alias-selector("o_colcat_", ".o_colcat_left")} {
+#{o-swatch-selector(".o_colcat_left")} {
 	border-left-color: var(--o-sw-bg);
 	border-left-width: $o-cn-style-border-width;
 }
-#{o-swatch-alias-selector("o_colcat_", ".o_colcat_top")} {
+#{o-swatch-selector(".o_colcat_top")} {
 	border-top-color: var(--o-sw-bg);
 	border-top-width: $o-cn-style-border-width;
 }
 
-.o_color_picker_wrapper {
+// The colour chooser of the categories: "no colour" in the chooser and in
+// its callout. The swatch classes render through .o_color_background (_colors.scss).
+.o_color_picker_wrapper, .o_color_picker_popup {
 	.o_colcat_nocolor { background-color: var(--o-course-style-image-bg); }
-	#{o-swatch-alias-selector("o_colcat_")} {
-		background-color: var(--o-sw-bg);
-		color: var(--o-sw-fg);
-	}
 }
 
 .o_colcal_ele {
@@ -78,7 +80,7 @@
 	&.o_cover > .o_top {
 		background-repeat: no-repeat;
 		&.o_colcat_nocolor { background-color: var(--o-course-style-image-bg); }
-		@at-root #{o-swatch-alias-selector("o_colcat_", &)} { background-color: var(--o-sw-bg); }
+		@at-root #{o-swatch-selector(&)} { background-color: var(--o-sw-bg); }
 	}
 	.o_image {
 		max-height: $o-cn-style-image-height;

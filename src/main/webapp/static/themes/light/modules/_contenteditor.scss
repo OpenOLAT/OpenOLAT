@@ -200,11 +200,11 @@
 		}
 
 		&.o_alert_box_type_tip {
-			@include alert_box(var(--o-box-tip-border), var(--o-box-tip-bg));
+			@include alert_box(var(--o-box-tip-border), var(--o-box-tip-bg), var(--o-box-tip-icon));
 		}
 
 		&.o_alert_box_type_important {
-			@include alert_box(var(--o-box-important-border), var(--o-box-important-bg));
+			@include alert_box(var(--o-box-important-border), var(--o-box-important-bg), var(--o-box-important-icon));
 		}
 
 		&.o_alert_box_type_warning {
@@ -220,8 +220,9 @@
 		}
 
 		// Custom colour: o_alert_box_color_<key> sets the swatch tokens --o-sw-*
-		// through $o-swatch-aliases (_palette.scss)
-		@at-root #{o-swatch-alias-selector("o_alert_box_color_", &)} {
+		// through $o-swatch-aliases (_palette.scss), a key of the colour set M
+		// its swatch class, e.g. o_swatch_blue (AlertBoxType.getCssClass())
+		@at-root #{o-swatch-alias-selector("o_alert_box_color_", &)}, #{o-swatch-selector(&)} {
 			box-shadow: $o-cc-box-shadow;
 			border-color: var(--o-sw-soft-border);
 			background-color: var(--o-sw-soft-bg);

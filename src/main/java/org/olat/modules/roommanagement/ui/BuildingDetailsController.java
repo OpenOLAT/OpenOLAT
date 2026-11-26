@@ -71,8 +71,10 @@ public class BuildingDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-			formLayout.contextPut("colorCss", building.getColorCss());
+		// a key of the colour set M renders with the swatch class, an old class as it is
+		String colorCssValue = RoomUIHelper.toColorCss(building.getColorCss());
+		if (colorCssValue != null) {
+			formLayout.contextPut("colorCss", colorCssValue);
 		}
 		if (StringHelper.containsNonWhitespace(building.getExternalRef())) {
 			formLayout.contextPut("reference", building.getExternalRef());
@@ -129,8 +131,10 @@ public class BuildingDetailsController extends FormBasicController {
 		formLayout.add(mapCont);
 
 		if (building.getGeoLatitude() != null && building.getGeoLongitude() != null) {
-			if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-				mapCont.contextPut("colorCss", building.getColorCss());
+			// a key of the colour set M renders with the swatch class, an old class as it is
+			String mapColorCss = RoomUIHelper.toColorCss(building.getColorCss());
+			if (mapColorCss != null) {
+				mapCont.contextPut("colorCss", mapColorCss);
 			}
 			mapCont.contextPut("geoLat", building.getGeoLatitude());
 			mapCont.contextPut("geoLon", building.getGeoLongitude());

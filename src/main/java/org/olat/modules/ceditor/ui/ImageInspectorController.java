@@ -153,7 +153,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 		formLayout.add(styleCont);
 		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory, getWindowControl(),
 				getAlertBoxSettings(getImageSettings()), colorService, getLocale());
 	}
 
@@ -253,7 +253,7 @@ public class ImageInspectorController extends FormBasicController implements Pag
 			styleEl.select(settings.getStyle(), true);
 		}
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory, getWindowControl(),
 				getAlertBoxSettings(getImageSettings()), colorService, getLocale());
 	}
 	

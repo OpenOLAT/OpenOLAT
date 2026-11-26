@@ -27,6 +27,7 @@ package org.olat.gui.demo.guidemo;
 import java.util.List;
 
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -48,7 +49,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.UserSession;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -81,9 +81,6 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 	private RichTextElement richTextElement;
 	private FormLayoutContainer subLayout;
-
-	@Autowired
-	private ColorService colorService;
 	
 	public GuiDemoFlexiFormAdvancedController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -186,13 +183,12 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	}
 
 	public void addColorPickerElement(FormItemContainer form) {
-		List<String> colorNames = colorService.getColors();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, getLocale());
 		ColorPickerElement colorPickerElement = uifactory.addColorPickerElement("colorPickerElement",
-				"guidemo.form.color", form, colors);
+				"guidemo.form.color", form, getWindowControl(), colors);
 		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
 		colorPickerElement.setNonSelectedText(getTranslator().translate("guidemo.cbdropdown.non.selected"));
-		colorPickerElement.setColor(colorService.getDefaultColor());
+		colorPickerElement.setColor(ColorService.DEFAULT_COLOR_KEY);
 	}
 
 	/**

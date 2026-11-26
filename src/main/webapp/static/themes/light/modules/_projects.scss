@@ -128,8 +128,9 @@
 		border: 2px solid var(--o-bg);
 	}
 }
-// o_proj_avatar_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
-#{o-swatch-alias-selector("o_proj_avatar_", ".o_proj_avatar_color")} {
+// A hue of the colour set M renders with its swatch class, e.g. o_swatch_blue
+// (ProjProjectImageType.getRandomAvatarColor(), ProjAvatarComponent)
+#{o-swatch-selector(".o_proj_avatar_color")} {
 	background-color: var(--o-sw-bg);
 	color: var(--o-sw-fg);
 }
@@ -446,8 +447,10 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			color: initial;
 		}
 		
-		// o_cal_<key> sets the swatch tokens --o-sw-*
-		@at-root #{o-swatch-alias-selector("o_cal_", &)} {
+		// o_cal_<key> (old calendar colours, e.g. o_cal_navy) sets the swatch
+		// tokens --o-sw-*, so do the swatch classes next to o_cal_swatch
+		// (ColorService.toCalendarEventCssClass())
+		@at-root #{o-swatch-alias-selector("o_cal_", &)}, #{&}.o_cal_swatch {
 			border-left: 3px solid var(--o-sw-bg);
 			.o_proj_card_meta {
 				background-color: var(--o-sw-soft-bg);

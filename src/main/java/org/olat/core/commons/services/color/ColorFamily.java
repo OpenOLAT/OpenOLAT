@@ -29,13 +29,16 @@ package org.olat.core.commons.services.color;
  */
 public enum ColorFamily {
 
-	/** Keys of the {@link ColorService} (color.list) and the badge colours gold, silver, bronze */
+	/** Keys of the old color.list ({@link ColorService#LEGACY_COLORS}) and the badge colours gold, silver, bronze */
 	COLOR_SERVICE,
 	/** Keys of the calendar colours, e.g. "blue" */
 	CALENDAR,
-	/** Identifiers of the predefined course colour categories, e.g. "light.blue" */
-	CATEGORY,
-	/** Colours of the project avatars and the user initials, e.g. "light_blue" */
-	AVATAR
+	/**
+	 * Keys of the chooser sets {@link ColorSet}: a hue or a theme colour with an
+	 * optional variant, e.g. "blue", "blue-light", "theme1-dark", see
+	 * {@link Swatch#fromKey(String)}. A bare hue key has the new meaning in
+	 * this family, e.g. "yellow" is the solid yellow, not the calendar tint.
+	 */
+	SWATCH
 
 }

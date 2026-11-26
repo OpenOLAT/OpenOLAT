@@ -19,6 +19,8 @@
  */
 package org.olat.modules.ceditor.model;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -35,6 +37,9 @@ public enum AlertBoxType {
 	error("alert.box.type.error", "red", "o_alert_box_type_error", "o_icon_circle_xmark"),
 	success("alert.box.type.success", "lightgreen", "o_alert_box_type_success", "o_icon_circle_check"),
 	custom("alert.box.type.custom", null, "o_alert_box_type_custom", null);
+
+	/** Prefix of the old colour classes of a custom alert box, e.g. "o_alert_box_color_lightblue" */
+	public static final String COLOR_CSS_CLASS_PREFIX = "o_alert_box_color_";
 
 	private final String i18nKey;
 	private final String color;
@@ -56,11 +61,35 @@ public enum AlertBoxType {
 		return color;
 	}
 
+	/**
+	 * @param color The colour of a custom alert box: a key of the colour set M
+	 * 		(e.g. "blue", rendered as its swatch "o_swatch_blue") or an old key
+	 * 		(e.g. "lightblue", rendered as its alias "o_alert_box_color_lightblue").
+	 * 		The settings can come from an imported page: a value that is no
+	 * 		valid colour renders as no colour.
+	 * @return The CSS classes
+	 */
 	public String getCssClass(String color) {
 		if (StringHelper.containsNonWhitespace(color) && this.equals(custom)) {
-			return cssClass + " o_alert_box_color_" + color;
+			String colorCssClass = toColorCssClass(color);
+			if (colorCssClass != null) {
+				return cssClass + " " + colorCssClass;
+			}
 		}
 		return cssClass;
+	}
+
+	/**
+	 * @return The CSS classes of the colour, null if it is no valid colour or
+	 * 		the colour service is not available. Never throws.
+	 */
+	private static String toColorCssClass(String color) {
+		try {
+			ColorService colorService = CoreSpringFactory.getImpl(ColorService.class);
+			return colorService == null ? null : colorService.toStoredValueCssClass(color, COLOR_CSS_CLASS_PREFIX);
+		} catch (RuntimeException e) {
+			return null;
+		}
 	}
 
 	public String getIconCssClass() {

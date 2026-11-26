@@ -1,17 +1,17 @@
 <div class="o_block_top" id="o_gd_col_sw_$r.getCId()">
 <p>A swatch is the set of roles of one hue. The class <code>.o_swatch_{hue}</code> sets the role tokens as CSS custom properties,
-the modifiers <code>.o_swatch_dark</code>, <code>.o_swatch_tint</code> and <code>.o_swatch_light</code> replace the solid fill roles. The samples run from the darkest fill on the left to colored text on the right. Components read the tokens and set no colors of their own.
+the modifiers <code>.o_swatch_dark</code>, <code>.o_swatch_tint</code>, <code>.o_swatch_light</code> and <code>.o_swatch_soft</code> replace the solid fill roles (<code>.o_swatch_soft</code> with the soft roles). The samples run from the darkest fill on the left to colored text on the right. Components read the tokens and set no colors of their own.
 The contrast ratios below are measured in the browser from the computed colors; a red outline marks a value below 4.5:1.</p>
 
 <table class="table table-condensed">
 	<thead><tr><th>Token</th><th>Use</th><th>Rule</th></tr></thead>
 	<tbody>
-		<tr><td><code>--o-sw-bg</code></td><td>solid fill: category bar, avatar, calendar event</td><td>dark 500 (bright) or 700 (deep), solid 400 (bright) or 500 (deep), tint 300, light 200</td></tr>
+		<tr><td><code>--o-sw-bg</code></td><td>solid fill: category bar, avatar, calendar event</td><td>dark 700, solid 500, tint 300, light 200, soft 50; yellow: dark 500, solid 300 (dark text), tint 200, light 100, soft 50</td></tr>
 		<tr><td><code>--o-sw-fg</code></td><td>text and icons on the fill</td><td>white or step 900, 4.5:1 on <code>--o-sw-bg</code></td></tr>
-		<tr><td><code>--o-sw-border</code></td><td>border of the fill</td><td>one step darker than the fill, 3:1 on white</td></tr>
+		<tr><td><code>--o-sw-border</code></td><td>border of the fill</td><td>near the fill: the next step darker than the fill; no contrast rule, the text carries the contrast</td></tr>
 		<tr><td><code>--o-sw-soft-bg</code></td><td>tinted block: page editor background, alert box</td><td>step 50</td></tr>
 		<tr><td><code>--o-sw-soft-fg</code></td><td>text on the tinted block</td><td>step 700 or darker, 4.5:1 on <code>--o-sw-soft-bg</code></td></tr>
-		<tr><td><code>--o-sw-soft-border</code></td><td>border of the tinted block</td><td>step 200</td></tr>
+		<tr><td><code>--o-sw-soft-border</code></td><td>border of the tinted block</td><td>step 100, the next step darker than the fill</td></tr>
 		<tr><td><code>--o-sw-text</code></td><td>colored text and icons on white</td><td>step 500 or darker, 4.5:1 on white</td></tr>
 	</tbody>
 </table>
@@ -24,7 +24,7 @@ The contrast ratios below are measured in the browser from the computed colors; 
 	<h3 class="o_gd_col_theme_head">Theme colors <small>brand colors of the current theme</small></h3>
 	#end
 	<div class="o_gd_col_swatch o_swatch_$row.hue">
-		<h4>$row.label <small>#if($row.themeColor) <code>$row.hue</code>, #end#if($row.bright) bright #else deep #end</small></h4>
+		<h4>$row.label #if($row.themeColor || $row.darkText)<small>#if($row.themeColor)<code>$row.hue</code>#end#if($row.themeColor && $row.darkText), #end#if($row.darkText)solid with dark text#end</small>#end</h4>
 		<p class="o_small o_gd_col_steps">Steps: #foreach($cell in $row.cells)#if($cell.roles != "")<span><strong>$cell.step</strong> $cell.roles</span> #end#end</p>
 		<div class="o_gd_col_samples">
 			<div class="o_gd_col_sample o_swatch_$row.hue o_swatch_dark">
@@ -43,9 +43,9 @@ The contrast ratios below are measured in the browser from the computed colors; 
 				<div class="o_gd_col_solid" data-o-contrast>Light <i class="o_icon o_icon_check"> </i></div>
 				<code>+ .o_swatch_light</code>
 			</div>
-			<div class="o_gd_col_sample">
-				<div class="o_gd_col_soft" data-o-contrast>Soft <i class="o_icon o_icon_info"> </i></div>
-				<code>--o-sw-soft-*</code>
+			<div class="o_gd_col_sample o_swatch_$row.hue o_swatch_soft">
+				<div class="o_gd_col_solid" data-o-contrast>Soft <i class="o_icon o_icon_info"> </i></div>
+				<code>+ .o_swatch_soft</code>
 			</div>
 			<div class="o_gd_col_sample">
 				<div class="o_gd_col_text" data-o-contrast>Text <i class="o_icon o_icon_star"> </i></div>
@@ -53,6 +53,23 @@ The contrast ratios below are measured in the browser from the computed colors; 
 			</div>
 		</div>
 	</div>
+#end
+</div>
+
+<h3>Table styles</h3>
+<p>The table style of the content editor and the HTML editor, one per hue and theme color: <code>table.b_{key}</code>. The pure hue gray is <code>b_gray_hue</code>, because the stored style <code>b_gray</code> is the slate table.
+Cells step 50, header cells step 200, even rows white with lines in step 50, cell lines white. The text keeps 4.5:1 on each fill.</p>
+<div class="o_gd_col_tables">
+#foreach($row in $rows)
+	#set($tableClass = $row.hue)
+	#if($tableClass == "gray")#set($tableClass = "gray_hue")#end
+	<table class="b_$tableClass b_border">
+		<thead><tr><th data-o-contrast>$row.label</th></tr></thead>
+		<tbody>
+			<tr><td data-o-contrast>b_$tableClass</td></tr>
+			<tr><td data-o-contrast>Even row</td></tr>
+		</tbody>
+	</table>
 #end
 </div>
 </div>

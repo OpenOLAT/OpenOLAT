@@ -147,6 +147,14 @@ public class TinyConfig {
 		return tool1;
 	}
 	
+	/**
+	 * @return true if the toolbar has the button of the text colour or of the
+	 * 		background colour, which show the colour map
+	 */
+	public boolean isTextColorEnabled() {
+		return tool1 != null && (tool1.contains("forecolor") || tool1.contains("backcolor"));
+	}
+	
 	public boolean isMathEnabled() {
 		return plugins != null && plugins.indexOf("olatmatheditor") >= 0;
 	}

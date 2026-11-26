@@ -1,20 +1,10 @@
 <div class="o_block_top" id="o_gd_col_ch_$r.getCId()">
-<p>Select a chooser to see the palette colors it uses. The other colors are muted.
-<strong>All choosers</strong> shows every color in use, the number tells how many choosers use it.
-The chips render the CSS class each chooser stores, through the alias classes of the theme.</p>
+<p>The choosers use the sets S, M and L. Each set has a real picker and the list of the places that use it.
+The report chart series have no picker. They are shown for comparison.</p>
+<p>Select an entry to see the palette colors it uses. The other colors are muted.
+The chips render the swatch class of each key.</p>
 
 <div class="o_gd_col_choosers" role="group" aria-label="Color choosers">
-	<button type="button" class="o_gd_col_chooser o_gd_col_active" data-chooser="all" aria-pressed="true">
-		<span class="o_gd_col_name">All choosers</span>
-		<span class="o_gd_col_count">$choosers.size() choosers on the palette</span>
-		<span class="o_gd_col_chips">
-		#foreach($chooser in $choosers)
-			#foreach($key in $chooser.keys)
-			#if($foreach.index < 3)<span class="o_gd_col_chip $r.escapeHtml($key.cssClass)"></span>#end
-			#end
-		#end
-		</span>
-	</button>
 	#foreach($chooser in $choosers)
 	<button type="button" class="o_gd_col_chooser" data-chooser="$chooser.id" data-cells="$r.escapeHtml($chooser.cellKeysAsString)" aria-pressed="false">
 		<span class="o_gd_col_name">$chooser.name</span>
@@ -26,65 +16,13 @@ The chips render the CSS class each chooser stores, through the alias classes of
 	#end
 </div>
 
-<div class="o_gd_col_scroll">
-<table class="o_gd_col_grid o_gd_col_compact">
-	<thead><tr>
-		<th></th>
-		#foreach($step in $steps)
-		#if($step == 500)<th class="o_gd_col_dead" title="step 450: fill only, no chooser color"></th>#end
-		<th>$step</th>
-		#end
-	</tr></thead>
-	<tbody>
-	#set($themeGap = false)
-	#foreach($row in $rows)
-	#if($row.themeColor && !$themeGap)
-	#set($themeGap = true)
-	<tr class="o_gd_col_gap_row"><th></th><td colspan="11">Theme colors</td></tr>
-	#end
-	<tr>
-		<th class="o_gd_col_hue" scope="row">$row.label</th>
-		#foreach($cell in $row.cells)
-		#if(!$cell.fill)
-		#if($cell.step == 500)<td class="o_gd_col_dead"></td>#end
-		<td class="o_gd_col_cell" data-cell="$cell.id" data-count="$cell.choosers.size()" style="background: var(--o-${cell.hue}-${cell.step}, $cell.hex); color: $cell.fg;" title="$cell.id $cell.hex">
-			<span class="o_gd_col_keys"></span>
-		</td>
-		#end
-		#end
-	</tr>
-	#end
-	</tbody>
-</table>
-</div>
-
 <div class="o_gd_col_detail">
-	<div data-detail="all">
-		<h4>All choosers</h4>
-		<table class="table table-condensed">
-			<thead><tr><th>Chooser</th><th>Source of the keys</th><th>Keys</th><th>Palette colors</th></tr></thead>
-			<tbody>
-			#foreach($chooser in $choosers)
-				<tr><td>$chooser.name</td><td>$chooser.source</td><td>$chooser.keys.size()</td><td>$chooser.numOfCells</td></tr>
-			#end
-			</tbody>
-		</table>
-		<h4>Color choosers not on the palette</h4>
-		<ul>
-			<li>Course layout generator (legacy): HTML color names or free hex</li>
-			<li>Selectus category: free hex</li>
-			<li>QTI drawing interaction: 7 pen colors</li>
-			<li>HTML editor (TinyMCE): text and background colors of the editor</li>
-			<li>Content editor table style: <code>b_*</code> classes of <code>olat.properties</code></li>
-			<li>Custom color categories of the administration: free CSS class</li>
-		</ul>
-	</div>
 	#foreach($chooser in $choosers)
 	<div data-detail="$chooser.id" style="display: none;">
 		<h4>$chooser.name</h4>
 		<div class="o_gd_col_picker">
 		#if($chooser.picker)
-			<p class="o_hint">The real color picker, built with the same colors as in its original place. Nothing is saved.</p>
+			<p class="o_hint">The real color picker, built with the colors of the set as in the places that use it. Nothing is saved.</p>
 			$r.render($chooser.picker)
 		#else
 			<p class="o_hint">$chooser.noPickerHint</p>
@@ -123,6 +61,38 @@ The chips render the CSS class each chooser stores, through the alias classes of
 	</div>
 	#end
 </div>
+
+<div class="o_gd_col_scroll">
+<table class="o_gd_col_grid o_gd_col_compact">
+	<thead><tr>
+		<th></th>
+		#foreach($step in $steps)
+		#if($step == 500)<th class="o_gd_col_dead" title="step 450: fill only, no chooser color"></th>#end
+		<th>$step</th>
+		#end
+	</tr></thead>
+	<tbody>
+	#set($themeGap = false)
+	#foreach($row in $rows)
+	#if($row.themeColor && !$themeGap)
+	#set($themeGap = true)
+	<tr class="o_gd_col_gap_row"><th></th><td colspan="11">Theme colors</td></tr>
+	#end
+	<tr>
+		<th class="o_gd_col_hue" scope="row">$row.label</th>
+		#foreach($cell in $row.cells)
+		#if(!$cell.fill)
+		#if($cell.step == 500)<td class="o_gd_col_dead"></td>#end
+		<td class="o_gd_col_cell" data-cell="$cell.id" style="background: var(--o-${cell.hue}-${cell.step}, $cell.hex); color: $cell.fg;" title="$cell.id $cell.hex">
+			<span class="o_gd_col_keys"></span>
+		</td>
+		#end
+		#end
+	</tr>
+	#end
+	</tbody>
+</table>
+</div>
 </div>
 <script>
 "use strict";
@@ -145,19 +115,15 @@ jQuery(function() {
 		}
 		root.find("td[data-cell]").each(function() {
 			var cell = jQuery(this);
-			var count = +cell.data("count");
-			var used = chooser === "all" ? count > 0 : keys.hasOwnProperty(cell.data("cell"));
+			var used = keys.hasOwnProperty(cell.data("cell"));
 			cell.toggleClass("o_gd_col_used", used).toggleClass("o_gd_col_muted", !used);
-			cell.find(".o_gd_col_badge").remove();
-			cell.find(".o_gd_col_keys").text(used && chooser !== "all" ? keys[cell.data("cell")] : "");
-			if (used && chooser === "all") {
-				cell.append("<span class='o_gd_col_badge' title='Used by " + count + " choosers'>" + count + "</span>");
-			}
+			cell.find(".o_gd_col_keys").text(used ? keys[cell.data("cell")] : "");
 		});
 	}
 	root.find(".o_gd_col_chooser").on("click", function() {
 		show(jQuery(this).data("chooser"), jQuery(this).attr("data-cells"));
 	});
-	show("all");
+	var first = root.find(".o_gd_col_chooser").first();
+	show(first.data("chooser"), first.attr("data-cells"));
 });
 </script>

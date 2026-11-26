@@ -23,8 +23,9 @@
 	color: var(--o-neutral-0);
 	border-color: var(--o-video-border);
 
-	// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases,
+	// a key of the colour set M renders with its swatch class, e.g. o_swatch_blue
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		background-color: var(--o-sw-bg);
 		color: var(--o-sw-fg);
 	}
@@ -38,7 +39,7 @@
 .o_videotask_categories .btn.btn-default:hover {
 	border-color: var(--o-video-bright-edge);
 
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		background-color: var(--o-sw-border);
 	}
 }
@@ -53,7 +54,7 @@
 		border-top-color: var(--o-video-bright-edge);
 	}
 
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		.tooltip-inner {
 			background-color: var(--o-sw-bg);
 			color: var(--o-sw-fg);
@@ -68,7 +69,7 @@
 }
 
 .o_videotask_marker {
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		&:before,
 		> span {
 			background-color: var(--o-sw-bg);

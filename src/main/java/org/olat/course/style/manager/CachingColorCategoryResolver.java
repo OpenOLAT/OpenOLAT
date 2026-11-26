@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.color.ColorValidator;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeHelper;
@@ -58,11 +59,26 @@ public class CachingColorCategoryResolver implements ColorCategoryResolver {
 		}
 	}
 	
+	/**
+	 * The class of a category can be a class an administrator entered as text
+	 * before the colour chooser. A class that is no valid list of CSS class
+	 * names renders as no colour, see {@link ColorValidator}.
+	 */
 	@Override
 	public String getCss(ColorCategory colorCategory) {
-		return colorCategory != null && colorCategory.isEnabled()
+		String css = colorCategory != null && colorCategory.isEnabled()
 				? colorCategory.getCssClass()
-				: getCachedOrLoad(ColorCategory.IDENTIFIER_NO_COLOR).getCssClass();
+				: getNoColorCss();
+		if (css == null || css.isBlank()) {
+			return css;
+		}
+		String validCss = ColorValidator.validCssClasses(css, "colour category");
+		return validCss == null ? ColorCategory.CSS_NO_COLOR : validCss;
+	}
+	
+	private String getNoColorCss() {
+		ColorCategory noColor = getCachedOrLoad(ColorCategory.IDENTIFIER_NO_COLOR);
+		return noColor == null ? ColorCategory.CSS_NO_COLOR : noColor.getCssClass();
 	}
 	
 	@Override

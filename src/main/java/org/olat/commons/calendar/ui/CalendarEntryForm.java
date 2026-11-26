@@ -40,8 +40,12 @@ import java.util.Optional;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.commons.calendar.manager.ICalEventColors;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.services.color.ColorFamily;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -99,7 +103,10 @@ public class CalendarEntryForm extends FormBasicController {
 	private final KalendarRenderWrapper chosenWrapper;
 	private final List<KalendarRenderWrapper> writeableCalendars;
 	private final Map<String, String> calendarIdToCalendarType;
-	private String colorCssClass;
+	/** The key of the set M of the event colour, null: the event has the colour of its calendar */
+	private String colorKey;
+	/** The user reset the colour of the event to the colour of its calendar */
+	private boolean colorReset;
 	private final boolean readOnly;
 	private final boolean isNew;
 	private final String caller;
@@ -115,6 +122,8 @@ public class CalendarEntryForm extends FormBasicController {
 	private CalendarManager calendarManager;
 	@Autowired
 	private LiveStreamService liveStreamService;
+	@Autowired
+	private ColorService colorService;
 
 	/**
 	 * Display an event for modification or to add a new event.
@@ -278,8 +287,13 @@ public class CalendarEntryForm extends FormBasicController {
 		event.setDescription(description);
 		// location
 		event.setLocation(locationEl.getValue());
-		// color
-		event.setColor(CalendarColors.colorFromColorClass(colorCssClass));
+		// color: the key of the set M if the user picked a colour or reset it, else the
+		// stored colour stays as it is (e.g. the old calendar colour "navy"); a managed
+		// colour stays as it is
+		if (!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color)) {
+			event.setColor(ColorUIFactory.getValueToSave(event.getColor(),
+					colorPickerEl.isColorPicked() || colorReset, colorKey));
+		}
 
 		// date / time
 		event.setBegin(startEl.getZonedDateTime());
@@ -441,11 +455,10 @@ public class CalendarEntryForm extends FormBasicController {
 		colorLinks.setLabel("cal.form.event.color", null);
 		formLayout.add(colorLinks);
 
-		List<String> colorNames = CalendarColors.getColorsList();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal_");
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, getLocale());
 
 		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout,
-				colors);
+				getWindowControl(), colors);
 		colorPickerEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
 		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
 
@@ -559,9 +572,10 @@ public class CalendarEntryForm extends FormBasicController {
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent e) {
 		if (source == colorResetLink) {
+			colorReset = true;
 			doSetColor(null);
 		} else if (source == chooseCalendar) {
-			doSetColor(this.colorCssClass);
+			doSetColor(this.colorKey);
 		} else if (source == chooseRecurrence) {
 			recurrenceEnd.setVisible(!chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE));
 		} else if(allDayEvent == source) {
@@ -577,8 +591,7 @@ public class CalendarEntryForm extends FormBasicController {
 		} else if(deleteEventButton == source) {
 			fireEvent(ureq, new Event("delete"));
 		} else if (source == colorPickerEl) {
-			colorCssClass = CalendarColors.colorClassFromColor(colorPickerEl.getColor().id());
-			doSetColor(colorCssClass);
+			doSetColor(colorPickerEl.getColor().id());
 		}
 	}
 
@@ -594,32 +607,45 @@ public class CalendarEntryForm extends FormBasicController {
 		return StringHelper.containsNonWhitespace(url) ? url : null;
 	}
 	
+	/**
+	 * The picker shows the key of the set M nearest to the stored colour of
+	 * the event, e.g. "blue" for the old calendar colour "navy". The event
+	 * stores this key only if the user picks a colour.
+	 */
 	private void doUpdateColor(KalendarEvent kalendarEvent) {
-		String colorCssClass = StringHelper.containsNonWhitespace(kalendarEvent.getColor())
-				? "o_cal_".concat(kalendarEvent.getColor()) : null;
-		doSetColor(colorCssClass);
+		colorReset = false;
+		colorPickerEl.resetColorPicked();
+		String storedColor = ICalEventColors.validColorKey(kalendarEvent.getColor());
+		doSetColor(colorService.getNearestKey(ColorSet.M, storedColor, ColorFamily.CALENDAR));
 	}
 	
-	private void doSetColor(String colorCssClass) {
-		this.colorCssClass = colorCssClass;
+	/**
+	 * @param key The key of the set M of the event colour, null for the colour
+	 * 		of the calendar
+	 */
+	private void doSetColor(String key) {
+		this.colorKey = StringHelper.containsNonWhitespace(key) ? key : null;
 
 		boolean canReset = !CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color)
-				&& StringHelper.containsNonWhitespace(colorCssClass);
+				&& colorKey != null;
 		colorResetLink.setVisible(canReset);
 		
-		String color = null;
-		if (StringHelper.containsNonWhitespace(colorCssClass)) {
-			color = CalendarColors.colorFromColorClass(colorCssClass);
-		} else if (chosenWrapper != null) {
-			color = CalendarColors.colorFromColorClass(chosenWrapper.getCssClass());
-		} else {
-			String kalendarID = getChoosenKalendarID();
-			Optional<KalendarRenderWrapper> selectedWrapper = writeableCalendars.stream()
-					.filter(cal -> cal.getKalendar().getCalendarID().equals(kalendarID))
-					.findFirst();
-			if (selectedWrapper.isPresent()) {
-				color = CalendarColors.colorFromColorClass(selectedWrapper.get().getCssClass());
+		String color = colorKey;
+		if (color == null) {
+			// the colour of the calendar
+			String calendarColor = null;
+			if (chosenWrapper != null) {
+				calendarColor = chosenWrapper.getColor();
+			} else {
+				String kalendarID = getChoosenKalendarID();
+				Optional<KalendarRenderWrapper> selectedWrapper = writeableCalendars.stream()
+						.filter(cal -> cal.getKalendar().getCalendarID().equals(kalendarID))
+						.findFirst();
+				if (selectedWrapper.isPresent()) {
+					calendarColor = selectedWrapper.get().getColor();
+				}
 			}
+			color = colorService.getNearestKey(ColorSet.M, calendarColor, ColorFamily.CALENDAR);
 		}
 		colorPickerEl.setColor(color);
 	}

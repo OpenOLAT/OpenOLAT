@@ -93,16 +93,16 @@
   <h2>Colours</h2>
   <p>The chooser palette of OpenOlat: 14 hues, 10 steps each. The values come from <code>$o-palette</code> in <code>themes/light/_palette.scss</code>. The theme emits each value as a CSS custom property <code>--o-{hue}-{step}</code> on <code>:root</code> in <code>theme.css</code> and <code>content.css</code>, not in <code>email.css</code>. Java reads the same values from the custom properties in the selected theme's <code>theme.css</code>, fallback <code>light</code>.</p>
   <p>Theme colours: in addition to the 14 hues, a theme defines its brand colours in <code>$o-theme-colors</code> (default <code>$brand-primary</code>, <code>themes/light/_palette_theme.scss</code>). The compile generates 10 steps per colour and emits <code>--o-theme{n}-{step}</code>, <code>--o-theme{n}</code> (the solid fill) and <code>.o_swatch_theme{n}</code>. The choosers show them as "Theme 1" … "Theme n" after the 14 hues. Java returns only the theme colours the theme defines (<code>Palette.getThemeColors()</code>). The openolat theme defines 4: Sea, Peach, Berry, Sprout. Needs Dart Sass 1.79.0 or later.</p>
-  <p>All contrast ratios on this page are computed in the browser from the custom properties of the selected theme (WCAG 2 relative luminance). A ratio below the threshold is marked red: 4.5:1 for text, 3:1 for borders on white.</p>
+  <p>All contrast ratios on this page are computed in the browser from the custom properties of the selected theme (WCAG 2 relative luminance). A ratio below the threshold is marked red: 4.5:1 for text, 3:1 for focus rings, icons and the borders of controls. A swatch border has no contrast rule: the page shows its hex value only.</p>
   <p>Token layers: the palette primitives on this page belong to the base layer, the first of three layers. The base layer also holds the semantic tokens that give a colour its meaning (<code>--o-text</code>, <code>--o-primary</code>), the 8 status states as <code>--o-state-{state}-{role}</code> and the global elements (buttons, content text and headings). The framework layer holds the colours of layout and generic UI elements (<code>--o-navbar-bg</code>, <code>--o-tree-link</code>), the component layer the colours of the elements of one feature module (<code>--o-coursesite-start-bg</code>, <code>--o-qti-menu-link</code>). Modules read the tokens with <code>var(--o-*)</code>, see section <a href="#tokens">Colour Tokens</a>. The states are live on the page <a href="feedback.html">Feedback &amp; Status</a>, section "Semantic States". Rules: <code>doc/openolat-frontend.md</code>, chapter 26.</p>
   <div class="o_warning cl-missing" id="cl-missing" role="alert">The selected theme CSS has no <code>--o-{hue}-{step}</code> properties. Compile the theme with <code>compiletheme.sh</code>.</div>
 
   <div class="cl-component" id="primitives">
     <div class="cl-component-header">
       <h3>Palette primitives</h3>
-      <p>Steps 50 to 400 are tints, their text colour is the step 900 of the hue. Steps 500 to 900 are shades, their text colour is white. Each cell shows the hex value and the contrast of that text colour on the step. Bright hues (yellow, orange, lime, green, cyan) use step 400 as solid fill, deep hues use step 500. Step 450 (dashed outline) is the fill step, the midpoint of steps 400 and 500 in OKLab: a fill or shape colour only, no text colour, no swatch role and no chooser colour.</p>
+      <p>Steps 50 to 400 are tints, their text colour is the step 900 of the hue. Steps 500 to 900 are shades, their text colour is white. Each cell shows the hex value and the contrast of that text colour on the step. Each step has the same relative luminance in all hues. The solid fill of every hue is step 500 with white text; the one exception is yellow, with its solid fill at step 300 and dark text. Step 450 (dashed outline) is the fill step, the midpoint of steps 400 and 500 in OKLab: a fill or shape colour only, no text colour, no swatch fill and no chooser colour; it is the border of a fill at step 400.</p>
       <div class="cl-classes">
-        <code>--o-{hue}-{step}</code> <code>$o-palette</code> <code>o-palette($hue, $step)</code> <code>$o-palette-bright</code>
+        <code>--o-{hue}-{step}</code> <code>$o-palette</code> <code>o-palette($hue, $step)</code> <code>$o-palette-variant-steps</code> <code>$o-palette-variant-steps-of-hue</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -161,9 +161,9 @@ $o-tokens: (
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Swatch roles per hue</h3>
-      <p>The class <code>o_swatch_{hue}</code> sets the role tokens of one hue. Components read the tokens and never a hex value. The foregrounds are selected at compile time with <code>o-on-color()</code>, the build stops when a pair has less than 4.5:1. The modifiers <code>o_swatch_tint</code> (step 300) and <code>o_swatch_dark</code> (step 500 for bright hues, 700 for deep hues) replace <code>--o-sw-bg</code>, <code>--o-sw-fg</code> and <code>--o-sw-border</code>. The classes set only custom properties, no colours.</p>
+      <p>The class <code>o_swatch_{hue}</code> sets the role tokens of one hue. Components read the tokens and never a hex value. The foregrounds are selected at compile time with <code>o-on-color()</code>, the build stops when a pair has less than 4.5:1. Each hue has 5 variants, light to dark: soft 50, light 200, tint 300, solid 500, dark 700; yellow soft 50, light 100, tint 200, solid 300, dark 500. The modifiers <code>o_swatch_soft</code>, <code>o_swatch_light</code>, <code>o_swatch_tint</code> and <code>o_swatch_dark</code> replace <code>--o-sw-bg</code>, <code>--o-sw-fg</code> and <code>--o-sw-border</code>. The border of a fill is the next step darker than the fill (a fill at step 400, e.g. a theme colour anchored at 400, gets step 450); it has no contrast rule on white. The chooser sets S, M and L (<code>ColorSet</code>) take their keys from these swatches: <code>{hue}</code>, <code>{hue}-{variant}</code>, <code>theme{n}</code>, <code>theme{n}-{variant}</code>. The colour chooser with an example of each set (S and M as list, L as grid) is on the page <a href="forms.html#colour-chooser">Form Elements, Colour Chooser</a>. The classes set only custom properties, no colours.</p>
       <div class="cl-classes">
-        <code>o_swatch_{hue}</code> <code>o_swatch_dark</code> <code>o_swatch_tint</code> <code>o_swatch_light</code> <code>--o-sw-bg</code> <code>--o-sw-fg</code> <code>--o-sw-border</code> <code>--o-sw-soft-bg</code> <code>--o-sw-soft-fg</code> <code>--o-sw-soft-border</code> <code>--o-sw-text</code>
+        <code>o_swatch_{hue}</code> <code>o_swatch_dark</code> <code>o_swatch_tint</code> <code>o_swatch_light</code> <code>o_swatch_soft</code> <code>--o-sw-bg</code> <code>--o-sw-fg</code> <code>--o-sw-border</code> <code>--o-sw-soft-bg</code> <code>--o-sw-soft-fg</code> <code>--o-sw-soft-border</code> <code>--o-sw-text</code>
       </div>
     </div>
     <div class="cl-component-body">
@@ -198,16 +198,17 @@ $o-tokens: (
       <table class="table table-striped">
         <thead><tr><th>Role</th><th>Use</th><th>Source</th><th>Rule</th></tr></thead>
         <tbody>
-          <tr><td><code>bg</code></td><td>solid fill</td><td>step 400 (bright hue) or 500 (deep hue)</td><td>&ndash;</td></tr>
+          <tr><td><code>bg</code></td><td>solid fill</td><td>step 500; yellow step 300</td><td>&ndash;</td></tr>
           <tr><td><code>fg</code></td><td>text and icons on <code>bg</code></td><td>first of white, step 900</td><td>&ge; 4.5:1 on <code>bg</code></td></tr>
-          <tr><td><code>border</code></td><td>border of the solid fill</td><td>one step darker than <code>bg</code></td><td>&ge; 3:1 on white</td></tr>
+          <tr><td><code>border</code></td><td>border of the solid fill</td><td>the next step darker than <code>bg</code>: 600; yellow 400</td><td>&ndash;</td></tr>
           <tr><td><code>soft-bg</code></td><td>tinted fill</td><td>step 50</td><td>&ndash;</td></tr>
           <tr><td><code>soft-fg</code></td><td>text on <code>soft-bg</code></td><td>first of step 700, 800, 900</td><td>&ge; 4.5:1 on <code>soft-bg</code></td></tr>
-          <tr><td><code>soft-border</code></td><td>border of the tinted fill</td><td>step 200</td><td>&ndash;</td></tr>
+          <tr><td><code>soft-border</code></td><td>border of the tinted fill</td><td>step 100</td><td>&ndash;</td></tr>
           <tr><td><code>text</code></td><td>coloured text on white</td><td>first of step 500, 600, 700</td><td>&ge; 4.5:1 on white</td></tr>
-          <tr><td><code>o_swatch_tint</code></td><td>lighter solid fill</td><td>bg 300, fg 900, border first of step 400, 500</td><td>fg &ge; 4.5:1, border &ge; 3:1 on white</td></tr>
-          <tr><td><code>o_swatch_light</code></td><td>lightest solid fill, between tint and soft</td><td>bg 200, fg 900, border first of step 300, 400, 500</td><td>fg &ge; 4.5:1, border &ge; 3:1 on white</td></tr>
-          <tr><td><code>o_swatch_dark</code></td><td>darker solid fill</td><td>bg 500 (bright) or 700 (deep), fg first of white, 900, border one step darker</td><td>fg &ge; 4.5:1, border &ge; 3:1 on white</td></tr>
+          <tr><td><code>o_swatch_tint</code></td><td>lighter solid fill</td><td>bg 300, fg 900, border 400; yellow bg 200, border 300</td><td>fg &ge; 4.5:1</td></tr>
+          <tr><td><code>o_swatch_light</code></td><td>lightest solid fill, between tint and soft</td><td>bg 200, fg 900, border 300; yellow bg 100, border 200</td><td>fg &ge; 4.5:1</td></tr>
+          <tr><td><code>o_swatch_dark</code></td><td>darker solid fill</td><td>bg 700, fg white, border 800; yellow bg 500, border 600</td><td>fg &ge; 4.5:1</td></tr>
+          <tr><td><code>o_swatch_soft</code></td><td>the tinted fill as solid fill (chooser set L)</td><td>bg 50, fg the <code>soft-fg</code>, border 100</td><td>fg &ge; 4.5:1</td></tr>
         </tbody>
       </table>
     </div>
@@ -222,7 +223,7 @@ $o-tokens: (
   <div class="cl-component" id="semantic-tokens">
     <div class="cl-component-header">
       <h3>Semantic tokens</h3>
-      <p>"Reads" shows the declared value in the theme CSS, "Value" the resolved colour. "Contrast" shows each contrast pair of the token in <code>$o-token-contrast-pairs</code>. The compile checks the pairs for the defaults and for an override. <code>text</code> has a pair on <code>bg</code>, <code>bg-hover</code>, <code>bg-selected</code>, <code>bg-raised</code>, the fills of the message boxes, the table headers in a message box and the decision buttons of selectus (4.5:1). <code>shadow-color</code>, <code>backdrop</code> and <code>scrim</code> are opaque colours: a rule sets the transparency with <code>color-mix(in srgb, var(--o-backdrop) 50%, transparent)</code>.</p>
+      <p>"Reads" shows the declared value in the theme CSS, "Value" the resolved colour. "Contrast" shows each contrast pair of the token in <code>$o-token-contrast-pairs</code>. The compile checks the pairs for the defaults and for an override. <code>text</code> has a pair on <code>bg</code>, <code>bg-hover</code>, <code>bg-selected</code>, <code>bg-raised</code>, the fills of the message boxes and the decision buttons of selectus (4.5:1). <code>shadow-color</code>, <code>backdrop</code> and <code>scrim</code> are opaque colours: a rule sets the transparency with <code>color-mix(in srgb, var(--o-backdrop) 50%, transparent)</code>.</p>
       <div class="cl-classes">
         <code>--o-text</code> <code>--o-text-muted</code> <code>--o-heading</code> <code>--o-bg</code> <code>--o-bg-subtle</code> <code>--o-border</code> <code>--o-border-strong</code> <code>--o-primary</code> <code>--o-primary-fg</code> <code>--o-primary-hover</code> <code>--o-primary-text</code> <code>--o-link</code> <code>--o-link-hover</code> <code>--o-focus</code> <code>--o-text-disabled</code> <code>--o-bg-hover</code> <code>--o-bg-selected</code> <code>--o-bg-raised</code> <code>--o-border-subtle</code> <code>--o-shadow-color</code> <code>--o-backdrop</code> <code>--o-scrim</code>
       </div>
@@ -285,18 +286,18 @@ $o-tokens: (
   <div class="cl-component" id="element-tokens">
     <div class="cl-component-header">
       <h3>Element tokens</h3>
-      <p>882 colours of single elements in three layers (<code>modules/_tokens.scss</code>): the global elements of the base layer (<code>$o-token-layer-base</code>, 57), the framework elements (<code>$o-token-layer-framework</code>, 388) and the elements of one feature module (<code>$o-token-layer-component</code>, 437). "Default" shows one of two forms.</p>
-      <p>A Sass default (707 tokens) feeds the token, so a client theme that sets the Sass variable keeps working. The token reads the first token of its list whose default has the same colour, else the scale step with the same colour (palette, brand ramp, neutral scale, white), else its base colour <code>--o-base-{name}</code>. For 574 tokens the default is a Sass variable. For 65 tokens it is a fixed scale step without a Sass variable, for example <code>o-palette("yellow", 400)</code> (<code>rating-star</code>) or <code>o-neutral(150)</code> (<code>card-border</code>). For 68 tokens it is a Sass expression:</p>
+      <p>881 colours of single elements in three layers (<code>modules/_tokens.scss</code>): the global elements of the base layer (<code>$o-token-layer-base</code>, 56), the framework elements (<code>$o-token-layer-framework</code>, 390) and the elements of one feature module (<code>$o-token-layer-component</code>, 435). "Default" shows one of two forms.</p>
+      <p>A Sass default (708 tokens) feeds the token, so a client theme that sets the Sass variable keeps working. The token reads the first token of its list whose default has the same colour, else the scale step with the same colour (palette, brand ramp, neutral scale, white), else its base colour <code>--o-base-{name}</code>. For 573 tokens the default is a Sass variable. For 66 tokens it is a fixed scale step without a Sass variable, for example <code>o-palette("yellow", 400)</code> (<code>rating-star</code>), <code>o-neutral(150)</code> (<code>card-border</code>) or <code>o-neutral(950)</code> (<code>selectus-rating-b-fg</code>). For 69 tokens it is a Sass expression:</p>
       <ul>
         <li>a text or an icon that <code>o-a11y-color()</code> adjusts for the background of one rule, also for the navigation bar, the footer or the tree rows (<code>link-subtle</code>, <code>navbar-tab-close</code>, <code>navbar-focus</code>, <code>footer-focus</code>, <code>tree-focus</code>, <code>badge-status-info</code>);</li>
-        <li>a text that reads the nearest scale step with the ratio (<code>o-scale-a11y-color()</code>, <code>o-scale-on-color()</code>: <code>toggle-text</code>, <code>badge-row-expanded-link-hover</code>, <code>selectus-rating-b-fg</code>);</li>
+        <li>a text that reads the nearest scale step with the ratio (<code>o-scale-a11y-color()</code>, <code>o-scale-on-color()</code>: <code>toggle-text</code>, <code>badge-row-expanded-link-hover</code>);</li>
         <li>a text of a table row adjusted to 4.5:1 on the darkest row fill (<code>o-table-row-darkest-bg()</code>: <code>table-link</code>, <code>badge-row-expanded-link</code>, <code>selectus-onhold</code>, <code>selectus-mail-disabled</code>, <code>selectus-rating-a-text</code>, <code>-b-text</code>, <code>-c-text</code>), and the fill of the opened table row under the pointer (<code>o-table-details-bg-hover()</code>: <code>table-details-bg-hover</code>);</li>
         <li>the text of a hover or pressed state on its fill (<code>o-contrast-shade-text()</code>: the light buttons, the table filters, the scope toggle);</li>
-        <li>a new default that applies only while the theme keeps the light value of an older variable (<code>o-own-or()</code>: <code>box-*-text</code>, <code>box-*-icon</code>, <code>form-error-border</code>, <code>editor-media-unavailable</code>), or the text of a state while the Sass variable has its default (<code>evaluation-*-text</code>);</li>
-        <li>a state colour, also in a style without a state token (<code>activity-add-border</code>, <code>lecture-rollcall-pending</code>, <code>user-status-inactive-border</code>), or a swatch role (<code>figure-card-icon-blue</code>, <code>activity-remove-border</code>);</li>
+        <li>a new default that applies only while the theme keeps the light value of an older variable (<code>o-own-or()</code>: <code>box-*-text</code>, <code>box-*-icon</code>, <code>box-tip-icon</code>, <code>box-important-icon</code>, <code>form-error-border</code>, <code>editor-media-unavailable</code>), or the text of a state while the Sass variable has its default (<code>evaluation-*-text</code>);</li>
+        <li>a state colour (<code>activity-add-border</code>, <code>lecture-rollcall-pending</code>, <code>user-status-inactive-border</code>, <code>qpool-arrow-draft-border</code>), or a swatch role (<code>figure-card-icon-blue</code>, <code>activity-remove-border</code>);</li>
         <li>a computed fill that reads the nearest scale step (<code>o-scale-snap()</code>: <code>page-code-box-bg</code>), or the colour of an older variable when the theme sets it, else the text colour (<code>highscore-position-title</code>).</li>
       </ul>
-      <p>A token name in quotes (175 tokens) is a reference to another token: <code>"primary"</code> gives <code>var(--o-primary)</code>. There is no Sass variable for it; a client theme sets it with <code>$o-tokens</code>. "Contrast" shows each contrast pair of the token in <code>$o-token-contrast-pairs</code>: 4.5:1 for a text, 3:1 for an icon, a border or a focus ring. The compile checks the pairs for the defaults and for an override. 4 tokens do not reach their limit with the light defaults and have no pair: the decorative icons <code>folder-card-thumbnail-icon</code>, <code>practice-icon</code>, <code>empty-icon</code> and the fill <code>rating-star</code> (its shade token <code>rating-star-edge</code> has the pair). Disabled texts and texts on a client value, on a <code>color-mix()</code> background or on a swatch colour have no pair either, nor the solid state fills of the selectus rating marks (<code>selectus-rating-a-mark</code>, <code>-b-mark</code>, <code>-c-mark</code>) on the rows: the border of the mark <code>btn-default-border</code> has the pairs on the rows.</p>
+      <p>A token name in quotes (173 tokens) is a reference to another token: <code>"primary"</code> gives <code>var(--o-primary)</code>. There is no Sass variable for it; a client theme sets it with <code>$o-tokens</code>. "Contrast" shows each contrast pair of the token in <code>$o-token-contrast-pairs</code>: 4.5:1 for a text, 3:1 for an icon, a border or a focus ring. The compile checks the pairs for the defaults and for an override. 4 tokens do not reach their limit with the light defaults and have no pair: the decorative icons <code>folder-card-thumbnail-icon</code>, <code>practice-icon</code>, <code>empty-icon</code> and the fill <code>rating-star</code> (its shade token <code>rating-star-edge</code> has the pair). Disabled texts and texts on a client value, on a <code>color-mix()</code> background or on a swatch colour have no pair either, nor the solid state fills of the selectus rating marks (<code>selectus-rating-a-mark</code>, <code>-b-mark</code>, <code>-c-mark</code>) on the rows: the border of the mark <code>btn-default-border</code> has the pairs on the rows.</p>
       <div class="cl-classes">
         <code>$o-token-layer-base</code> <code>$o-token-layer-framework</code> <code>$o-token-layer-component</code> <code>--o-{element}-{part}</code> <code>--o-base-{name}</code>
       </div>
@@ -350,7 +351,7 @@ $o-tokens: (
   <div class="cl-component" id="shade-tokens">
     <div class="cl-component-header">
       <h3>Shade tokens</h3>
-      <p>154 darker or lighter colours of an element token, a semantic token or a state token (<code>$o-token-shades</code> in <code>modules/_tokens.scss</code>): 56 for the hover, focus and active state of 14 buttons, 98 for the colour maths of the modules and for the state mixins of <code>modules/_state_variant.scss</code> (hover, active, edge, tint, gradient stop). 56 are in the base layer, 55 in the framework layer, 43 in the component layer. The name is the token name and a suffix: <code>-hover</code>, <code>-active</code>, <code>-focus</code> for a state, <code>-edge</code> for a darker edge (border, outline, text stroke), <code>-tint</code> for a lighter surface, <code>-stop-{n}</code> for a gradient stop. A shade token darkens its token (118), lightens it (27), turns its hue with <code>adjust-hue()</code> (1), or darkens a state fill and lightens it when it cannot get darker (8, shade function <code>"state"</code>). When the colour of its token is a scale step, the shade token reads the nearest step of the same scale (same palette hue, neutral scale or brand ramp). This step differs from the token, lies on the side of the maths and keeps the contrast pairs of the shade (<code>o-token-shade-scale()</code>). A bright fill at step 400 with dark text gets lighter inside its hue for hover and pressed when no darker step of the hue keeps the contrast of the text: step 300 (<code>o-token-shade-lighter()</code>; light: <code>btn-dirty</code>, <code>coursesite-book</code>, <code>tag-selected</code>, <code>state-warning</code>, <code>selectus-rating-b</code>, <code>state-success</code>; their border shades stay darker). The hover and the pressed fill of one token are two different steps, except for a bright fill that gets lighter. Without such a step, and for the own colour of a client theme, the shade token holds the computed literal colour. In light every shade token reads a scale step; the shade tokens of the login button of the navigation bar (<code>navbar-login</code>) are references to the shade tokens of the primary button while its tokens follow the primary button. The hover and the pressed fill of the five buttons whose text can be dark (<code>btn-primary</code>, <code>chelp</code>, <code>tag-selection-selected</code>, <code>coursesite-start</code>, <code>navbar-login</code>) get lighter for a text darker than the fill and darker for a light text or a white fill (<code>o-token-state-lighter()</code>). The percentages below are the colour maths. The active fill of a button is 17% darker, 16% for a bright fill with dark text (<code>o-token-active-percent()</code>). The hover and active fills of the light buttons and the table filters are at most 10% and 17% darker: <code>o-contrast-shade-amount()</code> (<code>_functions.scss</code>) takes the largest amount at which the text keeps 4.5:1. The smallest amount is 3%: when no amount from 3% passes, the fill keeps 10% and 17% and the text tokens <code>-fg-hover</code> and <code>-fg-active</code> get the text adjusted for the fill (<code>o-contrast-shade-text()</code>). A fill that cannot get darker (black) gets lighter by the same amount (<code>o-contrast-shade()</code>). The compile stops when one of these 8 fills has the colour of the normal fill. "Value" also shows the contrast pairs of a shade token as a text colour (<code>coursesite-title-hover</code>, <code>rating-star-edge</code>). A shade token follows an override of its token. The map <code>$o-tokens</code> overrides a shade token like an element token. The mixin <code>button-variant</code> (<code>modules/_button_variant.scss</code>) reads the shade tokens for the hover, focus and active state. The compile checks the text of a button, a tag, a label or a toggle on its shade tokens (4.5:1) when an override changes one of the colours. A translucent colour is no token: the rule writes <code>color-mix(in srgb, var(--o-focus) 15%, transparent)</code> for <code>rgba($input-border-focus, 0.15)</code>.</p>
+      <p>139 darker or lighter colours of an element token, a semantic token or a state token (<code>$o-token-shades</code> in <code>modules/_tokens.scss</code>): 56 for the hover, focus and active state of 14 buttons, 83 for the colour maths of the modules and for the state mixins of <code>modules/_state_variant.scss</code> (hover, active, edge, tint, gradient stop). 53 are in the base layer, 43 in the framework layer, 43 in the component layer. The name is the token name and a suffix: <code>-hover</code>, <code>-active</code>, <code>-focus</code> for a state, <code>-edge</code> for a darker edge (border, outline, text stroke), <code>-tint</code> for a lighter surface, <code>-stop-{n}</code> for a gradient stop. A shade token darkens its token (111), lightens it (19), turns its hue with <code>adjust-hue()</code> (1), or darkens a state fill and lightens it when it cannot get darker (8, shade function <code>"state"</code>). When the colour of its token is a scale step, the shade token reads the nearest step of the same scale (same palette hue, neutral scale or brand ramp). This step differs from the token, lies on the side of the maths and keeps the contrast pairs of the shade (<code>o-token-shade-scale()</code>). A bright fill at step 400 with dark text gets lighter inside its hue for hover and pressed when no darker step of the hue keeps the contrast of the text: step 300 (<code>o-token-shade-lighter()</code>; light: <code>btn-dirty</code>, <code>coursesite-book</code>, <code>tag-selected</code>, <code>state-warning</code>, <code>selectus-rating-b</code>, <code>state-success</code>; their border shades stay darker). The hover and the pressed fill of one token are two different steps, except for a bright fill that gets lighter. Without such a step, and for the own colour of a client theme, the shade token holds the computed literal colour. In light every shade token reads a scale step; the shade tokens of the login button of the navigation bar (<code>navbar-login</code>) are references to the shade tokens of the primary button while its tokens follow the primary button. The hover and the pressed fill of the five buttons whose text can be dark (<code>btn-primary</code>, <code>chelp</code>, <code>tag-selection-selected</code>, <code>coursesite-start</code>, <code>navbar-login</code>) get lighter for a text darker than the fill and darker for a light text or a white fill (<code>o-token-state-lighter()</code>). The percentages below are the colour maths. The active fill of a button is 17% darker, 16% for a bright fill with dark text (<code>o-token-active-percent()</code>). The hover and active fills of the light buttons and the table filters are at most 10% and 17% darker: <code>o-contrast-shade-amount()</code> (<code>_functions.scss</code>) takes the largest amount at which the text keeps 4.5:1. The smallest amount is 3%: when no amount from 3% passes, the fill keeps 10% and 17% and the text tokens <code>-fg-hover</code> and <code>-fg-active</code> get the text adjusted for the fill (<code>o-contrast-shade-text()</code>). A fill that cannot get darker (black) gets lighter by the same amount (<code>o-contrast-shade()</code>). The compile stops when one of these 8 fills has the colour of the normal fill. "Value" also shows the contrast pairs of a shade token as a text colour (<code>coursesite-title-hover</code>, <code>rating-star-edge</code>). A shade token follows an override of its token. The map <code>$o-tokens</code> overrides a shade token like an element token. The mixin <code>button-variant</code> (<code>modules/_button_variant.scss</code>) reads the shade tokens for the hover, focus and active state. The compile checks the text of a button, a tag, a label or a toggle on its shade tokens (4.5:1) when an override changes one of the colours. A translucent colour is no token: the rule writes <code>color-mix(in srgb, var(--o-focus) 15%, transparent)</code> for <code>rgba($input-border-focus, 0.15)</code>.</p>
       <div class="cl-classes">
         <code>$o-token-shades</code> <code>--o-{element}-bg-hover</code> <code>--o-{element}-bg-active</code> <code>--o-{element}-border-hover</code> <code>--o-{element}-border-focus</code> <code>--o-{token}-edge</code> <code>--o-{token}-tint</code>
       </div>
@@ -405,7 +406,7 @@ $o-tokens: (
 (function() {
   var SEMANTIC = [
     // name, use, contrast pairs [background token, ratio]
-    ['text', 'body text', [['bg', 4.5], ['bg-hover', 4.5], ['bg-selected', 4.5], ['bg-raised', 4.5], ['table-striped-bg', 4.5], ['portfolio-publication-nested-bg', 4.5], ['table-hover-bg', 4.5], ['table-row-selected-bg', 4.5], ['table-details-bg', 4.5], ['table-details-bg-hover', 4.5], ['selectus-decision-a-bg', 4.5], ['selectus-decision-a-hover-bg', 4.5], ['selectus-decision-b-bg', 4.5], ['selectus-decision-b-hover-bg', 4.5], ['selectus-decision-c-bg', 4.5], ['selectus-decision-c-hover-bg', 4.5], ['box-info-bg', 4.5], ['box-note-bg', 4.5], ['box-success-bg', 4.5], ['box-warning-bg', 4.5], ['box-error-bg', 4.5], ['box-tip-bg', 4.5], ['box-important-bg', 4.5], ['content-table-blue-bg', 4.5], ['content-table-blue-stripe-bg', 4.5], ['content-table-blue-header-bg', 4.5], ['box-note-table-header-bg', 4.5], ['box-success-table-header-bg', 4.5], ['box-warning-table-header-bg', 4.5], ['box-error-table-header-bg', 4.5]]],
+    ['text', 'body text', [['bg', 4.5], ['bg-hover', 4.5], ['bg-selected', 4.5], ['bg-raised', 4.5], ['table-striped-bg', 4.5], ['portfolio-publication-nested-bg', 4.5], ['table-hover-bg', 4.5], ['table-row-selected-bg', 4.5], ['table-details-bg', 4.5], ['table-details-bg-hover', 4.5], ['selectus-decision-a-bg', 4.5], ['selectus-decision-a-hover-bg', 4.5], ['selectus-decision-b-bg', 4.5], ['selectus-decision-b-hover-bg', 4.5], ['selectus-decision-c-bg', 4.5], ['selectus-decision-c-hover-bg', 4.5], ['box-info-bg', 4.5], ['box-note-bg', 4.5], ['box-success-bg', 4.5], ['box-warning-bg', 4.5], ['box-error-bg', 4.5], ['box-tip-bg', 4.5], ['box-important-bg', 4.5], ['portfolio-lead-ended-bg', 4.5]]],
     ['text-muted', 'secondary text', [['bg', 4.5]]],
     ['text-disabled', 'text of a disabled control', []],
     ['heading', 'headings, legend, dialog title', [['bg', 4.5]]],
@@ -421,7 +422,7 @@ $o-tokens: (
     ['primary-fg', 'text on primary', [['primary', 4.5]]],
     ['primary-hover', 'primary button hover', []],
     ['primary-text', 'brand colour as text on white', [['bg', 4.5]]],
-    ['link', 'link', [['bg', 4.5]]],
+    ['link', 'link', [['bg', 4.5], ['portfolio-lead-ended-bg', 4.5]]],
     ['link-hover', 'link hover', [['bg', 4.5]]],
     ['focus', 'focus ring of every control: primary adjusted to 3:1 on bg ($o-focus-color)', [['bg', 3]]],
     ['shadow-color', 'all shadows, opaque: the rule sets the transparency', []],
@@ -485,7 +486,6 @@ $o-tokens: (
     ['base', 'Content text and headings', 'content-border-img-border', '$o-content-border-img-border', ['thumbnail-border'], []],
     ['base', 'Content text and headings', 'content-table-header-bg', '$gray-lighter', [], []],
     ['base', 'Content text and headings', 'content-table-bordered-header-bg', '$gray-base', [], []],
-    ['base', 'Content text and headings', 'content-table-blue-bg', null, ['state-neutral-soft-bg'], []],
     ['base', 'Links', 'link-subtle', 'o-a11y-color($link-color, $panel-default-heading-bg)', ['link'], [['bg-subtle', 4.5]]],
     ['framework', 'Alert and message boxes', 'alert-close', '$gray-light', [], [['box-info-bg', 3]]],
     ['framework', 'Alert and message boxes', 'alert-close-hover', '$gray', [], [['box-info-bg', 3]]],
@@ -529,8 +529,8 @@ $o-tokens: (
     ['framework', 'Date component and date picker', 'datepicker-today', null, ['primary'], [['bg-raised', 4.5]]],
     ['framework', 'Date component and date picker', 'day-nav-day-bg', '$o-day-nav-day-bg-color', [], []],
     ['framework', 'Date component and date picker', 'day-nav-day-hover-border', '$o-day-nav-day-hover-border-color', [], []],
-    ['framework', 'Date component and date picker', 'day-nav-day-selected-bg', '$o-day-nav-day-selected-bg-color', [], []],
-    ['framework', 'Date component and date picker', 'day-nav-day-selected-fg', '$o-day-nav-day-selected-color', [], [['day-nav-day-selected-bg', 4.5]]],
+    ['framework', 'Date component and date picker', 'day-nav-day-selected-bg', '$o-day-nav-day-selected-bg-color', ['primary'], []],
+    ['framework', 'Date component and date picker', 'day-nav-day-selected-fg', '$o-day-nav-day-selected-color', ['primary-fg'], [['day-nav-day-selected-bg', 4.5]]],
     ['framework', 'Date component and date picker', 'day-nav-day-weekend-bg', '$o-day-nav-day-weekend-bg-color', [], []],
     ['framework', 'Dialogs', 'dialog-header', '$o-dialog-header-color', ['primary-text', 'primary'], [['bg', 4.5], ['dialog-header-bg', 4.5]]],
     ['framework', 'Dialogs', 'dialog-header-bg', '$o-dialog-header-background', [], []],
@@ -725,9 +725,11 @@ $o-tokens: (
     ['framework', 'Message boxes', 'box-note-border', '$o-box-note-color', ['state-inactive-soft-border'], []],
     ['framework', 'Message boxes', 'box-note-text', 'o-own-or($o-box-note-color, o-state-color("inactive", "soft-border"), $o-color-note)', [], [['box-note-bg', 4.5]]],
     ['framework', 'Message boxes', 'box-tip-bg', '$o-box-tip-bg', [], []],
-    ['framework', 'Message boxes', 'box-tip-border', '$o-box-tip-color', [], [['box-tip-bg', 3]]],
+    ['framework', 'Message boxes', 'box-tip-border', '$o-box-tip-color', [], []],
     ['framework', 'Message boxes', 'box-important-bg', '$o-box-important-bg', [], []],
-    ['framework', 'Message boxes', 'box-important-border', '$o-box-important-color', [], [['box-important-bg', 3]]],
+    ['framework', 'Message boxes', 'box-important-border', '$o-box-important-color', [], []],
+    ['framework', 'Message boxes', 'box-tip-icon', 'o-own-or($o-box-tip-color, o-palette("cyan", 100), o-own-or($o-color-tip, o-neutral(600), o-palette("cyan", 700)))', [], [['box-tip-bg', 3]]],
+    ['framework', 'Message boxes', 'box-important-icon', 'o-own-or($o-box-important-color, o-swatch-color("violet", "soft-border"), o-own-or($o-color-important, o-swatch-color("violet", "text"), o-palette("violet", 800)))', [], [['box-important-bg', 3]]],
     ['framework', 'Message boxes', 'message-line-warning-bg', '$o-line-warning-bg', [], []],
     ['framework', 'Message boxes', 'message-line-warning-fg', '$o-line-warning-color', [], [['message-line-warning-bg', 4.5]]],
     ['framework', 'Message boxes', 'message-line-error-bg', '$o-line-error-bg', [], []],
@@ -876,11 +878,11 @@ $o-tokens: (
     ['framework', 'Wizard', 'wizard-steps-bg', '$o-wizard-steps-bg-color', [], []],
     ['framework', 'Wizard', 'wizard-step-bg', '$o-wizard-step-bg-color', [], []],
     ['component', 'Absences and lectures', 'lecture-timeline-next-bg', null, ['state-warning-soft-bg'], []],
-    ['component', 'Absences and lectures', 'lecture-timeline-next-border', null, ['state-warning-border'], []],
+    ['component', 'Absences and lectures', 'lecture-timeline-next-border', null, ['state-warning-text'], []],
     ['component', 'Absences and lectures', 'lecture-timeline-running-bg', null, ['state-neutral-soft-bg'], []],
     ['component', 'Absences and lectures', 'lecture-timeline-running-border', null, ['state-neutral-border'], []],
     ['component', 'Absences and lectures', 'lecture-timeline-path', null, ['border'], []],
-    ['component', 'Absences and lectures', 'lecture-rollcall-pending', 'o-state-color("inactive", "border", "light")', [], [['bg', 3]]],
+    ['component', 'Absences and lectures', 'lecture-rollcall-pending', 'o-state-color("inactive", "bg")', [], [['bg', 3]]],
     ['component', 'Absences and lectures', 'lecture-current-border', '$o-lm-current-border-color', [], []],
     ['component', 'Absences and lectures', 'lecture-current-bg', '$o-lm-current-bg', [], []],
     ['component', 'Absences and lectures', 'lecture-excluded', '$o-lm-excluded-color', ['state-danger-text'], [['bg', 4.5]]],
@@ -1005,7 +1007,7 @@ $o-tokens: (
     ['component', 'Course', 'reminder-marker-fg', null, ['btn-primary-fg'], [['reminder-marker-bg', 4.5]]],
     ['component', 'Course', 'course-peekview-bg', null, ['bg'], []],
     ['component', 'Course', 'course-style-peekview-bg', '$o-cn-style-peekview-bg', [], []],
-    ['component', 'Course element Task', 'step-active', null, ['state-warning-border'], [['bg', 3]]],
+    ['component', 'Course element Task', 'step-active', null, ['state-warning-text'], [['bg', 3]]],
     ['component', 'Course element Task', 'step-done', null, ['state-success-border'], [['bg', 3]]],
     ['component', 'Course element Task', 'step-done-marker', null, ['step-done'], []],
     ['component', 'Course element Task', 'step-expired', null, ['state-danger-border'], [['bg', 3]]],
@@ -1107,8 +1109,8 @@ $o-tokens: (
     ['component', 'Immunity proof', 'immunity-proof-none-bg', '$o-ip-none-bg-color', [], []],
     ['component', 'Portfolio', 'portfolio-lead-bg', '$o-portfolio-lead-background-color', [], []],
     ['component', 'Portfolio', 'portfolio-lead-border', '$o-portfolio-lead-border-color', [], []],
-    ['component', 'Portfolio', 'portfolio-lead-ended-bg', '$o-portfolio-lead-ended-background-color', [], []],
-    ['component', 'Portfolio', 'portfolio-lead-ended-border', '$o-portfolio-lead-ended-border-color', [], []],
+    ['component', 'Portfolio', 'portfolio-lead-ended-bg', '$o-portfolio-lead-ended-background-color', ['state-danger-soft-bg'], []],
+    ['component', 'Portfolio', 'portfolio-lead-ended-border', '$o-portfolio-lead-ended-border-color', ['state-danger-soft-border'], []],
     ['component', 'Projects', 'proj-avatar-fg', '$o-proj-avatar-color', [], []],
     ['component', 'Projects', 'proj-timeline-overdue', '$o-proj-timeline-overdue-color', ['state-danger-bg'], [['bg', 4.5]]],
     ['component', 'Projects', 'proj-timeline-today', '$o-proj-timeline-today-color', ['state-neutral-bg'], [['bg', 4.5]]],
@@ -1140,7 +1142,7 @@ $o-tokens: (
     ['component', 'Users and authentication', 'user-initials-fg', '$o-user-initials-color', [], [['user-initials-base-bg', 4.5]]],
     ['component', 'Users and authentication', 'user-initials-base-bg', '$o-user-initials-base-bg-color', [], []],
     ['component', 'Users and authentication', 'user-info-profile-border', 'o-neutral(300)', [], []],
-    ['component', 'Users and authentication', 'user-status-inactive-border', 'o-state-color("inactive", "border", "tint")', [], [['bg', 3]]],
+    ['component', 'Users and authentication', 'user-status-inactive-border', 'o-state-color("inactive", "bg")', [], [['bg', 3]]],
     ['component', 'Users and authentication', 'user-status-deleted-border', 'o-state-color("inactive", "border", "dark")', [], [['bg', 3]]],
     ['component', 'Users and authentication', 'user-info-border', 'o-neutral(250)', [], []],
     ['component', 'Users and authentication', 'user-info-divider-border', null, ['user-info-border'], []],
@@ -1160,7 +1162,7 @@ $o-tokens: (
     ['component', 'Selectus', 'selectus-rating-a-bg', 'o-palette("green", 500)', [], []],
     ['component', 'Selectus', 'selectus-rating-a-fg', 'o-neutral(0)', [], [['selectus-rating-a-bg', 4.5], ['selectus-rating-a-bg-hover', 4.5], ['selectus-rating-a-bg-active', 4.5]]],
     ['component', 'Selectus', 'selectus-rating-b-bg', 'o-palette("yellow", 400)', [], []],
-    ['component', 'Selectus', 'selectus-rating-b-fg', 'o-scale-on-color(o-neutral(900), darken(o-palette("yellow", 400), 17%))', [], [['selectus-rating-b-bg', 4.5], ['selectus-rating-b-bg-hover', 4.5], ['selectus-rating-b-bg-active', 4.5]]],
+    ['component', 'Selectus', 'selectus-rating-b-fg', 'o-neutral(950)', [], [['selectus-rating-b-bg', 4.5], ['selectus-rating-b-bg-hover', 4.5], ['selectus-rating-b-bg-active', 4.5]]],
     ['component', 'Selectus', 'selectus-rating-c-bg', 'o-palette("red", 500)', [], []],
     ['component', 'Selectus', 'selectus-rating-c-fg', 'o-neutral(0)', [], [['selectus-rating-c-bg', 4.5], ['selectus-rating-c-bg-hover', 4.5], ['selectus-rating-c-bg-active', 4.5]]],
     ['component', 'Selectus', 'selectus-rating-abstain-bg', 'o-neutral(600)', [], [['bg', 3], ['table-striped-bg', 3], ['table-hover-bg', 3], ['selectus-decision-a-bg', 3], ['selectus-decision-a-hover-bg', 3], ['selectus-decision-b-bg', 3], ['selectus-decision-b-hover-bg', 3], ['selectus-decision-c-bg', 3], ['selectus-decision-c-hover-bg', 3]]],
@@ -1194,7 +1196,7 @@ $o-tokens: (
     ['component', 'Tests and question pool', 'qpool-arrow-selected-bg', null, ['navbar-link-active-bg'], []],
     ['component', 'Tests and question pool', 'qpool-arrow-selected-fg', null, ['navbar-link-active'], [['qpool-arrow-selected-bg', 4.5]]],
     ['component', 'Tests and question pool', 'qpool-arrow-bg', '$o-qpool-arrow-bg-color', [], []],
-    ['component', 'Tests and question pool', 'qpool-arrow-draft-border', 'o-state-color("neutral", "border", "tint")', [], [['qpool-arrow-bg', 3]]],
+    ['component', 'Tests and question pool', 'qpool-arrow-draft-border', 'o-state-color("neutral", "bg")', [], [['qpool-arrow-bg', 3]]],
     ['component', 'Tests and question pool', 'qti-attempts', null, ['text-muted'], [['bg-subtle', 4.5]]],
     ['component', 'Tests and question pool', 'qti-gap-border', '$o-qti-gap-border-color', ['border-strong'], []],
     ['component', 'Tests and question pool', 'qti-text-entry-border', '$o-qti-textEntryInteraction-border-color', ['qti-gap-border'], []],
@@ -1354,9 +1356,6 @@ $o-tokens: (
     ['base', 'state-success-text-hover', 'state-success-text', 10, 'a.text-* hover, focus border of .has-* (mixins text-emphasis-variant, form-control-validation)'],
     ['base', 'state-warning-text-hover', 'state-warning-text', 10, 'a.text-* hover, focus border of .has-* (mixins text-emphasis-variant, form-control-validation)'],
     ['base', 'state-danger-text-hover', 'state-danger-text', 10, 'a.text-* hover, focus border of .has-* (mixins text-emphasis-variant, form-control-validation)'],
-    ['base', 'content-table-blue-border', 'content-table-blue-bg', -5, 'blue table b_blue (_content_embedded.scss)'],
-    ['base', 'content-table-blue-stripe-bg', 'content-table-blue-bg', -5, 'blue table b_blue (_content_embedded.scss)'],
-    ['base', 'content-table-blue-header-bg', 'content-table-blue-bg', 10, 'blue table b_blue (_content_embedded.scss)'],
     ['framework', 'addremove-add-bg-hover', 'addremove-add-bg', 10, 'add toggle: background, hover'],
     ['framework', 'addremove-remove-bg-hover', 'addremove-remove-bg', 10, 'remove toggle: background, hover'],
     ['framework', 'chelp-bg-hover', 'chelp-bg', 8, 'context help: background, hover'],
@@ -1380,18 +1379,6 @@ $o-tokens: (
     ['framework', 'tag-selection-remove-selected-border-active', 'tag-selection-remove-selected-border', 15, 'selected tag of a remove selection: border, active'],
     ['framework', 'tinymce-danger-bg-edge', 'tinymce-danger-bg', 25, 'HTML editor with too many characters: border'],
     ['framework', 'toolbar-close-hover', 'toolbar-close', 15, 'close icon of toolbar and breadcrumb: hover'],
-    ['framework', 'box-note-table-border', 'box-note-bg', -5, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-note-table-stripe-bg', 'box-note-bg', -5, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-note-table-header-bg', 'box-note-bg', 10, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-success-table-border', 'box-success-bg', -5, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-success-table-stripe-bg', 'box-success-bg', -5, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-success-table-header-bg', 'box-success-bg', 10, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-warning-table-border', 'box-warning-bg', -5, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-warning-table-stripe-bg', 'box-warning-bg', -5, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-warning-table-header-bg', 'box-warning-bg', 10, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-error-table-border', 'box-error-bg', -5, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-error-table-stripe-bg', 'box-error-bg', -5, 'table in a message box (_content_embedded.scss)'],
-    ['framework', 'box-error-table-header-bg', 'box-error-bg', 10, 'table in a message box (_content_embedded.scss)'],
     ['framework', 'registration-otp-error-bg-focus', 'box-error-bg', 10, '_dmz.scss'],
     ['framework', 'popover-title-bg-edge', 'popover-title-bg', 5, '_dialog.scss'],
     ['framework', 'panel-placeholder-border-hover', 'panel-placeholder-border', 10, '_form.scss'],
@@ -1717,7 +1704,6 @@ $o-tokens: (
   var FILL_STEPS = [450];
   var NEUTRAL_STEPS = [0, 25, 50, 100, 150, 200, 250, 300, 400, 450, 500, 600, 700, 750, 800, 900, 950, 1000];
   var TEXT_MIN = 4.5;
-  var BORDER_MIN = 3;
 
   // "#RRGGBB", "#RGB" or "rgb(r, g, b)" -> [r, g, b], null when not parseable
   function parseColor(value) {
@@ -1838,7 +1824,8 @@ $o-tokens: (
       var fg = p.fg.charAt(0) === '#' ? p.fg : prop(row._sample, p.fg);
       var bg = p.bg.charAt(0) === '#' ? p.bg : prop(row._sample, p.bg);
       hex.push(p.label ? p.label + ' ' + fg.toUpperCase() : bg.toUpperCase() + ' / ' + fg.toUpperCase());
-      row.appendChild(badge(contrast(fg, bg), p.min));
+      // a swatch border has no contrast rule: hex value only
+      if (p.min) row.appendChild(badge(contrast(fg, bg), p.min));
     });
     row._sample.lastChild.textContent = hex.join(', ');
   }
@@ -1855,7 +1842,7 @@ $o-tokens: (
       card.appendChild(h4);
       var solidPairs = [
         { bg: '--o-sw-bg', fg: '--o-sw-fg', min: TEXT_MIN },
-        { bg: '#FFFFFF', fg: '--o-sw-border', min: BORDER_MIN, label: 'border' }
+        { bg: '#FFFFFF', fg: '--o-sw-border', min: null, label: 'border' }
       ];
       var defs = [
         ['dark', 'cl-sw-solid o_swatch_' + hue + ' o_swatch_dark', 'Dark label', solidPairs],

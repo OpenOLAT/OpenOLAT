@@ -746,7 +746,10 @@ public class BuildingListController extends FormBasicController implements Flexi
 		@Override
 		public void render(Renderer renderer, StringOutput target, Object cellValue,
 				int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if (cellValue instanceof String colorCss && StringHelper.containsNonWhitespace(colorCss)) {
+			// a key of the colour set M renders with the swatch class, an old class as it is,
+			// no colour the default colour
+			String colorCss = RoomUIHelper.toColorCss(cellValue instanceof String storedColor ? storedColor : null);
+			if (colorCss != null) {
 				target.append("<div class=\"o_building_square_container\">");
 				target.append("<div class=\"o_building_square o_color_background o_color_border_darken ").append(StringHelper.escapeHtml(colorCss)).append("\"> </div>");
 				target.append("</div>");

@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -88,8 +87,6 @@ public class QuestionsHeaderController extends FormBasicController {
 	private CloseableCalloutWindowController ccwc;
 	private SelectionValues questionsKV = new SelectionValues();
 	private VideoQuestions questions;
-	@Autowired
-	private ColorService colorService;
 	private final RepositoryEntry repositoryEntry;
 	private final long videoDurationInSeconds;
 	private String questionId;
@@ -332,7 +329,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		Set<Long> usedTimesInSeconds = questions.getQuestions().stream().map(q -> q.getBegin().getTime() / 1000).collect(Collectors.toSet());
 		long nearestSecond = HeaderHelper.findNearestSecondWithoutEvent(getCurrentTimeInSeconds(), videoDurationInSeconds, usedTimesInSeconds);
 		newQuestion.setBegin(new Date(nearestSecond * 1000));
-		newQuestion.setStyle(VideoModule.getMarkerStyleFromColor(colorService.getColors().get(0)));
+		newQuestion.setStyle(VideoModule.DEFAULT_MARKER_COLOR);
 		questions.getQuestions().add(newQuestion);
 		questionId = newQuestion.getId();
 		setValues();

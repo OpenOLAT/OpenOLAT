@@ -34,6 +34,7 @@ import org.olat.basesecurity.MediaServerMode;
 import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
+import org.olat.core.commons.services.color.EditorColorMap;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -1205,6 +1206,7 @@ public class RichTextConfiguration implements Disposable {
 			tinyMenuSb.append("readonly: 1,\n");
 		}
 
+		Locale colorMapLocale = translator != null ? translator.getLocale() : locale;
 		String leftAndClear = "Left and clear";
 		String rightAndClear = "Right and clear";
 		String leftAndClearNomargin = "Left with caption";
@@ -1236,9 +1238,9 @@ public class RichTextConfiguration implements Disposable {
 				.append("  {title: 'Borderless', value: 'b_borderless'},\n")
 				.append("  {title: 'Grid', value: 'b_grid'},\n").append("  {title: 'Border', value: 'b_border'},\n")
 				.append("  {title: 'Full', value: 'b_full'},\n").append("  {title: 'Middle', value: 'b_middle'},\n")
-				.append("  {title: 'Gray', value: 'b_gray'},\n").append("  {title: 'Red', value: 'b_red'},\n")
-				.append("  {title: 'Green', value: 'b_green'},\n").append("  {title: 'Blue', value: 'b_blue'},\n")
-				.append("  {title: 'Yellow', value: 'b_yellow'}\n").append("],\n");
+				// the coloured tables: the colours of the set M, e.g. b_red, b_gray_hue, b_theme1
+				.append(EditorColorMap.tableClassListEntries(colorMapLocale))
+				.append("],\n");
 
 		// default table style
 		tinyMenuSb.append("table_default_attributes: { class: 'b_default' },\n");
@@ -1249,6 +1251,10 @@ public class RichTextConfiguration implements Disposable {
 			tinyMenuSb.append("toolbar1: '").append(tinyConfig.getTool1()).append("',\n");
 		} else {
 			tinyMenuSb.append("toolbar:false,\n");
+		}
+		if (tinyConfig.isTextColorEnabled()) {
+			// the colours of the theme palette, nothing if the theme has none
+			tinyMenuSb.append(EditorColorMap.tinyMceOptions(colorMapLocale));
 		}
 
 		if (tinyConfig.hasMenu()) {

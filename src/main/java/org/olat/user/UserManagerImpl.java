@@ -50,6 +50,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -96,6 +97,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserManagerImpl extends UserManager implements UserDataDeletable, UserDataExportable {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserManagerImpl.class);
+	private static final Random RANDOM = new Random();
 	
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
@@ -167,8 +169,14 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		return newUser;
 	}
 	
+	/**
+	 * @return A random hue of the colour set M (no theme colour), the key of
+	 * 		its solid swatch, e.g. "blue". The initials render with the swatch
+	 * 		class, e.g. "o_swatch_blue", see UserPortraitRenderer.
+	 */
 	public String getRandomInitialsColorCss() {
-		return USER_INITIALS_CSS.get(new Random().nextInt(USER_INITIALS_CSS.size()));
+		List<String> hues = ColorSet.M.getHueKeys();
+		return hues.get(RANDOM.nextInt(hues.size()));
 	}
 	
 	@Override

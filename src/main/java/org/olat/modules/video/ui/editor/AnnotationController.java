@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.color.ColorFamily;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -48,7 +50,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.video.VideoMarker;
-import org.olat.modules.video.VideoModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -137,11 +138,10 @@ public class AnnotationController extends FormBasicController {
 		textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		textEl.setMandatory(true);
 
-		List<String> colorNames = colorService.getColors();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, getLocale());
 
 		colorPicker = uifactory.addColorPickerElement("color", "form.annotation.color", formLayout,
-				colors);
+				getWindowControl(), colors);
 
 		fontSize = uifactory.addSliderElement("fontSize", "form.annotation.fontSize", formLayout);
 		fontSize.setMinValue(50);
@@ -177,7 +177,9 @@ public class AnnotationController extends FormBasicController {
 		endEl.setValue(timeFormat.format(end));
 		durationEl.setValue(Long.toString(annotation.getDuration()));
 		textEl.setValue(annotation.getText());
-		colorPicker.setColor(VideoModule.getColorFromMarkerStyle(annotation.getStyle()));
+		// the key of the set M nearest to the stored colour, stored only if the user picks a colour
+		colorPicker.resetColorPicked();
+		colorPicker.setColor(colorService.getNearestKey(ColorSet.M, annotation.getStyle(), ColorFamily.COLOR_SERVICE));
 		top = annotation.getTop();
 		left = annotation.getLeft();
 		width = annotation.getWidth();
@@ -317,7 +319,11 @@ public class AnnotationController extends FormBasicController {
 		try {
 			annotation.setBegin(timeFormat.parse(startEl.getValue()));
 			annotation.setDuration(Long.parseLong(durationEl.getValue()));
-			annotation.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().id()));
+			// the key of the set M (e.g. "blue") if the user picked a colour, else the stored colour stays
+			String style = ColorUIFactory.getValueToSave(annotation.getStyle(), colorPicker);
+			if (style != null) {
+				annotation.setStyle(style);
+			}
 			annotation.setText(textEl.getValue());
 			annotation.setLeft(left);
 			annotation.setTop(top);

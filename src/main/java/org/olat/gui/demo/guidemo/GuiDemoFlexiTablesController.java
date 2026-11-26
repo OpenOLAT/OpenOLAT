@@ -30,9 +30,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
+import org.olat.core.commons.services.color.ColorUIFactory;
+import org.olat.core.commons.services.color.ColorValidator;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
@@ -40,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CircleCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -54,6 +60,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -63,6 +71,9 @@ import org.olat.core.gui.translator.Translator;
 public class GuiDemoFlexiTablesController extends FormBasicController {
 	
 	private SampleFlexiTableModel tableDataModel;
+	
+	@Autowired
+	private ColorService colorService;
 	
 	public GuiDemoFlexiTablesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "flexitable");
@@ -84,17 +95,37 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(exampleCustomColumnModel);
     // column 7 : Link
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7", 6));
+		// column 8 : color circle, as the color categories of the administration
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header8", 7, new CircleCellRenderer()));
+		// column 9 : colored label with the name of the color
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header9", 8, new ColorLabelCellRenderer()));
 
 		tableDataModel = new SampleFlexiTableModel(tableColumnModel);
 		int iEntries = 50;
+		List<ColorCell> colors = initColors();
 		List<Row> entries = new ArrayList<>(iEntries);
 		for (int i=0; i < iEntries; i++) {
-			entries.add(new Row(i, formLayout));
+			entries.add(new Row(i, formLayout, colors.get(i % colors.size())));
 		}
 		tableDataModel.setObjects(entries);
 		
 		uifactory.addTableElement(getWindowControl(), "gui-demo", tableDataModel, 24, true, getTranslator(), formLayout);
 		uifactory.addFormSubmitButton("ok", formLayout);
+	}
+	
+	/**
+	 * @return The colors of the rows: the keys of the set M (the 14 hues and the
+	 * 		theme colors of the active theme), every key once, then an old value
+	 * 		that renders through the aliases of the theme
+	 */
+	private List<ColorCell> initColors() {
+		List<ColorCell> colors = new ArrayList<>();
+		for (ColorPickerElement.Color color : ColorUIFactory.createColors(ColorSet.M, getLocale())) {
+			colors.add(new ColorCell("o_colcat_bg " + color.cssClass(), color.translatedName()));
+		}
+		// an old key of the color.list
+		colors.add(new ColorCell("o_color_background " + colorService.toCssClass("lightblue"), "lightblue (old)"));
+		return colors;
 	}
 	
 	@Override
@@ -139,6 +170,8 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 				case 4: return entry.getCol5();
 				case 5: return entry.getCol6();
 				case 6: return entry.getCol7();
+				case 7: return entry.getColor().cssClass();
+				case 8: return entry.getColor();
 				default: return entry;
 			}
 		}
@@ -152,8 +185,10 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 		private final Date col5;
 		private final Boolean col6;
 		private final FormLink col7;
+		private final ColorCell color;
 		
-		public Row(int i, FormItemContainer formContainer) {
+		public Row(int i, FormItemContainer formContainer, ColorCell color) {
+			this.color = color;
 			// column 1 : string
 			col1 = "Flexi Lorem" + i;
 			// column 2 : string
@@ -207,7 +242,37 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 
 		public FormLink getCol7() {
 			return col7;
-		}	
+		}
+
+		public ColorCell getColor() {
+			return color;
+		}
+	}
+
+	/**
+	 * @param cssClass The classes of the fill, e.g. "o_colcat_bg o_swatch_blue"
+	 * @param name The name of the color
+	 */
+	private record ColorCell(String cssClass, String name) {
+		//
+	}
+
+	/**
+	 * A colored label with the name of the color.
+	 */
+	private static class ColorLabelCellRenderer implements FlexiCellRenderer {
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if (cellValue instanceof ColorCell color) {
+				String cssClass = ColorValidator.validCssClasses(color.cssClass(), "gui demo");
+				target.append("<span class='o_labeled");
+				if (cssClass != null) {
+					target.append(" ").append(cssClass);
+				}
+				target.append("'>").append(StringHelper.escapeHtml(color.name())).append("</span>");
+			}
+		}
 	}
 
 	/**

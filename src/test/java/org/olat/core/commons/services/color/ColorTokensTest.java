@@ -100,8 +100,9 @@ public class ColorTokensTest {
 	private static final List<String> SHADE_BUTTONS = List.of("btn-primary", "btn-default", "btn-danger", "btn-dirty",
 			"coursesite-start", "coursesite-book", "btn-primary-light", "btn-danger-light", "table-filter",
 			"table-filter-active");
-	// The active fill of a bright fill with dark text is 16% darker, else 17%
-	// (o-token-active-percent() in _tokens.scss)
+	// The active fill of a fill with dark text is 16% darker, else 17%
+	// (o-token-active-percent() in _tokens.scss): the fills of the warning
+	// state, solid yellow (step 300) with dark text
 	private static final Map<String, Integer> ACTIVE_PERCENT = Map.of("btn-dirty", 16, "coursesite-book", 16,
 			"state-warning", 16);
 	// The buttons of $o-token-state-text-buttons with a dark text in light: the hover
@@ -156,19 +157,6 @@ public class ColorTokensTest {
 			new Shade("competence-selected-border-active", "competence-selected-border", 15),
 			new Shade("tinymce-danger-bg-edge", "tinymce-danger-bg", 25),
 			// the remaining colour maths
-			new Shade("content-table-blue-border", "content-table-blue-bg", -5),
-			new Shade("content-table-blue-stripe-bg", "content-table-blue-bg", -5),
-			new Shade("content-table-blue-header-bg", "content-table-blue-bg", 10),
-			new Shade("box-note-table-border", "box-note-bg", -5), new Shade("box-note-table-stripe-bg", "box-note-bg", -5),
-			new Shade("box-note-table-header-bg", "box-note-bg", 10),
-			new Shade("box-success-table-border", "box-success-bg", -5),
-			new Shade("box-success-table-stripe-bg", "box-success-bg", -5),
-			new Shade("box-success-table-header-bg", "box-success-bg", 10),
-			new Shade("box-warning-table-border", "box-warning-bg", -5),
-			new Shade("box-warning-table-stripe-bg", "box-warning-bg", -5),
-			new Shade("box-warning-table-header-bg", "box-warning-bg", 10),
-			new Shade("box-error-table-border", "box-error-bg", -5), new Shade("box-error-table-stripe-bg", "box-error-bg", -5),
-			new Shade("box-error-table-header-bg", "box-error-bg", 10),
 			new Shade("registration-otp-error-bg-focus", "box-error-bg", 10),
 			new Shade("page-spacer-border-hover", "border-subtle", 10),
 			new Shade("editor-part-toolbar-link-hover", "editor-part-toolbar-link", 10),
@@ -213,11 +201,11 @@ public class ColorTokensTest {
 			"forum-message-header-modified", "forum-message-footer-attachment");
 	// A custom property of the scales: palette step, neutral step, brand ramp, swatch role or white
 	private static final Pattern SCALE_PROPERTY = Pattern.compile("(white|[a-z]+\\d*-\\d+|sw-[a-z-]+|theme\\d+)");
-	// The bright fills of light at step 400 with dark text and their hue: the hover and the pressed fill
-	// go one step lighter inside the hue (step 300)
+	// The bright fills of light (step 100 to 400 with dark text) and their hue: the hover and the
+	// pressed fill go one step lighter inside the hue when no darker step keeps the text. The solid
+	// yellow of the warning state (step 300) and the fixed fill of the rating button B (step 400)
 	private static final Map<String, String> BRIGHT_FILLS = Map.of("coursesite-book-bg", "yellow",
-			"tag-selected-bg", "yellow", "state-warning-bg", "yellow", "selectus-rating-b-bg", "yellow",
-			"state-success-bg", "green");
+			"state-warning-bg", "yellow", "selectus-rating-b-bg", "yellow");
 	// The element tokens of the links that a rule of the compiled theme reads
 	private static final List<String> LINK_RULE_TOKENS = List.of("toolbar-link", "toolbar-link-hover",
 			"toolbar-link-active", "toolbar-nav-link", "toolbar-nav-link-hover", "tree-link-active-parent",
@@ -294,7 +282,7 @@ public class ColorTokensTest {
 			assertContrast(prefix + "soft-fg", prefix + "soft-bg", 4.5);
 			assertContrast(prefix + "text", "white", 4.5);
 			assertContrast(prefix + "text", prefix + "soft-bg", 4.5);
-			assertContrast(prefix + "border", "white", 3.0);
+			// the border of the fill has no contrast rule: one step darker than the fill
 		}
 	}
 
@@ -728,7 +716,14 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_labeled", "background-color:var(--o-labeled-bg)");
 		Assert.assertEquals("var(--o-gray-600)", tokens.get("labeled-bg"));
 		Assert.assertEquals("var(--o-white)", tokens.get("labeled-light-bg"));
-		assertRuleReads(css, "table.b_yellow th", "background:var(--o-box-warning-table-header-bg)");
+		// the header of a coloured table is the light fill of the hue, step 100 for yellow
+		assertRuleReads(css, "table.b_yellow th", "background:var(--o-yellow-100)");
+		// a label keeps the border colour of its token: no border shorthand after it (it would
+		// reset the colour to currentColor), a colour category label has the swatch border
+		assertRuleReads(css, ".o_labeled", "border-color:var(--o-labeled-border)");
+		assertRuleReads(css, ".o_labeled", "border-style:solid");
+		assertRuleReads(css, ".o_colcat_bg.o_swatch_red", "border-color:var(--o-sw-border)");
+		assertRuleReads(css, ".o_colcat_bg.o_swatch_theme1", "border-color:var(--o-sw-border)");
 		assertRuleReads(css, ".o_tag.o_competence.o_tag_clickable:active", "background-color:var(--o-competence-bg-active)");
 		Assert.assertEquals("var(--o-white)", tokens.get("competence-bg"));
 		assertRuleReads(css, ".o_page_run_code_box", "background-color:var(--o-page-code-box-bg)");
@@ -938,12 +933,12 @@ public class ColorTokensTest {
 			}
 			assertContrast("text", "box-" + box.getKey() + "-bg", 4.5);
 			assertContrast("box-" + box.getKey() + "-icon", "box-" + box.getKey() + "-bg", 3.0);
-			assertContrast("text", "box-" + box.getKey() + "-table-header-bg", 4.5);
 		}
 		Assert.assertEquals("var(--o-cyan-50)", tokens.get("box-tip-bg"));
-		Assert.assertEquals("var(--o-cyan-50)", tokens.get("box-important-bg"));
+		Assert.assertEquals("var(--o-violet-50)", tokens.get("box-important-bg"));
 		Map<String, String> ratings = Map.of("insufficient", "danger", "neutral", "warning", "sufficient", "success");
-		Map<String, String> fills = Map.of("insufficient", "var(--o-red-200)", "neutral", "var(--o-yellow-200)", "sufficient", "var(--o-green-200)");
+		// the light style of the state: step 200, for yellow step 100
+		Map<String, String> fills = Map.of("insufficient", "var(--o-red-200)", "neutral", "var(--o-yellow-100)", "sufficient", "var(--o-green-200)");
 		for (Map.Entry<String, String> rating : ratings.entrySet()) {
 			String name = "evaluation-" + rating.getKey();
 			Assert.assertEquals("var(--o-state-" + rating.getValue() + "-bg)", tokens.get(name));
@@ -959,7 +954,9 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_warning_with_icon:before", "color:var(--o-box-warning-icon)");
 		assertRuleReads(css, ".o_error_with_icon:before", "color:var(--o-box-error-icon)");
 		assertRuleReads(css, ".o_note_with_icon:before", "color:var(--o-box-note-icon)");
-		assertRuleReads(css, ".o_tip_with_icon:before", "color:var(--o-box-tip-border)");
+		// tip and important: a soft border, the icon keeps its strong colour
+		assertRuleReads(css, ".o_tip_with_icon:before", "color:var(--o-box-tip-icon)");
+		assertRuleReads(css, ".o_important_with_icon:before", "color:var(--o-box-important-icon)");
 		assertRuleReads(css, ".o-modal-alert-success .modal-header h4:before", "color:var(--o-box-success-text)");
 		assertRuleReads(css, ".o_page_content_editor>.o_page_fragment_edit>.o_page_layout.o_alert_box_active.o_alert_box_type_info",
 				"border-color:color-mix(in srgb, var(--o-box-info-border) 15%, transparent)");
@@ -1422,8 +1419,8 @@ public class ColorTokensTest {
 		String[] own = { "practice-icon", "#C6CCD6", "qti-text-gap-border", "#000000", "badge-template-selected-bg", "#DDDDDD",
 				"video-category-active-bg", "#DDDDDD", "table-sticky-col-bg", "#F9FAFB", "table-sticky-col-striped-bg", "#F6F7FA",
 				"otp-cell-bg", "#EAECF0", "otp-cell-active-bg", "#B1B8C5", "otp-caret", "#222222",
-				"offcanvas-category-border", "#8B95A7", "tree-dnd-over-bg", "#FFD556",
-				"recorder-decoration", "#000000", "recorder-recording", "#FF9E90", "recorder-record", "#F14442",
+				"offcanvas-category-border", "#8B95A7", "tree-dnd-over-bg", "#F6C600",
+				"recorder-decoration", "#000000", "recorder-recording", "#FFBBB1", "recorder-record", "#F36660",
 				"recorder-record-hover", "#B50022", "recorder-record-active", "#8E0D1C", "recorder-symbol", "#000000",
 				"recorder-symbol-hover", "#182233", "recorder-symbol-active", "#344054" };
 		for (int i = 0; i < own.length; i += 2) {
@@ -1527,7 +1524,8 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-bg-selected)", tokens.get("table-row-selected-bg"));
 		Assert.assertEquals("var(--o-state-danger-text)", tokens.get("navbar-logout"));
 		// the colours of today
-		String[] values = { "box-tip-border", "#4E596D", "box-important-border", "#047A9F",
+		String[] values = { "box-tip-border", "#D5F1FE", "box-important-border", "#EFE9FE",
+				"box-tip-icon", "#034D65", "box-important-icon", "#431D7E",
 				"message-line-warning-bg", "#FFBE80", "message-line-error-fg", "#470A0E", "popover-fallback-border", "#C6CCD6",
 				"dialog-header-bg", "#F9FAFB", "login-help-bg", "#E4E7EC", "widget-subtitle", "#657286",
 				"offcanvas-link", "#B1B8C5", "table-edit-bg", "#F9FAFB", "tree-border", "#DDDDDD",
@@ -1536,7 +1534,8 @@ public class ColorTokensTest {
 			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
 		}
 		// the new contrast pairs pass with the light defaults
-		assertContrast("box-tip-border", "box-tip-bg", 3.0);
+		assertContrast("box-tip-icon", "box-tip-bg", 3.0);
+		assertContrast("box-important-icon", "box-important-bg", 3.0);
 		assertContrast("message-line-warning-fg", "message-line-warning-bg", 4.5);
 		assertContrast("message-line-error-fg", "message-line-error-bg", 4.5);
 		assertContrast("dialog-header", "dialog-header-bg", 4.5);
@@ -1765,7 +1764,7 @@ public class ColorTokensTest {
 		// the colours of today
 		String[] values = { "card-border", "#E4E7EC", "repo-info-border", "#D0D5DD", "qti-item-max-score-border", "#000000",
 				"qti-choice-tablelayout-bg", "#E4E7EC", "editor-hover-border", "#DC66D5", "editor-alert-box-active-border", "#464646",
-				"practice-progress-l1-bg", "#1FC6FE", "video-border", "#F9FAFB", "video-controls-bg",
+				"practice-progress-l1-bg", "#047A9F", "video-border", "#F9FAFB", "video-controls-bg",
 				"color-mix(in srgb, var(--o-shadow-color) 95%, transparent)" };
 		for (int i = 0; i < values.length; i += 2) {
 			Assert.assertEquals(values[i], values[i + 1], resolve(values[i]));
@@ -1936,7 +1935,7 @@ public class ColorTokensTest {
 		Assert.assertEquals("var(--o-panel-default-border)", tokens.get("topicbroker-details-separator-border"));
 		Assert.assertEquals("var(--o-quality-heatmap-base-bg)", tokens.get("quality-unrated"));
 		// the colours of today
-		String[] values = { "step-border", "#E4E7EC", "ac-billing-address-border", "#D0D5DD", "toolbar-edit-stripe", "#FAEECE",
+		String[] values = { "step-border", "#E4E7EC", "ac-billing-address-border", "#D0D5DD", "toolbar-edit-stripe", "#F9EBC5",
 				"gloss-tooltip-border", "#B1B8C5", "step-notavailable", "#8B95A7", "folder-card-thumbnail-icon", "#C6CCD6",
 				"qti-status-not-answered", "#C24A00" };
 		for (int i = 0; i < values.length; i += 2) {
@@ -1989,25 +1988,43 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * A bright fill of light (step 400 of a hue of $o-palette-bright, dark
-	 * text) has no darker step of its hue that keeps the text: its hover and
-	 * its pressed fill read step 300 of the same hue (o-token-shade-lighter()).
+	 * @return The step one lighter than the step of the hue that has the colour of the token
+	 */
+	private String lighterStep(String hue, String token) {
+		String color = resolve(token);
+		for (int i = 1; i < Palette.STEPS.size(); i++) {
+			if (color.equals(resolve(hue + "-" + Palette.STEPS.get(i)))) {
+				return String.valueOf(Palette.STEPS.get(i - 1));
+			}
+		}
+		Assert.fail(token + " " + color + " is no step of " + hue);
+		return null;
+	}
+
+	/**
+	 * A bright fill of light (step 100 to 400 of a hue, dark text) without a
+	 * darker step of its hue that keeps the text: its hover and its pressed
+	 * fill read the step one lighter of the same hue (o-token-shade-lighter()).
 	 * Only this rule lets the hover and the pressed fill have one colour
-	 * (o-token-shade-trios()); the text keeps 4.5:1 on each fill.
+	 * (o-token-shade-trios()); the text keeps 4.5:1 on each fill. The other
+	 * state fills are step 500 with white text: their hover and pressed fill
+	 * are darker.
 	 */
 	@Test
 	public void brightFillStatesGoLighter() {
 		for (Map.Entry<String, String> fill : BRIGHT_FILLS.entrySet()) {
 			String hue = fill.getValue();
-			Assert.assertEquals(fill.getKey(), resolve(hue + "-400"), resolve(fill.getKey()));
-			Assert.assertEquals(fill.getKey() + "-hover", "var(--o-" + hue + "-300)", tokens.get(fill.getKey() + "-hover"));
-			Assert.assertEquals(fill.getKey() + "-active", "var(--o-" + hue + "-300)", tokens.get(fill.getKey() + "-active"));
+			String lighter = "var(--o-" + hue + "-" + lighterStep(hue, fill.getKey()) + ")";
+			Assert.assertEquals(fill.getKey() + "-hover", lighter, tokens.get(fill.getKey() + "-hover"));
+			Assert.assertEquals(fill.getKey() + "-active", lighter, tokens.get(fill.getKey() + "-active"));
 		}
+		Assert.assertEquals("state-warning-bg", resolve("yellow-300"), resolve("state-warning-bg"));
+		Assert.assertEquals("selectus-rating-b-bg", resolve("yellow-400"), resolve("selectus-rating-b-bg"));
 		// the dirty button is a button of $o-token-state-text-buttons: its dark text gives a
-		// lighter hover (step 300) and a lighter pressed fill (step 200)
-		Assert.assertEquals("btn-dirty-bg", resolve("yellow-400"), resolve("btn-dirty-bg"));
-		Assert.assertEquals("btn-dirty-bg-hover", "var(--o-yellow-300)", tokens.get("btn-dirty-bg-hover"));
-		Assert.assertEquals("btn-dirty-bg-active", "var(--o-yellow-200)", tokens.get("btn-dirty-bg-active"));
+		// lighter hover (step 200) and a lighter pressed fill (step 100)
+		Assert.assertEquals("btn-dirty-bg", resolve("yellow-300"), resolve("btn-dirty-bg"));
+		Assert.assertEquals("btn-dirty-bg-hover", "var(--o-yellow-200)", tokens.get("btn-dirty-bg-hover"));
+		Assert.assertEquals("btn-dirty-bg-active", "var(--o-yellow-100)", tokens.get("btn-dirty-bg-active"));
 		for (String state : List.of("", "-hover", "-active")) {
 			assertContrast("btn-dirty-fg", "btn-dirty-bg" + state, 4.5);
 			assertContrast("coursesite-book-fg", "coursesite-book-bg" + state, 4.5);
@@ -2178,15 +2195,21 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_rating .o_rating_items.o_enabled .o_icon_rating_off:hover", "color:var(--o-rating-star)");
 		assertRuleReads(css, ".o_rating .o_rating_items.o_enabled .o_icon_rating_off:hover", "-webkit-text-stroke-width:1px");
 		assertRuleReads(css, ".o_rating.o_rating_personal .o_rating_items.o_enabled .o_icon_rating_off:hover", "color:var(--o-primary-text)");
-		Assert.assertEquals("var(--o-yellow-500)", tokens.get("rating-star-edge"));
+		Assert.assertEquals("var(--o-yellow-600)", tokens.get("rating-star-edge"));
 		assertContrast("rating-star-edge", "bg", 3.0);
 		// the icon of a media without preview: neutral 450, 3:1 on the card
 		Assert.assertEquals("var(--o-neutral-450)", tokens.get("editor-media-unavailable"));
 		assertContrast("editor-media-unavailable", "bg", 3.0);
 		assertContrast("editor-media-unavailable", "bg-raised", 3.0);
-		// important box
-		Assert.assertEquals("var(--o-cyan-500)", tokens.get("box-important-border"));
-		assertContrast("box-important-border", "box-important-bg", 3.0);
+		// important box: the soft swatch of violet, the icon in the dark violet (800)
+		Assert.assertEquals("var(--o-violet-50)", tokens.get("box-important-bg"));
+		Assert.assertEquals("var(--o-violet-100)", tokens.get("box-important-border"));
+		Assert.assertEquals("var(--o-violet-800)", tokens.get("box-important-icon"));
+		assertContrast("box-important-icon", "box-important-bg", 4.5);
+		// tip box: one hue, border cyan 100, icon cyan 700, 4.5:1 on cyan 50
+		Assert.assertEquals("var(--o-cyan-100)", tokens.get("box-tip-border"));
+		Assert.assertEquals("var(--o-cyan-700)", tokens.get("box-tip-icon"));
+		assertContrast("box-tip-icon", "box-tip-bg", 4.5);
 		// the brand colour as text or icon colour reads primary-text
 		Pattern primaryAsColor = Pattern.compile("(?<![-\\w])color\\s*:\\s*var\\(--o-primary\\)");
 		try (Stream<Path> modules = Files.list(ThemeColorRatchetTest.LIGHT_MODULES)) {
@@ -2689,8 +2712,8 @@ public class ColorTokensTest {
 				assertRuleReads(css, selector, "color:var(--o-" + token + ")");
 			}
 		}
-		Assert.assertEquals("#76CC71", resolve("selectus-rating-a-mark"));
-		Assert.assertEquals("#F9C900", resolve("selectus-rating-b-mark"));
+		Assert.assertEquals("#1F8320", resolve("selectus-rating-a-mark"));
+		Assert.assertEquals("#F6C600", resolve("selectus-rating-b-mark"));
 		Assert.assertEquals("#E2002D", resolve("selectus-rating-c-mark"));
 		// the rating buttons keep their fills
 		Assert.assertEquals("var(--o-green-500)", tokens.get("selectus-rating-a-bg"));
@@ -2729,7 +2752,7 @@ public class ColorTokensTest {
 				}
 			}
 		}
-		Assert.assertEquals("#012902", resolve("selectus-rating-a-mark-fg"));
+		Assert.assertEquals("#FFFFFF", resolve("selectus-rating-a-mark-fg"));
 		Assert.assertEquals("#301E06", resolve("selectus-rating-b-mark-fg"));
 		Assert.assertEquals("#FFFFFF", resolve("selectus-rating-c-mark-fg"));
 		assertRuleReads(css, ".progress-bar.o_bar_rating_abstain",
@@ -2737,36 +2760,45 @@ public class ColorTokensTest {
 	}
 
 	/**
-	 * The blue table of the HTML editor (b_blue) has own tokens: the soft
-	 * fill of the neutral state (blue 50), white cell borders and even rows,
-	 * header cells 10% darker (blue 200). It does not read the tokens of the
-	 * info box, which has a near white fill. The text keeps 4.5:1 on the three
-	 * fills. The grey, green, yellow and red tables keep the tokens of their
-	 * message box.
+	 * The coloured tables of the content editor and the HTML editor: one
+	 * table style b_{key} per swatch key, the 14 hues and the theme colours
+	 * (chooser set M). The fills read the swatch roles of the key: the cells
+	 * the soft fill (step 50), the header cells the light fill (step 200,
+	 * yellow step 100), the even rows white with lines in the soft border
+	 * (step 100), the cell lines white. The stored styles b_blue, b_green, b_yellow and b_red are the
+	 * tables of their hue. The stored style b_gray is the table of the hue
+	 * slate, the pure hue gray is b_gray_hue. The text of the content keeps 4.5:1 on
+	 * the three fills, the link on the cell fill and on white. The old table
+	 * tokens of the message boxes and of the blue table are gone.
 	 */
 	@Test
-	public void blueTableHasOwnBlueTokens() {
-		Assert.assertEquals("var(--o-state-neutral-soft-bg)", tokens.get("content-table-blue-bg"));
-		Assert.assertEquals("#F2F8FF", resolve("content-table-blue-bg"));
-		Assert.assertEquals("#FFFFFF", resolve("content-table-blue-border"));
-		Assert.assertEquals("#FFFFFF", resolve("content-table-blue-stripe-bg"));
-		Assert.assertEquals("#C6DFFF", resolve("content-table-blue-header-bg"));
-		for (String fill : List.of("content-table-blue-bg", "content-table-blue-stripe-bg", "content-table-blue-header-bg")) {
-			assertContrast("text", fill, 4.5);
-		}
+	public void tableStylesReadHueSteps() {
 		String css = CUSTOM_PROPERTY.matcher(read(PaletteTest.LIGHT_THEME_CSS)).replaceAll("");
-		assertRuleReads(css, "table.b_blue td", "background:var(--o-content-table-blue-bg)");
-		assertRuleReads(css, "table.b_blue td", "border:1px solid var(--o-content-table-blue-border)");
-		assertRuleReads(css, "table.b_blue thead td", "background:var(--o-content-table-blue-header-bg)");
-		assertRuleReads(css, "table.b_blue tbody tr:nth-child(even) td", "background:var(--o-content-table-blue-stripe-bg)");
-		Assert.assertFalse("The blue table reads a token of the info box",
-				Pattern.compile("table\\.b_blue[^{}]*\\{[^{}]*--o-box-info").matcher(css).find());
-		Map<String, String> boxes = Map.of("b_gray", "note", "b_green", "success", "b_yellow", "warning", "b_red", "error");
-		for (Map.Entry<String, String> table : boxes.entrySet()) {
-			String selector = "table." + table.getKey();
-			assertRuleReads(css, selector + " td", "background:var(--o-box-" + table.getValue() + "-bg)");
-			assertRuleReads(css, selector + " thead td",
-					"background:var(--o-box-" + table.getValue() + "-table-header-bg)");
+		List<String> keys = new ArrayList<>(ColorService.HUES);
+		keys.add("theme1");
+		for (String key : keys) {
+			// the pure hue gray is b_gray_hue, the stored style b_gray is the slate table
+			String selector = "table.b_" + ("gray".equals(key) ? "gray_hue" : key);
+			// the light fill of yellow is step 100 (its solid fill is step 300)
+			String header = key + ("yellow".equals(key) ? "-100" : "-200");
+			assertRuleReads(css, selector + " td", "background:var(--o-" + key + "-50)");
+			assertRuleReads(css, selector + " td", "border:1px solid var(--o-white)");
+			assertRuleReads(css, selector + " thead td", "background:var(--o-" + header + ")");
+			assertRuleReads(css, selector + " th", "background:var(--o-" + header + ")");
+			assertRuleReads(css, selector + " tbody tr:nth-child(even) td", "background:var(--o-white)");
+			assertRuleReads(css, selector + " tbody tr:nth-child(even) td", "border:1px solid var(--o-" + key + "-100)");
+			assertRuleReads(css, selector + ".b_no_stripes tbody tr:nth-child(even) td", "background:var(--o-" + key + "-50)");
+			for (String fill : List.of(key + "-50", header, "white")) {
+				assertContrast("content-text", fill, 4.5);
+			}
+			assertContrast("content-link", key + "-50", 4.5);
+			assertContrast("content-link", "white", 4.5);
+		}
+		assertRuleReads(css, "table.b_gray td", "background:var(--o-slate-50)");
+		assertRuleReads(css, "table.b_gray thead td", "background:var(--o-slate-200)");
+		for (String old : List.of("content-table-blue-bg", "content-table-blue-header-bg", "box-note-table-header-bg",
+				"box-success-table-stripe-bg", "box-warning-table-border", "box-error-table-header-bg")) {
+			Assert.assertNull("Old table token " + old, tokens.get(old));
 		}
 	}
 
@@ -2901,9 +2933,10 @@ public class ColorTokensTest {
 			return;
 		}
 		if (BRIGHT_FILLS.containsKey(source) && percent > 0 && (shade.endsWith("-hover") || shade.endsWith("-active"))) {
-			// a bright fill goes lighter inside its hue: hover and pressed step 300
+			// a bright fill goes lighter inside its hue: hover and pressed one step lighter
 			// (o-token-shade-lighter() in _tokens.scss)
-			Assert.assertEquals(shade, "var(--o-" + BRIGHT_FILLS.get(source) + "-300)", shadeValue);
+			String hue = BRIGHT_FILLS.get(source);
+			Assert.assertEquals(shade, "var(--o-" + hue + "-" + lighterStep(hue, source) + ")", shadeValue);
 			return;
 		}
 		// the source is a scale step: the shade reads a step of the scale of its

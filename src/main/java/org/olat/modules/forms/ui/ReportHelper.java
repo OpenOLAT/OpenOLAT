@@ -49,7 +49,8 @@ public class ReportHelper {
 	/** Hues of the series, the solid swatch of each hue is used */
 	private static final String[] SERIES_HUES = {
 			"blue", "orange", "green", "violet", "red",
-			"cyan", "yellow", "pink", "lime", "brown"
+			"cyan", "yellow", "pink", "lime", "brown",
+			"teal", "magenta", "slate"
 	};
 	
 	private final Legend anonymousLegend;

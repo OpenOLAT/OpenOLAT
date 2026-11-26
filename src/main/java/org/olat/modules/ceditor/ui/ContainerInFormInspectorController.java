@@ -139,7 +139,7 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 		formLayout.add(styleCont);
 		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory, getWindowControl(),
 				getAlertBoxSettings(container.getContainerSettings()), colorService, getLocale());
 	}
 

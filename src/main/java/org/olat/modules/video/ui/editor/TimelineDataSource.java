@@ -29,6 +29,10 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.color.ColorFamily;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
+import org.olat.core.commons.services.color.Swatch;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -58,12 +62,16 @@ import org.olat.user.UserManager;
  */
 public class TimelineDataSource implements FlexiTableDataSourceDelegate<TimelineRow> {
 
+	/** The colour of the chapters: the light gray of the old badge colour "silver" */
+	private static final String CHAPTER_COLOR_CSS_CLASS = new Swatch("gray", Swatch.TINT).cssClass();
+
 	private final OLATResource olatResource;
 	private final List<VideoTaskSession> taskSessions;
 	private final VideoManager videoManager;
 	private final VideoAssessmentService videoAssessmentService;
 	private final Translator translator;
 	private final UserManager userManager;
+	private final ColorService colorService;
 
 	private VideoSegments videoSegments;
 	private List<TimelineRow> rows = new ArrayList<>();
@@ -77,6 +85,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 		videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		videoAssessmentService = CoreSpringFactory.getImpl(VideoAssessmentService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		colorService = CoreSpringFactory.getImpl(ColorService.class);
 		loadRows();
 	}
 
@@ -85,30 +94,32 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 
 		VideoQuestions videoQuestions = videoManager.loadQuestions(olatResource);
 		for (VideoQuestion videoQuestion : videoQuestions.getQuestions()) {
-			rows.add(new TimelineRow(videoQuestion.getId(), videoQuestion.getBegin().getTime(), 1000,
-					TimelineEventType.QUIZ, videoQuestion.getTitle(), videoQuestion.getStyle()));
+			rows.add(withColorKey(new TimelineRow(videoQuestion.getId(), videoQuestion.getBegin().getTime(), 1000,
+					TimelineEventType.QUIZ, videoQuestion.getTitle(), toCssClass(videoQuestion.getStyle())),
+					videoQuestion.getStyle()));
 		}
 
 		videoSegments = videoManager.loadSegments(olatResource);
 		for (VideoSegment videoSegment : videoSegments.getSegments()) {
-			videoSegments.getCategory(videoSegment.getCategoryId()).ifPresent(c -> rows.add(
+			videoSegments.getCategory(videoSegment.getCategoryId()).ifPresent(c -> rows.add(withColorKey(
 					new TimelineRow(videoSegment.getId(), videoSegment.getBegin().getTime(),
 					videoSegment.getDuration() * 1000, TimelineEventType.SEGMENT, c.getLabelAndTitle(),
-					c.getStyle(), c.getId())
+					toCssClass(c.getColor()), c.getId()), c.getColor())
 			));
 		}
 
 		VideoComments comments = videoManager.loadComments(olatResource);
 		for (VideoComment comment : comments.getComments()) {
-			rows.add(new TimelineRow(comment.getId(), comment.getStart().getTime(), 1000,
-					TimelineEventType.COMMENT, comment.getDisplayText(translator), VideoModule.getMarkerStyleFromColor(comment.getColor())));
+			rows.add(withColorKey(new TimelineRow(comment.getId(), comment.getStart().getTime(), 1000,
+					TimelineEventType.COMMENT, comment.getDisplayText(translator), toCssClass(comment.getColor())),
+					comment.getColor()));
 		}
 
 		VideoMarkers videoMarkers = videoManager.loadMarkers(olatResource);
 		for (VideoMarker videoMarker : videoMarkers.getMarkers()) {
-			rows.add(new TimelineRow(videoMarker.getId(), videoMarker.getBegin().getTime(),
+			rows.add(withColorKey(new TimelineRow(videoMarker.getId(), videoMarker.getBegin().getTime(),
 					videoMarker.getDuration() * 1000, TimelineEventType.ANNOTATION, videoMarker.getText(),
-					videoMarker.getStyle()));
+					toCssClass(videoMarker.getStyle())), videoMarker.getStyle()));
 		}
 
 		List<VideoChapterTableRow> chapters = videoManager.loadChapters(olatResource);
@@ -116,7 +127,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 			String chapterId = generateChapterId(ch);
 			long durationInMillis = ch.getEnd().getTime() - ch.getBegin().getTime();
 			rows.add(new TimelineRow(chapterId, ch.getBegin().getTime(), durationInMillis,
-					TimelineEventType.CHAPTER, ch.getChapterName(), "o_video_marker_silver"));
+					TimelineEventType.CHAPTER, ch.getChapterName(), CHAPTER_COLOR_CSS_CLASS));
 		});
 		
 		if(taskSessions != null && !taskSessions.isEmpty()) {
@@ -131,7 +142,10 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 				row.setParticipantValue(userManager.getUserDisplayName(sel.getTaskSession().getIdentity()));
 				if(category != null) {
 					row.setCategoryId(category.getId());
-					row.setColor(row.getColor() + " " + category.getStyle());
+					String categoryStyle = category.getStyle();
+					if (categoryStyle != null) {
+						row.setColor(row.getColor() + " " + categoryStyle);
+					}
 				}
 				rows.add(row);
 			});
@@ -142,6 +156,20 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 		applyFilters();
 	}
 	
+	/**
+	 * @param storedColor The stored colour of the event
+	 * @return The CSS classes of the colour, empty if the colour is no valid colour
+	 */
+	private static String toCssClass(String storedColor) {
+		String cssClass = VideoModule.getMarkerStyleFromColor(storedColor);
+		return cssClass == null ? "" : cssClass;
+	}
+
+	private TimelineRow withColorKey(TimelineRow row, String storedColor) {
+		row.setColorKey(colorService.getNearestKey(ColorSet.M, storedColor, ColorFamily.COLOR_SERVICE));
+		return row;
+	}
+
 	public VideoSegments getVideoSegments() {
 		return videoSegments;
 	}
@@ -169,8 +197,9 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 							}
 						}
 					} else if (TimelineFilter.COLOR.name().equals(filter.getFilter())) {
+						// the values are keys of the set M
 						for (String colorString : multiSelectionFilter.getValues()) {
-							if (r.getColor().equals(colorString)) {
+							if (colorString.equals(r.getColorKey())) {
 								matchFound = true;
 								break;
 							}

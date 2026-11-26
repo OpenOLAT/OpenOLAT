@@ -32,6 +32,7 @@ public class CalloutSettings {
 	private final boolean topModal;
 	private final String title;
 	private final CalloutOrientation orientation;
+	private CalloutAlignment alignment = CalloutAlignment.center;
 	private String ariaLabel;
 	
 	public CalloutSettings() {
@@ -90,9 +91,49 @@ public class CalloutSettings {
 		return orientation;
 	}
 
+	/**
+	 * @return The horizontal alignment to the target, {@link CalloutAlignment#center} by default
+	 */
+	public CalloutAlignment getAlignment() {
+		return alignment;
+	}
+
+	/**
+	 * Sets the horizontal alignment of a callout with the orientation
+	 * {@link CalloutOrientation#bottomOrTop}. The other orientations ignore it.
+	 *
+	 * @param alignment The alignment, null for {@link CalloutAlignment#center}
+	 */
+	public void setAlignment(CalloutAlignment alignment) {
+		this.alignment = alignment == null ? CalloutAlignment.center : alignment;
+	}
+
 	public enum CalloutOrientation {
 		top,
 		bottom,
 		bottomOrTop
+	}
+
+	/**
+	 * The horizontal alignment of a callout to its target, for the orientation
+	 * {@link CalloutOrientation#bottomOrTop}.
+	 */
+	public enum CalloutAlignment {
+		/**
+		 * Centred on the target, side chosen by the larger space (default).
+		 * A target wider than 450px gives the callout its width.
+		 */
+		center,
+		/**
+		 * Aligned with the left edge of the target, with the right edge if
+		 * there is no room on the right. The width follows the content. Below
+		 * the target, above it only if there is no room below.
+		 */
+		edge,
+		/**
+		 * As wide as the target and aligned with it, like a dropdown menu.
+		 * Below the target, above it only if there is no room below.
+		 */
+		targetWidth
 	}
 }

@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
@@ -128,9 +130,20 @@ class ProjectToolSupport {
 	static final int MEMBER_MAX_LENGTH = 255;
 	static final int TAGS_MAX_ITEMS = 50;
 	static final int TAG_MAX_LENGTH = 64;
+	/**
+	 * The argument color of appointments and milestones: a key of the colour
+	 * chooser of the UI, the set {@link ColorSet#M} (the hues and the theme
+	 * colours theme1 ... themeN of the active theme), or empty. The schema has
+	 * no pattern: {@link #validColor(String)} checks the colour against the
+	 * keys of the active theme.
+	 */
+	static final String COLOR_WORDING = "one of " + String.join(", ", ColorSet.M.getHueKeys())
+			+ " or a theme color (theme1, theme2, ...); the theme colors depend on the active theme";
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private ColorService colorService;
 	@Autowired
 	private ProjectModule projectModule;
 	@Autowired
@@ -776,6 +789,41 @@ class ProjectToolSupport {
 				"description", "toDo: the key of todo_query (toDoKey); the number in the URL of a project ToDo is accepted as a fallback. "
 						+ "note, file, appointment, decision: the key of the object"));
 		return Map.of("type", "object", "properties", properties, "required", List.of("type", "key"), "additionalProperties", Boolean.FALSE);
+	}
+
+	/**
+	 * @param description The description of the argument
+	 * @return The input schema of the argument color of the modify tools, the
+	 * 		keys of the colour chooser {@link ColorSet#M}
+	 */
+	static Map<String,Object> colorInputSchema(String description) {
+		return Map.of("type", "string", "description", description + "; " + COLOR_WORDING);
+	}
+
+	/**
+	 * @return The keys of the colour chooser of appointments and milestones in
+	 * 		the active theme, the set {@link ColorSet#M}, e.g. "red", ..., "gray", "theme1"
+	 */
+	List<String> getColors() {
+		return colorService.getColors(ColorSet.M);
+	}
+
+	/**
+	 * @param color The argument color, null or empty for the default color
+	 * @return The color, null for null or empty
+	 * @throws McpInvalidArgumentException if the color is no key of {@link #getColors()},
+	 * 		the same message for every invalid color, e.g. an old calendar color as "navy"
+	 */
+	String validColor(String color) {
+		if(!StringHelper.containsNonWhitespace(color)) {
+			return null;
+		}
+		List<String> colors = getColors();
+		if(colors.contains(color)) {
+			return color;
+		}
+		throw new McpInvalidArgumentException("The color " + color + " does not exist. Valid colors: "
+				+ String.join(", ", colors) + ".");
 	}
 
 	/**

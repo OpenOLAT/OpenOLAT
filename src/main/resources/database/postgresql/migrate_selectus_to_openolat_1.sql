@@ -81,7 +81,7 @@ alter table o_user add column u_emailsignature varchar(2048);
 alter table o_user add column u_portrait_path varchar(32) default null;
 alter table o_user add column u_logo_path varchar(32) default null;
 alter table o_user add column u_initials_css_class varchar(32) default null;
-update o_user set u_initials_css_class='o_user_initials_light_blue' where u_initials_css_class is null;
+update o_user set u_initials_css_class='cyan' where u_initials_css_class is null;
 
 
 create index idx_user_firstname_idx on o_user (u_firstname);

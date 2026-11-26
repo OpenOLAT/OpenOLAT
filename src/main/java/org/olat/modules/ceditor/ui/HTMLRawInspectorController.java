@@ -124,7 +124,7 @@ public class HTMLRawInspectorController extends FormBasicController implements P
 			columnsEl.select("1", true);
 		}
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory, getWindowControl(),
 				getAlertBoxSettings(getTextSettings()), colorService, getLocale());
 	}
 

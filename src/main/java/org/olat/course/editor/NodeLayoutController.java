@@ -284,7 +284,7 @@ public class NodeLayoutController extends FormBasicController {
 		}
 
 		colorCategoryPickerEl = uifactory.addColorPickerElement("color.category.selection", "color.category.selection",
-				formLayout, colors);
+				formLayout, getWindowControl(), colors);
 		colorCategoryPickerEl.setElementCssClass("o_colcal_ele");
 		colorCategoryPickerEl.addActionListener(FormEvent.ONCHANGE);
 		if (colorCategoryIdentifier.equals(ColorCategory.IDENTIFIER_INHERITED)) {

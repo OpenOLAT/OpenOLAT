@@ -129,7 +129,7 @@ public class MediaVersionInspectorController extends FormBasicController impleme
 		formLayout.add(styleCont);
 		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory, getWindowControl(),
 				getAlertBoxSettings(getMediaSettings()), colorService, getLocale());
 	}
 

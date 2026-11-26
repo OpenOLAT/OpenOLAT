@@ -435,7 +435,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		}
 
 		colorPickerEl = uifactory.addColorPickerElement("color.category.selection", "color.category.selection",
-				styleCont, colors);
+				styleCont, getWindowControl(), colors);
 		colorPickerEl.setElementCssClass("o_colcal_ele");
 		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
 		if (colorCategoryIdentifier.equals(ColorCategory.IDENTIFIER_NO_COLOR)) {

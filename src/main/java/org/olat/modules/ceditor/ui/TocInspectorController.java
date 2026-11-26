@@ -121,7 +121,7 @@ public class TocInspectorController extends FormBasicController implements PageE
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
-		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory, getWindowControl(),
 				getAlertBoxSettings(getTocSettings()), colorService, getLocale());
 	}
 

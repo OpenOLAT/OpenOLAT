@@ -67,6 +67,8 @@ public interface CalendarManager {
 	public static final String ICAL_X_OLAT_EXTERNAL_SOURCE = "X-OLAT-EXTERNAL-SOURCE";
 	public static final String ICAL_X_OLAT_VIDEO_STREAM_URL = "X-OLAT-VIDEO-STREAM-URL";
 	public static final String ICAL_X_OLAT_VIDEO_STREAM_URL_TEMPLATE_KEY = "X-OLAT-VIDEO-STREAM-URL_TEMPLATE_KEY";
+	/** The colour key of an event whose key is no CSS colour name. The property COLOR holds the nearest CSS colour name. */
+	public static final String ICAL_X_OLAT_COLOR = "X-OLAT-COLOR";
 
 	/** path prefix for personal iCal feed **/
 	public static final String ICAL_PREFIX_AGGREGATED = "/paggregated/";

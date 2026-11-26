@@ -58,8 +58,9 @@ abstract class AbstractBuildingCellRenderer implements FlexiCellRenderer {
 		ftE.addFormItem(link);
 
 		target.append("<div class='o_building_color_ref'>");
-		String colorCss = building.getColorCss();
-		if (StringHelper.containsNonWhitespace(colorCss)) {
+		// a key of the colour set M renders with the swatch class, an old class as it is
+		String colorCss = RoomUIHelper.toColorCss(building.getColorCss());
+		if (colorCss != null) {
 			target.append("<div class=\"o_color ")
 					.append(StringHelper.escapeHtml(colorCss)).append("\"><i class=\"o_icon o_icon_square\"></i> </div>");
 		}

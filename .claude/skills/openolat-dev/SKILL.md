@@ -357,7 +357,7 @@ VFSManager.copyContent(inputStream, file, identity);
 
 ## New File Header (mandatory)
 
-Every new Java file must include the standard license header and a class-level Javadoc with the initial date and `@author` tag. The username is mandatory; the email is optional. The author for AI-generated code is `AI, ai@frentix.com, https://www.frentix.com`.
+Every new Java file must include the standard license header and a class-level Javadoc with the initial date and `@author` tag. The username is mandatory; the email is optional. For code written with AI, the author is the developer who orders and commits it (for example `gnaegi, https://www.frentix.com`), never `AI, ai@frentix.com`.
 
 ```java
 /**
@@ -385,7 +385,7 @@ import ...;
 
 /**
  * Initial date: 9 Apr 2026<br>
- * @author AI, ai@frentix.com, https://www.frentix.com
+ * @author gnaegi, https://www.frentix.com
  */
 public class ExampleController extends BasicController {
 ```

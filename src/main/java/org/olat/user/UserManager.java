@@ -51,16 +51,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public abstract class UserManager {
 	
-	public static final List<String> USER_INITIALS_CSS = List.of(
-			"o_user_initials_dark_blue",
-			"o_user_initials_light_blue",
-			"o_user_initials_purple",
-			"o_user_initials_red",
-			"o_user_initials_orange",
-			"o_user_initials_yellow",
-			"o_user_initials_dark_green",
-			"o_user_initials_light_green"
-	);
+	/** The initials of guests, deleted and unknown users, and the initials without valid colour */
+	public static final String USER_INITIALS_GREY_CSS = "o_user_initials_grey";
 	
 	protected static UserManager INSTANCE;
 	

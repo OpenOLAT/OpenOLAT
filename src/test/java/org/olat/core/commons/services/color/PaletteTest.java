@@ -45,7 +45,7 @@ public class PaletteTest {
 	/** The compiled light theme, relative to the project directory */
 	public static final Path LIGHT_THEME_CSS = Path.of("src/main/webapp/static/themes/light/theme.css");
 
-	private static final List<String> VARIANTS = List.of(Swatch.SOLID, Swatch.TINT, Swatch.LIGHT, Swatch.DARK);
+	private static final List<String> VARIANTS = Swatch.VARIANTS;
 
 	private final Palette palette = lightPalette();
 
@@ -107,8 +107,8 @@ public class PaletteTest {
 			}
 		}
 		// the values of _palette.scss
-		Assert.assertEquals("#F14442", palette.hex("red", 450));
-		Assert.assertEquals("#CA9600", palette.hex("yellow", 450));
+		Assert.assertEquals("#F36660", palette.hex("red", 450));
+		Assert.assertEquals("#BE8B00", palette.hex("yellow", 450));
 		Assert.assertEquals("#5196EC", palette.hex("blue", 450));
 		Assert.assertEquals("#949494", palette.hex("gray", 450));
 	}
@@ -150,11 +150,6 @@ public class PaletteTest {
 		}
 	}
 
-	@Test
-	public void brightHuesExist() {
-		Assert.assertTrue(palette.getHues().containsAll(Palette.BRIGHT_HUES));
-	}
-
 	@Test(expected = IllegalArgumentException.class)
 	public void unknownHue() {
 		palette.hex("lightblue", 500);
@@ -167,19 +162,23 @@ public class PaletteTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void unknownVariant() {
-		palette.bg(new Swatch("blue", "soft"));
+		palette.bg(new Swatch("blue", "pale"));
 	}
 
 	@Test
 	public void bgSteps() {
-		Assert.assertEquals(400, Palette.bgStep(new Swatch("yellow", Swatch.SOLID)));
+		// solid 500 and dark 700 for all hues; yellow: soft 50, light 100, tint 200, solid 300, dark 500
+		Assert.assertEquals(300, Palette.bgStep(new Swatch("yellow", Swatch.SOLID)));
 		Assert.assertEquals(500, Palette.bgStep(new Swatch("blue", Swatch.SOLID)));
-		Assert.assertEquals(300, Palette.bgStep(new Swatch("yellow", Swatch.TINT)));
+		Assert.assertEquals(200, Palette.bgStep(new Swatch("yellow", Swatch.TINT)));
 		Assert.assertEquals(300, Palette.bgStep(new Swatch("blue", Swatch.TINT)));
-		Assert.assertEquals(200, Palette.bgStep(new Swatch("yellow", Swatch.LIGHT)));
+		Assert.assertEquals(100, Palette.bgStep(new Swatch("yellow", Swatch.LIGHT)));
 		Assert.assertEquals(200, Palette.bgStep(new Swatch("blue", Swatch.LIGHT)));
 		Assert.assertEquals(500, Palette.bgStep(new Swatch("yellow", Swatch.DARK)));
 		Assert.assertEquals(700, Palette.bgStep(new Swatch("blue", Swatch.DARK)));
+		Assert.assertEquals(50, Palette.bgStep(new Swatch("yellow", Swatch.SOFT)));
+		Assert.assertEquals(50, Palette.bgStep(new Swatch("blue", Swatch.SOFT)));
+		Assert.assertEquals(50, palette.getBgStep(new Swatch("theme1", Swatch.SOFT)));
 	}
 
 	@Test
@@ -207,9 +206,12 @@ public class PaletteTest {
 	@Test
 	public void knownValues() {
 		// Values of the report oo-colors-p1-scss, computed by the theme build
-		// yellow is tuned by hand (palette_v4_tuning.json)
-		Assert.assertEquals("#F9C900", palette.bg(new Swatch("yellow", Swatch.SOLID)));
+		// yellow is tuned (palette_v4_tuning.json), with the luminance of the other hues
+		Assert.assertEquals("#F6C600", palette.bg(new Swatch("yellow", Swatch.SOLID)));
 		Assert.assertEquals("#301E06", palette.fg(new Swatch("yellow", Swatch.SOLID)));
+		Assert.assertEquals(Palette.WHITE, palette.fg(new Swatch("yellow", Swatch.DARK)));
+		Assert.assertEquals("#DFB300", palette.hex("yellow", 400));
+		Assert.assertEquals("#FF9E90", palette.hex("red", 400));
 		Assert.assertEquals("#0470D8", palette.bg(new Swatch("blue", Swatch.SOLID)));
 		Assert.assertEquals(Palette.WHITE, palette.fg(new Swatch("blue", Swatch.SOLID)));
 		Assert.assertEquals("#002249", palette.fg(new Swatch("blue", Swatch.TINT)));
@@ -263,6 +265,52 @@ public class PaletteTest {
 		Assert.assertNull(Palette.fromCss(":root{--o-neutral-50: #F6F7FA;--o-neutral-100: #EAECF0}"));
 	}
 
+	/**
+	 * Junk in the theme.css gives no palette or a partial palette, never an
+	 * exception: the start must not stop because of the colours.
+	 */
+	@Test
+	public void junkCssNeverThrows() {
+		List<String> junk = List.of(
+				"--o-red-99999999999999999999: #FF0000;",
+				"--o-red-2147483648: #FF0000;",
+				"--o-theme99999999999-500: #FF0000; --o-theme99999999999: #FF0000;",
+				"--o-" + "x".repeat(100_000) + "-500: #FF0000;",
+				"--o-red-500: #GGGGGG; --o-red-500: #FF00; --o-red-500 #FF0000",
+				"\u0000\uFFFF\uD800 {{{{ }}}} @import url(x); --o-red-500: \"><script>alert(1)</script>",
+				"--o-\"><script>-500: #FF0000;",
+				"--o-red;background:url(x)-500: #FF0000;",
+				"--o-".repeat(50_000),
+				new String(new char[] { 0xD800, 0xDC00, 0x0, 0x1B, '-', '-', 'o', '-' }));
+		for (String css : junk) {
+			Assert.assertNull(css.length() > 80 ? css.substring(0, 80) : css, Palette.fromCss(css));
+		}
+	}
+
+	@Test
+	public void junkCssKeepsValidHues() {
+		StringBuilder css = new StringBuilder("\u0000 junk {{ --o-red-99999999999: #000000; ");
+		for (Integer step : Palette.STEPS) {
+			css.append("--o-red-").append(step).append(": #d2343c;");
+			css.append("--o-theme1-").append(step).append(": #4166e8;");
+			// a name with too many digits is ignored
+			css.append("--o-theme99999-").append(step).append(": #4166e8;");
+			css.append("--o-\"><script>-").append(step).append(": #4166e8;");
+		}
+		css.append("--o-theme1: #4166e8; @@@ }");
+
+		Palette partial = Palette.fromCss(css.toString());
+		Assert.assertNotNull(partial);
+		Assert.assertEquals(List.of("red"), List.copyOf(partial.getHues()));
+		Assert.assertEquals(List.of("theme1"), partial.getThemeColors());
+		for (String hue : partial.getHues()) {
+			Assert.assertTrue(hue, ColorValidator.isValidKey(hue));
+		}
+		Assert.assertFalse(Palette.isThemeColor("theme99999"));
+		Assert.assertTrue(Palette.isThemeColor("theme999"));
+		Assert.assertFalse(Palette.isThemeColor(null));
+	}
+
 	@Test
 	public void cssWithOnlyIncompleteHues() {
 		Assert.assertNull(Palette.fromCss(":root{--o-red-50: #FEF5F5;--o-red-100: #FEE7E6}"));
@@ -294,12 +342,14 @@ public class PaletteTest {
 		Assert.assertEquals("#F2AF40", openolat.bg(new Swatch("theme2", Swatch.SOLID)));
 		Assert.assertEquals("#8F1F40", openolat.bg(new Swatch("theme3", Swatch.SOLID)));
 		Assert.assertEquals("#B2CF42", openolat.bg(new Swatch("theme4", Swatch.SOLID)));
-		Assert.assertTrue(openolat.isBrightColor("theme2"));
+		// Peach is exact at 400: a light brand colour, dark text on the solid fill
+		Assert.assertEquals(400, openolat.getBgStep(new Swatch("theme2", Swatch.SOLID)));
+		Assert.assertNotEquals(Palette.WHITE, openolat.fg(new Swatch("theme2", Swatch.SOLID)));
 		// Sprout is exact at 300: tint and light move one step lighter
 		Assert.assertEquals(300, openolat.getBgStep(new Swatch("theme4", Swatch.SOLID)));
 		Assert.assertEquals(200, openolat.getBgStep(new Swatch("theme4", Swatch.TINT)));
 		Assert.assertEquals(100, openolat.getBgStep(new Swatch("theme4", Swatch.LIGHT)));
-		Assert.assertFalse(openolat.isBrightColor("theme3"));
+		Assert.assertEquals(Palette.WHITE, openolat.fg(new Swatch("theme3", Swatch.SOLID)));
 		for (String themeColor : openolat.getThemeColors()) {
 			for (String variant : VARIANTS) {
 				Swatch swatch = new Swatch(themeColor, variant);
@@ -329,7 +379,6 @@ public class PaletteTest {
 		Assert.assertEquals(300, themed.getBgStep(new Swatch("theme1", Swatch.TINT)));
 		Assert.assertEquals(200, themed.getBgStep(new Swatch("theme1", Swatch.LIGHT)));
 		Assert.assertEquals(800, themed.getBgStep(new Swatch("theme1", Swatch.DARK)));
-		Assert.assertFalse(themed.isBrightColor("theme1"));
 		Assert.assertEquals("#106365", themed.text("theme1"));
 	}
 

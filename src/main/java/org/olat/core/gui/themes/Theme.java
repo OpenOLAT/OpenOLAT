@@ -156,7 +156,7 @@ public class Theme {
 		this.htmlHeaderElements = buildHTMLHeaderElements();
 		
 		this.emailCss = loadEmailCss();
-		this.palette = loadPalette();
+		this.palette = loadPaletteSafely();
 		this.socialPreviewImage = loadSocialPreviewImage();
 	}
 
@@ -242,6 +242,21 @@ public class Theme {
 	}
 
 	/**
+	 * The palette is not needed to show the theme: a failure to read it must
+	 * not stop the theme, nor the start.
+	 *
+	 * @return The palette, or null if reading it fails
+	 */
+	private Palette loadPaletteSafely() {
+		try {
+			return loadPalette();
+		} catch (RuntimeException | LinkageError e) {
+			log.warn("Reading the colour palette of the theme failed, the theme has no palette", e);
+			return null;
+		}
+	}
+
+	/**
 	 * Reads the palette from the theme.css of the theme. If the file is missing
 	 * or has no palette, the palette of the light theme of the release is used.
 	 */
@@ -262,7 +277,7 @@ public class Theme {
 			log.info("Colour palette with {} hues loaded from the fallback theme: {} (no palette in {})",
 					lightPalette.getHues().size(), lightCss, themeCss);
 		} else {
-			log.error("No colour palette found in {} nor in {}", themeCss, lightCss);
+			log.warn("No colour palette found in {} nor in {}", themeCss, lightCss);
 		}
 		return lightPalette;
 	}

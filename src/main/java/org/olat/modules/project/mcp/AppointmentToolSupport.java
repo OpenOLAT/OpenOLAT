@@ -339,7 +339,8 @@ class AppointmentToolSupport {
 				"description", "list only: this item is one occurrence of a series, key is the series; pass this value as occurrence to appointment_modify "
 						+ "to change or delete only this occurrence"));
 		properties.put("allDay", Map.of("type", "boolean", "description", "true: start and end are days, the time is the start of the day"));
-		properties.put("color", Map.of("type", "string", "description", "the calendar color; absent for the default color"));
+		properties.put("color", Map.of("type", "string", "description", "the calendar color, a key of the argument color of appointment_modify; "
+				+ "an appointment of an older release can have an old calendar color (e.g. navy); absent for the default color"));
 		properties.put("recurrence", Map.of("type", "string", "enum", recurrences,
 				"description", "the repetition as OpenOlat offers it; other for a rule OpenOlat cannot edit"));
 		properties.put("recurrenceRule", Map.of("type", "string", "description", "the iCalendar RRULE of a series; absent without repetition"));

@@ -522,9 +522,10 @@ public class VideoDisplayController extends BasicController {
 		if(vmarkers != null && !vmarkers.isEmpty()) {
 			for(VideoMarker marker:vmarkers) {
 				long start = marker.toSeconds();
-				vcMarkers.add(new Marker(marker.getId(), marker.getStyle(), start, "start", true, marker));
+				String color = VideoModule.getMarkerColor(marker.getStyle());
+				vcMarkers.add(new Marker(marker.getId(), color, start, "start", true, marker));
 				long end = start + marker.getDuration();
-				vcMarkers.add(new Marker(marker.getId(), marker.getStyle(), end, "end", false, marker));
+				vcMarkers.add(new Marker(marker.getId(), color, end, "end", false, marker));
 			}
 		}
 		return vcMarkers;
@@ -535,7 +536,7 @@ public class VideoDisplayController extends BasicController {
 		if(questions != null && !questions.isEmpty()) {
 			for(VideoQuestion question:questions) {
 				long start = question.toSeconds();
-				vcMarkers.add(new Marker(question.getId(), question.getStyle(), start, "start", true, question));
+				vcMarkers.add(new Marker(question.getId(), VideoModule.getMarkerColor(question.getStyle()), start, "start", true, question));
 			}
 		}
 		return vcMarkers;
@@ -1032,8 +1033,12 @@ public class VideoDisplayController extends BasicController {
 			return marker.getHeight();
 		}
 
+		/**
+		 * @return The CSS classes or the CSS colour of the stored style, see
+		 * 		{@link VideoModule#getMarkerColor(String)}
+		 */
 		public String getStyle() {
-			return marker.getStyle();
+			return VideoModule.getMarkerColor(marker.getStyle());
 		}
 	}
 	

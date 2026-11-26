@@ -36,6 +36,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
 import org.olat.login.LoginModule;
@@ -311,6 +312,14 @@ public class UserManagerImplTest {
 		UserPropertyChangedEvent valueNullEvent = propertyToEvent.get("orgUnit");
 		assertThat(valueNullEvent.getOldValue()).isEqualTo("old");
 		assertThat(valueNullEvent.getNewValue()).isNull();
+	}
+	
+	@Test
+	public void shouldPickRandomInitialsColorOfColorSetM() {
+		for (int i = 0; i < 200; i++) {
+			// a hue of the set M, no theme colour, no old class
+			assertThat(sut.getRandomInitialsColorCss()).isIn(ColorSet.M.getHueKeys());
+		}
 	}
 	
 }

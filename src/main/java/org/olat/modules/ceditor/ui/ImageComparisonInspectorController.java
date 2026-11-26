@@ -210,7 +210,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
-		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory, getWindowControl(),
 				getAlertBoxSettings(getImageComparisonSettings()), colorService, getLocale());
 	}
 

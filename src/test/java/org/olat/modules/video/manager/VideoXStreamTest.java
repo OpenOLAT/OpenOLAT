@@ -33,6 +33,7 @@ import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoSegment;
@@ -234,5 +235,21 @@ public class VideoXStreamTest {
 			log.error("", e);
 			Assert.fail();
 		}
+	}
+
+	@Test
+	public void markerCssColor() {
+		// the CSS colour of an annotation of an old version renders as it is
+		Assert.assertEquals("#000000", VideoModule.getMarkerColor("#000000"));
+		Assert.assertEquals("#FFF", VideoModule.getMarkerColor(" #FFF "));
+		Assert.assertEquals("rgb(255, 0, 0)", VideoModule.getMarkerColor("rgb(255, 0, 0)"));
+		Assert.assertEquals("rgba(255,0,0,0.5)", VideoModule.getMarkerColor("rgba(255,0,0,0.5)"));
+		// junk is no CSS colour and no CSS class
+		Assert.assertNull(VideoModule.getMarkerColor("#000000';alert(1);'"));
+		Assert.assertNull(VideoModule.getMarkerColor("rgb(1,2,3);background:url(x)"));
+		Assert.assertNull(VideoModule.getMarkerColor("o_video_marker_red\" onmouseover=\"alert(1)"));
+		Assert.assertNull(VideoModule.getMarkerColor(null));
+		Assert.assertNull(VideoModule.getMarkerColor(" "));
+		Assert.assertNull(VideoModule.getMarkerStyleFromColor(null));
 	}
 }

@@ -32,6 +32,10 @@ import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.ui.LinkProvider;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorFamily;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorValidator;
+import org.olat.core.commons.services.color.Swatch;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
@@ -42,13 +46,23 @@ import org.olat.core.util.StringHelper;
 public class KalendarRenderWrapper {
 
 	/**
-	 * These CSS classes must be defined in the calendar.css file.
+	 * The default colours of the calendars: keys of the colour set M, see
+	 * {@link #setColor(String)}.
 	 */
-	public static final String CALENDAR_COLOR_BLUE = "o_cal_blue";
-	public static final String CALENDAR_COLOR_ORANGE = "o_cal_orange";
-	public static final String CALENDAR_COLOR_GREEN = "o_cal_green";
-	public static final String CALENDAR_COLOR_YELLOW = "o_cal_yellow";
-	public static final String CALENDAR_COLOR_RED = "o_cal_red";
+	public static final String CALENDAR_COLOR_BLUE = "blue";
+	public static final String CALENDAR_COLOR_ORANGE = "orange";
+	public static final String CALENDAR_COLOR_GREEN = "green";
+	/**
+	 * The CSS classes of the default colour {@link #CALENDAR_COLOR_BLUE},
+	 * "o_cal_swatch o_swatch_blue", see {@link ColorService#toCalendarEventCssClass(String)}
+	 */
+	public static final String CALENDAR_DEFAULT_CSS_CLASS = ColorService.CALENDAR_SWATCH_CSS_CLASS + " "
+			+ ColorService.SWATCH_CSS_CLASS_PREFIX + CALENDAR_COLOR_BLUE;
+	
+	/** The class of the calendar colour on an event with its own colour, see {@link #getSecondaryCssClass()} */
+	private static final String SECONDARY_CSS_CLASS = "o_cal_sec";
+	/** The prefix of the secondary class of a swatch key, e.g. "o_cal_sec_blue" */
+	private static final String SECONDARY_SWATCH_CSS_CLASS_PREFIX = "o_cal_sec_";
 	
 	/**
 	 * These are the access restrictions on this calendar.
@@ -69,6 +83,7 @@ public class KalendarRenderWrapper {
 	private boolean inAggregatedFeed;
 	private boolean privateEventsVisible;
 	private String cssClass;
+	private String color;
 	private String token;
 
 	/**
@@ -94,13 +109,15 @@ public class KalendarRenderWrapper {
 		if(config == null) {
 			visible = true;
 			inAggregatedFeed = true;
-			cssClass = CALENDAR_COLOR_BLUE;
+			color = CALENDAR_COLOR_BLUE;
+			cssClass = CALENDAR_DEFAULT_CSS_CLASS;
 		} else {
 			visible = config.isVisible();
 			inAggregatedFeed = config.isInAggregatedFeed();
 			token = config.getToken();
+			// the column holds a key of the chooser sets (e.g. "blue") or an old class (e.g. "o_cal_navy")
 			if(StringHelper.containsNonWhitespace(config.getCssClass())) {
-				cssClass = config.getCssClass();
+				setColor(config.getCssClass());
 			}
 		}
 	}
@@ -194,8 +211,74 @@ public class KalendarRenderWrapper {
 		return cssClass;
 	}
 
+	/**
+	 * Sets the CSS classes of the calendar. The classes are the colour of the
+	 * calendar too, see {@link #getColor()}. A colour of the colour set M is
+	 * set with {@link #setColor(String)}.
+	 * 
+	 * @param cssClass The classes, e.g. "o_rm_cal_pastel o_color_border o_swatch_blue"
+	 */
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
+		this.color = cssClass;
+	}
+
+	/**
+	 * @return The colour of the calendar as the calendar configuration stores
+	 * 		it: a key of the chooser sets (e.g. "blue", "theme2") or CSS classes
+	 * 		(e.g. "o_cal_navy"), see {@link #setColor(String)}
+	 */
+	public String getColor() {
+		return color;
+	}
+
+	/**
+	 * Sets the colour of the calendar and its CSS classes. The value is stored
+	 * in the calendar configuration and rendered in HTML and JSON: a key of
+	 * the chooser sets (e.g. "blue") renders with the swatch classes ("o_cal_swatch
+	 * o_swatch_blue"), a calendar colour key (e.g. "navy") with its class
+	 * ("o_cal_navy"), every other value as CSS classes (e.g. the old class
+	 * "o_cal_navy"). An empty or invalid value changes nothing, an invalid value is logged.
+	 * 
+	 * @param color The colour, e.g. "blue", "o_cal_navy"
+	 */
+	public void setColor(String color) {
+		if(!StringHelper.containsNonWhitespace(color)) {
+			return;
+		}
+		String value = color.trim();
+		String colorCssClass = CoreSpringFactory.getImpl(ColorService.class).toCalendarEventCssClass(value);
+		if(colorCssClass == null) {
+			colorCssClass = ColorValidator.validCssClasses(value, "calendar configuration");
+		}
+		if(colorCssClass != null) {
+			// the stored value stays byte-identical, e.g. when the configuration is saved again
+			this.color = color;
+			this.cssClass = colorCssClass;
+		}
+	}
+
+	/**
+	 * The calendar colour on an event with its own colour: the event has the
+	 * classes of its colour and these classes, the calendar colour shows as
+	 * border.
+	 * 
+	 * @return The classes, e.g. "o_cal_sec o_cal_sec_blue" for the key "blue",
+	 * 		"o_cal_sec o_cal_navy_sec" for the class "o_cal_navy", null if the
+	 * 		calendar has no calendar colour
+	 */
+	public String getSecondaryCssClass() {
+		if(!StringHelper.containsNonWhitespace(cssClass)) {
+			return null;
+		}
+		if(color != null && Swatch.fromKey(color.trim()) != null) {
+			Swatch swatch = CoreSpringFactory.getImpl(ColorService.class).resolve(color, ColorFamily.SWATCH);
+			return swatch == null ? null : SECONDARY_CSS_CLASS + " " + SECONDARY_SWATCH_CSS_CLASS_PREFIX + swatch.key();
+		}
+		if(cssClass.startsWith(ColorService.CALENDAR_CSS_CLASS_PREFIX)) {
+			return SECONDARY_CSS_CLASS + " " + cssClass + "_sec";
+		}
+		return null;
 	}
 
 	/**

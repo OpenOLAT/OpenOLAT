@@ -24,13 +24,15 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -60,9 +62,7 @@ import org.olat.core.gui.control.winmgr.functions.VideoCommands;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -70,11 +70,9 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
-import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSession;
-import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,8 +104,6 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private FormLink zoomMinusButton;
 	private FormLink zoomPlusButton;
 
-	@Autowired
-	private ColorService colorService;
 	@Autowired
 	private VideoManager videoManager;
 	private int availableWidth;
@@ -258,13 +254,11 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		filters.add(new FlexiTableMultiSelectionFilter(translate(TimelineDataSource.TimelineFilter.TYPE.getI18nKey()),
 				TimelineDataSource.TimelineFilter.TYPE.name(), typeKV, true));
 
-		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
+		// the colours of the set M, the rows match with the key nearest to their colour
 		SelectionValues colorKV = new SelectionValues();
-		for (String color : colorService.getColors()) {
-			String style = VideoModule.getMarkerStyleFromColor(color);
-			colorKV.add(SelectionValues.entry(style, videoTranslator.translate("video.marker.style.".concat(style))));
+		for (ColorPickerElement.Color color : ColorUIFactory.createColors(ColorSet.M, getLocale())) {
+			colorKV.add(SelectionValues.entry(color.id(), color.translatedName()));
 		}
-		colorKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate(TimelineDataSource.TimelineFilter.COLOR.getI18nKey()),
 				TimelineDataSource.TimelineFilter.COLOR.name(), colorKV, true));
 		

@@ -27,7 +27,6 @@ import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -50,6 +49,7 @@ import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoCommentType;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.model.VideoCommentImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,8 +78,6 @@ public class CommentsHeaderController extends FormBasicController {
 	private final SimpleDateFormat timeFormat;
 	private CloseableModalController cmc;
 
-	@Autowired
-	private ColorService colorService;
 	private final long videoDurationInSeconds;
 	private ImportFileController importFileController;
 	private ImportUrlController importUrlController;
@@ -419,7 +417,7 @@ public class CommentsHeaderController extends FormBasicController {
 		VideoCommentImpl comment = new VideoCommentImpl();
 		comment.setId(UUID.randomUUID().toString());
 		comment.setAuthor(getIdentity() != null ? getIdentity().getName() : "-");
-		comment.setColor(colorService.getColors().get(0));
+		comment.setColor(VideoModule.DEFAULT_MARKER_COLOR);
 		if (currentTimeCode != null) {
 			long timeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
 			Set<Long> usedTimes = comments.getComments().stream().map(c -> c.getStart().getTime() / 1000).collect(Collectors.toSet());

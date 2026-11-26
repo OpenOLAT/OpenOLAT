@@ -276,7 +276,7 @@ jQuery(function() {
 		if (!isNaN(min)) {
 			if (value < min) {
 				out += ", below " + min + ":1";
-				jThis.addClass(kind === "text" ? "o_gd_col_fail" : "o_gd_col_fail_border");
+				jThis.addClass("o_gd_col_fail");
 			} else {
 				out += ", needs " + min + ":1";
 			}

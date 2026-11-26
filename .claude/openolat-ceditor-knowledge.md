@@ -127,7 +127,7 @@ block_1col(1), block_2cols(2), block_3cols(3), block_4cols(4,deprecated), block_
 
 ### ContentEditorModule (olat.properties)
 
-`ceditor.image.styles`, `ceditor.image.title.styles`, `ceditor.table.styles` (style lists), `ceditor.import.limit.md` (51200 KB), `ceditor.import.limit.docx` (204800 KB).
+`ceditor.image.styles`, `ceditor.image.title.styles` (style lists; the table styles are the colours of `ColorSet.M`, `b_{key}`), `ceditor.import.limit.md` (51200 KB), `ceditor.import.limit.docx` (204800 KB).
 
 ## Key File Paths
 

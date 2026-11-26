@@ -42,8 +42,6 @@ public class ContentEditorModule extends AbstractSpringModule {
 	private String imageStyles;
 	@Value("${ceditor.image.title.styles}")
 	private String imageTitleStyles;
-	@Value("${ceditor.table.styles}")
-	private String tableStyles;
 	@Value("${ceditor.import.limit.md:51200}")
 	private int importLimitMdKB;
 	@Value("${ceditor.import.limit.docx:204800}")
@@ -80,14 +78,6 @@ public class ContentEditorModule extends AbstractSpringModule {
 		return stylesToList(imageTitleStyles);
 	}
 	
-	public String getTableStyles() {
-		return tableStyles;
-	}
-	
-	public List<String> getTableStyleList() {
-		return stylesToList(tableStyles);
-	}
-
 	public int getImportLimitMdKB() {
 		return importLimitMdKB;
 	}

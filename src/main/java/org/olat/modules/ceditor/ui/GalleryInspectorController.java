@@ -130,7 +130,7 @@ public class GalleryInspectorController extends FormBasicController implements P
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
-		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory, getWindowControl(),
 				getAlertBoxSettings(getGallerySettings()), colorService, getLocale());
 	}
 

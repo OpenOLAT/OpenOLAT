@@ -1,11 +1,5 @@
 
 
-.o_building_color_picker {
-	ul.o_color_picker_dropdown {
-		z-index: 1001;
-	}
-}
-
 .o_building_detail_body {
 	margin-top: 16px;
 	display: grid;
@@ -357,8 +351,8 @@
 		}
 	}
 
-	// o_color_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
-	@at-root #{o-swatch-alias-selector("o_color_", &)} {
+	// the building colour of the colour set M: its swatch class, e.g. o_swatch_blue
+	@at-root #{o-swatch-selector(&)} {
 		background-color: var(--o-sw-soft-bg);
 
 		.fc-list-event-dot {

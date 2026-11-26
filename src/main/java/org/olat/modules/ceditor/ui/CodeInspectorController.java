@@ -118,7 +118,7 @@ public class CodeInspectorController extends FormBasicController implements Page
 				layoutCont);
 		numberOfLinesIntEl.addActionListener(FormEvent.ONBLUR);
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(layoutCont, getTranslator(), uifactory, getWindowControl(),
 				getAlertBoxSettings(getCodeSettings()), colorService, getLocale());
 	}
 	private void updateUI() {

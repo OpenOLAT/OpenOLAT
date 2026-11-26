@@ -21,16 +21,14 @@ package org.olat.gui.demo.guidemo;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
-import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.commons.services.color.ColorContrast;
 import org.olat.core.commons.services.color.ColorFamily;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.Palette;
 import org.olat.core.commons.services.color.Swatch;
 import org.olat.core.gui.UserRequest;
@@ -40,12 +38,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.style.ColorCategory;
-import org.olat.course.style.ColorCategorySearchParams;
-import org.olat.course.style.CourseStyleService;
 import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.project.ProjProjectImageType;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,8 +57,6 @@ public class GuiDemoColorsController extends BasicController {
 
 	@Autowired
 	private ColorService colorService;
-	@Autowired
-	private CourseStyleService courseStyleService;
 
 	public GuiDemoColorsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -79,7 +70,7 @@ public class GuiDemoColorsController extends BasicController {
 		}
 
 		List<Chooser> choosers = initChoosers(palette);
-		List<HueRow> rows = initRows(palette, choosers);
+		List<HueRow> rows = initRows(palette);
 
 		TabbedPane tabPane = new TabbedPane("tabs", getLocale());
 		mainVC.put("tabs", tabPane);
@@ -115,13 +106,14 @@ public class GuiDemoColorsController extends BasicController {
 		tabPane.addTab("Choosers", choosersCtrl.getInitialComponent());
 	}
 
-	private List<HueRow> initRows(Palette palette, List<Chooser> choosers) {
+	private List<HueRow> initRows(Palette palette) {
 		List<String> themeColors = palette.getThemeColors();
 		List<String> hues = new ArrayList<>(palette.getHues());
 		hues.addAll(themeColors);
 		List<HueRow> rows = new ArrayList<>();
 		for (String hue : hues) {
-			boolean bright = palette.isBrightColor(hue);
+			// yellow and a theme colour with a light brand colour have dark text on the solid fill
+			boolean darkText = !Palette.WHITE.equals(palette.fg(new Swatch(hue, Swatch.SOLID)));
 			List<Cell> cells = new ArrayList<>();
 			for (Integer step : Palette.ALL_STEPS) {
 				if (!palette.getSteps(hue).contains(step)) {
@@ -138,12 +130,6 @@ public class GuiDemoColorsController extends BasicController {
 				String onWhite = String.format(Locale.ENGLISH, "%.1f", ColorContrast.contrast(Palette.WHITE, hex));
 				String roles = fill ? "" : roles(palette, hue, step.intValue());
 				Cell cell = new Cell(hue, step.intValue(), hex, fg, ratio, onWhite, roles, fill);
-				for (Chooser chooser : choosers) {
-					List<String> keys = chooser.getKeysOf(cell.getId());
-					if (!keys.isEmpty()) {
-						cell.getChoosers().add(chooser.getId());
-					}
-				}
 				cells.add(cell);
 			}
 			String label = hue;
@@ -151,7 +137,7 @@ public class GuiDemoColorsController extends BasicController {
 			if (themeColor) {
 				label = themeColors.size() == 1 ? "Theme" : "Theme " + hue.substring(Palette.THEME_COLOR_PREFIX.length());
 			}
-			rows.add(new HueRow(hue, label, themeColor, bright, cells));
+			rows.add(new HueRow(hue, label, themeColor, darkText, cells));
 		}
 		return rows;
 	}
@@ -159,7 +145,7 @@ public class GuiDemoColorsController extends BasicController {
 	private String roles(Palette palette, String hue, int step) {
 		List<String> roles = new ArrayList<>();
 		if (step == 50) roles.add("soft-bg");
-		if (step == 200) roles.add("soft-border");
+		if (step == 100) roles.add("soft-border");
 		if (step == palette.getBgStep(new Swatch(hue, Swatch.TINT))) roles.add("tint");
 		if (step == palette.getBgStep(new Swatch(hue, Swatch.LIGHT))) roles.add("light");
 		if (step == palette.getBgStep(new Swatch(hue, Swatch.SOLID))) roles.add(Palette.isThemeColor(hue) ? "solid brand" : "solid");
@@ -172,66 +158,37 @@ public class GuiDemoColorsController extends BasicController {
 	private List<Chooser> initChoosers(Palette palette) {
 		List<Chooser> choosers = new ArrayList<>();
 
-		Chooser categories = new Chooser("category", "Course color category",
-				"Course style service, predefined categories (database)",
-				List.of("Course editor: course element, tab Layout",
-						"Course settings: Layout, color category of the course",
+		// The three chooser sets, each with a real picker: the stored value is the key of the set
+		Chooser setS = new Chooser("set_s", "Set S", "ColorSet.S, solid swatch of 7 hues and theme1",
+				List.of("No chooser uses it yet"));
+		addSetKeys(setS, palette, ColorSet.S);
+		choosers.add(setS);
+
+		Chooser setM = new Chooser("set_m", "Set M", "ColorSet.M, solid swatch of 14 hues and all theme colors",
+				List.of("Course and course element: color category; the administration gives each category a color"
+						+ " of the set M (o_swatch_{key}), the predefined categories keep their old classes",
 						"Administration: Courses, color categories",
-						"Borrowed by educational type labels, course benefit, practice levels and course quota"));
-		ColorCategorySearchParams params = ColorCategorySearchParams.builder().addColorTypes().build();
-		for (ColorCategory category : courseStyleService.getColorCategories(params)) {
-			String cssClass = category.getCssClass();
-			categories.addKey(palette, category.getIdentifier(), cssClass,
-					colorService.resolve(cssClass, ColorFamily.CATEGORY));
-		}
-		choosers.add(categories);
-
-		Chooser calendar = new Chooser("calendar", "Calendar color", "CalendarColors (12 keys)",
-				List.of("Calendar: event color",
-						"Calendar: color of a calendar in the personal settings",
-						"Projects: appointments and milestones"));
-		for (String key : CalendarColors.getColorsList()) {
-			calendar.addKey(palette, key, "o_cal_" + key, colorService.resolve(key, ColorFamily.CALENDAR));
-		}
-		choosers.add(calendar);
-
-		Chooser colorList = new Chooser("colorlist", "Color list", "ColorService, olat.properties color.list",
-				List.of("Page and form editor: block background (approx. 20 inspectors)",
-						"Content editor: custom alert box",
+						"Calendar: event color and color of a calendar in the personal settings",
+						"Projects: appointments and milestones, also through the MCP tools appointment_modify"
+						+ " and milestone_modify",
+						"Random at creation, hues of the set M only: project avatars and user initials",
 						"Room management: building color",
-						"Video editor: annotations, questions, comments, segment categories"));
-		for (String key : colorService.getColors()) {
-			colorList.addKey(palette, key, colorService.toCssClass(key), colorService.resolve(key, ColorFamily.COLOR_SERVICE));
-		}
-		choosers.add(colorList);
+						"Video editor: annotations, comments, questions and segment categories",
+						"Page and form editor: block background, custom alert box",
+						"Page editor and HTML editor: table style b_{key} (b_gray_hue for gray, b_gray is the old style)",
+						"Open Badges: badge color, after gold, silver and bronze",
+						"HTML editor (TinyMCE): color map of the text and background colors, the neutral steps"
+						+ " and the colors of the set M"));
+		addSetKeys(setM, palette, ColorSet.M);
+		choosers.add(setM);
 
-		Chooser avatars = new Chooser("avatar", "Project avatar", "ProjProjectImageType, random at creation",
-				List.of("Projects: avatar of a project without image"));
-		avatars.setNoPickerHint("No chooser: OpenOlat assigns the color at random when the project is created.");
-		for (String cssClass : ProjProjectImageType.AVATAR_CSS_CLASSES) {
-			avatars.addKey(palette, cssClass.substring("o_proj_avatar_".length()), cssClass,
-					colorService.resolve(cssClass, ColorFamily.AVATAR));
-		}
-		choosers.add(avatars);
+		Chooser setL = new Chooser("set_l", "Set L", "ColorSet.L, 5 variants of 14 hues and all theme colors",
+				List.of("No chooser uses it yet"));
+		addSetKeys(setL, palette, ColorSet.L);
+		choosers.add(setL);
 
-		Chooser initials = new Chooser("initials", "User initials", "UserManager, random at creation",
-				List.of("User portrait without image: initials on a colored fill"));
-		initials.setNoPickerHint("No chooser: OpenOlat assigns the color at random when the user is created.");
-		for (String cssClass : UserManager.USER_INITIALS_CSS) {
-			initials.addKey(palette, cssClass.substring("o_user_initials_".length()), cssClass,
-					colorService.resolve(cssClass, ColorFamily.AVATAR));
-		}
-		choosers.add(initials);
-
-		Chooser badges = new Chooser("badges", "Badge color", "ColorService, color.list plus gold, silver, bronze",
-				List.of("Open Badges: badge class wizard, step Customization",
-						"The color is baked as hex into the badge SVG"));
-		for (String key : colorService.getColorsForBadges()) {
-			badges.addKey(palette, key, colorService.toCssClass(key), colorService.resolve(key, ColorFamily.COLOR_SERVICE));
-		}
-		choosers.add(badges);
-
-		Chooser series = new Chooser("series", "Report chart series", "ReportHelper, solid fill of 10 hues",
+		// No chooser: a fixed use of the palette
+		Chooser series = new Chooser("series", "Report chart series (no chooser)", "ReportHelper, solid fill of 13 hues",
 				List.of("Evaluation forms and surveys: report charts, one color per series"));
 		series.setNoPickerHint("No chooser: the series take the hues in a fixed order.");
 		for (String hue : ReportHelper.getSeriesHues()) {
@@ -240,6 +197,12 @@ public class GuiDemoColorsController extends BasicController {
 		choosers.add(series);
 
 		return choosers;
+	}
+
+	private void addSetKeys(Chooser chooser, Palette palette, ColorSet colorSet) {
+		for (String key : colorService.getColors(colorSet)) {
+			chooser.addKey(palette, key, colorService.toSwatchCssClass(key), colorService.resolve(key, ColorFamily.SWATCH));
+		}
 	}
 
 	@Override
@@ -252,14 +215,14 @@ public class GuiDemoColorsController extends BasicController {
 		private final String hue;
 		private final String label;
 		private final boolean themeColor;
-		private final boolean bright;
+		private final boolean darkText;
 		private final List<Cell> cells;
 
-		public HueRow(String hue, String label, boolean themeColor, boolean bright, List<Cell> cells) {
+		public HueRow(String hue, String label, boolean themeColor, boolean darkText, List<Cell> cells) {
 			this.hue = hue;
 			this.label = label;
 			this.themeColor = themeColor;
-			this.bright = bright;
+			this.darkText = darkText;
 			this.cells = cells;
 		}
 
@@ -278,8 +241,12 @@ public class GuiDemoColorsController extends BasicController {
 			return themeColor;
 		}
 
-		public boolean isBright() {
-			return bright;
+		/**
+		 * @return true if the solid fill has dark text (yellow, a theme colour
+		 * 		with a light brand colour)
+		 */
+		public boolean isDarkText() {
+			return darkText;
 		}
 
 		public List<Cell> getCells() {
@@ -297,7 +264,6 @@ public class GuiDemoColorsController extends BasicController {
 		private final String onWhite;
 		private final String roles;
 		private final boolean fill;
-		private final Set<String> choosers = new LinkedHashSet<>();
 
 		public Cell(String hue, int step, String hex, String fg, String ratio, String onWhite, String roles, boolean fill) {
 			this.hue = hue;
@@ -349,14 +315,6 @@ public class GuiDemoColorsController extends BasicController {
 		public boolean isFill() {
 			return fill;
 		}
-
-		public Set<String> getChoosers() {
-			return choosers;
-		}
-
-		public String getChoosersAsString() {
-			return String.join(" ", choosers);
-		}
 	}
 
 	public static class Chooser {
@@ -387,11 +345,6 @@ public class GuiDemoColorsController extends BasicController {
 			ChooserKey chooserKey = new ChooserKey(key, cssClass, swatch, step, palette.bg(swatch));
 			keys.add(chooserKey);
 			cellKeys.computeIfAbsent(chooserKey.getCellId(), k -> new ArrayList<>()).add(key);
-		}
-
-		List<String> getKeysOf(String cellId) {
-			List<String> cellKeyList = cellKeys.get(cellId);
-			return cellKeyList == null ? List.of() : cellKeyList;
 		}
 
 		public String getId() {

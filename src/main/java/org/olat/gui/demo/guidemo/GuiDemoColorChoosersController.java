@@ -22,29 +22,27 @@ package org.olat.gui.demo.guidemo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.commons.services.color.Palette;
+import org.olat.core.commons.services.color.Swatch;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Util;
-import org.olat.course.style.ColorCategory;
-import org.olat.course.style.ColorCategorySearchParams;
-import org.olat.course.style.CourseStyleService;
-import org.olat.course.style.ui.CourseStyleUIFactory;
 import org.olat.gui.demo.guidemo.GuiDemoColorsController.Chooser;
 import org.olat.gui.demo.guidemo.GuiDemoColorsController.HueRow;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * The tab "Choosers" of the colors demo. It renders the real color picker of
- * every chooser, built with the same colors as in its original place, next to
- * the palette cells the chooser uses.
+ * The tab "Choosers" of the colors demo. It renders a real color picker for
+ * each of the three chooser sets S, M and L, built as in the places that use
+ * the set, next to the palette cells the set uses. The sets S and M use the
+ * list, the set L the grid presentation. The report chart series are shown
+ * without picker.
  *
  * Initial date: 1 Nov 2026<br>
  * @author gnaegi, gnaegi@frentix.com, https://www.frentix.com
@@ -52,22 +50,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GuiDemoColorChoosersController extends FormBasicController {
 
-	private static final ColorCategorySearchParams SEARCH_PARAMS_SELECTION = ColorCategorySearchParams.builder()
-			.addColorTypes()
-			.withEnabled(Boolean.TRUE)
-			.build();
-
 	private final List<HueRow> rows;
 	private final List<Chooser> choosers;
 
 	@Autowired
 	private ColorService colorService;
-	@Autowired
-	private CourseStyleService courseStyleService;
 
 	public GuiDemoColorChoosersController(UserRequest ureq, WindowControl wControl, List<HueRow> rows, List<Chooser> choosers) {
 		super(ureq, wControl, "guidemo-colors-choosers");
-		setTranslator(Util.createPackageTranslator(CourseStyleUIFactory.class, getLocale(), getTranslator()));
 		this.rows = rows;
 		this.choosers = choosers;
 		initForm(ureq);
@@ -79,24 +69,37 @@ public class GuiDemoColorChoosersController extends FormBasicController {
 		flc.contextPut("steps", Palette.STEPS);
 		flc.contextPut("choosers", choosers);
 
-		// Course editor, NodeLayoutController
-		List<ColorPickerElement.Color> categoryColors = new ArrayList<>();
-		for (ColorCategory colorCategory : courseStyleService.getColorCategories(SEARCH_PARAMS_SELECTION)) {
-			categoryColors.add(CourseStyleUIFactory.createColor(colorCategory, getTranslator()));
-		}
-		ColorPickerElement categoryEl = addPicker("category", categoryColors);
-		categoryEl.setElementCssClass("o_colcal_ele");
+		addPicker("set_s", ColorUIFactory.createColors(ColorSet.S, getLocale()));
+		addPicker("set_m", ColorUIFactory.createColors(ColorSet.M, getLocale()));
+		// The set L as grid: one column per colour, one row per variant, and the option "no color"
+		ColorPickerElement setLEl = addPicker("set_l", createSetLColors());
+		setLEl.setPresentation(ColorPickerElement.Presentation.GRID);
+		setLEl.setAllowUnselect(true);
+		setLEl.setNonSelectedText("No color");
+	}
 
-		// Calendar, CalendarEntryForm and CalendarPersonalConfigurationController
-		addPicker("calendar", ColorUIFactory.createColors(CalendarColors.getColorsList(), getLocale(), "o_cal_"));
-		// Page editor, room management, video editor
-		addPicker("colorlist", ColorUIFactory.createColors(colorService.getColors(), getLocale()));
-		// Open Badges, CreateBadge02CustomizationStep
-		addPicker("badges", ColorUIFactory.createColors(colorService.getColorsForBadges(), getLocale()));
+	/**
+	 * @return The colours of the set L: per colour of the set the 5 variants,
+	 * 		light to dark, labelled with the label of the colour and the variant,
+	 * 		e.g. "Blue soft", ..., "Blue dark"; the theme colours in their group
+	 */
+	private List<ColorPickerElement.Color> createSetLColors() {
+		List<ColorPickerElement.Color> colors = new ArrayList<>();
+		// one entry per colour of the set, with the label and the group of the colour
+		for (ColorPickerElement.Color color : ColorUIFactory.createColors(ColorSet.L, getLocale())) {
+			for (String variant : ColorSet.L.getVariants()) {
+				String key = new Swatch(color.id(), variant).key();
+				String cssClass = colorService.toSwatchCssClass(key);
+				if (cssClass != null) {
+					colors.add(new ColorPickerElement.Color(key, color.translatedName() + " " + variant, cssClass, color.group()));
+				}
+			}
+		}
+		return colors;
 	}
 
 	private ColorPickerElement addPicker(String chooserId, List<ColorPickerElement.Color> colors) {
-		ColorPickerElement pickerEl = uifactory.addColorPickerElement("picker_" + chooserId, null, flc, colors);
+		ColorPickerElement pickerEl = uifactory.addColorPickerElement("picker_" + chooserId, null, flc, getWindowControl(), colors);
 		if (!colors.isEmpty()) {
 			pickerEl.setColor(colors.get(0).id());
 		}

@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -64,12 +65,15 @@ import org.junit.Assume;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarImportTest;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
+import org.olat.commons.calendar.ui.CalendarPersonalConfigurationRow;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
@@ -1321,5 +1325,218 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		assertTrue("It throws an exception in test => see sysout", exceptionHolder.isEmpty());	
 		log.info("testConcurrentAddRemoveEvent finish successful");
+	}
+	
+	/**
+	 * The keys of the colour set M survive a save and load: a hue which is a
+	 * CSS colour name (e.g. "teal") in COLOR, the others (e.g. "slate") in
+	 * X-OLAT-COLOR.
+	 */
+	@Test
+	public void eventColorsOfColorSetM() throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-color-m-");
+		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();
+		ZonedDateTime start = ZonedDateTime.now().withMinute(0).withSecond(0).with(ChronoField.MILLI_OF_SECOND, 0);
+		for (String key : ColorSet.M.getHueKeys()) {
+			KalendarEvent event = new KalendarEvent("id-color-m-" + key, "Colour " + key, start, 60 * 60 * 1000);
+			event.setColor(key);
+			calendarManager.addEventTo(cal, event);
+		}
+		
+		File calendarFile = calendarManager.getCalendarFile(CalendarManager.TYPE_USER, test.getName());
+		String ics = FileUtils.readFileToString(calendarFile, StandardCharsets.UTF_8);
+		Assert.assertTrue(ics.contains("COLOR:teal"));
+		Assert.assertFalse(ics.contains("X-OLAT-COLOR:teal"));
+		Assert.assertTrue(ics.contains("X-OLAT-COLOR:slate"));
+		
+		emptyCalendarCache();
+		cal = calendarManager.getPersonalCalendar(test).getKalendar();
+		for (String key : ColorSet.M.getHueKeys()) {
+			Assert.assertEquals(key, cal.getEvent("id-color-m-" + key, null).getColor());
+		}
+	}
+	
+	/**
+	 * The calendar configuration stores the key of the colour set M, an old
+	 * class of the configuration renders as before.
+	 */
+	@Test
+	public void calendarConfigurationColor() {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-config-color-");
+		KalendarRenderWrapper wrapper = calendarManager.getPersonalCalendar(test);
+		// the default colour is a key of the colour set M
+		Assert.assertEquals("blue", wrapper.getColor());
+		Assert.assertEquals("o_cal_swatch o_swatch_blue", wrapper.getCssClass());
+		Assert.assertEquals("o_cal_sec o_cal_sec_blue", wrapper.getSecondaryCssClass());
+		Assert.assertEquals("blue", new CalendarPersonalConfigurationRow(wrapper).getColor());
+		// the first save creates the configuration
+		calendarManager.saveCalendarConfigForIdentity(wrapper, test);
+		DBFactory.getInstance().commitAndCloseSession();
+		// the second save writes the default colour as key, not as old class
+		calendarManager.saveCalendarConfigForIdentity(wrapper, test);
+		DBFactory.getInstance().commitAndCloseSession();
+		Assert.assertEquals("blue", calendarManager.findCalendarConfigForIdentity(wrapper.getKalendar(), test).getCssClass());
+		
+		wrapper.setColor("teal");
+		Assert.assertEquals("teal", wrapper.getColor());
+		Assert.assertEquals("o_cal_swatch o_swatch_teal", wrapper.getCssClass());
+		Assert.assertEquals("o_cal_sec o_cal_sec_teal", wrapper.getSecondaryCssClass());
+		calendarManager.saveCalendarConfigForIdentity(wrapper, test);
+		DBFactory.getInstance().commitAndCloseSession();
+		
+		CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(wrapper.getKalendar(), test);
+		Assert.assertEquals("teal", config.getCssClass());
+		KalendarRenderWrapper reloaded = new KalendarRenderWrapper(wrapper.getKalendar(), config, "Reloaded", null);
+		Assert.assertEquals("teal", reloaded.getColor());
+		Assert.assertEquals("o_cal_swatch o_swatch_teal", reloaded.getCssClass());
+		Assert.assertEquals("teal", new CalendarPersonalConfigurationRow(reloaded).getColor());
+		
+		// an invalid colour changes nothing
+		reloaded.setColor("teal\" onclick=\"x");
+		reloaded.setColor(null);
+		Assert.assertEquals("teal", reloaded.getColor());
+		Assert.assertEquals("o_cal_swatch o_swatch_teal", reloaded.getCssClass());
+		
+		// an old class of the configuration: the class, the nearest key of the set M preselected
+		CalendarUserConfiguration oldConfig = new CalendarUserConfiguration();
+		oldConfig.setVisible(true);
+		oldConfig.setCssClass("o_cal_navy");
+		KalendarRenderWrapper old = new KalendarRenderWrapper(wrapper.getKalendar(), oldConfig, "Old", null);
+		Assert.assertEquals("o_cal_navy", old.getColor());
+		Assert.assertEquals("o_cal_navy", old.getCssClass());
+		Assert.assertEquals("o_cal_sec o_cal_navy_sec", old.getSecondaryCssClass());
+		Assert.assertEquals("blue", new CalendarPersonalConfigurationRow(old).getColor());
+	}
+	
+	/**
+	 * A colour key which is no CSS colour name is saved in the property X-OLAT-COLOR,
+	 * the property COLOR holds a CSS colour name. The key survives a save and load.
+	 */
+	@Test
+	public void eventColors() throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-color-");
+		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();
+		ZonedDateTime start = ZonedDateTime.now().withMinute(0).withSecond(0).with(ChronoField.MILLI_OF_SECOND, 0);
+		
+		KalendarEvent cssColorEvent = new KalendarEvent("id-color-css", "CSS colour", start, 60 * 60 * 1000);
+		cssColorEvent.setColor("blue");
+		calendarManager.addEventTo(cal, cssColorEvent);
+		KalendarEvent keyColorEvent = new KalendarEvent("id-color-key", "Colour key", start, 60 * 60 * 1000);
+		keyColorEvent.setColor("cobaltblue");
+		calendarManager.addEventTo(cal, keyColorEvent);
+		KalendarEvent unknownColorEvent = new KalendarEvent("id-color-unknown", "Unknown colour", start, 60 * 60 * 1000);
+		unknownColorEvent.setColor("nocolor");
+		calendarManager.addEventTo(cal, unknownColorEvent);
+		
+		// the file
+		File calendarFile = calendarManager.getCalendarFile(CalendarManager.TYPE_USER, test.getName());
+		String ics = FileUtils.readFileToString(calendarFile, StandardCharsets.UTF_8);
+		Assert.assertTrue(ics.contains("COLOR:blue"));
+		Assert.assertFalse(ics.contains("X-OLAT-COLOR:blue"));
+		Assert.assertTrue(ics.contains("X-OLAT-COLOR:cobaltblue"));
+		Assert.assertFalse(ics.contains("\nCOLOR:cobaltblue"));
+		Assert.assertTrue(ics.contains("X-OLAT-COLOR:nocolor"));
+		Assert.assertFalse(ics.contains("\nCOLOR:nocolor"));
+		
+		// the keys after a reload from the file
+		emptyCalendarCache();
+		cal = calendarManager.getPersonalCalendar(test).getKalendar();
+		Assert.assertEquals("blue", cal.getEvent("id-color-css", null).getColor());
+		Assert.assertEquals("cobaltblue", cal.getEvent("id-color-key", null).getColor());
+		Assert.assertEquals("nocolor", cal.getEvent("id-color-unknown", null).getColor());
+	}
+	
+	/**
+	 * A calendar of another application has only the property COLOR.
+	 */
+	@Test
+	public void eventColorOfExternalCalendar() {
+		String ics = """
+				BEGIN:VCALENDAR
+				VERSION:2.0
+				PRODID:-//Test//Test//EN
+				BEGIN:VEVENT
+				UID:ext-color-1
+				DTSTAMP:20261124T100000Z
+				DTSTART:20261124T100000Z
+				DTEND:20261124T110000Z
+				SUMMARY:External event
+				COLOR:darkslateblue
+				END:VEVENT
+				END:VCALENDAR
+				""".replace("\n", "\r\n");
+		Kalendar cal = calendarManager.buildKalendarFrom(new ByteArrayInputStream(ics.getBytes(StandardCharsets.UTF_8)), CalendarManager.TYPE_USER, "ext-color");
+		Assert.assertEquals("darkslateblue", cal.getEvent("ext-color-1", null).getColor());
+	}
+	
+	/**
+	 * An imported calendar is untrusted: a hostile COLOR or X-OLAT-COLOR is
+	 * dropped, a valid COLOR is the fallback of a hostile X-OLAT-COLOR.
+	 */
+	@Test
+	public void eventColorOfHostileCalendar() {
+		String ics = """
+				BEGIN:VCALENDAR
+				VERSION:2.0
+				PRODID:-//Test//Test//EN
+				BEGIN:VEVENT
+				UID:hostile-1
+				DTSTAMP:20261124T100000Z
+				DTSTART:20261124T100000Z
+				DTEND:20261124T110000Z
+				SUMMARY:Script in COLOR
+				COLOR:"><script>alert(1)</script>
+				END:VEVENT
+				BEGIN:VEVENT
+				UID:hostile-2
+				DTSTAMP:20261124T100000Z
+				DTSTART:20261124T100000Z
+				DTEND:20261124T110000Z
+				SUMMARY:Attribute in X-OLAT-COLOR
+				COLOR:Navy
+				X-OLAT-COLOR:blue onmouseover=alert(1)
+				END:VEVENT
+				BEGIN:VEVENT
+				UID:hostile-3
+				DTSTAMP:20261124T100000Z
+				DTSTART:20261124T100000Z
+				DTEND:20261124T110000Z
+				SUMMARY:Style in both
+				COLOR:blue;background:url(x)
+				X-OLAT-COLOR:o_cal_blue" x="
+				END:VEVENT
+				BEGIN:VEVENT
+				UID:hostile-4
+				DTSTAMP:20261124T100000Z
+				DTSTART:20261124T100000Z
+				DTEND:20261124T110000Z
+				SUMMARY:Valid key
+				X-OLAT-COLOR:cobaltblue
+				END:VEVENT
+				END:VCALENDAR
+				""".replace("\n", "\r\n");
+		Kalendar cal = calendarManager.buildKalendarFrom(new ByteArrayInputStream(ics.getBytes(StandardCharsets.UTF_8)), CalendarManager.TYPE_USER, "hostile-color");
+		Assert.assertNull(cal.getEvent("hostile-1", null).getColor());
+		Assert.assertEquals("navy", cal.getEvent("hostile-2", null).getColor());
+		Assert.assertNull(cal.getEvent("hostile-3", null).getColor());
+		Assert.assertEquals("cobaltblue", cal.getEvent("hostile-4", null).getColor());
+	}
+	
+	/**
+	 * A hostile colour key of an event is not written into the file.
+	 */
+	@Test
+	public void hostileEventColorNotWritten() throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-color-");
+		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();
+		ZonedDateTime start = ZonedDateTime.now().withMinute(0).withSecond(0).with(ChronoField.MILLI_OF_SECOND, 0);
+		KalendarEvent event = new KalendarEvent("id-color-hostile", "Hostile colour", start, 60 * 60 * 1000);
+		event.setColor("blue\r\nX-INJECTED:1");
+		calendarManager.addEventTo(cal, event);
+		
+		File calendarFile = calendarManager.getCalendarFile(CalendarManager.TYPE_USER, test.getName());
+		String ics = FileUtils.readFileToString(calendarFile, StandardCharsets.UTF_8);
+		Assert.assertFalse(ics.contains("X-INJECTED"));
+		Assert.assertFalse(ics.contains("X-OLAT-COLOR"));
 	}
 }

@@ -110,8 +110,9 @@
 /* !important to display in print / pdf */
 .o_user_initials {
 	color: var(--o-user-initials-fg);
-	// o_user_initials_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
-	@at-root #{o-swatch-alias-selector("o_user_initials_", &)} {
+	// A hue of the colour set M renders with its swatch class, e.g. o_swatch_blue
+	// (UserManagerImpl.getRandomInitialsColorCss(), UserPortraitRenderer)
+	@at-root #{o-swatch-selector(&)} {
 		background: var(--o-sw-bg) !important;
 		color: var(--o-sw-fg);
 	}

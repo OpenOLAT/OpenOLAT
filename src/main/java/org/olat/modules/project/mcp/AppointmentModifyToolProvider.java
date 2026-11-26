@@ -33,7 +33,6 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
-import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -361,8 +360,9 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 		String description = textArgument(arguments, "description", current == null ? null : current.getDescription(), DESCRIPTION_MAX_LENGTH);
 		String location = textArgument(arguments, "location", current == null ? null : current.getLocation(), LOCATION_MAX_LENGTH);
 		String color = textArgument(arguments, "color", current == null ? null : current.getColor(), Integer.MAX_VALUE);
-		if(arguments.containsKey("color") && color != null && !CalendarColors.getColorsList().contains(color)) {
-			throw new McpInvalidArgumentException("Unknown color " + color + ". Use one of: " + String.join(", ", CalendarColors.getColorsList()) + ".");
+		if(arguments.containsKey("color")) {
+			// a key of the color chooser; an old color of the appointment stays until it is changed
+			color = support.validColor(color);
 		}
 
 		// dates
@@ -504,9 +504,6 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 	}
 
 	private static Map<String,Object> inputSchema() {
-		List<String> colors = CalendarColors.getColorsList();
-		List<String> colorValues = new ArrayList<>(colors);
-		colorValues.add("");
 		Map<String,Object> properties = new LinkedHashMap<>();
 		properties.put("action", Map.of("type", "string", "enum", ACTIONS,
 				"description", "create: a new appointment in a project; update: change the passed fields; delete: soft delete of the appointment, the whole series or with occurrence one occurrence"));
@@ -521,8 +518,7 @@ public class AppointmentModifyToolProvider implements McpToolProvider {
 		properties.put("allDay", Map.of("type", "boolean", "description", "true: an all day appointment, start and end are days; create defaults to false"));
 		properties.put("location", Map.of("type", "string", "maxLength", LOCATION_MAX_LENGTH, "description", "an empty string clears it"));
 		properties.put("description", Map.of("type", "string", "maxLength", DESCRIPTION_MAX_LENGTH, "description", "plain text, an empty string clears it"));
-		properties.put("color", Map.of("type", "string", "enum", colorValues,
-				"description", "the calendar color; an empty string resets the default color"));
+		properties.put("color", ProjectToolSupport.colorInputSchema("the calendar color, an empty string resets the default color"));
 		properties.put("recurrence", Map.of("type", "string", "enum", AppointmentToolSupport.RECURRENCES,
 				"description", "repeats the appointment until recurrenceEnd; workdaily is Monday to Friday, biweekly every second week; "
 						+ "create defaults to none, none ends the repetition"));

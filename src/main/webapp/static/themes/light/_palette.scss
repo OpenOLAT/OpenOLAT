@@ -8,26 +8,25 @@
  *
  * Construction rule (palette v2):
  * 1. Each step has one relative luminance for all hues: 50=0.93, 100=0.84,
- *    200=0.72, 300=0.60, 400=0.48, 500=0.165, 600=0.10, 700=0.062, 800=0.036, 900=0.016.
- *    Two exceptions: red steps 200 to
- *    400 are darker (0.66, 0.48, 0.32), yellow steps 100 to 400 are lighter
- *    (0.86, 0.78, 0.70, 0.62)
- * 2. Steps 50-400 are tints with the hue's step 900 as text (>= 8.0:1; the
- *    text of step 900 on red 400 has 5.6:1, at least 4.5:1)
+ *    200=0.72, 300=0.60, 400=0.48, 500=0.165, 600=0.10, 700=0.062, 800=0.036, 900=0.016
+ * 2. Steps 50-400 are tints with the hue's step 900 as text (>= 8.0:1)
  * 3. Steps 500-900 are shades with white text (>= 4.85:1); 500 is also text on white
  * 4. Step 450 sits in the zone between 400 and 500 (OO-10043): the midpoint
  *    of step 400 and step 500 in OKLab. It is a
  *    fill or shape colour only. White text on it, and the step as a mark on
- *    white, have 2.66:1 (yellow) to 3.71:1 (red); the text of step 900 on it
- *    has 4.28:1 (red) to 5.99:1 (yellow). No swatch role and no colour
- *    chooser reads it, the automatic step choices skip it
+ *    white, have 3.02:1 to 3.06:1; the text of step 900 on it has 5.19:1
+ *    to 5.28:1. It is the border of a fill at step 400
+ *    (o-palette-border-step()). It is no fill of a swatch role and no
+ *    colour chooser colour, the automatic step choices skip it
  *    ($o-palette-fill-steps); a token default reads it by name
- * 5. Bright hues use step 400 as solid fill, deep hues step 500
+ * 5. All hues use step 500 as solid fill with white text and step 700 as
+ *    dark fill. Exception: yellow has its solid fill at step 300 with dark
+ *    text and its dark fill at 500 ($o-palette-variant-steps-of-hue)
  *
  * The values are generated, also for teal, slate (blue-gray), green
  * (hue 143) and blue (hue 255) and for step 450. Red, orange and yellow
- * are tuned by hand: the hue turns along the ramp. Do not edit values by
- * hand.
+ * are tuned: the hue turns along the ramp, the luminance of each step is
+ * the one of rule 1. Do not edit values by hand.
  *
  * modules/_palette_vars.scss emits the map as custom properties
  * --o-{hue}-{step} in theme.css. Java reads the same values from the custom
@@ -43,9 +42,9 @@
 @use "sass:string";
 
 $o-palette: (
-	"red": (50: #FBF6F4, 100: #FAE8E6, 200: #F9C9C2, 300: #FF9E90, 400: #FF6857, 450: #F14442, 500: #E2002D, 600: #B50022, 700: #8E0D1C, 800: #6C0F16, 900: #470A0E),
+	"red": (50: #FBF6F4, 100: #FAE8E6, 200: #FAD4CE, 300: #FFBBB1, 400: #FF9E90, 450: #F36660, 500: #E2002D, 600: #B50022, 700: #8E0D1C, 800: #6C0F16, 900: #470A0E),
 	"orange": (50: #FBF6F2, 100: #FAE9DB, 200: #FAD6B6, 300: #FFBE80, 400: #FFA33D, 450: #E17723, 500: #C24A00, 600: #9B3A00, 700: #7A2F07, 800: #5C2409, 900: #3C1706),
-	"yellow": (50: #FBF7EA, 100: #FAEECE, 200: #FBE3A0, 300: #FFD556, 400: #F9C900, 450: #CA9600, 500: #9D6500, 600: #7D4F00, 700: #623F07, 800: #4A3009, 900: #301E06),
+	"yellow": (50: #FBF7EA, 100: #F9EBC5, 200: #FADA7F, 300: #F6C600, 400: #DFB300, 450: #BE8B00, 500: #9D6500, 600: #7D4F00, 700: #623F07, 800: #4A3009, 900: #301E06),
 	"lime": (50: #F3F9EB, 100: #E1F2CF, 200: #C7E7A0, 300: #ACDA6A, 400: #8ECA05, 450: #71A205, 500: #567C05, 600: #436202, 700: #354E02, 800: #273B01, 900: #182600),
 	"green": (50: #F1F9F0, 100: #DDF2DB, 200: #BEE8BB, 300: #9CDB98, 400: #76CC71, 450: #4DA74A, 500: #1F8320, 600: #016807, 700: #025305, 800: #013F03, 900: #012902),
 	"teal": (50: #EFF9F8, 100: #D7F2EF, 200: #B0E7E3, 300: #84DAD4, 400: #4ACBC4, 450: #2CA49E, 500: #027F7A, 600: #026460, 700: #00504C, 800: #003D3A, 900: #012725),
@@ -123,11 +122,6 @@ $_o-palette-filled: ();
 }
 $o-palette: $_o-palette-filled;
 
-// Bright hues: solid fill at step 400 with dark text. All other hues are
-// deep hues: solid fill at step 500 with white text. Quoted on purpose,
-// unquoted yellow or orange would be CSS colours, not names.
-$o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
-
 // Returns the colour of a hue at a step, e.g. o-palette("blue", 500).
 // Stops the build for an unknown hue or step.
 @function o-palette($hue, $step) {
@@ -171,7 +165,45 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 	@return list.nth($o-palette-steps, $i + 1);
 }
 
-// Computes the swatch roles of every hue.
+// Returns the border step of a fill at $step: the next step darker, e.g.
+// 500 -> 600. A fill at step 400 gets the fill step 450: 400 -> 500 is a
+// large step in luminance, a border at 500 reads as a hard dark line around
+// a light fill (a theme colour anchored at 400, a client hue with a fill at
+// 400). Generic: a fill step that lies between $step and the next darker
+// step ($o-palette-fill-steps) is the border.
+@function o-palette-border-step($step) {
+	@each $fill, $between in $o-palette-fill-steps {
+		@if list.nth($between, 1) == $step {
+			@return $fill;
+		}
+	}
+	@return o-palette-darker-step($step);
+}
+
+// The fill step of each variant. The same steps for all hues: the solid
+// fill is step 500 with white text, the dark fill step 700.
+$o-palette-variant-steps: ("soft": 50, "light": 200, "tint": 300, "solid": 500, "dark": 700) !default;
+
+// The one exception: yellow. Step 500 of yellow with white text is an
+// ochre, not a yellow, so the solid fill of yellow is step 300 with dark
+// text (step 900). The other variants move with it, tint would else be the
+// solid fill: soft 50, light 100, tint 200, solid 300, dark 500 (white text).
+$o-palette-variant-steps-of-hue: (
+	"yellow": ("soft": 50, "light": 100, "tint": 200, "solid": 300, "dark": 500)
+) !default;
+
+// The fill step of a variant of a hue, e.g. o-palette-variant-step("yellow", "solid") is 300
+@function o-palette-variant-step($hue, $variant) {
+	$steps: map.get($o-palette-variant-steps-of-hue, $hue);
+	@if $steps == null {
+		$steps: $o-palette-variant-steps;
+	}
+	@return map.get($steps, $variant);
+}
+
+// Computes the swatch roles of every hue, with the fill steps of
+// o-palette-variant-step(): solid 500 with white text, dark 700, for
+// yellow solid 300 with dark text, dark 500.
 // Every foreground is selected with o-on-color() and validated at
 // compile time, the build stops when a pair has less than 4.5:1.
 //
@@ -182,47 +214,40 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 // light-bg / light-fg / light-border variant "light", fill between tint and soft
 // dark-bg / dark-fg / dark-border variant "dark", darker solid fill
 //
-// Borders are validated with 3:1 on white (non-text contrast). The border
-// is one step darker than its fill; the tint fill (step 300) uses the first
-// step from 400 that passes, which is 500 in palette v2; the light fill
-// (step 200) uses the first step from 300 that passes.
+// The border of a fill is the next palette step darker than the fill, for
+// every variant, with one exception: a fill at step 400 gets the fill step
+// 450 as border, step 500 would read as a hard dark line
+// (o-palette-border-step()). Fill and border: soft 50 / 100, light 200 / 300,
+// tint 300 / 400, solid 500 / 600, dark 700 / 800 (yellow: soft 50 / 100,
+// light 100 / 200, tint 200 / 300, solid 300 / 400, dark 500 / 600); a fill
+// at 400 (a theme colour anchored at 400, a client step map) 400 / 450. A
+// border has no contrast rule on white, the text on the fill carries the
+// contrast.
 //
-@function o-palette-swatches($palette, $bright) {
+@function o-palette-swatches($palette) {
 	$swatches: ();
 	@each $hue, $steps in $palette {
-		// bright hues: solid fill 400, dark variant 500; deep hues: 500 and 700
-		$bg-step: 500;
-		$dark-step: 700;
-		@if list.index($bright, $hue) != null {
-			$bg-step: 400;
-			$dark-step: 500;
-		}
 		$c900: map.get($steps, 900);
-
-		$bg: map.get($steps, $bg-step);
-		$soft-bg: map.get($steps, 50);
-		$tint-bg: map.get($steps, 300);
-		$light-bg: map.get($steps, 200);
-		$dark-bg: map.get($steps, $dark-step);
-
 		$swatch: (
-			"bg": $bg,
-			"fg": o-on-color($bg, (#FFFFFF, $c900)),
-			"border": o-on-color(#FFFFFF, (map.get($steps, o-palette-darker-step($bg-step)),), 3),
-			"soft-bg": $soft-bg,
-			"soft-fg": o-on-color($soft-bg, (map.get($steps, 700), map.get($steps, 800), $c900)),
-			"soft-border": map.get($steps, 200),
-			"text": o-on-color(#FFFFFF, (map.get($steps, 500), map.get($steps, 600), map.get($steps, 700))),
-			"tint-bg": $tint-bg,
-			"tint-fg": o-on-color($tint-bg, ($c900,)),
-			"tint-border": o-on-color(#FFFFFF, (map.get($steps, 400), map.get($steps, 500)), 3),
-			"light-bg": $light-bg,
-			"light-fg": o-on-color($light-bg, ($c900,)),
-			"light-border": o-on-color(#FFFFFF, (map.get($steps, 300), map.get($steps, 400), map.get($steps, 500)), 3),
-			"dark-bg": $dark-bg,
-			"dark-fg": o-on-color($dark-bg, (#FFFFFF, $c900)),
-			"dark-border": o-on-color(#FFFFFF, (map.get($steps, o-palette-darker-step($dark-step)),), 3)
+			"soft-bg": map.get($steps, 50),
+			"soft-fg": o-on-color(map.get($steps, 50), (map.get($steps, 700), map.get($steps, 800), $c900)),
+			"soft-border": map.get($steps, o-palette-border-step(50)),
+			"text": o-on-color(#FFFFFF, (map.get($steps, 500), map.get($steps, 600), map.get($steps, 700)))
 		);
+		@each $variant in ("solid", "tint", "light", "dark") {
+			$step: o-palette-variant-step($hue, $variant);
+			$bg: map.get($steps, $step);
+			$prefix: "#{$variant}-";
+			@if $variant == "solid" {
+				$prefix: "";
+			}
+			$swatch: map.merge($swatch, (
+				"#{$prefix}bg": $bg,
+				"#{$prefix}fg": o-on-color($bg, (#FFFFFF, $c900)),
+				"#{$prefix}border": map.get($steps, o-palette-border-step($step))
+			));
+		}
+		$soft-bg: map.get($swatch, "soft-bg");
 		// hover of the text style (o_labeled_light): text colour on soft-bg
 		@if contrast(map.get($swatch, "text"), $soft-bg) < 4.5 {
 			$failed: o-contrast-failed("o-palette-swatches: text colour of '#{$hue}' does not reach 4.5:1 on its soft-bg #{$soft-bg}");
@@ -233,7 +258,7 @@ $o-palette-bright: ("yellow", "orange", "lime", "green", "cyan") !default;
 }
 
 // The swatch roles per hue: $o-swatches("blue")("fg")
-$o-swatches: o-palette-swatches($o-palette, $o-palette-bright) !default;
+$o-swatches: o-palette-swatches($o-palette) !default;
 
 /*
  * Swatch aliases
@@ -242,69 +267,66 @@ $o-swatches: o-palette-swatches($o-palette, $o-palette-bright) !default;
  * names. Each legacy class renders as one swatch: a hue of $o-palette and a
  * variant. Variants: "solid" uses the roles bg/fg/border, "tint" the roles
  * tint-bg/tint-fg/tint-border, "light" the roles light-bg/light-fg/light-border,
- * "dark" the roles dark-bg/dark-fg/dark-border.
+ * "dark" the roles dark-bg/dark-fg/dark-border, "soft" the roles
+ * soft-bg/soft-fg/soft-border.
  * The other roles (soft-*, text) do not depend on the variant.
  *
- * Keep in sync with ColorService.resolve() in Java.
+ * The hue follows the name of the old key. The variant is the one of the
+ * five variants (soft, light, tint, solid, dark) of that hue whose fill is
+ * nearest (OKLab distance) to the colour of the key before the palette.
+ * A stored value that is itself a swatch key (e.g. the calendar colour
+ * "yellow") renders as that swatch in Java (ColorService.resolveStored()).
+ * Such a key has no legacy class.
+ * No legacy class either for the values the upgrade to 21.2 converts in the
+ * database: the calendar classes o_cal_yellow, o_cal_orange, o_cal_red,
+ * o_cal_blue, o_cal_lime, o_cal_green, the project avatars o_proj_avatar_*
+ * and the user initials o_user_initials_* (to the keys of the colour set M),
+ * the 8 predefined course colour categories o_colcat_dark_blue, ...
+ * (to the swatch class o_swatch_<key>).
+ *
+ * Keep in sync with ColorServiceImpl in Java (ColorServiceResolveTest.aliasesAsCompiled).
  */
 
-// ColorService keys (olat.properties color.list) plus the badge colours.
-// Used with the prefixes o_color_, o_video_marker_, o_alert_box_color_
-$o-swatch-alias-keys-colorservice: (
+// Keys of the removed color.list (ColorService.LEGACY_COLORS).
+// Used with the prefixes o_video_marker_, o_alert_box_color_
+$o-swatch-alias-keys-colorlist: (
 	"lightgray": ("gray", "dark"),
 	"yellow": ("yellow", "solid"),
-	"orange": ("orange", "dark"),
+	"orange": ("orange", "solid"),
 	"brown": ("brown", "solid"),
 	"red": ("red", "solid"),
 	"orchid": ("pink", "solid"),
 	"purple": ("violet", "dark"),
 	"lightblue": ("cyan", "solid"),
-	"cobaltblue": ("blue", "solid"),
+	"cobaltblue": ("blue", "dark"),
 	"darkblue": ("blue", "dark"),
-	"lightgreen": ("lime", "dark"),
+	"lightgreen": ("lime", "solid"),
 	"seagreen": ("green", "dark"),
+) !default;
+
+// The keys of the color.list plus the badge colours. Used with the prefix o_color_
+$o-swatch-alias-keys-colorservice: map.merge($o-swatch-alias-keys-colorlist, (
 	"gold": ("yellow", "solid"),
 	"silver": ("gray", "tint"),
-	"bronze": ("orange", "solid"),
-) !default;
+	"bronze": ("orange", "tint"),
+)) !default;
 
-// Course colour categories, project avatars and user initials (8 keys).
-// Used with the prefixes o_colcat_, o_proj_avatar_, o_user_initials_
-$o-swatch-alias-keys-category: (
-	"dark_blue": ("blue", "solid"),
-	"light_blue": ("cyan", "solid"),
-	"purple": ("magenta", "dark"),
-	"red": ("red", "solid"),
-	"orange": ("orange", "solid"),
-	"yellow": ("yellow", "solid"),
-	"light_green": ("lime", "solid"),
-	"dark_green": ("green", "dark"),
-) !default;
-
-// CalendarColors (12 keys). Used with the prefix o_cal_
+// The keys of ColorService.CALENDAR_COLORS that are no swatch key (6 keys).
+// Used with the prefix o_cal_
 $o-swatch-alias-keys-calendar: (
-	"grey": ("gray", "dark"),
-	"yellow": ("yellow", "tint"),
-	"orange": ("orange", "tint"),
-	"red": ("red", "tint"),
+	"grey": ("gray", "solid"),
 	"maroon": ("red", "dark"),
-	"blue": ("blue", "dark"),
 	"navy": ("blue", "dark"),
 	"fuchsia": ("magenta", "solid"),
 	"rebeccapurple": ("violet", "dark"),
-	"lime": ("lime", "solid"),
-	"green": ("green", "solid"),
-	"olive": ("lime", "dark"),
+	"olive": ("lime", "solid"),
 ) !default;
 
 // Legacy class prefix -> key table
 $o-swatch-alias-families: (
 	"o_color_": $o-swatch-alias-keys-colorservice,
-	"o_video_marker_": $o-swatch-alias-keys-colorservice,
-	"o_alert_box_color_": $o-swatch-alias-keys-colorservice,
-	"o_colcat_": $o-swatch-alias-keys-category,
-	"o_proj_avatar_": $o-swatch-alias-keys-category,
-	"o_user_initials_": $o-swatch-alias-keys-category,
+	"o_video_marker_": $o-swatch-alias-keys-colorlist,
+	"o_alert_box_color_": $o-swatch-alias-keys-colorlist,
 	"o_cal_": $o-swatch-alias-keys-calendar,
 ) !default;
 
@@ -317,7 +339,7 @@ $o-swatch-alias-families: (
 			@if not map.has-key($o-palette, $hue) {
 				@error "o-swatch-aliases: unknown hue '#{$hue}' for '#{$prefix}#{$key}'";
 			}
-			@if not list.index(("solid", "tint", "light", "dark"), $variant) {
+			@if not list.index(("solid", "tint", "light", "dark", "soft"), $variant) {
 				@error "o-swatch-aliases: unknown variant '#{$variant}' for '#{$prefix}#{$key}'";
 			}
 			$aliases: map.merge($aliases, ("#{$prefix}#{$key}": $alias));
@@ -326,11 +348,11 @@ $o-swatch-alias-families: (
 	@return $aliases;
 }
 
-// Legacy CSS class -> (hue, variant), e.g. "o_cal_blue": ("blue", "dark")
+// Legacy CSS class -> (hue, variant), e.g. "o_cal_navy": ("blue", "dark")
 $o-swatch-aliases: o-swatch-build-aliases($o-swatch-alias-families) !default;
 
 // Returns the colour of a role for a legacy class, e.g.
-// o-swatch-alias-color("o_cal_blue", "bg") is the dark-bg of blue.
+// o-swatch-alias-color("o_cal_navy", "bg") is the dark-bg of blue.
 @function o-swatch-alias-color($class, $role: "bg") {
 	@if not map.has-key($o-swatch-aliases, $class) {
 		@error "o-swatch-alias-color: unknown legacy class '#{$class}'";
@@ -343,15 +365,8 @@ $o-swatch-aliases: o-swatch-build-aliases($o-swatch-alias-families) !default;
 	@return map.get(map.get($o-swatches, list.nth($alias, 1)), $role);
 }
 
-// Returns the colour for text and borders on white for a legacy class:
-// the swatch background itself when it reaches 4.5:1 on white, otherwise
-// the text colour of the hue. Keeps labels close to the chooser colour.
-@function o-swatch-alias-on-white($class) {
-	@return o-on-color(#FFFFFF, (o-swatch-alias-color($class, "bg"), o-swatch-alias-color($class, "text")));
-}
-
 // Returns the selector list of all legacy classes with a prefix,
-// e.g. o-swatch-alias-selector("o_colcat_") is ".o_colcat_dark_blue, ...".
+// e.g. o-swatch-alias-selector("o_cal_") is ".o_cal_grey, ...".
 // With $parent, each class is appended to the parent selector:
 // o-swatch-alias-selector("o_color_", ".o_color") is ".o_color.o_color_red, ..."
 @function o-swatch-alias-selector($prefix, $parent: null) {
@@ -363,6 +378,23 @@ $o-swatch-aliases: o-swatch-build-aliases($o-swatch-alias-families) !default;
 	}
 	@if list.length($selectors) == 0 {
 		@error "o-swatch-alias-selector: no legacy class with prefix '#{$prefix}'";
+	}
+	@if $parent != null {
+		@return selector.append($parent, $selectors);
+	}
+	@return $selectors;
+}
+
+// Returns the selector list of the swatch classes of all keys of $o-swatches,
+// the 14 hues and the theme colours theme1 ... themeN (_palette_theme.scss),
+// e.g. o-swatch-selector(".o_colcat_bg") is ".o_colcat_bg.o_swatch_red, ...".
+// The modifiers o_swatch_tint, o_swatch_light, o_swatch_dark and o_swatch_soft
+// are no keys and not in the list: they change the --o-sw-* tokens of the
+// hue class, so a rule that reads var(--o-sw-*) shows the variant too.
+@function o-swatch-selector($parent: null) {
+	$selectors: ();
+	@each $key, $swatch in $o-swatches {
+		$selectors: list.append($selectors, ".o_swatch_#{$key}", $separator: comma);
 	}
 	@if $parent != null {
 		@return selector.append($parent, $selectors);
@@ -392,6 +424,37 @@ $o-states: (
 		@error "o-swatch-color: unknown hue or role '#{$hue}' '#{$role}'";
 	}
 	@return $color;
+}
+
+// The palette token of a swatch role, e.g. o-swatch-token("yellow",
+// "light-bg") is "yellow-100": the step of the hue (or theme colour) that
+// holds the colour of the role, "white" for white. For rules that read the
+// role of a key without the class o_swatch_<key> (the coloured tables of the
+// content, content.css has no swatch classes). Stops the build when the role
+// colour is no step of its key.
+@function o-swatch-token($key, $role) {
+	$color: o-swatch-color($key, $role);
+	@each $step, $value in map.get($o-palette, $key) {
+		@if $value == $color {
+			@return "#{$key}-#{$step}";
+		}
+	}
+	@if $color == #FFFFFF {
+		@return "white";
+	}
+	@error "o-swatch-token: the role '#{$role}' of '#{$key}' (#{$color}) is no step of '#{$key}'";
+}
+
+// Colour for text and borders on white of a swatch, e.g.
+// o-swatch-on-white("blue") or o-swatch-on-white("magenta", "dark"): the
+// fill of the variant when it reaches 4.5:1 on white, otherwise the text
+// colour of the hue.
+@function o-swatch-on-white($hue, $variant: "solid") {
+	$role: "bg";
+	@if $variant != "solid" {
+		$role: "#{$variant}-bg";
+	}
+	@return o-on-color(#FFFFFF, (o-swatch-color($hue, $role), o-swatch-color($hue, "text")));
 }
 
 // Colour of a state at compile time, for a rule that cannot extend the state

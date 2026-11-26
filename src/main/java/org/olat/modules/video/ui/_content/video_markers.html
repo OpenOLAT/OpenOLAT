@@ -37,7 +37,7 @@ jQuery(function() {
 		var markerEl = jQuery("#marker_${marker.id}")
 			.css('top', top + 'px')
 			.css('left', left + 'px');
-		var color = '${marker.style}';
+		var color = '$!{marker.style}';
 		if(color.indexOf('#') == 0 || color.indexOf('rgb') == 0 || color.indexOf('rgba') == 0) {
 			markerEl.css('border-color', color);
 		} else {

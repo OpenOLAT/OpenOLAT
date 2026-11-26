@@ -1295,7 +1295,7 @@ legend.control-label {
 	text-align: center;
 }
 
-ul.o_color_picker_dropdown, ul.o_icon_selector_dropdown {
+ul.o_icon_selector_dropdown {
 	width: 100%;
 	height: auto;
 	top: unset;
@@ -1310,7 +1310,7 @@ ul.o_color_picker_dropdown, ul.o_icon_selector_dropdown {
 	li {
 		cursor: pointer;
 
-		a.o_color_picker_link, a.o_icon_selector_link {
+		a.o_icon_selector_link {
 			width: 100%;
 			text-align: left;
 			position: relative;
@@ -1335,6 +1335,176 @@ ul.o_color_picker_dropdown, ul.o_icon_selector_dropdown {
 				width: 32px;
 				height: 32px;
 			}
+		}
+	}
+}
+
+// The colours of the colour picker open in a callout at window level
+// (ColorPickerPopupRenderer), the list or the grid, placed like a dropdown
+// menu (CalloutSettings.CalloutAlignment): no arrow, 2px from the button.
+// The callout has no padding: the entries of the list are as wide as the
+// callout.
+dialog.popover .popover-content:has(.o_color_picker_popup) {
+	padding: 0;
+	margin-top: 2px;
+}
+dialog.popover.top .popover-content:has(.o_color_picker_popup) {
+	margin-top: 0;
+	margin-bottom: 2px;
+}
+// the grid is as wide as its columns, up to the width of the window
+dialog.popover:has(.o_color_picker_popup_grid) {
+	max-width: calc(100vw - 32px);
+}
+
+// The list: one entry per line, the colour square and the name. A group of
+// colours, e.g. the theme colours after the hues: a gap, the heading and a
+// nested list.
+.o_color_picker_popup_list {
+	// The height cuts an entry in half (5px padding and 13.5 entries of 12px
+	// padding and one line): the cut entry shows that more entries follow.
+	.o_color_picker_list {
+		max-height: min(#{5px + 13.5 * (12px + $line-height-computed)}, 70vh);
+		overflow-y: auto;
+		margin: 0;
+		padding: 5px 0;
+		list-style: none;
+	}
+
+	.o_color_picker_group_list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	li.o_color_picker_group {
+		margin-top: 6px;
+		padding-top: 3px;
+		border-top: 1px solid var(--o-dropdown-divider);
+	}
+
+	a.o_color_picker_link {
+		display: block;
+		position: relative;
+		padding: 6px 15px 6px 32px;
+		font-weight: normal;
+		line-height: $line-height-base;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: var(--o-dropdown-link);
+		cursor: pointer;
+
+		&:hover, &:focus {
+			color: var(--o-dropdown-link-hover);
+			text-decoration: none;
+			background-color: var(--o-dropdown-link-hover-bg);
+		}
+		&:focus:focus-visible {
+			@include o-focus-ring-inset;
+		}
+	}
+
+	li.o_selected > a.o_color_picker_link {
+		&, &:hover, &:focus {
+			background-color: var(--o-primary);
+			color: var(--o-color-picker-selected-fg);
+		}
+		&:focus:focus-visible {
+			@include o-focus-ring-on-fill;
+		}
+	}
+}
+
+// The grid (ColorPickerGridRenderer): one column per colour, one row per
+// variant, the theme colours after a gap with their heading, the button
+// "no colour" below. A cell shows the letter "a" in the roles of its swatch
+// (.o_swatch_*). The selected cell has a ring in the primary colour outside
+// the cell, the focused cell the focus ring on the fill (the text colour of
+// the swatch), so both show at the same time. A grid wider than the
+// callout scrolls.
+$o-picker-grid-cell-size: 28px !default;
+$o-picker-grid-gap: 6px !default;
+$o-picker-grid-group-gap: 10px !default;
+
+.o_color_picker_popup_grid {
+	padding: 10px;
+
+	.o_color_picker_grid_scroll {
+		overflow-x: auto;
+		// room for the ring of the selected cell
+		padding: 4px;
+	}
+
+	.o_color_picker_grid_groups, .o_color_picker_grid_row {
+		display: flex;
+		gap: $o-picker-grid-gap;
+	}
+	.o_color_picker_grid {
+		display: flex;
+		flex-direction: column;
+		gap: $o-picker-grid-gap;
+	}
+
+	.o_color_picker_grid_group {
+		flex: 0 0 $o-picker-grid-cell-size;
+		width: $o-picker-grid-cell-size;
+		margin-bottom: 2px;
+		font-size: $font-size-small;
+		line-height: $line-height-base;
+		color: var(--o-text-muted);
+		white-space: nowrap;
+		overflow: visible;
+	}
+
+	.o_color_picker_grid_gap {
+		margin-left: $o-picker-grid-group-gap;
+	}
+
+	.o_color_picker_cell {
+		flex: 0 0 $o-picker-grid-cell-size;
+		width: $o-picker-grid-cell-size;
+		height: $o-picker-grid-cell-size;
+		border: 1px solid var(--o-sw-border);
+		border-radius: $border-radius-base;
+		background-color: var(--o-sw-bg);
+		color: var(--o-sw-fg);
+		font-size: 15px;
+		line-height: $o-picker-grid-cell-size - 2px;
+		text-align: center;
+		cursor: pointer;
+		user-select: none;
+
+		&:hover {
+			box-shadow: 0 0 0 2px var(--o-bg-raised), 0 0 0 4px var(--o-border-strong);
+		}
+		&.o_selected {
+			box-shadow: 0 0 0 2px var(--o-bg-raised), 0 0 0 4px var(--o-primary);
+		}
+		&:focus {
+			outline: 0;
+		}
+		&:focus-visible {
+			@include o-focus-ring-on-fill;
+		}
+	}
+
+	.o_color_picker_cell_empty {
+		border-color: transparent;
+		background-color: transparent;
+		cursor: default;
+
+		&:hover {
+			box-shadow: none;
+		}
+	}
+
+	.o_color_picker_grid_unselect {
+		margin-top: 8px;
+
+		&.o_selected {
+			box-shadow: 0 0 0 1px var(--o-primary);
+			border-color: var(--o-primary);
 		}
 	}
 }

@@ -32,6 +32,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -270,7 +271,7 @@ public class UserManagerTest extends OlatTestCase {
 		UserImpl user = (UserImpl)id.getUser();
 		user.setPortraitPath("portrait.png");
 		user.setLogoPath("logo.png");
-		user.setInitialsCssClass("o_user_initials_light_blue");
+		user.setInitialsCssClass("cyan");
 		user.setUserProperty("emchangeKey", UUID.randomUUID().toString());
 		user.setUserProperty("emailDisabled", "true");
 		userManager.updateUserFromIdentity(id);
@@ -316,7 +317,7 @@ public class UserManagerTest extends OlatTestCase {
 		
 		UserImpl user = (UserImpl)userManager.loadUserByKey(id.getUser().getKey());
 		user.setLastModified(DateUtils.addDays(new Date(), -10));
-		user.setInitialsCssClass("o_user_initials_light_blue");
+		user.setInitialsCssClass("cyan");
 		dbInstance.commitAndCloseSession();
 
 		User reloadedUser = userManager.loadUserByKey(user.getKey());
@@ -352,6 +353,16 @@ public class UserManagerTest extends OlatTestCase {
 	/**
 	 * @return A user with a last modified date 2 days ago, detached
 	 */
+	@Test
+	public void createUserWithInitialsColorOfColorSetM() {
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+
+		// a hue of the set M, no theme colour, no old class
+		Identity reloadedId = securityManager.loadIdentityByKey(id.getKey());
+		Assertions.assertThat(reloadedId.getUser().getInitialsCssClass()).isIn(ColorSet.M.getHueKeys());
+	}
+	
 	private Identity createUserWithOldLastModified() {
 		Identity id = createUser(UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();

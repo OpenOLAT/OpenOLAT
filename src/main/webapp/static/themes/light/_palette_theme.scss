@@ -19,8 +19,8 @@
  * the luminance targets of the palette steps. The exact colour replaces the
  * step with the same text polarity and the nearest luminance (the anchor),
  * never lighter than step 300. Without an anchor the fill is the generated
- * step 500, or 400 for a light colour: a colour in the dead zone, where
- * neither white nor step 900 reaches 4.5:1, or a colour that is almost
+ * step 500 with white text, as for the hues: a colour in the dead zone,
+ * where neither white nor step 900 reaches 4.5:1, or a colour that is almost
  * white (below 1.5:1 on white). Every ramp gets the fill step 450, the
  * OKLab midpoint of its steps 400 and 500 (o-palette-add-fill-steps(),
  * also for a map without it); the steps above are the text steps only.
@@ -182,26 +182,12 @@ $o-palette-chroma: (50: 0.020, 100: 0.050, 200: 0.100, 300: 0.150, 400: 0.200, 5
 			$steps: map.merge($steps, ($step: $brand));
 		}
 	}
-	// without anchor: the generated step 400 for a light colour, else 500
+	// without anchor: the generated step 500, as for the hues
 	$fill: $anchor;
 	@if $fill == null {
 		$fill: 500;
-		@if $y >= 0.25 {
-			$fill: 400;
-		}
 	}
 	@return ("steps": o-palette-add-fill-steps($steps), "anchor": $anchor, "fill": $fill);
-}
-
-// The first step from $from to 900 that reaches 3:1 on white
-@function o-theme-border($steps, $from) {
-	$candidates: ();
-	@each $step in $o-palette-steps {
-		@if $step >= $from {
-			$candidates: list.append($candidates, map.get($steps, $step));
-		}
-	}
-	@return o-on-color(#FFFFFF, $candidates, 3);
 }
 
 // The step $n positions darker than $step, 900 at most
@@ -210,9 +196,23 @@ $o-palette-chroma: (50: 0.020, 100: 0.050, 200: 0.100, 300: 0.150, 400: 0.200, 5
 	@return list.nth($o-palette-steps, $i);
 }
 
+// The border step of a fill at $step: o-palette-border-step() (next step
+// darker, a fill at 400 gets 450), 900 at most
+@function o-theme-border-step($step) {
+	@if $step == list.nth($o-palette-steps, list.length($o-palette-steps)) {
+		@return $step;
+	}
+	@return o-palette-border-step($step);
+}
+
 // The swatch roles of a theme colour, same keys as o-palette-swatches().
 // The solid fill is the anchor step (the exact brand colour), else 500.
 // Tint 300 and light 200; for a solid fill at 300, tint 200 and light 100.
+// The dark fill is two steps darker than the solid fill. The border of a
+// fill is the next step darker than the fill, also for the soft fill (50 /
+// 100), as for the hues; a solid fill anchored at 400 gets the fill step 450
+// as border, not 500 (o-palette-border-step()). A border has no contrast
+// rule on white.
 @function o-theme-swatch($steps, $bg-step) {
 	$c900: map.get($steps, 900);
 	$tint-step: 300;
@@ -234,20 +234,20 @@ $o-palette-chroma: (50: 0.020, 100: 0.050, 200: 0.100, 300: 0.150, 400: 0.200, 5
 	@return (
 		"bg": $bg,
 		"fg": o-on-color($bg, (#FFFFFF, $c900, #000000)),
-		"border": o-theme-border($steps, o-theme-darker($bg-step, 1)),
+		"border": map.get($steps, o-theme-border-step($bg-step)),
 		"soft-bg": $soft-bg,
 		"soft-fg": o-on-color($soft-bg, (map.get($steps, 700), map.get($steps, 800), $c900)),
-		"soft-border": map.get($steps, 200),
+		"soft-border": map.get($steps, 100),
 		"text": o-on-color(#FFFFFF, $text-candidates),
 		"tint-bg": $tint-bg,
 		"tint-fg": o-on-color($tint-bg, ($c900, #000000)),
-		"tint-border": o-theme-border($steps, o-theme-darker($tint-step, 1)),
+		"tint-border": map.get($steps, o-theme-border-step($tint-step)),
 		"light-bg": $light-bg,
 		"light-fg": o-on-color($light-bg, ($c900, #000000)),
-		"light-border": o-theme-border($steps, o-theme-darker($light-step, 1)),
+		"light-border": map.get($steps, o-theme-border-step($light-step)),
 		"dark-bg": $dark-bg,
 		"dark-fg": o-on-color($dark-bg, (#FFFFFF, $c900, #000000)),
-		"dark-border": o-theme-border($steps, o-theme-darker($dark-step, 1))
+		"dark-border": map.get($steps, o-theme-border-step($dark-step))
 	);
 }
 

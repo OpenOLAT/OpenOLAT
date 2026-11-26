@@ -121,7 +121,11 @@ public class MilestoneModifyToolProviderTest extends OlatTestCase {
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("milestoneKey", 1)).valid());
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "archive", "milestoneKey", 1)).valid());
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "set_status", "milestoneKey", 1, "milestoneStatus", "done")).valid());
-		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "update", "milestoneKey", 1, "color", "pink")).valid());
+		// the schema has no pattern for the color: the code checks it against the keys of the active theme
+		Assert.assertTrue(VALIDATOR.validate(schema, Map.of("action", "update", "milestoneKey", 1, "color", "pink")).valid());
+		Assert.assertTrue(VALIDATOR.validate(schema, Map.of("action", "update", "milestoneKey", 1, "color", "theme2")).valid());
+		Assert.assertTrue(VALIDATOR.validate(schema, Map.of("action", "update", "milestoneKey", 1, "color", "navy")).valid());
+		assertThat(schema.toString()).doesNotContain("pattern").contains("depend on the active theme");
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "update", "milestoneKey", 1, "members", List.of("jdoe"))).valid());
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "update", "milestoneKey", 1, "links", List.of(Map.of("type", "note", "key", 5)))).valid());
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "update", "milestoneKey", 1, "status", "deleted")).valid());
@@ -236,7 +240,7 @@ public class MilestoneModifyToolProviderTest extends OlatTestCase {
 		arguments.put("description", "Version 2\nwith the new module");
 		arguments.put("dueDate", "2026-12-01");
 		arguments.put("milestoneStatus", "achieved");
-		arguments.put("color", "navy");
+		arguments.put("color", "teal");
 		arguments.put("tags", List.of("release", "alpha"));
 		McpToolResult result = invoke(context(participant), arguments);
 		Map<String,Object> item = item(result);
@@ -248,11 +252,11 @@ public class MilestoneModifyToolProviderTest extends OlatTestCase {
 		Assert.assertEquals("Version 2\nwith the new module", milestone.getDescription());
 		Assert.assertEquals("2026-12-01", McpToolSupport.isoDate(milestone.getDueDate()));
 		Assert.assertEquals(ProjMilestoneStatus.achieved, milestone.getStatus());
-		Assert.assertEquals("navy", milestone.getColor());
+		Assert.assertEquals("teal", milestone.getColor());
 		Assert.assertEquals(participant, milestone.getArtefact().getCreator());
 		Assert.assertEquals("2026-12-01", item.get("dueDate"));
 		Assert.assertEquals("achieved", item.get("milestoneStatus"));
-		Assert.assertEquals("navy", item.get("color"));
+		Assert.assertEquals("teal", item.get("color"));
 		Assert.assertEquals(List.of("alpha", "release"), item.get("tags"));
 		assertThat(actions(project, participant)).contains(Action.milestoneCreate, Action.milestoneContentUpdate, Action.milestoneTagsUpdate);
 		assertThat(result.text()).startsWith("Created: Release (key " + milestoneKey + ", achieved, due 2026-12-01").contains("tags alpha, release");
@@ -315,9 +319,16 @@ public class MilestoneModifyToolProviderTest extends OlatTestCase {
 		Assert.assertTrue(badStatus.error());
 		assertThat(badStatus.text()).contains("Unknown milestoneStatus 'done'");
 
-		McpToolResult badColor = invoke(context(owner), Map.of("action", "create", "projectKey", projectKey, "subject", "x", "color", "pink"));
+		McpToolResult badColor = invoke(context(owner), Map.of("action", "create", "projectKey", projectKey, "subject", "x", "color", "purple"));
 		Assert.assertTrue(badColor.error());
-		assertThat(badColor.text()).contains("Unknown color pink").contains("rebeccapurple");
+		assertThat(badColor.text()).contains("The color purple does not exist. Valid colors: red, orange,").contains("teal")
+				.doesNotContain("rebeccapurple");
+
+		// an old calendar color is no key of the color chooser any more: the same message
+		McpToolResult oldColor = invoke(context(owner), Map.of("action", "create", "projectKey", projectKey, "subject", "x", "color", "rebeccapurple"));
+		Assert.assertTrue(oldColor.error());
+		assertThat(oldColor.text()).contains("The color rebeccapurple does not exist. Valid colors: red, orange,").contains("magenta")
+				.doesNotContain("old calendar color");
 
 		McpToolResult members = invoke(context(owner), Map.of("action", "create", "projectKey", projectKey, "subject", "x",
 				"members", List.of(username(owner))));
@@ -393,6 +404,29 @@ public class MilestoneModifyToolProviderTest extends OlatTestCase {
 		Assert.assertEquals(List.of("new"), tagged.get("tags"));
 		Assert.assertEquals("Subject v2", projectService.getMilestone(milestone).getSubject());
 		assertThat(actions(project, participant)).contains(Action.milestoneTagsUpdate);
+	}
+
+	@Test
+	public void update_oldColorStays() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("mcp-mi-45");
+		ProjProject project = createProject(owner);
+		// a milestone of an older release with an old calendar color
+		ProjMilestone milestone = createMilestone(owner, project, "Subject", null, null, "navy");
+		dbInstance.commitAndCloseSession();
+
+		// an update without color keeps the old color
+		Map<String,Object> item = item(invoke(context(owner), Map.of("action", "update", "milestoneKey", milestone.getKey(), "subject", "Subject v2")));
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals("navy", projectService.getMilestone(milestone).getColor());
+		Assert.assertEquals("navy", item.get("color"));
+
+		// the old color cannot be set again, a key of the set M replaces it
+		McpToolResult again = invoke(context(owner), Map.of("action", "update", "milestoneKey", milestone.getKey(), "color", "navy"));
+		Assert.assertTrue(again.error());
+		assertThat(again.text()).contains("The color navy does not exist. Valid colors: ").doesNotContain("old calendar color");
+		invoke(context(owner), Map.of("action", "update", "milestoneKey", milestone.getKey(), "color", "blue"));
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals("blue", projectService.getMilestone(milestone).getColor());
 	}
 
 	@Test

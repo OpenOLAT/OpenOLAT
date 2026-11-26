@@ -3,8 +3,8 @@
 The state defines the hue, the style defines the weight. A new status uses the state class <code>o_state_&lt;name&gt;</code> that matches its meaning (OO-10042).
 The existing status classes keep their names; <code>&#36;o-state-wiring</code> in <code>themes/light/modules/_states.scss</code> assigns each of them a state and a style.
 All badges on this tab use the classes of the current theme.
-The numbers under each badge are measured in the browser: text on its background, and the border on white.
-A red outline marks text below 4.5:1, a dashed red outline a border below 3:1.</p>
+The number under each badge is measured in the browser: text on its background.
+A red outline marks text below 4.5:1.</p>
 
 <h4>Styles</h4>
 <table class="table table-condensed">
@@ -113,14 +113,6 @@ jQuery(function() {
 		var jThis = jQuery(this);
 		if (textRatio < 4.5) {
 			jThis.addClass("o_gd_col_fail");
-		}
-		if (style.borderTopStyle !== "none" && parseFloat(style.borderTopWidth) > 0) {
-			var border = parse(style.borderTopColor);
-			var borderRatio = ratio(blend(border, page, border.a), page);
-			out += " / border " + borderRatio.toFixed(2);
-			if (borderRatio < 3) {
-				jThis.addClass("o_gd_col_fail_border");
-			}
 		}
 		jThis.after("<span class='o_gd_col_measure'>" + out + "</span>");
 	});

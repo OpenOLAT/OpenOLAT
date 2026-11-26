@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.model.TagInfoImpl;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
@@ -39,7 +40,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.user.IdentitySelectionSource;
-import org.olat.user.UserManager;
 
 /**
  * Initial date: 2025-04-03<br>
@@ -127,7 +127,8 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 	}
 
 	private List<Identity> createDemoIdentities() {
-		int cssCount = UserManager.USER_INITIALS_CSS.size();
+		// the initials colours: the hues of the colour set M, as for new users
+		List<String> initialsColors = ColorSet.M.getHueKeys();
 		List<Identity> identities = new ArrayList<>(NameSource.ALL.size() + 1);
 		for (int i = 0; i < NameSource.ALL.size(); i++) {
 			String[] tokens = NameSource.ALL.get(i).split(" ", 2);
@@ -135,7 +136,7 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 			identity.setKey(-(long) (i + 1));
 			identity.setProperty(UserConstants.FIRSTNAME, tokens[0]);
 			identity.setProperty(UserConstants.LASTNAME, tokens[1]);
-			identity.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(i % cssCount));
+			identity.setInitialsCssClass(initialsColors.get(i % initialsColors.size()));
 			identities.add(identity);
 		}
 		return identities;

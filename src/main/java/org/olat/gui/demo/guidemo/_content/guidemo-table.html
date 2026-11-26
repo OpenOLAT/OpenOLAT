@@ -7,3 +7,23 @@ rearranged and row data can be presented in almost any style.
 
 <br><br>
 $r.render("table")
+
+<h4>Table styles</h4>
+<p>The table styles <code>b_{key}</code> of the page editor and the HTML editor, one per color of the set M:
+the 14 hues (<code>b_gray_hue</code> for gray) and the theme colors of the active theme.
+The old style <code>b_gray</code> renders slate.</p>
+<div class="row">
+#foreach($style in $tableStyles)
+	<div class="col-xs-12 col-sm-6 col-md-4">
+		<table class="$r.escapeHtml($style.cssClass)">
+			<thead><tr><th colspan="2"><code>$r.escapeHtml($style.cssClass)</code></th></tr></thead>
+			<tbody>
+				<tr><td>$r.escapeHtml($style.name)</td><td>1</td></tr>
+				<tr><td>Lorem</td><td>2</td></tr>
+				<tr><td>Ipsum</td><td>3</td></tr>
+			</tbody>
+		</table>
+		<br>
+	</div>
+#end
+</div>

@@ -8,8 +8,8 @@
 			 data-duration="${segment.duration()}"
 			 data-duration-string="${segment.durationString()}"
 			 data-index="${foreach.count}"
-			 data-category-color="${segment.categoryColor}"
-			 class="o_vt_marker o_videotask_segment ${segment.categoryColor}"
+			 data-category-color="$!{segment.categoryColor}"
+			 class="o_vt_marker o_videotask_segment $!{segment.categoryColor}"
 			 style="#if($r.isNotEmpty($segment.width())) width: ${segment.width()}; #end left: ${segment.left()};">
 			<span>${segment.categoryLabel}</span>
 		</div>

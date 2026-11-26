@@ -9,7 +9,7 @@ $r.render("leafletLoader")
 		var mapId  = 'o_building_detail_map_$r.getCId()';
 		var lat    = $geoLat;
 		var lng    = $geoLon;
-		var color  = '$r.escapeHtml($!colorCss)';
+		var color  = '$r.escapeJavaScript($r.escapeHtml($!colorCss))';
 		function initBuildingMap() {
 			if (typeof L === 'undefined') { setTimeout(initBuildingMap, 50); return; }
 			var el = document.getElementById(mapId);

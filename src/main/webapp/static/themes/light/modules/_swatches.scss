@@ -6,10 +6,15 @@
  * --o-sw-soft-fg, --o-sw-soft-border and --o-sw-text from
  * $o-swatches (_palette.scss). The modifiers .o_swatch_tint,
  * .o_swatch_light and .o_swatch_dark replace the solid fill roles.
+ * The modifier .o_swatch_soft sets the solid fill roles to the soft
+ * roles, so that a component that reads --o-sw-bg, --o-sw-fg and
+ * --o-sw-border shows the tinted fill (the soft swatch of the chooser
+ * set L, Swatch.SOFT in Java). The soft border is step 100, it has no
+ * 3:1 on white.
  * Components read the tokens, this file sets no colours.
  *
  * Each legacy chooser class of $o-swatch-aliases (_palette.scss)
- * extends the swatch of its hue and variant, e.g. .o_cal_blue
+ * extends the swatch of its hue and variant, e.g. .o_cal_navy
  * sets the tokens of .o_swatch_blue.o_swatch_dark.
  *
  * @author gnaegi,  www.frentix.com
@@ -45,6 +50,11 @@
 		--o-sw-bg: #{o-hex(map.get($swatch, "dark-bg"))};
 		--o-sw-fg: #{o-hex(map.get($swatch, "dark-fg"))};
 		--o-sw-border: #{o-hex(map.get($swatch, "dark-border"))};
+	}
+	.o_swatch_#{$hue}.o_swatch_soft, %o_swatch_#{$hue}_soft {
+		--o-sw-bg: #{o-hex(map.get($swatch, "soft-bg"))};
+		--o-sw-fg: #{o-hex(map.get($swatch, "soft-fg"))};
+		--o-sw-border: #{o-hex(map.get($swatch, "soft-border"))};
 	}
 }
 

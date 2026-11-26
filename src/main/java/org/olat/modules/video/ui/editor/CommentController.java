@@ -24,7 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.color.ColorFamily;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
@@ -123,10 +125,9 @@ public class CommentController extends FormBasicController {
 				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId(), false);
 		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
-		List<String> colorNames = colorService.getColors();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, getLocale());
 
-		colorPickerEl = uifactory.addColorPickerElement("color", "form.common.color", formLayout, colors);
+		colorPickerEl = uifactory.addColorPickerElement("color", "form.common.color", formLayout, getWindowControl(), colors);
 
 		videoLink = uifactory.addFormLink("video", "", "form.common.video", formLayout,
 				Link.LINK | Link.NONTRANSLATED);
@@ -173,7 +174,9 @@ public class CommentController extends FormBasicController {
 			textEl.setMandatory(true);
 		}
 
-		colorPickerEl.setColor(comment.getColor());
+		// the key of the set M nearest to the stored colour, stored only if the user picks a colour
+		colorPickerEl.resetColorPicked();
+		colorPickerEl.setColor(colorService.getNearestKey(ColorSet.M, comment.getColor(), ColorFamily.COLOR_SERVICE));
 	}
 
 	@Override
@@ -242,7 +245,11 @@ public class CommentController extends FormBasicController {
 
 		try {
 			comment.setStart(timeFormat.parse(startEl.getValue()));
-			comment.setColor(colorPickerEl.getColor().id());
+			// the key of the set M (e.g. "blue") if the user picked a colour, else the stored colour stays
+			String color = ColorUIFactory.getValueToSave(comment.getColor(), colorPickerEl);
+			if (color != null) {
+				comment.setColor(color);
+			}
 			comment.setText(textEl.getValue());
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (ParseException e) {

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.project.ui.component;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -46,7 +48,8 @@ public class ProjAvatarComponent extends AbstractComponent {
 	public ProjAvatarComponent(String name, ProjProject project, String imageUrl, Size size, boolean border) {
 		super(name);
 		this.imageUrl = imageUrl;
-		this.avatarCssClass = project.getAvatarCssClass();
+		// a hue key (e.g. "blue") renders as swatch class (the upgrade to 21.2 converted the old classes)
+		this.avatarCssClass = CoreSpringFactory.getImpl(ColorService.class).toStoredValueCssClass(project.getAvatarCssClass());
 		this.abbrev = StringHelper.containsNonWhitespace(project.getTitle())
 				? Formatter.truncateOnly(project.getTitle(), 2).toUpperCase()
 				: null;
@@ -69,6 +72,10 @@ public class ProjAvatarComponent extends AbstractComponent {
 		return imageUrl;
 	}
 
+	/**
+	 * @return The CSS classes of the avatar colour, e.g. "o_swatch_blue",
+	 * 		null if the project has no valid colour
+	 */
 	public String getAvatarCssClass() {
 		return avatarCssClass;
 	}

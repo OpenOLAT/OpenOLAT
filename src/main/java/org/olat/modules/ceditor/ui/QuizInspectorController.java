@@ -128,7 +128,7 @@ public class QuizInspectorController extends FormBasicController implements Page
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
-		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory, getWindowControl(),
 				getAlertBoxSettings(getQuizSettings()), colorService, getLocale());
 	}
 

@@ -242,19 +242,19 @@
   <div class="cl-component">
     <div class="cl-component-header">
       <h3>Avatar (User Portrait)</h3>
-      <p>The portrait uses the <code>o_user_portrait</code> classes from <code>_user.scss</code>. The classes <code>o_avatar_sm</code> and <code>o_avatar_lg</code> do not exist. Without an image the portrait shows the initials in one of the <code>o_user_initials_{color}</code> colors. The initials element has <code>role="img"</code> and an <code>aria-label</code> with the full name.</p>
+      <p>The portrait uses the <code>o_user_portrait</code> classes from <code>_user.scss</code>. The classes <code>o_avatar_sm</code> and <code>o_avatar_lg</code> do not exist. Without an image the portrait shows the initials in the swatch color of the user, <code>o_swatch_{hue}</code> (a hue of the color set M), or in grey (<code>o_user_initials_grey</code>) for guests, deleted and unknown users. The initials element has <code>role="img"</code> and an <code>aria-label</code> with the full name.</p>
       <div class="cl-classes">
-        <code>o_user_portrait</code> <code>o_user_portrait_xsmall</code> <code>o_user_portrait_small</code> <code>o_user_portrait_medium</code> <code>o_user_portrait_large</code> <code>o_user_portrait_avatar</code> <code>o_user_portrait_initials</code> <code>o_user_initials_{color}</code> <code>o_user_portrait_border</code>
+        <code>o_user_portrait</code> <code>o_user_portrait_xsmall</code> <code>o_user_portrait_small</code> <code>o_user_portrait_medium</code> <code>o_user_portrait_large</code> <code>o_user_portrait_avatar</code> <code>o_user_portrait_initials</code> <code>o_swatch_{hue}</code> <code>o_user_initials_grey</code> <code>o_user_portrait_border</code>
       </div>
     </div>
     <div class="cl-component-body">
       <div class="o_component_example">
         <div class="cl-example">
           <div class="cl-example-row" style="gap:16px;align-items:center;">
-            <div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_orange" role="img" aria-label="AIT, Claude">CA</div></div><div class="o_user_portrait_border"></div></div>
-            <div class="o_user_portrait o_user_portrait_small"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_dark_blue" role="img" aria-label="Alvarez, Zephania">ZA</div></div><div class="o_user_portrait_border"></div></div>
-            <div class="o_user_portrait o_user_portrait_medium"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_purple" role="img" aria-label="Andrews, Myles">MA</div></div><div class="o_user_portrait_border"></div></div>
-            <div class="o_user_portrait o_user_portrait_large"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Anthony, Jaime">JA</div></div><div class="o_user_portrait_border"></div></div>
+            <div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_orange" role="img" aria-label="AIT, Claude">CA</div></div><div class="o_user_portrait_border"></div></div>
+            <div class="o_user_portrait o_user_portrait_small"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_blue" role="img" aria-label="Alvarez, Zephania">ZA</div></div><div class="o_user_portrait_border"></div></div>
+            <div class="o_user_portrait o_user_portrait_medium"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_magenta" role="img" aria-label="Andrews, Myles">MA</div></div><div class="o_user_portrait_border"></div></div>
+            <div class="o_user_portrait o_user_portrait_large"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_cyan" role="img" aria-label="Anthony, Jaime">JA</div></div><div class="o_user_portrait_border"></div></div>
           </div>
         </div>
       </div>
@@ -262,7 +262,7 @@
         <span class="cl-code-toggle">Show Code</span>
         <pre>&lt;div class="o_user_portrait o_user_portrait_small"&gt;
   &lt;div class="o_user_portrait_avatar"&gt;
-    &lt;div class="o_user_portrait_initials o_user_initials o_user_initials_orange"
+    &lt;div class="o_user_portrait_initials o_user_initials o_swatch_orange"
          role="img" aria-label="AIT, Claude"&gt;CA&lt;/div&gt;
   &lt;/div&gt;
   &lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;
@@ -286,8 +286,8 @@
             <div class="o_user_info">
               <div class="o_user_info_profile_container"><div class="o_user_info_profile">
                 <span class="o_user_status_badge o_user_status_active">Active</span>
-                <div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_large"><div class="o_user_portrait o_user_portrait_large"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div><div class="o_user_portrait_im"><i class="o_icon o_icon_status_dnd"></i></div></div></div>
-                <div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_medium"><div class="o_user_portrait o_user_portrait_medium"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div></div></div>
+                <div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_large"><div class="o_user_portrait o_user_portrait_large"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_cyan" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div><div class="o_user_portrait_im"><i class="o_icon o_icon_status_dnd"></i></div></div></div>
+                <div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_medium"><div class="o_user_portrait o_user_portrait_medium"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_cyan" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div></div></div>
                 <div class="o_user_info_profile_name_wrapper">
                   <div class="o_user_info_profile_name">Frøya, Kristin</div>
                   <div class="o_user_info_profile_cmds o_noprint"><a class="btn btn-xs btn-default" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_visiting_card" aria-hidden="true" title="Visiting card"></i> <span><span class="sr-only">Visiting card</span></span></a> <a class="btn btn-xs btn-default" href="#" onclick="return false" role="button"><i class="o_icon o_icon-fw o_icon_mail" aria-hidden="true" title="E-mail"></i> <span><span class="sr-only">E-mail</span></span></a></div>
@@ -299,9 +299,9 @@
           </div>
           <div class="o_block_top">
           <div class="o_users_portraits o_users_portraits_vertical_displayname o_users_portraits_xsmall"><ul class="o_users_portraits_items list-unstyled" aria-label="Users portraits">
-            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">Frøya, Kristin</div></li>
-            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_orange" role="img" aria-label="AIT, Claude">CA</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">AIT, Claude</div></li>
-            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_user_initials_purple" role="img" aria-label="Miomir, Đorđe">ĐM</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">Miomir, Đorđe</div></li>
+            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_cyan" role="img" aria-label="Frøya, Kristin">KF</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">Frøya, Kristin</div></li>
+            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_orange" role="img" aria-label="AIT, Claude">CA</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">AIT, Claude</div></li>
+            <li class="o_portrait_user"><div class="o_user_portrait o_user_portrait_xsmall"><div class="o_user_portrait_avatar"><div class="o_user_portrait_initials o_user_initials o_swatch_magenta" role="img" aria-label="Miomir, Đorđe">ĐM</div></div><div class="o_user_portrait_border"></div></div><div class="o_displayname">Miomir, Đorđe</div></li>
           </ul></div>
           </div>
         </div>
@@ -312,8 +312,8 @@
             &lt;div class="o_user_info"&gt;
               &lt;div class="o_user_info_profile_container"&gt;&lt;div class="o_user_info_profile"&gt;
                 &lt;span class="o_user_status_badge o_user_status_active"&gt;Active&lt;/span&gt;
-                &lt;div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_large"&gt;&lt;div class="o_user_portrait o_user_portrait_large"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;div class="o_user_portrait_im"&gt;&lt;i class="o_icon o_icon_status_dnd"&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
-                &lt;div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_medium"&gt;&lt;div class="o_user_portrait o_user_portrait_medium"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+                &lt;div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_large"&gt;&lt;div class="o_user_portrait o_user_portrait_large"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_swatch_cyan" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;div class="o_user_portrait_im"&gt;&lt;i class="o_icon o_icon_status_dnd"&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+                &lt;div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_medium"&gt;&lt;div class="o_user_portrait o_user_portrait_medium"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_swatch_cyan" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
                 &lt;div class="o_user_info_profile_name_wrapper"&gt;
                   &lt;div class="o_user_info_profile_name"&gt;Frøya, Kristin&lt;/div&gt;
                   &lt;div class="o_user_info_profile_cmds o_noprint"&gt;&lt;a class="btn btn-xs btn-default" href="#" onclick="return false" role="button"&gt;&lt;i class="o_icon o_icon-fw o_icon_visiting_card" aria-hidden="true" title="Visiting card"&gt;&lt;/i&gt; &lt;span&gt;&lt;span class="sr-only"&gt;Visiting card&lt;/span&gt;&lt;/span&gt;&lt;/a&gt; &lt;a class="btn btn-xs btn-default" href="#" onclick="return false" role="button"&gt;&lt;i class="o_icon o_icon-fw o_icon_mail" aria-hidden="true" title="E-mail"&gt;&lt;/i&gt; &lt;span&gt;&lt;span class="sr-only"&gt;E-mail&lt;/span&gt;&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;
@@ -325,9 +325,9 @@
           &lt;/div&gt;
           &lt;div class="o_block_top"&gt;
           &lt;div class="o_users_portraits o_users_portraits_vertical_displayname o_users_portraits_xsmall"&gt;&lt;ul class="o_users_portraits_items list-unstyled" aria-label="Users portraits"&gt;
-            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_light_blue" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;Frøya, Kristin&lt;/div&gt;&lt;/li&gt;
-            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_orange" role="img" aria-label="AIT, Claude"&gt;CA&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;AIT, Claude&lt;/div&gt;&lt;/li&gt;
-            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_user_initials_purple" role="img" aria-label="Miomir, Đorđe"&gt;ĐM&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;Miomir, Đorđe&lt;/div&gt;&lt;/li&gt;
+            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_swatch_cyan" role="img" aria-label="Frøya, Kristin"&gt;KF&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;Frøya, Kristin&lt;/div&gt;&lt;/li&gt;
+            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_swatch_orange" role="img" aria-label="AIT, Claude"&gt;CA&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;AIT, Claude&lt;/div&gt;&lt;/li&gt;
+            &lt;li class="o_portrait_user"&gt;&lt;div class="o_user_portrait o_user_portrait_xsmall"&gt;&lt;div class="o_user_portrait_avatar"&gt;&lt;div class="o_user_portrait_initials o_user_initials o_swatch_magenta" role="img" aria-label="Miomir, Đorđe"&gt;ĐM&lt;/div&gt;&lt;/div&gt;&lt;div class="o_user_portrait_border"&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class="o_displayname"&gt;Miomir, Đorđe&lt;/div&gt;&lt;/li&gt;
           &lt;/ul&gt;&lt;/div&gt;
           &lt;/div&gt;</pre>
       </div>

@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.util.StringHelper;
 import org.olat.mcp.tool.McpToolSupport;
 import org.olat.modules.project.ProjArtefact;
@@ -51,8 +50,6 @@ class MilestoneToolSupport {
 	/** The milestone status, the names of {@link ProjMilestoneStatus} (milestone.status.open, .achieved: Open, Accomplished) */
 	static final List<ProjMilestoneStatus> MILESTONE_STATUS = List.of(ProjMilestoneStatus.values());
 	static final String MILESTONE_STATUS_WORDING = "open (Open), achieved (Accomplished)";
-	/** The colors of the color picker of ProjMilestoneContentEditController */
-	static final List<String> COLORS = CalendarColors.getColorsList();
 
 	@Autowired
 	private ProjectToolSupport support;
@@ -123,7 +120,8 @@ class MilestoneToolSupport {
 		properties.put("milestoneStatus", Map.of("type", "string", "enum", McpToolSupport.names(MILESTONE_STATUS),
 				"description", MILESTONE_STATUS_WORDING));
 		properties.put("dueDate", Map.of("type", "string", "format", "date", "description", "absent for a milestone without due date"));
-		properties.put("color", Map.of("type", "string", "description", "absent for the default milestone color"));
+		properties.put("color", Map.of("type", "string", "description", "the calendar color, a key of the argument color of milestone_modify; "
+				+ "a milestone of an older release can have an old calendar color (e.g. navy); absent for the default milestone color"));
 		properties.put("status", ProjectToolSupport.artefactStatusSchema());
 		properties.put("created", Map.of("type", "string", "format", "date-time"));
 		properties.put("lastModified", Map.of("type", "string", "format", "date-time", "description", "last change of content or metadata"));

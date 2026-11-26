@@ -19,10 +19,14 @@
  */
 package org.olat.course.style.ui;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Level;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorValidator;
+import org.olat.core.commons.services.color.Swatch;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
@@ -162,9 +166,45 @@ public class CourseStyleUIFactory {
 		return sb.toString();
 	}
 
+	/**
+	 * Maps the stored CSS class of a colour category to the key of a solid
+	 * swatch, e.g. "o_swatch_blue" to "blue", "o_swatch_theme2" to "theme2".
+	 * Other classes have no key: the classes an administrator entered before
+	 * the chooser, a swatch with a variant, and a theme colour that is not in
+	 * the keys.
+	 *
+	 * @param cssClass The stored CSS class of the colour category
+	 * @param swatchKeys The keys of the chooser, e.g. "red", ..., "gray", "theme1"
+	 * @return The key, or null if the class is not the class of one of the keys
+	 */
+	public static String getSwatchKey(String cssClass, Collection<String> swatchKeys) {
+		if (!StringHelper.containsNonWhitespace(cssClass) || swatchKeys == null) {
+			return null;
+		}
+		String css = cssClass.trim();
+		if (!css.startsWith(ColorService.SWATCH_CSS_CLASS_PREFIX)) {
+			return null;
+		}
+		String key = css.substring(ColorService.SWATCH_CSS_CLASS_PREFIX.length());
+		Swatch swatch = Swatch.fromKey(key);
+		if (swatch == null || !Swatch.SOLID.equals(swatch.variant()) || !swatchKeys.contains(key)) {
+			return null;
+		}
+		return key;
+	}
+
+	/**
+	 * @return The colour of the category for the picker. A class that is no
+	 * 		valid list of CSS class names (e.g. a class an administrator entered
+	 * 		as text before the chooser) renders as no colour.
+	 */
 	public static ColorPickerElement.Color createColor(ColorCategory colorCategory, Translator translator) {
 		String translatedColorName = translate(translator, colorCategory);
-		return new ColorPickerElement.Color(colorCategory.getIdentifier(), translatedColorName, colorCategory.getCssClass());
+		String cssClass = colorCategory.getCssClass();
+		String validCssClass = cssClass == null || cssClass.isBlank()
+				? null
+				: ColorValidator.validCssClasses(cssClass, "colour category");
+		return new ColorPickerElement.Color(colorCategory.getIdentifier(), translatedColorName, validCssClass);
 	}
 	
 	public static boolean hasValues(Header header) {

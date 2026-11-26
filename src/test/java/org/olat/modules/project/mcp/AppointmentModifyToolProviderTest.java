@@ -143,7 +143,11 @@ public class AppointmentModifyToolProviderTest extends OlatTestCase {
 		Assert.assertTrue(VALIDATOR.validate(schema, Map.of("action", "delete", "appointmentKey", 1)).valid());
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("appointmentKey", 1)).valid());
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "move", "appointmentKey", 1)).valid());
-		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "update", "appointmentKey", 1, "color", "pink")).valid());
+		// the schema has no pattern for the color: the code checks it against the keys of the active theme
+		Assert.assertTrue(VALIDATOR.validate(schema, Map.of("action", "update", "appointmentKey", 1, "color", "pink")).valid());
+		Assert.assertTrue(VALIDATOR.validate(schema, Map.of("action", "update", "appointmentKey", 1, "color", "theme1")).valid());
+		Assert.assertTrue(VALIDATOR.validate(schema, Map.of("action", "update", "appointmentKey", 1, "color", "navy")).valid());
+		assertThat(schema.toString()).doesNotContain("pattern").contains("depend on the active theme");
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "update", "appointmentKey", 1, "recurrence", "hourly")).valid());
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "update", "appointmentKey", 1, "links", List.of(Map.of("type", "course", "key", 5)))).valid());
 		Assert.assertFalse(VALIDATOR.validate(schema, Map.of("action", "update", "appointmentKey", 1, "status", "deleted")).valid());
@@ -380,7 +384,18 @@ public class AppointmentModifyToolProviderTest extends OlatTestCase {
 		assertError(owner, create(project, "subject", "x", "start", "tomorrow at ten"), "start must be an ISO date-time");
 		assertError(owner, create(project, "subject", "x", "start", ""), "start cannot be empty");
 		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "end", "2030-03-05T09:00"), "is before the start");
-		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "color", "pink"), "Unknown color pink");
+		// one message for every invalid color, also an old calendar color, with the valid colors
+		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "color", "purple"),
+				"The color purple does not exist. Valid colors: red, orange,");
+		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "color", "navy"),
+				"The color navy does not exist. Valid colors: red, orange,");
+		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "color", "navy"), "teal");
+		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "color", "blue-light"),
+				"The color blue-light does not exist.");
+		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "color", "theme0"),
+				"The color theme0 does not exist.");
+		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "color", "o_cal_blue"),
+				"The color o_cal_blue does not exist.");
 		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "recurrence", "hourly"), "Unknown recurrence hourly");
 		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "recurrence", "weekly"), "needs the argument recurrenceEnd");
 		assertError(owner, create(project, "subject", "x", "start", "2030-03-05T10:00", "recurrence", "weekly", "recurrenceEnd", "2030-03-04"),

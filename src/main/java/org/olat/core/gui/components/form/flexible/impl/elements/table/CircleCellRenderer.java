@@ -23,6 +23,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -37,7 +38,8 @@ public class CircleCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof String) {
 			String cssValue = (String)cellValue;
-			target.append("<i class='o_circle ").append(cssValue).append("'></i>");
+			// only class names: the value can be a class an administrator entered as text
+			target.append("<i class='o_circle ").append(StringHelper.escapeCssClass(cssValue)).append("'></i>");
 		}
 	}
 

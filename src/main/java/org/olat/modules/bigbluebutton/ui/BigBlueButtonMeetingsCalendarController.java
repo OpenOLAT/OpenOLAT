@@ -57,11 +57,15 @@ public class BigBlueButtonMeetingsCalendarController extends FormBasicController
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 
-	// TODO: refactor to enum and replace in CalendarColorChooserController
+	/**
+	 * The colours of the template calendars: keys of the colour set M, the
+	 * hues of the old calendar colours green, lime, blue, orange, fuchsia,
+	 * red, rebeccapurple and grey. Navy, olive and maroon had the hue of blue,
+	 * lime and red; each hue is used once.
+	 */
 	private static final String[] colors = new String[]{
-			"o_cal_green", "o_cal_lime", "o_cal_blue", "o_cal_orange", "o_cal_fuchsia",
-			"o_cal_red", "o_cal_rebeccapurple", "o_cal_navy", "o_cal_olive",
-			"o_cal_maroon", "o_cal_grey"
+			"green", "lime", "blue", "orange", "magenta",
+			"red", "violet", "gray"
 		};
 
 	@Autowired
@@ -90,7 +94,7 @@ public class BigBlueButtonMeetingsCalendarController extends FormBasicController
 			KalendarRenderWrapper calRenderWrapper = new KalendarRenderWrapper(calendar, template.getName(), "bbb.calendar." + template.getKey());
 			calRenderWrapper.setPrivateEventsVisible(true);
 			// Each template calendar has it's own color
-			calRenderWrapper.setCssClass(colors[i % colors.length]); 
+			calRenderWrapper.setColor(colors[i % colors.length]);
 			calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 			
 			calendarWrappers.add(calRenderWrapper);

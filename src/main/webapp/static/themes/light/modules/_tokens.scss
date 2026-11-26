@@ -282,11 +282,7 @@ $o-token-layer-base: (
 	"content-table-header-bg":                    ($gray-lighter, ()),
 	// header cells of the bordered tables of the HTML editor (b_border): the
 	// rule mixes the colour at 10% with transparent ($gray-base)
-	"content-table-bordered-header-bg":           ($gray-base, ()),
-	// the fill of the blue table of the HTML editor (b_blue): the soft fill
-	// of the neutral state; the cell border, the even rows and the header
-	// cells are shade tokens of it
-	"content-table-blue-bg":                      "state-neutral-soft-bg"
+	"content-table-bordered-header-bg":           ($gray-base, ())
 );
 
 $o-token-layer-framework: (
@@ -370,7 +366,7 @@ $o-token-layer-framework: (
 	"box-error-text":                             (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-state-color("danger", "text")), ("state-danger-text",)),
 	"box-error-icon":                             (o-own-or($o-box-error-color, o-state-color("danger", "soft-border"), o-state-color("danger", "soft-fg")), ("state-danger-soft-fg",)),
 	// the fill of the message boxes ($o-box-*-bg): the soft fill of the state,
-	// neutral 25 (near white) for info, cyan 50 for tip and important; the
+	// neutral 25 (near white) for info, cyan 50 for tip, violet 50 for important; the
 	// grey, green, yellow and red tables have shade tokens of it (border,
 	// stripe and header), the blue table has own tokens
 	"box-info-bg":                                ($o-box-info-bg, ()),
@@ -379,8 +375,10 @@ $o-token-layer-framework: (
 	"box-warning-bg":                             ($o-box-warning-bg, ("state-warning-soft-bg",)),
 	"box-error-bg":                               ($o-box-error-bg, ("state-danger-soft-bg",)),
 	// the note, tip and important boxes (.o_note, .o_tip, .o_important): the
-	// fill ($o-box-*-bg) and the colour of the border ($o-box-*-color); the
-	// icon of tip and important has the colour of the border
+	// fill ($o-box-*-bg) and the colour of the border ($o-box-*-color). The
+	// border of tip and important is soft (cyan 100, violet 100), their icon
+	// is dark (cyan 700, violet 800); only the info icon is strong. A theme
+	// that sets $o-box-*-color (or $o-color-*) gets its colour for both
 	"box-note-border":                             ($o-box-note-color, ("state-inactive-soft-border",)),
 	// the text of a note message: $o-color-note, or the colour of a theme
 	// that sets $o-box-note-color
@@ -389,6 +387,8 @@ $o-token-layer-framework: (
 	"box-tip-border":                              ($o-box-tip-color, ()),
 	"box-important-bg":                            ($o-box-important-bg, ()),
 	"box-important-border":                        ($o-box-important-color, ()),
+	"box-tip-icon":                                (o-own-or($o-box-tip-color, o-palette("cyan", 100), o-own-or($o-color-tip, o-neutral(600), o-palette("cyan", 700))), ()),
+	"box-important-icon":                          (o-own-or($o-box-important-color, o-swatch-color("violet", "soft-border"), o-own-or($o-color-important, o-swatch-color("violet", "text"), o-palette("violet", 800))), ()),
 	// the message lines (.o_warning_line, .o_error_line): fill and text
 	"message-line-warning-bg":                     ($o-line-warning-bg, ()),
 	"message-line-warning-fg":                     ($o-line-warning-color, ()),
@@ -458,8 +458,8 @@ $o-token-layer-framework: (
 	// the weekend
 	"day-nav-day-bg":                              ($o-day-nav-day-bg-color, ()),
 	"day-nav-day-hover-border":                    ($o-day-nav-day-hover-border-color, ()),
-	"day-nav-day-selected-bg":                     ($o-day-nav-day-selected-bg-color, ()),
-	"day-nav-day-selected-fg":                     ($o-day-nav-day-selected-color, ()),
+	"day-nav-day-selected-bg":                     ($o-day-nav-day-selected-bg-color, ("primary",)),
+	"day-nav-day-selected-fg":                     ($o-day-nav-day-selected-color, ("primary-fg",)),
 	"day-nav-day-weekend-bg":                      ($o-day-nav-day-weekend-bg-color, ()),
 	// Dialogs
 	"dialog-header":                              ($o-dialog-header-color, ("primary-text", "primary")),
@@ -914,13 +914,14 @@ $o-token-layer-framework: (
 $o-token-layer-component: (
 	// Absences and lectures
 	"lecture-timeline-next-bg":                   "state-warning-soft-bg",
-	"lecture-timeline-next-border":               "state-warning-border",
+	// the border of the next lecture block: the text colour of the warning state
+	"lecture-timeline-next-border":               "state-warning-text",
 	"lecture-timeline-running-bg":                "state-neutral-soft-bg",
 	"lecture-timeline-running-border":            "state-neutral-border",
 	"lecture-timeline-path":                      "border",
-	// the roll call icon of a lecture without a roll call: the border colour
-	// of the light style of the inactive state, as today
-	"lecture-rollcall-pending":                    (o-state-color("inactive", "border", "light"), ()),
+	// the roll call icon of a lecture without a roll call: the fill of the
+	// inactive state (3:1 on white)
+	"lecture-rollcall-pending":                    (o-state-color("inactive", "bg"), ()),
 	// the border and the fill of the current lecture block, the text of an
 	// excluded participant, the fill of a row of the lecture timeline
 	"lecture-current-border":                      ($o-lm-current-border-color, ()),
@@ -1124,8 +1125,10 @@ $o-token-layer-component: (
 	"course-peekview-bg":                         "bg",
 	// the translucent background of the peekview of a styled course element
 	"course-style-peekview-bg":                   ($o-cn-style-peekview-bg, ()),
-	// Course element Task (process steps)
-	"step-active":                                "state-warning-border",
+	// Course element Task (process steps): the active step in the text
+	// colour of the warning state (3:1 on white; the border of the solid
+	// yellow fill has no contrast rule)
+	"step-active":                                "state-warning-text",
 	"step-done":                                  "state-success-border",
 	"step-done-marker":                           "step-done",
 	"step-expired":                               "state-danger-border",
@@ -1285,8 +1288,8 @@ $o-token-layer-component: (
 	// Portfolio: the lead box of an assignment and of an ended assignment
 	"portfolio-lead-bg":                          ($o-portfolio-lead-background-color, ()),
 	"portfolio-lead-border":                      ($o-portfolio-lead-border-color, ()),
-	"portfolio-lead-ended-bg":                    ($o-portfolio-lead-ended-background-color, ()),
-	"portfolio-lead-ended-border":                ($o-portfolio-lead-ended-border-color, ()),
+	"portfolio-lead-ended-bg":                    ($o-portfolio-lead-ended-background-color, ("state-danger-soft-bg",)),
+	"portfolio-lead-ended-border":                ($o-portfolio-lead-ended-border-color, ("state-danger-soft-border",)),
 	// Projects: the text of an avatar, the date and the line of an overdue
 	// entry and of an entry of today in the timeline
 	"proj-avatar-fg":                              ($o-proj-avatar-color, ()),
@@ -1344,7 +1347,7 @@ $o-token-layer-component: (
 	"user-initials-fg":                            ($o-user-initials-color, ()),
 	"user-initials-base-bg":                       ($o-user-initials-base-bg-color, ()),
 	"user-info-profile-border":                    (o-neutral(300), ()),
-	"user-status-inactive-border":                 (o-state-color("inactive", "border", "tint"), ()),
+	"user-status-inactive-border":                 (o-state-color("inactive", "bg"), ()),
 	"user-status-deleted-border":                  (o-state-color("inactive", "border", "dark"), ()),
 	"user-info-border":                            (o-neutral(250), ()),
 	"user-info-divider-border":                    "user-info-border",
@@ -1370,12 +1373,13 @@ $o-token-layer-component: (
 	"selectus-mail-disabled":                      (o-scale-a11y-color($o-selectus-mail-disabled-color, o-table-row-darkest-bg()), ("text-muted",)),
 	// the rating buttons A, B, C and abstain: fixed colours, the text on the
 	// fill. The text keeps 4.5:1 on the fill, the hover and the pressed fill:
-	// B has a dark text, adjusted for its pressed
-	// fill; C has a red fill, darkened until the white text passes.
+	// B has a dark text (neutral 950), its hover and pressed fill go one
+	// step lighter (o-token-shade-lighter()); C has a red fill, darkened
+	// until the white text passes.
 	"selectus-rating-a-bg":                       (o-palette("green", 500), ()),
 	"selectus-rating-a-fg":                       (o-neutral(0), ()),
 	"selectus-rating-b-bg":                       (o-palette("yellow", 400), ()),
-	"selectus-rating-b-fg":                       (o-scale-on-color(o-neutral(900), darken(o-palette("yellow", 400), 17%)), ()),
+	"selectus-rating-b-fg":                       (o-neutral(950), ()),
 	"selectus-rating-c-bg":                       (o-palette("red", 500), ()),
 	"selectus-rating-c-fg":                       (o-neutral(0), ()),
 	"selectus-rating-abstain-bg":                 (o-neutral(600), ()),
@@ -1430,9 +1434,9 @@ $o-token-layer-component: (
 	"qpool-arrow-selected-bg":                    "navbar-link-active-bg",
 	"qpool-arrow-selected-fg":                    "navbar-link-active",
 	// the fill of a status arrow, the bottom line of the arrow of a draft (the
-	// tint style of the neutral state)
+	// fill of the neutral state)
 	"qpool-arrow-bg":                              ($o-qpool-arrow-bg-color, ()),
-	"qpool-arrow-draft-border":                    (o-state-color("neutral", "border", "tint"), ()),
+	"qpool-arrow-draft-border":                    (o-state-color("neutral", "bg"), ()),
 	"qti-attempts":                               "text-muted",
 	"qti-gap-border":                             ($o-qti-gap-border-color, ("border-strong",)),
 	// the text entry field: border, fill and text, and with a value: text,
@@ -1612,9 +1616,13 @@ $o-token-elements: map.merge(map.merge($o-token-layer-base, $o-token-layer-frame
 // that a client theme gets the colour of its Sass variable as before.
 
 // The darker share of the active fill of the warning button, the dirty button
-// and the book button: 16% for a bright fill with dark text, so that the dark
-// text of the warning state keeps 4.5:1 on the active fill (17% gives 4.40:1);
-// 17% (Bootstrap) for a fill with light text, whose contrast would go down.
+// and the book button: 16% for a bright fill with dark text, 17% (Bootstrap)
+// for a fill with light text. The percentage applies only to a fill that is
+// no step of a scale, e.g. the own colour of a client theme. A fill at a step
+// of the palette reads a step of its hue (o-token-shade-scale()). The default
+// warning fill is yellow 300 with the dark text yellow 900: no darker step
+// keeps 4.5:1, so the lighter-step rule (o-token-shade-lighter()) selects
+// yellow 200 for the hover and the active fill.
 @function o-token-active-percent($fg, $bg) {
 	@return if(luminance($fg) < luminance($bg), 16%, 17%);
 }
@@ -1730,24 +1738,6 @@ $o-token-shades: (
 	"tinymce-danger-bg-edge":                     ("tinymce-danger-bg", 25%),
 	// Toolbar and breadcrumb: the close icon under the pointer
 	"toolbar-close-hover":                        ("toolbar-close", 15%),
-	// The coloured tables with the fill of a message box
-	// (o-make-colored-table): the cell border, the even rows and the header
-	// cells; the blue table has the same shades of its own fill
-	"content-table-blue-border":                  ("content-table-blue-bg", 5%, "lighten"),
-	"content-table-blue-stripe-bg":               ("content-table-blue-bg", 5%, "lighten"),
-	"content-table-blue-header-bg":               ("content-table-blue-bg", 10%),
-	"box-note-table-border":                      ("box-note-bg", 5%, "lighten"),
-	"box-note-table-stripe-bg":                   ("box-note-bg", 5%, "lighten"),
-	"box-note-table-header-bg":                   ("box-note-bg", 10%),
-	"box-success-table-border":                   ("box-success-bg", 5%, "lighten"),
-	"box-success-table-stripe-bg":                ("box-success-bg", 5%, "lighten"),
-	"box-success-table-header-bg":                ("box-success-bg", 10%),
-	"box-warning-table-border":                   ("box-warning-bg", 5%, "lighten"),
-	"box-warning-table-stripe-bg":                ("box-warning-bg", 5%, "lighten"),
-	"box-warning-table-header-bg":                ("box-warning-bg", 10%),
-	"box-error-table-border":                     ("box-error-bg", 5%, "lighten"),
-	"box-error-table-stripe-bg":                  ("box-error-bg", 5%, "lighten"),
-	"box-error-table-header-bg":                  ("box-error-bg", 10%),
 	// Registration: the focused cell of the one-time password with an error
 	"registration-otp-error-bg-focus":            ("box-error-bg", 10%),
 	// Content editor: the spacer line under the pointer, the hover of a link
@@ -1922,7 +1912,9 @@ $o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", 
 // scale or of the brand ramp, o-scale-has()), the shade reads the nearest
 // step of the scale of its token (the same palette hue, the neutral scale or
 // the brand ramp, o-scale-source-candidates()) that o-token-shade-ok()
-// accepts; else the next nearest step of that scale.
+// accepts; else the next nearest step of that scale. A step that breaks a
+// contrast pair of the shade gives way to the lighter step of a bright fill
+// (o-token-shade-lighter()) when that step keeps every pair.
 // Without such a step, and for the own colour of a client theme, the shade
 // keeps the computed colour.
 @function o-token-shade-scale($name, $color, $def, $values) {
@@ -1932,6 +1924,12 @@ $o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", 
 	}
 	@each $candidate in o-scale-source-candidates($color, $computed) {
 		@if o-token-shade-ok($name, $color, $def, $values, $computed, $candidate) {
+			@if not o-token-shade-keeps-pairs($name, $candidate, $values) {
+				$lighter: o-token-shade-lighter($name, $color, $def, $values);
+				@if $lighter != null {
+					@return $lighter;
+				}
+			}
 			@return $candidate;
 		}
 	}
@@ -1942,10 +1940,24 @@ $o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", 
 	@return $computed;
 }
 
-// The hover and the pressed fill of a bright fill (step 400 of a hue of
-// $o-palette-bright, dark text) when no darker step of the hue keeps the
-// contrast of the text: the state goes one step lighter inside the hue
-// (300), the hover and the pressed fill have the same step. The step keeps
+// true when a shade colour keeps every opaque contrast pair of the shade
+@function o-token-shade-keeps-pairs($name, $candidate, $values) {
+	@each $pair in o-token-pairs-of($name) {
+		$other: list.nth($pair, 1);
+		@if meta.type-of($other) == "string" {
+			$other: map.get($values, $other);
+		}
+		@if meta.type-of($other) == "color" and color.channel($other, "alpha") == 1 and contrast($candidate, $other) < list.nth($pair, 2) {
+			@return false;
+		}
+	}
+	@return true;
+}
+
+// The hover and the pressed fill of a bright fill (step 100 to 400 of a
+// hue, dark text, e.g. the solid fill of yellow, step 300) when no darker
+// step of the hue keeps the contrast of the text: the state goes one step
+// lighter inside the hue, the hover and the pressed fill have the same step. The step keeps
 // every contrast pair of the shade. null for any other shade.
 @function o-token-shade-lighter($name, $color, $def, $values) {
 	@if list.length($def) > 2 and list.nth($def, 3) != "state" {
@@ -1959,11 +1971,16 @@ $o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", 
 	@if $n == null {
 		@return null;
 	}
-	@each $hue in $o-palette-bright {
-		$steps: map.get($o-palette, $hue);
-		@if $steps != null and map.get($steps, 400) == $color {
+	@each $hue, $steps in $o-palette {
+		$step: null;
+		@each $tint in (100, 200, 300, 400) {
+			@if map.get($steps, $tint) == $color {
+				$step: $tint;
+			}
+		}
+		@if $step != null {
 			$keys: map.keys($steps);
-			$candidate: map.get($steps, list.nth($keys, list.index($keys, 400) - $n));
+			$candidate: map.get($steps, list.nth($keys, list.index($keys, $step) - $n));
 			@each $pair in o-token-pairs-of($name) {
 				$other: list.nth($pair, 1);
 				@if meta.type-of($other) == "string" {
@@ -2019,6 +2036,13 @@ $o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", 
 				$h: map.get($values, $hover);
 				$a: map.get($values, $name);
 				$color: map.get($values, list.nth($def, 1));
+				// the pressed fill goes lighter (o-token-shade-lighter()): the
+				// hover takes the same step, a darker hover would sit between
+				$lighter-active: o-token-shade-lighter($name, $color, $def, $values);
+				@if $lighter-active != null and $a == $lighter-active and $h != $a {
+					$values: map.merge($values, ($hover: $a));
+					$h: $a;
+				}
 				$lighter: o-token-shade-lighter($hover, $color, map.get($o-token-shades, $hover), $values);
 				@if o-scale-has($color) and not ($lighter != null and $h == $lighter and $a == $lighter)
 						and ($h == $a or not o-scale-has($a) or not o-scale-has($h)) {
@@ -2190,8 +2214,8 @@ $o-token-contrast-pairs: (
 	("selectus-rating-abstain-bg", "selectus-decision-c-bg", 3),
 	("selectus-rating-abstain-bg", "selectus-decision-c-hover-bg", 3),
 	// the Bootstrap state buttons and labels: the text on the hover and
-	// active fill (the active fill of the warning state is 16% darker,
-	// o-token-active-percent())
+	// active fill (the hover and active fill of the warning state are one
+	// step lighter, o-token-shade-lighter())
 	("state-neutral-fg", "state-neutral-bg-hover", 4.5),
 	("state-neutral-fg", "state-neutral-bg-active", 4.5),
 	("state-success-fg", "state-success-bg-hover", 4.5),
@@ -2222,19 +2246,13 @@ $o-token-contrast-pairs: (
 	("box-success-icon", "box-success-bg", 3),
 	("box-warning-icon", "box-warning-bg", 3),
 	("box-error-icon", "box-error-bg", 3),
-	// the border of the info box, the border and the icon of the important box
+	// the border of the info box, the icon of the tip and the important box
 	("box-info-border", "box-info-bg", 3),
-	("box-important-border", "box-important-bg", 3),
+	("box-tip-icon", "box-tip-bg", 3),
+	("box-important-icon", "box-important-bg", 3),
 	// the border of the error message under a form field
 	("form-error-border", "box-error-bg", 3),
 	("form-error-border", "bg", 3),
-	("text", "content-table-blue-bg", 4.5),
-	("text", "content-table-blue-stripe-bg", 4.5),
-	("text", "content-table-blue-header-bg", 4.5),
-	("text", "box-note-table-header-bg", 4.5),
-	("text", "box-success-table-header-bg", 4.5),
-	("text", "box-warning-table-header-bg", 4.5),
-	("text", "box-error-table-header-bg", 4.5),
 	// the border of the cells of the one-time code in the error state: the
 	// border of a form field with an error, on the cell fill and its focus fill
 	("state-danger-text", "box-error-bg", 3),
@@ -2316,11 +2334,10 @@ $o-token-contrast-pairs: (
 	// the framework modules: the icons and texts of the
 	// new tokens that pass today. Not listed, they fail today:
 	// the soft borders of
-	// the boxes of a state box-{note,success,warning,error}-border on
-	// their fill (1.18:1 to 1.38:1), widget-subtitle and
+	// the boxes box-{note,success,warning,error,tip,important}-border on
+	// their fill, widget-subtitle and
 	// widget-text-additional on white (4.48:1); tree-insertion-disabled is the
 	// text of a disabled control.
-	("box-tip-border", "box-tip-bg", 3),
 	("message-line-warning-fg", "message-line-warning-bg", 4.5),
 	("message-line-error-fg", "message-line-error-bg", 4.5),
 	("dialog-header", "dialog-header-bg", 4.5),
@@ -2459,6 +2476,9 @@ $o-token-contrast-pairs: (
 	("btn-default-fg", "video-category-edit-bg", 4.5),
 	("text", "table-striped-bg", 4.5),
 	("text", "portfolio-publication-nested-bg", 4.5),
+	// the lead of an ended portfolio section: body text and links of the lead
+	("text", "portfolio-lead-ended-bg", 4.5),
+	("link", "portfolio-lead-ended-bg", 4.5),
 	// the focus ring inside the row of a tree entry, on the hover and the
 	// active hover fill of the row (the page and the tree have the focus pair)
 	("tree-focus", "tree-link-hover-bg", 3),
@@ -2920,6 +2940,37 @@ $o-token-values: o-token-shade-trios($o-token-values);
 	}
 }
 @include o-token-contrast-check();
+
+// The coloured tables of the content (table style b_{key}, one per swatch
+// key, _content_embedded.scss): the text of the content keeps 4.5:1 on the
+// cell fill, on the header fill and on the white even rows, the link of the
+// content on the cell fill and on white. The fills are the swatch roles of
+// $o-content-table-roles (_config.scss). A link in a header cell is not
+// checked. Default colours and overrides. A mixin, so that its variables stay
+// local.
+@mixin o-content-table-contrast-check() {
+	$text: map.get($o-token-values, "content-text");
+	$link: map.get($o-token-values, "content-link");
+	// the even rows: --o-white
+	$white: o-neutral(0);
+	@each $key, $swatch in $o-swatches {
+		$bg-role: map.get($o-content-table-roles, "bg");
+		$header-role: map.get($o-content-table-roles, "header-bg");
+		$pairs: (
+			("content-text", $text, o-swatch-token($key, $bg-role), o-swatch-color($key, $bg-role)),
+			("content-text", $text, o-swatch-token($key, $header-role), o-swatch-color($key, $header-role)),
+			("content-text", $text, "white", $white),
+			("content-link", $link, o-swatch-token($key, $bg-role), o-swatch-color($key, $bg-role)),
+			("content-link", $link, "white", $white)
+		);
+		@each $fg-name, $fg, $bg-name, $bg in $pairs {
+			@if meta.type-of($fg) == "color" and color.channel($fg, "alpha") == 1 and contrast($fg, $bg) < 4.5 {
+				$failed: o-contrast-failed("table style 'b_#{$key}': '#{$fg-name}' #{o-hex($fg)} on '#{$bg-name}' #{o-hex($bg)} has #{o-contrast-rounded($fg, $bg)}:1, needs 4.5:1");
+			}
+		}
+	}
+}
+@include o-content-table-contrast-check();
 
 // The hover and pressed fills of the light buttons and of the table filters
 // differ from the fill of the normal state, so that the state is visible:

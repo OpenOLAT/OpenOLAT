@@ -20,14 +20,15 @@
 package org.olat.modules.video;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.logging.Tracing;
@@ -68,14 +69,22 @@ public class VideoModule extends AbstractSpringModule {
 	private static final String PREFERRED_RESOLUTION = "video.transcoding.resolution.preferred";
 	private static final String CALLBACK_SECRET = "transcoder.callback.secret";
 	private static final int CALLBACK_SECRET_BYTES = 32;
-	private static final String MARKER_STYLE_PREFIX = "o_video_marker_";
+	/** Prefix of the old classes of the marker colours, e.g. "o_video_marker_lightblue" */
+	public static final String MARKER_STYLE_PREFIX = "o_video_marker_";
+	/**
+	 * The colour of a new annotation, question, comment or segment category,
+	 * a key of the colour set M: the neutral gray, the old default was the
+	 * first colour of color.list, "lightgray"
+	 */
+	public static final String DEFAULT_MARKER_COLOR = ColorService.NEUTRAL_COLOR_KEY;
+	/** A CSS colour of an annotation of an old version, e.g. "#FF0000" or "rgb(255, 0, 0)" */
+	private static final Pattern CSS_COLOR = Pattern.compile(
+			"#[0-9A-Fa-f]{3,8}|rgba?\\(\\s*\\d{1,3}(?:\\s*,\\s*\\d{1,3}){2}(?:\\s*,\\s*(?:0|1|0?\\.\\d{1,3}))?\\s*\\)");
 
 	@Value("${video.enabled:true}")
 	private boolean enabled;
 	@Value("${video.coursenode.enabled:true}")
 	private boolean coursenodeEnabled;
-	@Value("${video.marker.styles}")
-	private String markersStyles;
 	// transcoding related configuration
 	@Value("${video.transcoding.enabled:false}")
 	private boolean transcodingEnabled;
@@ -260,23 +269,13 @@ public class VideoModule extends AbstractSpringModule {
 		return false;
 	}
 
-	public List<String> getMarkerStyles() {
-		return stylesToList(markersStyles);
-	}
-	
-	private List<String> stylesToList(String styles) {
-		List<String> styleList = new ArrayList<>();
-		if(StringHelper.containsNonWhitespace(styles)) {
-			String[] styleArr = styles.split("[,]");
-			for(String style:styleArr) {
-				if(StringHelper.containsNonWhitespace(style)) {
-					styleList.add(style);
-				}
-			}
-		}
-		return styleList;
-	}
-
+	/**
+	 * @param markerStyle A stored colour: a key of the colour set M (e.g.
+	 * 		"blue"), an old class (e.g. "o_video_marker_lightblue") or an old
+	 * 		bare key (e.g. "lightblue")
+	 * @return The value without the prefix of the old classes, e.g. "blue",
+	 * 		"lightblue"
+	 */
 	public static String getColorFromMarkerStyle(String markerStyle) {
 		if (markerStyle == null) {
 			return null;
@@ -284,14 +283,46 @@ public class VideoModule extends AbstractSpringModule {
 		return markerStyle.replace(MARKER_STYLE_PREFIX, "");
 	}
 
+	/**
+	 * The CSS classes to render the stored colour of an annotation, a
+	 * question, a comment or a segment category. A key of the colour set M
+	 * renders as its swatch, an old value as its alias class, see
+	 * {@link ColorService#toStoredValueCssClass(String, String)}.
+	 *
+	 * @param color A stored colour: a key of the colour set M (e.g. "blue"),
+	 * 		an old class (e.g. "o_video_marker_lightblue") or an old bare key
+	 * 		(e.g. "lightblue")
+	 * @return The CSS classes, e.g. "o_swatch_blue", "o_video_marker_lightblue".
+	 * 		Null if the value is blank or no valid colour. Never throws.
+	 */
 	public static String getMarkerStyleFromColor(String color) {
-		if (color == null) {
+		if (!StringHelper.containsNonWhitespace(color)) {
 			return null;
 		}
-		if (color.startsWith(MARKER_STYLE_PREFIX)) {
-			return color;
+		try {
+			ColorService colorService = CoreSpringFactory.getImpl(ColorService.class);
+			return colorService == null ? null : colorService.toStoredValueCssClass(color, MARKER_STYLE_PREFIX);
+		} catch (RuntimeException e) {
+			log.warn("Rendering the marker colour failed", e);
+			return null;
 		}
-		return MARKER_STYLE_PREFIX + color;
+	}
+
+	/**
+	 * The colour of an annotation or a question for the marker in the time
+	 * rail and for the annotation on the video: the CSS classes of
+	 * {@link #getMarkerStyleFromColor(String)}, or a CSS colour of an
+	 * annotation of an old version (e.g. "#FF0000").
+	 *
+	 * @param style The stored style
+	 * @return The CSS classes or the CSS colour, null if the value is no
+	 * 		valid colour
+	 */
+	public static String getMarkerColor(String style) {
+		if (style != null && CSS_COLOR.matcher(style.trim()).matches()) {
+			return style.trim();
+		}
+		return getMarkerStyleFromColor(style);
 	}
 
 	/**

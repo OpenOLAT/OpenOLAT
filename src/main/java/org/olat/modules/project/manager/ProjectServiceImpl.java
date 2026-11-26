@@ -237,7 +237,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		Group baseGroup = groupDao.createGroup();
 		groupDao.addMembershipOneWay(baseGroup, owner, ProjectRole.owner.name());
 		
-		ProjProject project = projectDao.create(doer, baseGroup, ProjProjectImageType.getRandmonAvatarCssClass());
+		ProjProject project = projectDao.create(doer, baseGroup, ProjProjectImageType.getRandomAvatarColor());
 		String after = ProjectXStream.toXml(project);
 		activityDao.create(Action.projectCreate, null, after, doer, project);
 		markNews(project);

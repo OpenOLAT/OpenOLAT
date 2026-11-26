@@ -35,6 +35,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUIEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIImportEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIRemoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISettingEvent;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -99,6 +100,8 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private final boolean isAggregatedView;
 	private final List<KalendarRenderWrapper> calendars;
 	private final List<KalendarRenderWrapper> alwaysVisibleKalendars;
+	/** The colours of the colour pickers, the set M */
+	private List<ColorPickerElement.Color> colors;
 
 	@Autowired
 	private CalendarManager calendarManager;
@@ -117,8 +120,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		this.isAggregatedView = isAggregatedView;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 
-		// Leave some space for the color dropdown plus padding plus shadow:
-		flc.contextPut("marginBottomInPixels", 32 * CalendarColors.getColors().length + 12 + 10);
+		colors = ColorUIFactory.createColors(ColorSet.M, getLocale());
 
 		initForm(ureq);
 	}
@@ -180,11 +182,8 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	}
 	
 	private void initLinks(CalendarPersonalConfigurationRow row) {
-		List<String> colorNames = CalendarColors.getColorsList();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal_");
-
 		ColorPickerElement colorPickerElement = uifactory.addColorPickerElement("color_picker_" + (++counter),
-				null, colors);
+				null, getWindowControl(), colors);
 		colorPickerElement.setColor(row.getColor());
 		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
 		colorPickerElement.setUserObject(row);
@@ -360,8 +359,9 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 			}
 		} else if (source instanceof ColorPickerElement colorPickerElement) {
 			if (colorPickerElement.getUserObject() != null) {
+				// stores the key of the set M, e.g. "blue"
 				doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
-						CalendarColors.colorClassFromColor(colorPickerElement.getColor().id()));
+						colorPickerElement.getColor().id());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -585,9 +585,9 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		listenTo(cmc);
 	}
 	
-	private void doSetColor(UserRequest ureq, CalendarPersonalConfigurationRow row, String cssColor) {
+	private void doSetColor(UserRequest ureq, CalendarPersonalConfigurationRow row, String color) {
 		KalendarRenderWrapper calendarWrapper = row.getWrapper();
-		calendarWrapper.setCssClass(cssColor);
+		calendarWrapper.setColor(color);
 		calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
 		fireEvent(ureq, new CalendarGUISettingEvent(calendarWrapper));
 	}

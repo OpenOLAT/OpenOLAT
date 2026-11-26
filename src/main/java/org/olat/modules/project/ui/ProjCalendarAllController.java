@@ -381,7 +381,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				KalendarRenderWrapper appointmentReadWriteWrapper = new KalendarRenderWrapper(appointmentReadWriteKalendar,
 						translate("appointment.calendar.name"), "project.appointments.rw" + project.getKey());
 				appointmentReadWriteWrapper.setPrivateEventsVisible(true);
-				appointmentReadWriteWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
+				appointmentReadWriteWrapper.setColor(ProjectUIFactory.COLOR_APPOINTMENT);
 				appointmentReadWriteWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 				calendarWrappers.add(appointmentReadWriteWrapper);
 				
@@ -389,7 +389,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				KalendarRenderWrapper appointmentReadOnlyWrapper = new KalendarRenderWrapper(appointmentReadOnlyKalendar,
 						translate("appointment.calendar.name"), "project.appointments.ro" + project.getKey());
 				appointmentReadOnlyWrapper.setPrivateEventsVisible(true);
-				appointmentReadOnlyWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
+				appointmentReadOnlyWrapper.setColor(ProjectUIFactory.COLOR_APPOINTMENT);
 				appointmentReadOnlyWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 				calendarWrappers.add(appointmentReadOnlyWrapper);
 			} else {
@@ -442,7 +442,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				KalendarRenderWrapper milestoneWrapper = new KalendarRenderWrapper(milestoneKalendar,
 						translate("milestone.calendar.name"), "project.milestones." + project.getKey());
 				milestoneWrapper.setPrivateEventsVisible(true);
-				milestoneWrapper.setCssClass(ProjectUIFactory.COLOR_MILESTONE);
+				milestoneWrapper.setColor(ProjectUIFactory.COLOR_MILESTONE);
 				int milestonesAccess = secCallback.canEditMilestones()
 						? KalendarRenderWrapper.ACCESS_READ_WRITE
 						: KalendarRenderWrapper.ACCESS_READ_ONLY;

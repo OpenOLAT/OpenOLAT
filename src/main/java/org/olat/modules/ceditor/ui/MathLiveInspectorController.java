@@ -88,7 +88,7 @@ public class MathLiveInspectorController extends FormBasicController implements 
 		formLayout.add(styleCont);
 		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory, getWindowControl(),
 				getAlertBoxSettings(getMathSettings()), colorService, getLocale());
 	}
 

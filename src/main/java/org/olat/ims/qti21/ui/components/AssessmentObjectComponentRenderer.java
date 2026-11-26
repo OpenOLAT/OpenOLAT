@@ -67,6 +67,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.EditorColorMap;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
@@ -1442,6 +1443,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		  .append("  toolbar1: 'bold italic underline | alignjustify alignright aligncenter alignleft | blocks | fontfamily fontsize | forecolor backcolor | bullist numlist indent outdent | olatmatheditor charmap',\n")
 		  .append("  removed_menuitems: 'newdocument',\n")
 		  .append("  elementpath: false,\n");
+		// the colours of the theme palette, nothing if the theme has none
+		sb.append(EditorColorMap.tinyMceOptions(translator.getLocale()));
 		
 		String height = Integer.toString((expectedLines * 40) + 60);
 		sb.append("  height: ").append(height).append(",\n");

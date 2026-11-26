@@ -19,6 +19,8 @@
  */
 package org.olat.user;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -66,7 +68,7 @@ public class UserPortraitRenderer extends DefaultComponentRenderer {
 			sb.append(">");
 		} else {
 			sb.append("<div class=\"o_user_portrait_initials o_user_initials ");
-			sb.append(portraitUser.getInitialsCss());
+			sb.append(getInitialsCssClass(portraitUser.getInitialsCss()));
 			sb.append("\" role=\"img\" aria-label=\"");
 			sb.append(StringHelper.escapeHtml(portraitUser.getDisplayName()));
 			sb.append("\">");
@@ -86,6 +88,17 @@ public class UserPortraitRenderer extends DefaultComponentRenderer {
 		}
 		
 		sb.append("</div>"); // o_user_portrait
+	}
+	
+	/**
+	 * @param initialsCss The stored colour of the initials: a hue key (e.g.
+	 * 		"blue"); the upgrade to 21.2 converted the old classes
+	 * @return The swatch class of a hue key (e.g. "o_swatch_blue"), another
+	 * 		valid class as it is, the grey initials if the value is empty or invalid
+	 */
+	static String getInitialsCssClass(String initialsCss) {
+		String cssClass = CoreSpringFactory.getImpl(ColorService.class).toStoredValueCssClass(initialsCss);
+		return cssClass == null ? UserManager.USER_INITIALS_GREY_CSS : cssClass;
 	}
 	
 	private String getSizeCssClass(PortraitSize size) {

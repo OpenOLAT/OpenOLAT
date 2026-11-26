@@ -20,6 +20,10 @@
 package org.olat.commons.calendar.ui;
 
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorFamily;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
@@ -75,8 +79,14 @@ public class CalendarPersonalConfigurationRow {
 		return wrapper.getCssClass();
 	}
 
+	/**
+	 * @return The key of the colour chooser for the colour of the calendar:
+	 * 		the key of the set {@link ColorSet#M} nearest to the colour the
+	 * 		calendar renders with, e.g. "blue" for the old class "o_cal_navy"
+	 */
 	public String getColor() {
-		return CalendarColors.colorFromColorClass(wrapper.getCssClass());
+		return CoreSpringFactory.getImpl(ColorService.class)
+				.getNearestKey(ColorSet.M, wrapper.getColor(), ColorFamily.CALENDAR);
 	}
 	
 	public boolean isVisible() {

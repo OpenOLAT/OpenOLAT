@@ -147,4 +147,16 @@ public class UserPortraitServiceTest extends OlatTestCase {
 		assertThat(portraitUser.getDisplayName()).isEqualTo(unknownLabel);
 	}
 
+	@Test
+	public void initialsCssClass() {
+		// a hue of the set M renders with its swatch class
+		assertThat(UserPortraitRenderer.getInitialsCssClass("blue")).isEqualTo("o_swatch_blue");
+		assertThat(UserPortraitRenderer.getInitialsCssClass("teal")).isEqualTo("o_swatch_teal");
+		// the grey initials stay
+		assertThat(UserPortraitRenderer.getInitialsCssClass(UserManager.USER_INITIALS_GREY_CSS)).isEqualTo(UserManager.USER_INITIALS_GREY_CSS);
+		// no or no valid colour: grey
+		assertThat(UserPortraitRenderer.getInitialsCssClass(null)).isEqualTo(UserManager.USER_INITIALS_GREY_CSS);
+		assertThat(UserPortraitRenderer.getInitialsCssClass("o_user_initials_red\" onclick=\"x")).isEqualTo(UserManager.USER_INITIALS_GREY_CSS);
+	}
+
 }

@@ -26,7 +26,8 @@
 package org.olat.commons.calendar.ui.components;
 
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.ui.CalendarColors;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.util.StringHelper;
 
 public class KalendarEventRenderWrapper {
@@ -122,8 +123,9 @@ public class KalendarEventRenderWrapper {
 
 	public String getCssClass() {
 		if (StringHelper.containsNonWhitespace(event.getColor())) {
-			String eventColor = "o_cal_".concat(event.getColor());
-			if (CalendarColors.colorClassExists(eventColor)) {
+			// a key of the chooser sets renders as its swatch, a calendar colour as its class
+			String eventColor = CoreSpringFactory.getImpl(ColorService.class).toCalendarEventCssClass(event.getColor());
+			if (eventColor != null) {
 				return eventColor;
 			}
 		}

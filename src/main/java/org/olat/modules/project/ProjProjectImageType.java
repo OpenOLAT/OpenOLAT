@@ -23,9 +23,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.olat.core.commons.services.color.ColorSet;
+
 public enum ProjProjectImageType { 
 	avatar,
 	background;
+	
+	private static final Random RANDOM = new Random();
 	
 	private static final List<String> NAMES = Arrays.stream(ProjProjectImageType.values())
 			.map(ProjProjectImageType::name).toList();
@@ -34,18 +38,14 @@ public enum ProjProjectImageType {
 		return NAMES.contains(name);
 	}
 	
-	public static final List<String> AVATAR_CSS_CLASSES = List.of(
-			"o_proj_avatar_dark_blue",
-			"o_proj_avatar_light_blue",
-			"o_proj_avatar_purple",
-			"o_proj_avatar_red",
-			"o_proj_avatar_orange",
-			"o_proj_avatar_yellow",
-			"o_proj_avatar_dark_green",
-			"o_proj_avatar_light_green"
-	);
-	public static final String getRandmonAvatarCssClass() {
-		return AVATAR_CSS_CLASSES.get(new Random().nextInt(AVATAR_CSS_CLASSES.size()));
+	/**
+	 * @return A random hue of the colour set M (no theme colour), the key of
+	 * 		its solid swatch, e.g. "blue". The avatar renders with the swatch
+	 * 		class, e.g. "o_swatch_blue", see ColorService.toStoredValueCssClass().
+	 */
+	public static final String getRandomAvatarColor() {
+		List<String> hues = ColorSet.M.getHueKeys();
+		return hues.get(RANDOM.nextInt(hues.size()));
 	}
 	
 

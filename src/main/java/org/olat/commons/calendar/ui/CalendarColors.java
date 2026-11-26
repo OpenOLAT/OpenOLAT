@@ -29,6 +29,12 @@ import java.util.List;
 
 import org.olat.core.util.StringHelper;
 
+/**
+ * @deprecated Not used any more: the calendar choosers use the colour set
+ * 		ColorSet.M, the old calendar colours are ColorService.CALENDAR_COLORS.
+ * 		The class can be removed.
+ */
+@Deprecated
 public class CalendarColors {
 
 	private static final String CALENDAR_CLASS_PREFIX = "o_cal_";

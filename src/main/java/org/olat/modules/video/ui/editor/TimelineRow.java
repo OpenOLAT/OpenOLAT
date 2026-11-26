@@ -40,6 +40,8 @@ public class TimelineRow {
 	private String participantKey;
 	private String participantValue;
 	private String color;
+	/** The key of the colour set M nearest to the colour, for the colour filter */
+	private String colorKey;
 	private String categoryId;
 
 	private boolean selected;
@@ -117,6 +119,14 @@ public class TimelineRow {
 
 	public void setColor(String color) {
 		this.color = color;
+	}
+
+	public String getColorKey() {
+		return colorKey;
+	}
+
+	public void setColorKey(String colorKey) {
+		this.colorKey = colorKey;
 	}
 
 	public String getCategoryId() {

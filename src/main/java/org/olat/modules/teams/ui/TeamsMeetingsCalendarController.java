@@ -64,7 +64,7 @@ public class TeamsMeetingsCalendarController extends FormBasicController {
 		Kalendar calendar = new Kalendar("Teams.OnlineMeetings", "Teams.OnlineMeetings");
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(calendar, "Teams Online-Meetings", "teams.calendar");
 		calendarWrapper.setPrivateEventsVisible(true);
-		calendarWrapper.setCssClass("o_cal_blue"); 
+		calendarWrapper.setColor(KalendarRenderWrapper.CALENDAR_COLOR_BLUE);
 		calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 
 		List<TeamsMeeting> meetings = teamsService.getAllMeetings();

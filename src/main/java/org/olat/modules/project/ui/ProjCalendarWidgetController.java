@@ -35,6 +35,8 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.ConfirmUpdateController;
 import org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorValidator;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
@@ -94,6 +96,8 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private ProjectService projectService;
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private ColorService colorService;
 
 	public ProjCalendarWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
 			ProjProject project, ProjProjectSecurityCallback secCallback) {
@@ -178,13 +182,13 @@ public class ProjCalendarWidgetController extends FormBasicController {
 							ProjectUIFactory.getDisplayName(getTranslator(), milestone),
 							"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(milestone.getDueDate()),
 							true
-							, ProjectUIFactory.COLOR_MILESTONE));
+							, colorService.toCalendarEventCssClass(ProjectUIFactory.COLOR_MILESTONE)));
 				} else if (!inFutureFound && milestone.getDueDate().after(now)) {
 					milestoneRows.add(new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), milestone),
 							"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(milestone.getDueDate()),
 							false
-							, ProjectUIFactory.COLOR_MILESTONE));
+							, colorService.toCalendarEventCssClass(ProjectUIFactory.COLOR_MILESTONE)));
 					inFutureFound = true;
 				}
 			}
@@ -274,7 +278,11 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	}
 
 	private String getEventColorCss(KalendarEvent event) {
-		return StringHelper.containsNonWhitespace(event.getColor())? "o_cal_" + event.getColor(): ProjectUIFactory.COLOR_APPOINTMENT;
+		// the class is rendered unescaped: only the classes of a valid colour key.
+		// A key of the chooser sets renders as its swatch, a calendar colour as its class
+		String colorCss = ColorValidator.isValidKey(event.getColor())
+				? colorService.toCalendarEventCssClass(event.getColor()) : null;
+		return colorCss != null ? colorCss : colorService.toCalendarEventCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
 	}
 	
 	private void forgeDisplayNameLink(CalendarWidgetRow row, KalendarEvent event, ProjAppointment appointment) {

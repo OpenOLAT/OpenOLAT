@@ -47,19 +47,25 @@ public class ColorCategoryDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	/**
+	 * Creates the technical and the predefined categories if they do not exist.
+	 * The predefined categories use the swatch class of the solid swatch of
+	 * their hue, the class the colour chooser of the administration stores.
+	 * Existing installations get these classes with the upgrade to 21.2.
+	 */
 	@PostConstruct
 	public void init() {
 		createPredefined(ColorCategory.IDENTIFIER_NO_COLOR, ColorCategory.Type.technical, -20, ColorCategory.CSS_NO_COLOR);
 		createPredefined(ColorCategory.IDENTIFIER_INHERITED, ColorCategory.Type.technical, -10, "o_colcat_inherited");
 		createPredefined(ColorCategory.IDENTIFIER_COURSE, ColorCategory.Type.technical, -5, "o_colcat_course");
-		createPredefined("dark.blue", ColorCategory.Type.predefined, 1, "o_colcat_dark_blue");
-		createPredefined("light.blue", ColorCategory.Type.predefined, 2, "o_colcat_light_blue");
-		createPredefined("purple", ColorCategory.Type.predefined, 3, "o_colcat_purple");
-		createPredefined("red", ColorCategory.Type.predefined, 4, "o_colcat_red");
-		createPredefined("orange", ColorCategory.Type.predefined, 5, "o_colcat_orange");
-		createPredefined("yellow", ColorCategory.Type.predefined, 6, "o_colcat_yellow");
-		createPredefined("light.green", ColorCategory.Type.predefined, 7, "o_colcat_light_green");
-		createPredefined("dark.green", ColorCategory.Type.predefined, 8, "o_colcat_dark_green");
+		createPredefined("dark.blue", ColorCategory.Type.predefined, 1, "o_swatch_blue");
+		createPredefined("light.blue", ColorCategory.Type.predefined, 2, "o_swatch_cyan");
+		createPredefined("purple", ColorCategory.Type.predefined, 3, "o_swatch_magenta");
+		createPredefined("red", ColorCategory.Type.predefined, 4, "o_swatch_red");
+		createPredefined("orange", ColorCategory.Type.predefined, 5, "o_swatch_orange");
+		createPredefined("yellow", ColorCategory.Type.predefined, 6, "o_swatch_yellow");
+		createPredefined("light.green", ColorCategory.Type.predefined, 7, "o_swatch_lime");
+		createPredefined("dark.green", ColorCategory.Type.predefined, 8, "o_swatch_green");
 	}
 
 	public ColorCategory create(String identifier) {

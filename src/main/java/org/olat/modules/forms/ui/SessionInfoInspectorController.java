@@ -107,7 +107,7 @@ public class SessionInfoInspectorController extends FormBasicController implemen
 	}
 	
 	private void addStyleTab(FormItemContainer formLayout) {
-		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory, getWindowControl(),
 				getAlertBoxSettings(), colorService, getLocale());
 	}
 

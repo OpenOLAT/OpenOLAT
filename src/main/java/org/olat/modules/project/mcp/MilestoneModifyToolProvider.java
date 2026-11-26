@@ -19,7 +19,6 @@
  */
 package org.olat.modules.project.mcp;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -297,12 +296,9 @@ public class MilestoneModifyToolProvider implements McpToolProvider {
 	/**
 	 * @return The color of the argument color, null when absent or empty (the default milestone color)
 	 */
-	private static String color(Map<String,Object> arguments) {
-		String color = McpToolSupport.string(arguments, "color", null);
-		if(color != null && !MilestoneToolSupport.COLORS.contains(color)) {
-			throw new McpInvalidArgumentException("Unknown color " + color + ". Use one of: " + String.join(", ", MilestoneToolSupport.COLORS) + ".");
-		}
-		return color;
+	private String color(Map<String,Object> arguments) {
+		// a key of the color chooser; an old color of the milestone stays until it is changed
+		return support.validColor(McpToolSupport.string(arguments, "color", null));
 	}
 
 	private ProjMilestone loadMilestone(Map<String,Object> arguments) {
@@ -345,10 +341,7 @@ public class MilestoneModifyToolProvider implements McpToolProvider {
 		properties.put("dueDate", Map.of("type", "string", "description", "the due day (yyyy-MM-dd), an empty string clears it; not in a template project"));
 		properties.put("milestoneStatus", Map.of("type", "string", "enum", McpToolSupport.names(MilestoneToolSupport.MILESTONE_STATUS),
 				"description", MilestoneToolSupport.MILESTONE_STATUS_WORDING + "; create: default open; set_status: required"));
-		List<String> colors = new ArrayList<>(MilestoneToolSupport.COLORS);
-		colors.add("");
-		properties.put("color", Map.of("type", "string", "enum", colors,
-				"description", "the calendar color, an empty string resets it to the default milestone color"));
+		properties.put("color", ProjectToolSupport.colorInputSchema("the calendar color, an empty string resets it to the default milestone color"));
 		properties.put("tags", ProjectToolSupport.tagsInputSchema());
 		return Map.of("type", "object", "properties", properties, "required", List.of("action"), "additionalProperties", Boolean.FALSE);
 	}

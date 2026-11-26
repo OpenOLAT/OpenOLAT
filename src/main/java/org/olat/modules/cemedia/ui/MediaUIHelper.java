@@ -26,7 +26,9 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.color.ColorFamily;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -173,20 +175,23 @@ public class MediaUIHelper {
 	}
 
 	public static GeneralStyleComponents addGeneralStyleSettings(FormLayoutContainer formLayout, Translator translator,
-																 FormUIFactory uifactory, GeneralStyleSettings generalStyleSettings,
+																 FormUIFactory uifactory, WindowControl wControl, GeneralStyleSettings generalStyleSettings,
 																 ColorService colorService, Locale locale) {
 		FormLayoutContainer generalStyleLayout = FormLayoutContainer.createVerticalFormLayout("generalStyleLayout", translator);
 		generalStyleLayout.setFormTitle(translator.translate("tab.general"));
 		formLayout.add(generalStyleLayout);
 
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorService.getColors(), locale);
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, locale);
 		ColorPickerElement backgroundColorEl = uifactory.addColorPickerElement("background", "background", generalStyleLayout,
-				colors);
+				wControl, colors);
 		backgroundColorEl.setNonSelectedText(translator.translate("background.none"));
 		backgroundColorEl.setAllowUnselect(true);
 		backgroundColorEl.addActionListener(FormEvent.ONCHANGE);
 		if (generalStyleSettings.getBackgroundColor() != null) {
-			backgroundColorEl.setColor(generalStyleSettings.getBackgroundColor());
+			// the key of the set M nearest to the stored colour (e.g. "cyan" for the
+			// old key "lightblue"), stored only if the user picks a colour
+			backgroundColorEl.setColor(colorService.getNearestKey(ColorSet.M,
+					generalStyleSettings.getBackgroundColor(), ColorFamily.COLOR_SERVICE));
 		}
 
 		SelectionValues checkBoxKV = new SelectionValues();
@@ -262,18 +267,18 @@ public class MediaUIHelper {
 	}
 
 	public static AlertBoxComponents addAlertBoxStyleTab(FormItemContainer formLayout, TabbedPaneItem tabbedPane,
-														 FormUIFactory uifactory, AlertBoxSettings alertBoxSettings,
+														 FormUIFactory uifactory, WindowControl wControl, AlertBoxSettings alertBoxSettings,
 														 ColorService colorService, Locale locale) {
 		Translator translator = Util.createPackageTranslator(PageElementTarget.class, locale);
 		FormLayoutContainer layoutCont = FormLayoutContainer.createVerticalFormLayout("style", translator);
 		formLayout.add(layoutCont);
 		tabbedPane.addTab(translator.translate("tab.style"), layoutCont);
-		return MediaUIHelper.addAlertBoxSettings(layoutCont, translator, uifactory,
+		return MediaUIHelper.addAlertBoxSettings(layoutCont, translator, uifactory, wControl,
 				alertBoxSettings, colorService, locale);
 	}
 
 	public static AlertBoxComponents addAlertBoxSettings(FormLayoutContainer formLayout, Translator translator,
-														 FormUIFactory uifactory, AlertBoxSettings alertBoxSettings,
+														 FormUIFactory uifactory, WindowControl wControl, AlertBoxSettings alertBoxSettings,
 														 ColorService colorService, Locale locale) {
 		FormLayoutContainer alertBoxLayout = FormLayoutContainer.createVerticalFormLayout("alertBoxLayout", translator);
 		alertBoxLayout.setFormTitle(translator.translate("alert"));
@@ -320,16 +325,14 @@ public class MediaUIHelper {
 			iconEl.setIcon(icons.get(0).id());
 		}
 
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorService.getColors(), locale);
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, locale);
 		ColorPickerElement colorEl = uifactory.addColorPickerElement("color", "color", alertBoxLayout,
-				colors);
-		colorEl.setDropUp(true);
+				wControl, colors);
 		colorEl.addActionListener(FormEvent.ONCHANGE);
-		if (alertBoxSettings.getColor() != null) {
-			colorEl.setColor(alertBoxSettings.getColor());
-		} else {
-			colorEl.setColor(colors.get(0).id());
-		}
+		// the key of the set M nearest to the stored colour, stored only if the user
+		// picks a colour; else the neutral gray (the old default "lightgray")
+		String colorKey = colorService.getNearestKey(ColorSet.M, alertBoxSettings.getColor(), ColorFamily.COLOR_SERVICE);
+		colorEl.setColor(colorKey != null ? colorKey : ColorService.NEUTRAL_COLOR_KEY);
 
 		return new AlertBoxComponents(alertBoxToggleEl, typeEl, titleEl, checkBoxesEl, iconEl, colorEl);
 	}
@@ -524,7 +527,11 @@ public class MediaUIHelper {
 				alertBoxSettings.setIcon(AlertBoxIcon.valueOf(iconEl.getIcon().id()));
 			}
 
-			alertBoxSettings.setColor(colorEl.getColor().id());
+			// the key of the set M (e.g. "blue") if the user picked a colour, else the stored colour stays
+			String color = ColorUIFactory.getValueToSave(alertBoxSettings.getColor(), colorEl);
+			if (color != null) {
+				alertBoxSettings.setColor(color);
+			}
 
 			updateVisibility();
 		}
@@ -553,7 +560,8 @@ public class MediaUIHelper {
 		}
 
 		public void sync(GeneralStyleSettings generalStyleSettings) {
-			generalStyleSettings.setBackgroundColor(backgroundColorEl.getColor() != null ? backgroundColorEl.getColor().id() : null);
+			// the key of the set M (e.g. "blue") or none if the user picked it, else the stored colour stays
+			generalStyleSettings.setBackgroundColor(ColorUIFactory.getValueToSave(generalStyleSettings.getBackgroundColor(), backgroundColorEl));
 			generalStyleSettings.setShowSpacing(spacingCheckBoxEl.isKeySelected(spacingKey));
 		}
 	}

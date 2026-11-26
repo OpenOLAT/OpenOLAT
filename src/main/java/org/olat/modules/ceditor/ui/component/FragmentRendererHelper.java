@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
@@ -229,7 +230,15 @@ public class FragmentRendererHelper {
 		sb.append("<div class='").append(mainDivClass);
 
 		if (withBackgroundColor) {
-			sb.append(" ").append("o_color_background_10 ").append(ColorService.CSS_CLASS_PREFIX).append(generalStyleSettings.getBackgroundColor());
+			// a key of the set M renders as its swatch (e.g. "o_swatch_blue"), an old key
+			// as its alias (e.g. "o_color_lightblue"). The settings can come from an
+			// imported page: a value that is no valid colour renders as no colour.
+			ColorService colorService = CoreSpringFactory.getImpl(ColorService.class);
+			String backgroundCssClass = colorService == null ? null
+					: colorService.toStoredValueCssClass(generalStyleSettings.getBackgroundColor(), ColorService.CSS_CLASS_PREFIX);
+			if (backgroundCssClass != null) {
+				sb.append(" o_color_background_10 ").append(backgroundCssClass);
+			}
 		}
 
 		if (collapsible) {

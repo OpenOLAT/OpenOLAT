@@ -1443,7 +1443,6 @@ public enum ContentElementType {
 |---|---|---|
 | `ceditor.image.styles` | `o_image_classic,o_image_border,o_image_shadow,o_image_frame,o_image_polaroid,o_image_round` | CSS styles offered for images |
 | `ceditor.image.title.styles` | `o_image_title_dark,o_image_title_bright,o_image_title_standard` | Styles offered for image titles |
-| `ceditor.table.styles` | `b_gray,b_blue,b_green,b_yellow,b_red` | CSS styles offered for tables |
 | `ceditor.import.limit.md` | `51200` | Max upload size for Markdown/ZIP files (KB) |
 | `ceditor.import.limit.docx` | `204800` | Max upload size for DOCX files (KB) |
 

@@ -59,7 +59,9 @@ import org.olat.user.UserManager;
  */
 public class ProjectUIFactory {
 	
+	/** The default colour of the appointments: a key of the colour set M */
 	public static final String COLOR_APPOINTMENT = KalendarRenderWrapper.CALENDAR_COLOR_BLUE;
+	/** The default colour of the milestones: a key of the colour set M */
 	public static final String COLOR_MILESTONE = KalendarRenderWrapper.CALENDAR_COLOR_ORANGE;
 	
 	public static String getStatusIconCss(ProjectStatus status) {

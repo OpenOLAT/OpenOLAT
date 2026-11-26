@@ -19,13 +19,15 @@
  */
 package org.olat.modules.ceditor.ui;
 
-import java.util.List;
-
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
+import org.olat.core.commons.services.color.ColorUIFactory;
+import org.olat.core.commons.services.color.ColorValidator;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -38,7 +40,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
@@ -63,6 +64,7 @@ public class TableInspectorController extends FormBasicController implements Pag
 	private static final String KEY_COLUMN_HEADER = "column.header";
 	private static final String KEY_STRIPED = "striped";
 	private static final String KEY_BORDERED = "bordered";
+	private static final String NO_TABLE_STYLE_KEY = "-";
 	
 	private TabbedPaneItem tabbedPane;
 	private MediaUIHelper.LayoutTabComponents layoutTabComponents;
@@ -73,14 +75,14 @@ public class TableInspectorController extends FormBasicController implements Pag
 	private MultipleSelectionElement dataGridEl;
 	private MultipleSelectionElement rowStyleEl;
 	private SingleSelection colorEl;
+	/** The user selected a table style: until then the stored style stays as it is */
+	private boolean tableStyleChanged;
 	
 	private TableElement table;
 	private final PageElementStore<TableElement> store;
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private ContentEditorModule contentEditorModule;
 	@Autowired
 	private ColorService colorService;
 
@@ -141,37 +143,57 @@ public class TableInspectorController extends FormBasicController implements Pag
 		rowStyleEl.select(KEY_STRIPED, settings.isStriped());
 		rowStyleEl.select(KEY_BORDERED, settings.isBordered());
 
-		List<String> styleList = contentEditorModule.getTableStyleList();
-		String[] styles = new String[styleList.size() + 1];
-		String[] stylesValues = new String[styles.length];
-		styles[0] = "-";
-		stylesValues[0] = translate("table.style.none");
-		for(int i=styleList.size(); i-->0; ) {
-			int si = i + 1;
-			styles[si] = styleList.get(i);
-			String stylename = translate("table.style." + styles[si]);
-			if(stylename.length() < 32 && !stylename.startsWith("table.")) {
-				stylesValues[si] = stylename;
-			} else {
-				stylesValues[si] = styles[si];
+		// The colours of the set M as table styles, e.g. "b_blue", "b_gray_hue" for gray
+		SelectionValues stylesSV = new SelectionValues();
+		stylesSV.add(SelectionValues.entry(NO_TABLE_STYLE_KEY, translate("table.style.none")));
+		for (ColorPickerElement.Color color : ColorUIFactory.createColors(ColorSet.M, getLocale())) {
+			String tableCssClass = ColorUIFactory.toTableCssClass(color.id());
+			if (tableCssClass != null) {
+				stylesSV.add(SelectionValues.entry(tableCssClass, color.translatedName()));
 			}
 		}
-		colorEl = uifactory.addDropdownSingleselect("table.style.color", "table.style.color", layoutCont, styles, stylesValues, null);
+		String selectedStyle = getTableStyleToSelect(settings.getTableStyle(), stylesSV);
+		colorEl = uifactory.addDropdownSingleselect("table.style.color", "table.style.color", layoutCont,
+				stylesSV.keys(), stylesSV.values(), null);
 		colorEl.addActionListener(FormEvent.ONCHANGE);
-		String settingsTableStyle = settings.getTableStyle();
-		if(StringHelper.containsNonWhitespace(settingsTableStyle)) {
-			for(String style:styles) {
-				if(settingsTableStyle.equals(style)) {
-					colorEl.select(style, true);
-				}
-			}
-		} else {
-			colorEl.select(styles[0], true);
+		colorEl.select(selectedStyle, true);
+	}
+
+	/**
+	 * The stored style stays until the user selects a style: an old style of a colour
+	 * preselects the style of the nearest colour of the set M (e.g. "b_slate"
+	 * for "b_gray", which renders slate), another valid style (e.g. of the
+	 * removed configuration ceditor.table.styles) is added as an option.
+	 *
+	 * @param tableStyle The stored table style
+	 * @param stylesSV The options, an option for another style is added
+	 * @return The key to select
+	 */
+	private String getTableStyleToSelect(String tableStyle, SelectionValues stylesSV) {
+		if (!StringHelper.containsNonWhitespace(tableStyle)) {
+			return NO_TABLE_STYLE_KEY;
 		}
+		String style = tableStyle.trim();
+		String colorStyle = ColorUIFactory.toTableCssClass(ColorUIFactory.toTableColorKey(style));
+		if (colorStyle != null && stylesSV.containsKey(colorStyle)) {
+			return colorStyle;
+		}
+		if (stylesSV.containsKey(style)) {
+			return style;
+		}
+		if (!ColorValidator.isValidCssClasses(style)) {
+			return NO_TABLE_STYLE_KEY;
+		}
+		String styleName = translate("table.style." + style);
+		if (styleName.length() >= 32 || styleName.startsWith("table.")) {
+			styleName = style;
+		}
+		stylesSV.add(SelectionValues.entry(style, styleName));
+		return style;
 	}
 
 	private void addStyleTab(FormItemContainer formLayout) {
-		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxStyleTab(formLayout, tabbedPane, uifactory, getWindowControl(),
 				getAlertBoxSettings(getTableSettings()), colorService, getLocale());
 	}
 
@@ -216,6 +238,9 @@ public class TableInspectorController extends FormBasicController implements Pag
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (dataGridEl == source || rowsEl == source || columnsEl == source || colorEl == source
 				|| rowStyleEl == source) {
+			if (colorEl == source) {
+				tableStyleChanged = true;
+			}
 			doValidateAndSave(ureq);
 		} else if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
@@ -277,11 +302,10 @@ public class TableInspectorController extends FormBasicController implements Pag
 		settings.setColumnHeaders(dataGridEl.isKeySelected(KEY_COLUMN_HEADER));
 		settings.setStriped(rowStyleEl.isKeySelected(KEY_STRIPED));
 		settings.setBordered(rowStyleEl.isKeySelected(KEY_BORDERED));
-		if(colorEl.isOneSelected() && !colorEl.isSelected(0)) {
-			settings.setTableStyle(colorEl.getSelectedKey());
-		} else {
-			settings.setTableStyle(null);
-		}
+		// the style of the colour (e.g. "b_blue") if the user selected a style, else
+		// the stored style stays as it is (e.g. the old style "b_gray")
+		String tableStyle = colorEl.isOneSelected() && !colorEl.isSelected(0) ? colorEl.getSelectedKey() : null;
+		settings.setTableStyle(ColorUIFactory.getValueToSave(settings.getTableStyle(), tableStyleChanged, tableStyle));
 		String settingsXml = ContentEditorXStream.toXml(settings);
 		table.setLayoutOptions(settingsXml);
 

@@ -116,8 +116,10 @@ public class RoomDetailsController extends FormBasicController {
 			}
 			formLayout.contextPut("buildingStatusName", building.getStatus().name());
 			formLayout.contextPut("buildingStatusLabel", translate("building.status." + building.getStatus().name()));
-			if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-				formLayout.contextPut("buildingColorCss", building.getColorCss());
+			// a key of the colour set M renders with the swatch class, an old class as it is
+			String buildingColorCssValue = RoomUIHelper.toColorCss(building.getColorCss());
+			if (buildingColorCssValue != null) {
+				formLayout.contextPut("buildingColorCss", buildingColorCssValue);
 			}
 		}
 

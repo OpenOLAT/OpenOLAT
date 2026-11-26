@@ -5,14 +5,14 @@
 <table class="table table-condensed">
 	<thead><tr><th>Where</th><th>What</th></tr></thead>
 	<tbody>
-		<tr><td><code>themes/light/_palette.scss</code></td><td><code>$o-palette</code> (14 hues &times; 10 steps), <code>$o-palette-bright</code>, the computed roles <code>$o-swatches</code>, the legacy alias tables and the functions <code>o-palette()</code>, <code>o-swatch-alias-color()</code>, <code>o-swatch-alias-on-white()</code>, <code>o-swatch-alias-selector()</code></td></tr>
+		<tr><td><code>themes/light/_palette.scss</code></td><td><code>$o-palette</code> (14 hues &times; 10 steps), the computed roles <code>$o-swatches</code>, the legacy alias tables and the functions <code>o-palette()</code>, <code>o-swatch-alias-color()</code>, <code>o-swatch-alias-selector()</code>, <code>o-swatch-on-white()</code></td></tr>
 		<tr><td><code>themes/light/_functions.scss</code></td><td><code>o-on-color()</code>: selects the foreground from a fixed list and stops the build below 4.5:1</td></tr>
 		<tr><td><code>themes/light/modules/_palette_vars.scss</code></td><td>emits <code>--o-{hue}-{step}</code> on <code>:root</code> in <code>theme.css</code> and <code>content.css</code> (not in <code>email.css</code>)</td></tr>
-		<tr><td><code>themes/light/modules/_swatches.scss</code></td><td><code>.o_swatch_{hue}</code>, <code>.o_swatch_tint</code>, <code>.o_swatch_light</code>, <code>.o_swatch_dark</code>; every legacy chooser class (<code>.o_cal_blue</code>, <code>.o_colcat_red</code>, ...) extends its swatch</td></tr>
+		<tr><td><code>themes/light/modules/_swatches.scss</code></td><td><code>.o_swatch_{hue}</code>, <code>.o_swatch_tint</code>, <code>.o_swatch_light</code>, <code>.o_swatch_dark</code>; every legacy chooser class (<code>.o_cal_navy</code>, <code>.o_colcat_red</code>, ...) extends its swatch</td></tr>
 		<tr><td><code>themes/light/_config.scss</code></td><td><code>$o-color-*</code>, <code>$o-cn-style-cat-*-color</code>, <code>$o-edu-type-*</code> and the course quota colors read the swatches, no literal hex</td></tr>
 		<tr><td><code>org.olat.core.commons.services.color</code></td><td><code>ColorService</code> (<code>resolve()</code>, <code>getPalette()</code>, <code>getBackgroundColor()</code>), <code>Palette</code>, <code>Swatch</code>, <code>ColorFamily</code></td></tr>
 		<tr><td><code>org.olat.core.gui.themes.Theme</code></td><td><code>init()</code> reads the palette from <code>theme.css</code> of the selected theme, fallback <code>light/theme.css</code></td></tr>
-		<tr><td><code>olat.properties</code></td><td><code>color.list</code> and <code>color.default</code>: the keys of the color list chooser</td></tr>
+		<tr><td><code>org.olat.core.commons.services.color.ColorSet</code></td><td>the chooser sets S, M and L in code, no configuration; <code>color.list</code>, <code>color.default</code>, <code>ceditor.table.styles</code> and <code>video.marker.styles</code> are removed from <code>olat.properties</code></td></tr>
 	</tbody>
 </table>
 
@@ -38,7 +38,7 @@
 <pre><code>$o-my-color: o-palette("blue", 500);                         // a primitive
 $o-my-fg: map.get(map.get($o-swatches, "blue"), "fg");       // a role of a hue
 $o-my-cat: o-swatch-alias-color("o_colcat_red");             // fill of a legacy class
-$o-my-label: o-swatch-alias-on-white("o_colcat_orange");     // text on white, close to the fill
+$o-my-label: o-swatch-on-white("orange", "tint");            // text on white, close to the fill
 $o-my-text: o-on-color($o-my-bg, (#FFFFFF, o-palette("blue", 900)));  // build fails below 4.5:1</code></pre>
 
 <h4>3. A palette color in plain CSS or content</h4>
@@ -46,7 +46,7 @@ $o-my-text: o-on-color($o-my-bg, (#FFFFFF, o-palette("blue", 900)));  // build f
 
 <h4>4. A palette color in Java</h4>
 <p>Use Java only when a hex value is needed outside the browser CSS, e.g. a baked SVG or a chart library.</p>
-<pre><code>Swatch swatch = colorService.resolve(storedValue, ColorFamily.CALENDAR);  // "blue", "o_cal_blue" -&gt; blue, dark
+<pre><code>Swatch swatch = colorService.resolveStored(storedValue, ColorFamily.CALENDAR);  // "yellow" -&gt; yellow; "navy", "o_cal_navy" -&gt; blue, dark
 String fill = colorService.getBackgroundColor(swatch, "#717171");
 Palette palette = colorService.getPalette();                               // palette of the current theme
 String text = palette.fg(swatch);                                          // white or step 900
@@ -55,10 +55,11 @@ String onWhite = palette.text("blue");                                     // st
 <h4>Rules</h4>
 <ul>
 	<li>Do not write chooser hex values in modules or Java. The only hex values are in <code>$o-palette</code>.</li>
-	<li>Do not store hex values. Store the key or the legacy class, the alias maps resolve it to a swatch.</li>
-	<li>Do not use <code>o-a11y-color()</code> on chooser colors. It shifts the hue (gold becomes olive). Use <code>o-on-color()</code> or <code>o-swatch-alias-on-white()</code>.</li>
-	<li>A new chooser key needs an alias entry in <code>_palette.scss</code> and in <code>ColorServiceImpl</code>. Keep both tables in sync.</li>
-	<li>Every text on a fill has 4.5:1, also for large and bold text. Borders of fills have 3:1 on white.</li>
+	<li>Do not store hex values. Store the key or the legacy class, the alias maps resolve it to a swatch. Only swatches are rendered: a stored value that is a swatch key renders as that swatch, every other old key or class is an alias of a swatch (<code>resolveStored()</code>).</li>
+	<li>Do not use <code>o-a11y-color()</code> on chooser colors. It shifts the hue (gold becomes olive). Use <code>o-on-color()</code> or <code>o-swatch-on-white()</code>.</li>
+	<li>A chooser uses a set: <code>ColorUIFactory.createColors(ColorSet.M, locale)</code>, it stores the key (<code>"blue"</code>, <code>"theme2"</code>), it preselects <code>colorService.getNearestKey(ColorSet.M, storedValue, family)</code> for an old value, saves <code>ColorUIFactory.getValueToSave(storedValue, colorEl)</code> (the old value stays until the user picks a color) and renders <code>colorService.toStoredValueCssClass(storedValue)</code> or <code>toCalendarEventCssClass()</code>.</li>
+	<li>The legacy keys need no new entries. A change of an alias changes <code>_palette.scss</code> and <code>ColorServiceImpl</code>. Keep both tables in sync.</li>
+	<li>Every text on a fill has 4.5:1, also for large and bold text. The border of a fill is the next step darker than the fill and has no contrast rule: the text carries the contrast. Only focus rings, the borders of form controls and selection rings need 3:1.</li>
 </ul>
 
 <h4>Client themes</h4>

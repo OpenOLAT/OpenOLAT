@@ -34,6 +34,7 @@ import org.olat.commons.calendar.ui.components.KalendarEventDateComparator;
 import org.olat.commons.calendar.ui.components.KalendarEventRenderWrapper;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorValidator;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
@@ -139,7 +140,7 @@ public class CalendarPrintMapper implements Mapper {
 			<ul class="o_cal_events">
 				<li class="o_cal_event">
 					<div class="o_cal_time"><span>4:00 AM - 9:00 AM</span></div>
-					<div class="o_cal_subject o_cal_blue"><p>Test</p></div>
+					<div class="o_cal_subject o_cal_swatch o_swatch_blue"><p>Test</p></div>
 				</li>
 			</ul>
 		</li>
@@ -148,7 +149,7 @@ public class CalendarPrintMapper implements Mapper {
 			<ul class="o_cal_events">
 				<li class="o_cal_event">
 					<div class="o_cal_time"><span>2:00 PM - 3:00 PM</span></div>
-					<div class="o_cal_subject o_cal_blue"><p>Test 3</p></div>
+					<div class="o_cal_subject o_cal_swatch o_swatch_blue"><p>Test 3</p></div>
 				</li>
 			</ul>
 		</li>
@@ -214,7 +215,7 @@ public class CalendarPrintMapper implements Mapper {
 		String escapedSubject = Formatter.escWithBR(event.getSubject()).toString();
 		escapedSubject = escapedSubject.replace('\r', ' ');
 		sb.append("<li class=\"o_cal_event\">\n");
-		sb.append("<div class=\"o_cal_class " + eventWrapper.getCssClass() + "\">&nbsp;</div>\n");
+		sb.append("<div class=\"o_cal_class " + validCssClass(eventWrapper.getCssClass()) + "\">&nbsp;</div>\n");
 		// time
 		sb.append("<div class=\"o_cal_time\"><span>\n");
 		if (event.isAllDayEvent()) {
@@ -275,7 +276,7 @@ public class CalendarPrintMapper implements Mapper {
 	<fieldset>
 		<legend>List of calendars</legend>
 		<div class="o_cal_config_row">
-			<div class="o_cal_config_calendar o_cal_blue">
+			<div class="o_cal_config_calendar o_cal_swatch o_swatch_blue">
 				kanu
 			</div>
 		</div>
@@ -298,10 +299,19 @@ public class CalendarPrintMapper implements Mapper {
 		for(KalendarRenderWrapper calendarWrapper:calendarWrapperList) {
 			if(calendarWrapper.isImported() == imported) {
 				sb.append("<div class='o_cal_config_row'><div class='o_cal_config_calendar'>")
-				  .append("<div class='o_cal_class " + calendarWrapper.getCssClass() + "'>&nbsp;</div>\n")
+				  .append("<div class='o_cal_class " + validCssClass(calendarWrapper.getCssClass()) + "'>&nbsp;</div>\n")
 				  .append(StringHelper.escapeHtml(calendarWrapper.getDisplayName()))
 				  .append("</div></div>");
 			}
 		}
+	}
+	
+	/**
+	 * @param cssClass The colour class of a calendar or an event
+	 * @return The class if it is a valid list of CSS classes, else the classes
+	 * 		of the default calendar colour, e.g. "o_cal_swatch o_swatch_blue"
+	 */
+	static String validCssClass(String cssClass) {
+		return ColorValidator.isValidCssClasses(cssClass) ? cssClass.trim() : KalendarRenderWrapper.CALENDAR_DEFAULT_CSS_CLASS;
 	}
 }

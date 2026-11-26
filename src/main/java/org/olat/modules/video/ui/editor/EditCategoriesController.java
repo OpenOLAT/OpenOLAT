@@ -26,7 +26,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.color.ColorFamily;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -74,6 +76,8 @@ public class EditCategoriesController extends FormBasicController {
 		private final String longId;
 		private int sortOrder;
 		private String color;
+		/** The stored colour, kept if the chooser has no colour for it or is disabled */
+		private final String storedColor;
 		private final FormLink moveUpLink;
 		private final FormLink moveDownLink;
 		private final ColorPickerElement colorPickerElement;
@@ -86,7 +90,10 @@ public class EditCategoriesController extends FormBasicController {
 			this.id = id;
 			this.longId = category == null ? UUID.randomUUID().toString() : category.getId();
 			this.sortOrder = id;
-			this.color = category == null ? colorNames.get(0) : category.getColor();
+			// the key of the set M nearest to the stored colour, stored only if the user picks a colour
+			this.storedColor = category == null ? null : category.getColor();
+			this.color = category == null ? colorNames.get(0)
+					: colorService.getNearestKey(ColorSet.M, storedColor, ColorFamily.COLOR_SERVICE);
 			moveUpLink = uifactory.addFormLink(MOVE_UP_CMD + "_" + id, "", "", formLayout,
 					Link.LINK | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 			moveUpLink.setIconRightCSS("o_icon o_icon_move_up o_icon-lg");
@@ -96,7 +103,7 @@ public class EditCategoriesController extends FormBasicController {
 			moveDownLink.setIconRightCSS("o_icon o_icon_move_down o_icon-lg");
 
 			colorPickerElement = uifactory.addColorPickerElement("color_" + id, "",
-					formLayout, ColorUIFactory.createColors(colorNames, getLocale()));
+					formLayout, getWindowControl(), ColorUIFactory.createColors(ColorSet.M, getLocale()));
 			colorPickerElement.setColor(color);
 			colorPickerElement.setEnabled(!restrictedEdit);
 
@@ -178,7 +185,9 @@ public class EditCategoriesController extends FormBasicController {
 			videoSegmentCategory.setId(longId);
 			videoSegmentCategory.setLabel(labelEl.getValue());
 			videoSegmentCategory.setTitle(titleEl.getValue());
-			videoSegmentCategory.setColor(colorPickerElement.getColor().id());
+			// the key of the set M (e.g. "blue") if the user picked a colour, else the
+			// stored colour stays as it is; a new category gets the preselected key
+			videoSegmentCategory.setColor(ColorUIFactory.getValueToSave(storedColor, colorPickerElement));
 			videoSegmentCategory.setSortOrder(sortOrder);
 			return videoSegmentCategory;
 		}
@@ -188,7 +197,7 @@ public class EditCategoriesController extends FormBasicController {
 		super(ureq, wControl, "video_edit_categories");
 		this.videoSegments = videoSegments;
 		this.restrictedEdit = restrictedEdit;
-		this.colors = colorService.getColors();
+		this.colors = colorService.getColors(ColorSet.M);
 		initForm(ureq);
 	}
 

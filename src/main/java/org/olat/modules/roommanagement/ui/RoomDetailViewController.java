@@ -53,8 +53,10 @@ public class RoomDetailViewController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Building building = room.getBuilding();
 
-		if (building != null && StringHelper.containsNonWhitespace(building.getColorCss())) {
-			formLayout.contextPut("colorCss", building.getColorCss());
+		// a key of the colour set M renders with the swatch class, an old class as it is
+		String colorCssValue = building == null ? null : RoomUIHelper.toColorCss(building.getColorCss());
+		if (colorCssValue != null) {
+			formLayout.contextPut("colorCss", colorCssValue);
 		}
 
 		String reference = room.getExternalRef();
@@ -99,8 +101,10 @@ public class RoomDetailViewController extends FormBasicController {
 
 			mapCont.contextPut("geoLat", building.getGeoLatitude());
 			mapCont.contextPut("geoLon", building.getGeoLongitude());
-			if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-				mapCont.contextPut("colorCss", building.getColorCss());
+			// a key of the colour set M renders with the swatch class, an old class as it is
+			String mapColorCss = RoomUIHelper.toColorCss(building.getColorCss());
+			if (mapColorCss != null) {
+				mapCont.contextPut("colorCss", mapColorCss);
 			}
 			String leafletCssUri = StaticMediaDispatcher.getStaticURI("js/leaflet/leaflet.css");
 			JSAndCSSComponent leafletLoader = new JSAndCSSComponent("leafletLoader",

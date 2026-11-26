@@ -29,6 +29,7 @@ import java.util.List;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.project.ui.ProjectBCFactory;
@@ -48,6 +49,20 @@ public class ProjectServiceTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ProjectService sut;
+
+	@Test
+	public void shouldCreateProjectWithAvatarColorOfColorSetM() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = sut.createProject(owner, new ProjectBCFactory(), owner);
+		dbInstance.commitAndCloseSession();
+
+		// a hue of the set M, no theme colour, no old class
+		ProjProject reloaded = sut.getProject(project);
+		assertThat(reloaded.getAvatarCssClass()).isIn(ColorSet.M.getHueKeys());
+		for (int i = 0; i < 200; i++) {
+			assertThat(ProjProjectImageType.getRandomAvatarColor()).isIn(ColorSet.M.getHueKeys());
+		}
+	}
 
 	@Test
 	public void shouldDeleteAppointmentSeriesWithChangedOccurrence() {

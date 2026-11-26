@@ -24,7 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.color.ColorFamily;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -49,7 +51,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
-import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.repository.RepositoryEntry;
@@ -123,11 +124,10 @@ public class QuestionController extends FormBasicController {
 				"", formLayout);
 		timeLimitEl.setExampleKey("form.question.timeLimit.example", null);
 
-		List<String> colorNames = colorService.getColors();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, getLocale());
 
 		colorPicker = uifactory.addColorPickerElement("color", "form.common.color", formLayout,
-				colors);
+				getWindowControl(), colors);
 
 		options = uifactory.addCheckboxesVertical("options", "form.question.options", formLayout,
 				optionsKV.keys(), optionsKV.values(), 1);
@@ -170,8 +170,10 @@ public class QuestionController extends FormBasicController {
 		} else {
 			timeLimitEl.setValue(Long.toString(question.getTimeLimit()));
 		}
+		colorPicker.resetColorPicked();
 		if (question.getStyle() != null) {
-			colorPicker.setColor(VideoModule.getColorFromMarkerStyle(question.getStyle()));
+			// the key of the set M nearest to the stored colour, stored only if the user picks a colour
+			colorPicker.setColor(colorService.getNearestKey(ColorSet.M, question.getStyle(), ColorFamily.COLOR_SERVICE));
 		}
 		options.select(optionsKV.keys()[0], question.isAllowSkipping());
 		options.select(optionsKV.keys()[1], question.isAllowNewAttempt());
@@ -278,8 +280,10 @@ public class QuestionController extends FormBasicController {
 				}
 			}
 			question.setTimeLimit(timeLimit);
-			if (colorPicker.getColor() != null) {
-				question.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().id()));
+			// the key of the set M (e.g. "blue") if the user picked a colour, else the stored colour stays
+			String style = ColorUIFactory.getValueToSave(question.getStyle(), colorPicker);
+			if (style != null) {
+				question.setStyle(style);
 			}
 			question.setAllowSkipping(options.isKeySelected(optionsKV.keys()[0]));
 			question.setAllowNewAttempt(options.isKeySelected(optionsKV.keys()[1]));

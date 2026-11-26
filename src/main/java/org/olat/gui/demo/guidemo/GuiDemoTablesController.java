@@ -29,8 +29,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.services.color.ColorSet;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -75,6 +78,7 @@ public class GuiDemoTablesController extends BasicController {
 		model = new SampleTableModel();
 		table.setTableDataModel(model);
 		vcMain.put("table", table.getInitialComponent());
+		vcMain.contextPut("tableStyles", initTableStyles(ureq.getLocale()));
 		
 		//add source view control
     Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), vcMain);
@@ -83,8 +87,44 @@ public class GuiDemoTablesController extends BasicController {
 		this.putInitialPanel(vcMain);
 	}
 
+	/**
+	 * @return The table styles of the page editor and the HTML editor for the
+	 * 		colors of the set M, e.g. "b_blue", "b_gray_hue" for gray, "b_theme1",
+	 * 		then the old style "b_gray", which renders slate
+	 */
+	private List<TableStyle> initTableStyles(Locale locale) {
+		List<TableStyle> styles = new ArrayList<>();
+		for (ColorPickerElement.Color color : ColorUIFactory.createColors(ColorSet.M, locale)) {
+			String cssClass = ColorUIFactory.toTableCssClass(color.id());
+			if (cssClass != null) {
+				styles.add(new TableStyle(cssClass, color.translatedName()));
+			}
+		}
+		styles.add(new TableStyle("b_gray", "Slate (old style b_gray)"));
+		return styles;
+	}
+
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+
+	public static class TableStyle {
+
+		private final String cssClass;
+		private final String name;
+
+		public TableStyle(String cssClass, String name) {
+			this.cssClass = cssClass;
+			this.name = name;
+		}
+
+		public String getCssClass() {
+			return cssClass;
+		}
+
+		public String getName() {
+			return name;
+		}
 	}
 }
 

@@ -28,6 +28,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -48,7 +49,6 @@ import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.model.VideoQuestionImpl;
@@ -173,7 +173,7 @@ public class QuestionsController extends BasicController {
 		Set<Long> usedTimesInSeconds = questions.getQuestions().stream().map(q -> q.getBegin().getTime() / 1000).collect(Collectors.toSet());
 		File assessmentDir = videoManager.getAssessmentDirectory(repositoryEntry.getOlatResource());
 		long currentTimeInSeconds = getCurrentTimeInSeconds();
-		List<String> colors = colorService.getColors();
+		List<String> colors = colorService.getColors(ColorSet.M);
 		int colorIndex = 0;
 
 		String questionId = null;
@@ -209,7 +209,8 @@ public class QuestionsController extends BasicController {
 			question.setQuestionFilename(qItem.getRootFilename());
 			question.setBegin(new Date(begin));
 			question.setTimeLimit(-1);
-			question.setStyle(VideoModule.getMarkerStyleFromColor(color));
+			// the key of the set M, e.g. "blue"
+			question.setStyle(color);
 
 			File itemDirectory = new File(assessmentDir, itemDir);
 			itemDirectory.mkdir();

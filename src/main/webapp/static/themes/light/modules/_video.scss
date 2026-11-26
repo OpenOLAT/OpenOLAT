@@ -151,7 +151,7 @@
 	border-left: 3px solid var(--o-video-time-marker-default-bg);
 	padding: 5px;
 	
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		border-left-color: var(--o-sw-bg);
 	}
 }
@@ -219,7 +219,7 @@
 }
 
 .mejs__time-rail {
-	#{o-swatch-alias-selector("o_video_marker_")} {
+	#{o-swatch-alias-selector("o_video_marker_")}, #{o-swatch-selector()} {
 		background: var(--o-sw-bg);
 	}
 }
@@ -616,7 +616,7 @@
 		height: 30px;
 	}
 
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		svg {
 			fill: var(--o-sw-bg);
 		}
@@ -656,8 +656,9 @@
 		outline: 1px solid var(--o-primary);
 	}
 
-	// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases,
+	// a key of the colour set M renders with its swatch class, e.g. o_swatch_blue
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		background-color: var(--o-sw-bg);
 		color: var(--o-sw-fg);
 	}
@@ -709,19 +710,19 @@
 .o_video_colored_area {
 	border-color: var(--o-video-border);
 
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		background-color: var(--o-sw-bg);
 	}
 }
 
 .o_video_colored_border {
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		border-color: var(--o-sw-border);
 	}
 }
 
 .o_video_me_colored_area {
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)} {
+	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 		background-color: var(--o-sw-bg);
 	}
 }

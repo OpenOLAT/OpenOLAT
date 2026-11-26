@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -61,21 +62,37 @@ public class RoomUIHelper {
 	private static final int MAX_DESC_LENGTH = 40;
 
 	/**
-	 * The default color as CSS class (e.g. "o_color_lightblue"), ready to be used like
-	 * {@link Building#getColorCss()}. {@link ColorService#getDefaultColor()} returns the
-	 * bare color id without the "o_color_" prefix.
+	 * The default colour of a building as CSS class: the swatch class of
+	 * {@link ColorService#DEFAULT_COLOR_KEY}, e.g. "o_swatch_blue".
 	 */
 	public static String getDefaultColorCss(ColorService colorService) {
-		return colorService.toCssClass(colorService.getDefaultColor());
+		return colorService.toSwatchCssClass(ColorService.DEFAULT_COLOR_KEY);
 	}
 
 	/**
-	 * The color CSS class of the building, or the default color CSS class if the
-	 * building is null or has no color.
+	 * The colour CSS class of the building, or the default colour CSS class if the
+	 * building is null or has no valid colour, see {@link #toColorCss(String)}.
 	 */
 	public static String getColorCss(Building building, ColorService colorService) {
-		return building != null && StringHelper.containsNonWhitespace(building.getColorCss())
-				? building.getColorCss() : getDefaultColorCss(colorService);
+		String colorCss = building == null ? null : colorService.toStoredValueCssClass(building.getColorCss());
+		return colorCss != null ? colorCss : getDefaultColorCss(colorService);
+	}
+
+	/**
+	 * A building always has a colour: an empty or invalid value renders the
+	 * default colour.
+	 * 
+	 * @param storedColor The stored colour of a building ({@link Building#getColorCss()}):
+	 * 		a key of the colour set M (e.g. "blue") or an old CSS class (e.g. "o_color_lightblue")
+	 * @return The CSS classes to render, e.g. "o_swatch_blue" or "o_color_lightblue",
+	 * 		the default colour CSS class (see {@link #getDefaultColorCss(ColorService)})
+	 * 		if the value is empty or invalid, never null
+	 */
+	public static String toColorCss(String storedColor) {
+		ColorService colorService = CoreSpringFactory.getImpl(ColorService.class);
+		String colorCss = StringHelper.containsNonWhitespace(storedColor)
+				? colorService.toStoredValueCssClass(storedColor) : null;
+		return colorCss != null ? colorCss : getDefaultColorCss(colorService);
 	}
 
 	/**
@@ -137,8 +154,10 @@ public class RoomUIHelper {
 			if (StringHelper.containsNonWhitespace(building.getAddress())) {
 				cardCont.contextPut("address", building.getAddress());
 			}
-			if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-				cardCont.contextPut("colorCss", building.getColorCss());
+			// a key of the colour set M renders with the swatch class, an old class as it is
+			String colorCssValue = toColorCss(building.getColorCss());
+			if (colorCssValue != null) {
+				cardCont.contextPut("colorCss", colorCssValue);
 			}
 			if (StringHelper.containsNonWhitespace(building.getInfoUrl())) {
 				cardCont.contextPut("infoUrl", building.getInfoUrl());
@@ -153,8 +172,10 @@ public class RoomUIHelper {
 
 				mapCont.contextPut("geoLat", building.getGeoLatitude());
 				mapCont.contextPut("geoLon", building.getGeoLongitude());
-				if (StringHelper.containsNonWhitespace(building.getColorCss())) {
-					mapCont.contextPut("colorCss", building.getColorCss());
+				// a key of the colour set M renders with the swatch class, an old class as it is
+				String mapColorCss = toColorCss(building.getColorCss());
+				if (mapColorCss != null) {
+					mapCont.contextPut("colorCss", mapColorCss);
 				}
 				String leafletCssUri = StaticMediaDispatcher.getStaticURI("js/leaflet/leaflet.css");
 				JSAndCSSComponent leafletLoader = new JSAndCSSComponent("leafletLoader",

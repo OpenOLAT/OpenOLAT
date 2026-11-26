@@ -29,7 +29,9 @@ import java.util.List;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.ui.CalendarColors;
+import org.olat.core.commons.services.color.ColorFamily;
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
 import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
@@ -76,6 +78,10 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private TextElement locationEl;
 	private ColorPickerElement colorPickerEl;
 	private String color;
+	/** The stored colour, null for a new appointment */
+	private String storedColor;
+	/** The user reset the colour to the default colour */
+	private boolean colorReset;
 	private FormLink colorResetLink;
 	private TextAreaElement descriptionEl;
 	
@@ -87,6 +93,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private ColorService colorService;
 
 	public ProjAppointmentContentEditForm(UserRequest ureq, WindowControl wControl, Form mainForm,
 			ProjAppointment appointment, boolean template, List<? extends TagInfo> projectTags, Date initialStartDate) {
@@ -168,16 +176,14 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		String location =appointment != null?  appointment.getLocation(): null;
 		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, location, formLayout);
 
-		List<String> colorNames = CalendarColors.getColorsList();
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale(), "o_cal_");
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, getLocale());
 
-		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, colors);
+		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, getWindowControl(), colors);
 		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
-		if (appointment != null && appointment.getColor() != null && CalendarColors.getColorsList().contains(appointment.getColor())) {
-			color = appointment.getColor();
-		} else {
-			color = null;
-		}
+		// The key of the set M nearest to the stored colour, e.g. "blue" for the
+		// old calendar colour "navy". It is stored only if the user picks a colour.
+		storedColor = appointment != null ? appointment.getColor() : null;
+		color = colorService.getNearestKey(ColorSet.M, storedColor, ColorFamily.CALENDAR);
 		colorResetLink = uifactory.addFormLink("reset", "cal.form.event.color.reset", "", formLayout, Link.BUTTON);
 		updateColor();
 
@@ -201,7 +207,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		if (color != null) {
 			colorPickerEl.setColor(color);
 		} else {
-			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_APPOINTMENT));
+			colorPickerEl.setColor(colorService.getNearestKey(ColorSet.M, ProjectUIFactory.COLOR_APPOINTMENT, ColorFamily.CALENDAR));
 		}
 	}
 
@@ -230,6 +236,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 			color = colorPickerEl.getColor().id();
 			updateColor();
 		} else if (source == colorResetLink) {
+			colorReset = true;
 			color = null;
 			updateColor();
 		}
@@ -302,7 +309,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	}
 	
 	public String getColor() {
-		return color;
+		// the stored colour stays until the user picks a colour or resets it
+		return ColorUIFactory.getValueToSave(storedColor, colorPickerEl.isColorPicked() || colorReset, color);
 	}
 	
 	public boolean isAllDay() {

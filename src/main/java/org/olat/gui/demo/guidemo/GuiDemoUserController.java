@@ -37,7 +37,6 @@ import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
-import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
@@ -71,7 +70,7 @@ public class GuiDemoUserController extends BasicController {
 		identity1.setProperty(UserConstants.FIRSTNAME, "Kristin");
 		identity1.setProperty(UserConstants.LASTNAME, "Frøya");
 		identity1.setProperty(UserConstants.GENDER, "female");
-		identity1.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(1));
+		identity1.setInitialsCssClass("cyan");
 		identities.add(identity1);
 		identities.add(getIdentity());
 		TransientIdentity identity2 = new TransientIdentity();
@@ -79,14 +78,14 @@ public class GuiDemoUserController extends BasicController {
 		identity2.setProperty(UserConstants.FIRSTNAME, "Đorđe");
 		identity2.setProperty(UserConstants.LASTNAME, "Miomir");
 		identity2.setProperty(UserConstants.GENDER, "male");
-		identity2.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(2));
+		identity2.setInitialsCssClass("magenta");
 		identities.add(identity2);
 		TransientIdentity identity3 = new TransientIdentity();
 		identity3.setKey(-3l);
 		identity3.setProperty(UserConstants.FIRSTNAME, "Pauline");
 		identity3.setProperty(UserConstants.LASTNAME, "Lola");
 		identity3.setProperty(UserConstants.EMAIL, "pauline.lola@openolat.com");
-		identity3.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(3));
+		identity3.setInitialsCssClass("red");
 		identities.add(identity3);
 		
 		

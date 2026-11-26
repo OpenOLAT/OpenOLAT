@@ -1,10 +1,15 @@
+@use "sass:map";
 @use "sass:string";
 
 /* calender colors for events: must be the last thing in the file !! */
-// Each o_cal_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases
+// Each old calendar class o_cal_<key> (grey, maroon, navy, fuchsia,
+// rebeccapurple, olive) sets the swatch tokens --o-sw-* through $o-swatch-aliases
 // (_palette.scss). The class sits on the FullCalendar event element, on the
 // colour chooser and on the print view bar; the tokens inherit to children.
-#{o-swatch-alias-selector("o_cal_")} {
+// An event with a key of the chooser sets has the class o_cal_swatch and the
+// swatch classes, e.g. "o_cal_swatch o_swatch_blue o_swatch_light"
+// (ColorService.toCalendarEventCssClass()).
+#{o-swatch-alias-selector("o_cal_")}, .o_cal_swatch {
 	background: var(--o-sw-bg);
 	border-color: var(--o-sw-border);
 	color: var(--o-sw-fg);
@@ -12,14 +17,22 @@
 	.fc-list-event-dot { border-color: var(--o-sw-bg); }
 	div.fc-event-main { color: var(--o-sw-fg); }
 }
-#{o-swatch-alias-selector("o_cal_", ".o_cal_class")} { border-left: $o-cal-color-width solid var(--o-sw-bg); }
+#{o-swatch-alias-selector("o_cal_", ".o_cal_class")}, .o_cal_class.o_cal_swatch { border-left: $o-cal-color-width solid var(--o-sw-bg); }
 
 // Secondary colour: the calendar colour on an event with its own colour,
-// e.g. "o_cal_red o_cal_sec o_cal_blue_sec". The element carries the
+// e.g. "o_cal_navy o_cal_sec o_cal_olive_sec". The element carries the
 // tokens of the event colour, the calendar colour is set as a value.
 @each $class, $alias in $o-swatch-aliases {
 	@if string.index($class, "o_cal_") == 1 {
 		.o_cal_sec.#{$class}_sec { border-left: $o-cal-sec-border-width solid o-swatch-alias-color($class); }
+	}
+}
+// The calendar colour of a key of the chooser sets, e.g. "o_cal_sec o_cal_sec_blue"
+// or "o_cal_sec o_cal_sec_blue-light" (KalendarRenderWrapper.getSecondaryCssClass())
+@each $key, $swatch in $o-swatches {
+	.o_cal_sec.o_cal_sec_#{$key} { border-left: $o-cal-sec-border-width solid o-hex(map.get($swatch, "bg")); }
+	@each $variant in ("soft", "light", "tint", "dark") {
+		.o_cal_sec.o_cal_sec_#{$key}-#{$variant} { border-left: $o-cal-sec-border-width solid o-hex(map.get($swatch, "#{$variant}-bg")); }
 	}
 }
 

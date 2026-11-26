@@ -61,7 +61,7 @@
 			features: ['playpause','current','volume','progress','duration','tracks' #if($useSourceChooser),'sourcechooser'#end ,'speed','fullscreen','markers'],
 			
 			#if($r.isNotEmpty($markers))
-			markers: [#foreach($marker in $markers) #if($foreach.index != 0),#end { 'id' : '${marker.id}', 'color': '${marker.color}', 'time': $marker.time, 'action': '${marker.action}', 'showInTimeline' : ${marker.showInTimeline} } #end],
+			markers: [#foreach($marker in $markers) #if($foreach.index != 0),#end { 'id' : '${marker.id}', 'color': '$!{marker.color}', 'time': $marker.time, 'action': '${marker.action}', 'showInTimeline' : ${marker.showInTimeline} } #end],
             markerColor: '#00FF00',
             markerWidth: 3,
             markerCallback: function (media, time, id) {

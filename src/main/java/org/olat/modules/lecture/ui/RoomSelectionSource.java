@@ -49,6 +49,7 @@ import org.olat.modules.roommanagement.RoomBooking;
 import org.olat.modules.roommanagement.RoomManagementService;
 import org.olat.modules.roommanagement.RoomStatus;
 import org.olat.modules.roommanagement.model.SearchRoomParameters;
+import org.olat.modules.roommanagement.ui.RoomUIHelper;
 
 /**
  * ObjectSelectionSource that provides rooms grouped by availability for a given
@@ -187,8 +188,9 @@ public class RoomSelectionSource implements ObjectSelectionSource {
 
 	private String buildColorSquareHtml(Building building) {
 		if (building == null) return null;
-		String colorCss = building.getColorCss();
-		if (!StringHelper.containsNonWhitespace(colorCss)) return null;
+		// a key of the colour set M renders with the swatch class, an old class as it is
+		String colorCss = RoomUIHelper.toColorCss(building.getColorCss());
+		if (colorCss == null) return null;
 		return "<div class=\"o_color " + StringHelper.escapeHtml(colorCss)
 				+ "\"><small><i class=\"o_icon o_icon_square\"></i></small></div>";
 	}

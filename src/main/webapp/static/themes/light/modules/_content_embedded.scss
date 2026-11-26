@@ -4,6 +4,7 @@
    It is treated as "content" in contrast to other elements which are "application" elements.
    Use this block to override application styles
 */
+@use "sass:map";
 @use "sass:math";
 
 .o_user_content_block {
@@ -70,16 +71,10 @@ div.b_scrollblock {
 	@extend %o_scrollblock;
 }
 
-// A table with the fill of a message box: the token --o-box-{$box}-bg and its
-// shade tokens -table-border, -table-stripe-bg and -table-header-bg
-@mixin o-make-colored-table($box){
-	@include o-make-colored-table-tokens("box-#{$box}-bg", "box-#{$box}-table-border",
-		"box-#{$box}-table-stripe-bg", "box-#{$box}-table-header-bg");
-}
-
 // A table with a coloured fill: the names of the tokens of the fill, of the
 // cell border, of the fill of the even rows and of the header cells
-@mixin o-make-colored-table-tokens($bg, $border, $stripe-bg, $header-bg){
+// $line: the lines of the striped (even) rows, default the cell fill
+@mixin o-make-colored-table-tokens($bg, $border, $stripe-bg, $header-bg, $line: $bg){
 	border-collapse: collapse;
 	td, th {
 		padding: $table-cell-padding;
@@ -92,7 +87,7 @@ div.b_scrollblock {
 	}
 	tbody tr:nth-child(even) td {
 		background: var(--o-#{$stripe-bg});
-		border: 1px solid var(--o-#{$bg});
+		border: 1px solid var(--o-#{$line});
 	}
 	&.b_no_stripes tbody tr:nth-child(even) td {
 		background: var(--o-#{$bg});
@@ -178,22 +173,27 @@ table {
 			vertical-align: middle;
 		}
 	}
-	&.b_gray {
-		@include o-make-colored-table("note");
-	}
-	// the blue table has own tokens: the info box has a near white fill
-	&.b_blue {
-		@include o-make-colored-table-tokens("content-table-blue-bg", "content-table-blue-border",
-			"content-table-blue-stripe-bg", "content-table-blue-header-bg");
-	}
-	&.b_green {
-		@include o-make-colored-table("success");
-	}
-	&.b_yellow {
-		@include o-make-colored-table("warning");
-	}
-	&.b_red {
-		@include o-make-colored-table("error");
+	// One coloured table per swatch key, the 14 hues and the theme colours
+	// (chooser set M): b_red, ..., b_slate, b_theme1, ... The fills and the
+	// lines read the swatch roles of the key, $o-content-table-roles
+	// (_config.scss): cells soft-bg, header light-bg, lines of the even rows
+	// soft-border, as the palette token of the step (o-swatch-token(), so
+	// that content.css without swatch classes reads them). Two exceptions, both in
+	// $o-content-table-class-names: the stored style b_gray always looked
+	// slate (the UI greys come from the slate tinted neutral scale), so b_gray
+	// is the class of the hue slate (an extra class on the slate table). The
+	// pure hue gray gets the class b_gray_hue.
+	@each $key, $swatch in $o-swatches {
+		$class: map.get($o-content-table-class-names, $key);
+		$selector: if($class, "&.b_#{$class}", "&.b_#{$key}");
+		@if $key == "slate" {
+			$selector: "&.b_slate, &.b_gray";
+		}
+		#{$selector} {
+			@include o-make-colored-table-tokens(o-swatch-token($key, map.get($o-content-table-roles, "bg")), "white", "white",
+				o-swatch-token($key, map.get($o-content-table-roles, "header-bg")),
+				o-swatch-token($key, map.get($o-content-table-roles, "line")));
+		}
 	}
 }
 

@@ -66,6 +66,7 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -145,6 +146,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	private CalendarModule calendarModule;
 	@Autowired
 	private CalendarUserConfigurationDAO calendarUserConfigDao;
+	@Autowired
+	private ColorService colorService;
 
 	@Override
 	public void afterPropertiesSet() {
@@ -410,7 +413,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 					wrapper.getToken(), wrapper.isInAggregatedFeed(), wrapper.isVisible());
 		} else {
 			configuration.setVisible(wrapper.isVisible());
-			configuration.setCssClass(wrapper.getCssClass());
+			// the colour as the wrapper got it: a key of the chooser sets or an old class
+			configuration.setCssClass(wrapper.getColor());
 			configuration.setToken(wrapper.getToken());
 			configuration.setInAggregatedFeed(wrapper.isInAggregatedFeed());
 			configuration = calendarUserConfigDao.update(configuration);
@@ -582,10 +586,19 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			vEventProperties.add(new Location(kEvent.getLocation()));
 		}
 		
-		if (kEvent.getColor() != null) {
-			Color color = new Color();
-			color.setValue(kEvent.getColor());
-			vEventProperties.add(color);
+		// an invalid key is not written, see ICalEventColors
+		String colorKey = ICalEventColors.validColorKey(kEvent.getColor());
+		if (colorKey != null) {
+			// COLOR takes a CSS colour name, the own property keeps any other key
+			String cssColorName = ICalEventColors.toCssColorName(colorKey, colorService);
+			if (cssColorName != null) {
+				Color color = new Color();
+				color.setValue(cssColorName);
+				vEventProperties.add(color);
+			}
+			if (!colorKey.equals(cssColorName)) {
+				vEventProperties.add(new XProperty(ICAL_X_OLAT_COLOR, colorKey));
+			}
 		}
 		
 		if(kEvent.getDescription() != null) {
@@ -825,9 +838,14 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			calEvent.setLocation(location.getValue());
 		}
 		
+		// calendars of other applications have only the CSS colour name; both
+		// values can come from an imported file and are validated
+		Property colorKeyProperty = event.getProperty(ICAL_X_OLAT_COLOR).orElse(null);
 		Property colorProperty = event.getProperty(Color.PROPERTY_NAME).orElse(null);
-		if (colorProperty != null) {
-			calEvent.setColor(colorProperty.getValue());
+		String colorKey = ICalEventColors.fromICal(colorKeyProperty == null ? null : colorKeyProperty.getValue(),
+				colorProperty == null ? null : colorProperty.getValue());
+		if (colorKey != null) {
+			calEvent.setColor(colorKey);
 		}
 		
 		// links if any, the URI and the icon class are untrusted, see EventLinkValidator
@@ -947,7 +965,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		Kalendar cal = getCalendar(CalendarManager.TYPE_USER, identity.getName());
 		String fullName = userManager.getUserDisplayName(identity);
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal, fullName, null);
-		calendarWrapper.setCssClass(KalendarRenderWrapper.CALENDAR_COLOR_BLUE);
+		calendarWrapper.setColor(KalendarRenderWrapper.CALENDAR_COLOR_BLUE);
 		calendarWrapper.setVisible(true);
 		return calendarWrapper;
 	}
@@ -956,7 +974,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	public KalendarRenderWrapper getImportedCalendar(Identity identity, String calendarId) {
 		Kalendar cal = getCalendar(CalendarManager.TYPE_USER, calendarId);
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal, calendarId, null);
-		calendarWrapper.setCssClass(KalendarRenderWrapper.CALENDAR_COLOR_BLUE);
+		calendarWrapper.setColor(KalendarRenderWrapper.CALENDAR_COLOR_BLUE);
 		calendarWrapper.setVisible(true);
 		calendarWrapper.setImported(true);
 		return calendarWrapper;
@@ -966,7 +984,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	public KalendarRenderWrapper getGroupCalendar(BusinessGroup businessGroup) {
 		Kalendar cal = getCalendar(CalendarManager.TYPE_GROUP, businessGroup.getResourceableId().toString());
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal, businessGroup.getName(), null);
-		calendarWrapper.setCssClass(KalendarRenderWrapper.CALENDAR_COLOR_ORANGE);
+		calendarWrapper.setColor(KalendarRenderWrapper.CALENDAR_COLOR_ORANGE);
 		calendarWrapper.setVisible(true);
 		return calendarWrapper;
 	}
@@ -976,7 +994,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		Kalendar cal = getCalendar(CalendarManager.TYPE_COURSE, course.getResourceableId().toString());
 		String externalRef = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getExternalRef();
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal, course.getCourseTitle(), externalRef);
-		calendarWrapper.setCssClass(KalendarRenderWrapper.CALENDAR_COLOR_GREEN);
+		calendarWrapper.setColor(KalendarRenderWrapper.CALENDAR_COLOR_GREEN);
 		calendarWrapper.setVisible(true);
 		return calendarWrapper;
 	}
@@ -991,7 +1009,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		}
 		Kalendar cal = getCalendar(type, resource.getResourceableId().toString());
 		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal, "To delete", null);
-		calendarWrapper.setCssClass(KalendarRenderWrapper.CALENDAR_COLOR_GREEN);
+		calendarWrapper.setColor(KalendarRenderWrapper.CALENDAR_COLOR_GREEN);
 		calendarWrapper.setVisible(true);
 		return calendarWrapper;
 	}

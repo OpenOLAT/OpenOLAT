@@ -366,16 +366,36 @@ public class FormUIFactory {
 		return mse;
 	}
 
+	/**
+	 * @param name The name of the element
+	 * @param i18nLabel The i18n key of the label or null
+	 * @param formLayout The container of the element
+	 * @param wControl The window control of the controller of the form, it
+	 * 		opens the colours in a callout
+	 * @param colors The colours
+	 * @return The colour picker
+	 */
 	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, FormItemContainer formLayout,
-													List<ColorPickerElement.Color> colors) {
-		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors);
+			WindowControl wControl, List<ColorPickerElement.Color> colors) {
+		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(wControl, name, colors);
 		setLabelIfNotNull(i18nLabel, colorPickerElement);
 		formLayout.add(colorPickerElement);
 		return colorPickerElement;
 	}
 
-	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, List<ColorPickerElement.Color> colors) {
-		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors);
+	/**
+	 * A colour picker which is not added to a container, e.g. for a table.
+	 *
+	 * @param name The name of the element
+	 * @param i18nLabel The i18n key of the label or null
+	 * @param wControl The window control of the controller of the form, it
+	 * 		opens the colours in a callout
+	 * @param colors The colours
+	 * @return The colour picker
+	 */
+	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, WindowControl wControl,
+			List<ColorPickerElement.Color> colors) {
+		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(wControl, name, colors);
 		setLabelIfNotNull(i18nLabel, colorPickerElement);
 		return colorPickerElement;
 	}

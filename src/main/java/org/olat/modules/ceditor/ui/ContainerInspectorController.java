@@ -119,10 +119,10 @@ public class ContainerInspectorController extends FormBasicController implements
 		formLayout.add(styleCont);
 		tabbedPane.addTab(getTranslator().translate("tab.style"), styleCont);
 
-		generalStyleComponents = MediaUIHelper.addGeneralStyleSettings(styleCont, getTranslator(), uifactory,
+		generalStyleComponents = MediaUIHelper.addGeneralStyleSettings(styleCont, getTranslator(), uifactory, getWindowControl(),
 				getGeneralStyleSettings(container.getContainerSettings()), colorService, getLocale());
 
-		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory,
+		alertBoxComponents = MediaUIHelper.addAlertBoxSettings(styleCont, getTranslator(), uifactory, getWindowControl(),
 				getAlertBoxSettings(container.getContainerSettings()), colorService, getLocale());
 	}
 

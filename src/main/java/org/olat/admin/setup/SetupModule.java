@@ -137,7 +137,7 @@ public class SetupModule extends AbstractSpringModule {
 			newUser.setEmail(user.getEmail());
 			newUser.getPreferences().setLanguage(user.getLanguage());
 			newUser.getPreferences().setInformSessionTimeout(true);
-			newUser.setInitialsCssClass("o_user_initials_dark_green"); // see UserManager.USER_INITIALS_CSS
+			newUser.setInitialsCssClass("green"); // a hue of the colour set M, see UserManagerImpl.getRandomInitialsColorCss()
 
 			if (!StringHelper.containsNonWhitespace(authenticationProviderConstant)){
 				throw new OLATRuntimeException(this.getClass(), "Auth token not set! Please fix! " + authenticationProviderConstant, null);

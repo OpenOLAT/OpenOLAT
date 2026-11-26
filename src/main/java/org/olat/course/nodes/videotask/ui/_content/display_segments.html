@@ -19,19 +19,19 @@
 	#end
 	<div id="o_videotask_categories" class="o_videotask_categories">
 	#foreach ($category in $categories)
-		<button class='btn btn-default $category.color #if($r.isNotEmpty($category.status) && "incorrect" == $category.status) o_videotask_category_incorrect #end' href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">
+		<button class='btn btn-default $!category.color #if($r.isNotEmpty($category.status) && "incorrect" == $category.status) o_videotask_category_incorrect #end' href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">
 			#if($r.isNotEmpty($category.status) && "correct" == $category.status) <i class="o_icon o_icon_correct_answer"> </i> #end${category.labelAndTitle}</button>
 	#end
 	</div>
 	<div id="o_videotask_segments" class="o_videotask_segments $segmentsCssClass">
 		#foreach ($segment in $segments)
-		<div class="o_video_me_segment o_video_me_colored_area ${segment.color()}" style="left: ${segment.left()}; width: ${segment.width()};" data-index="${foreach.count}" data-start="${segment.start()}" data-duration="${segment.duration()}">
+		<div class="o_video_me_segment o_video_me_colored_area $!{segment.color()}" style="left: ${segment.left()}; width: ${segment.width()};" data-index="${foreach.count}" data-start="${segment.start()}" data-duration="${segment.duration()}">
 			${segment.label()}
 		</div>
 		#end
 		#foreach ($segmentMarker in $segmentsSelections)
 			#if(${segmentMarker.visible()})
-			<div id="vt-marker-${foreach.count}" data-label-title="${segmentMarker.getCategoryLabelAndTitle()}" data-start="${segmentMarker.start()}" data-duration="${segmentMarker.duration()}" data-duration-string="${segmentMarker.durationString()}" data-index="${foreach.count}" data-category-color="${segmentMarker.categoryColor}" class="o_vt_marker ${segmentMarker.resultCssClass()} ${segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
+			<div id="vt-marker-${foreach.count}" data-label-title="${segmentMarker.getCategoryLabelAndTitle()}" data-start="${segmentMarker.start()}" data-duration="${segmentMarker.duration()}" data-duration-string="${segmentMarker.durationString()}" data-index="${foreach.count}" data-category-color="$!{segmentMarker.categoryColor}" class="o_vt_marker ${segmentMarker.resultCssClass()} $!{segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
 				<span>${segmentMarker.categoryLabel}</span>
 			</div>
 			#end

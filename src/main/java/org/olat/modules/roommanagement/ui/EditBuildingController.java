@@ -34,8 +34,10 @@ import org.json.JSONObject;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.core.commons.services.color.ColorUIFactory;
+import org.olat.core.commons.services.color.ColorFamily;
 import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -126,14 +128,14 @@ public class EditBuildingController extends FormBasicController {
 		descriptionEl = uifactory.addTextElement("building.description", "building.col.description", 1000,
 				building != null ? building.getDescription() : null, formLayout);
 
-		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorService.getColors(), getLocale());
-		colorEl = uifactory.addColorPickerElement("building.color", "building.col.color", formLayout, colors);
-		colorEl.setElementCssClass("o_building_color_picker");
-		if (building != null && StringHelper.containsNonWhitespace(building.getColorCss())) {
-			colorEl.setColor(colorService.toColorKey(building.getColorCss()));
-		} else {
-			colorEl.setColor(colorService.getDefaultColor());
-		}
+		// The colour set M. A building always has a colour: the key of the set nearest
+		// to the stored colour (e.g. "cyan" for the old class "o_color_lightblue"), else
+		// the default colour. The key is stored only if the user picks a colour.
+		List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(ColorSet.M, getLocale());
+		colorEl = uifactory.addColorPickerElement("building.color", "building.col.color", formLayout, getWindowControl(), colors);
+		String colorKey = building == null ? null
+				: colorService.getNearestKey(ColorSet.M, building.getColorCss(), ColorFamily.COLOR_SERVICE);
+		colorEl.setColor(colorKey != null ? colorKey : ColorService.DEFAULT_COLOR_KEY);
 
 		boolean orgRestricted = !currentOrgs.isEmpty();
 		orgRestrictionToggle = uifactory.addToggleButton("building.org.restriction",
@@ -305,6 +307,7 @@ public class EditBuildingController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String storedColor = building == null ? null : building.getColorCss();
 		if (building == null) {
 			building = roomManagementService.createBuilding(descriptionEl.getValue(), getIdentity());
 		}
@@ -317,8 +320,10 @@ public class EditBuildingController extends FormBasicController {
 		building.setGeoLatitude(geoLatitude);
 		building.setGeoLongitude(geoLongitude);
 
-		ColorPickerElement.Color color = colorEl.getColor();
-		building.setColorCss(color != null ? color.cssClass() : null);
+		// the key of the colour set M, e.g. "blue", if the user picked a colour,
+		// else the stored colour stays as it is
+		String color = ColorUIFactory.getValueToSave(storedColor, colorEl);
+		building.setColorCss(StringHelper.containsNonWhitespace(color) ? color : ColorService.DEFAULT_COLOR_KEY);
 
 		List<Organisation> orgs = List.of();
 		if (adminAccessEl != null && adminAccessEl.isVisible() && !adminAccessEl.getSelectedKeys().isEmpty()) {

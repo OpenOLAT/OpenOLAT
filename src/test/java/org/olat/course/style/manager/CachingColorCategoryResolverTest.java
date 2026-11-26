@@ -40,12 +40,12 @@ import org.olat.course.style.model.ColorCategoryImpl;
 public class CachingColorCategoryResolverTest {
 	
 	private ColorCategoryDAO colorCategoryDao;
-	private String cssNoColor = "css.no.color";
-	private String cssInherited = "css.inherited";
-	private String cssCourse = "css.course";
+	private String cssNoColor = "css_no_color";
+	private String cssInherited = "css_inherited";
+	private String cssCourse = "css_course";
 	private String identifierCourse = "identifierCourse";
 	private String identifierDisabled = "identifierD";
-	private String cssDisabled = "css.disabled";
+	private String cssDisabled = "css_disabled";
 	private String identifier1 = "identifier1";
 	private String css1 = "css1";
 	private String identifier2 = "identifier2";
@@ -181,6 +181,22 @@ public class CachingColorCategoryResolverTest {
 		String colorCategoryCss = sut.getColorCategoryCss(courseNode);
 		
 		assertThat(colorCategoryCss).isEqualTo(cssNoColor);
+	}
+	
+	@Test
+	public void shouldGetValidCssOnly() {
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		
+		// a class an administrator entered as text before the colour chooser
+		assertThat(sut.getCss(createColorCategory("valid", " o_colcat_bg  o_swatch_blue ", true))).isEqualTo("o_colcat_bg  o_swatch_blue");
+		for (String css : new String[] { "\"><script>alert(1)</script>", "blue onmouseover=alert(1)",
+				"blue;background:url(x)", "o_cal_blue\" x=\"", "a\nb", "x".repeat(10_000), "light.blue" }) {
+			assertThat(sut.getCss(createColorCategory("hostile", css, true))).as(css).isEqualTo(ColorCategory.CSS_NO_COLOR);
+		}
+		// no category of no colour: the class of no colour
+		when(colorCategoryDao.loadByIdentifier(ColorCategory.IDENTIFIER_NO_COLOR)).thenReturn(null);
+		CachingColorCategoryResolver withoutNoColor = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		assertThat(withoutNoColor.getCss(null)).isEqualTo(ColorCategory.CSS_NO_COLOR);
 	}
 
 }

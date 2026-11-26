@@ -35,8 +35,8 @@ import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
@@ -60,10 +60,12 @@ public class FullCalendarMapper implements Mapper {
 	private final ZoneId defaultZoneId;
 	private final FullCalendarComponent fcC;
 	private final CalendarManager calendarManager;
-	
+	private final ColorService colorService;
+
 	public FullCalendarMapper(FullCalendarComponent fcC) {
 		this.fcC = fcC;
 		calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
+		colorService = CoreSpringFactory.getImpl(ColorService.class);
 		defaultZoneId = CoreSpringFactory.getImpl(CalendarModule.class).getDefaultZoneId();
 	}
 
@@ -217,17 +219,17 @@ public class FullCalendarMapper implements Mapper {
 	}
 	
 	private String getCssClass(KalendarEvent event, KalendarRenderWrapper cal) {
-		if (StringHelper.containsNonWhitespace(event.getColor())) {
-			String eventColor = "o_cal_".concat(event.getColor());
-			if (CalendarColors.colorClassExists(eventColor)) {
-				StringBuilder sb = new StringBuilder();
-				sb.append(eventColor);
-				String calCssClass = cal.getCssClass();
-				if(StringHelper.containsNonWhitespace(calCssClass) && calCssClass.startsWith("o_cal_")) {
-					sb.append(" o_cal_sec ").append(calCssClass).append("_sec");
-				}
-				return sb.toString();
+		// a key of the chooser sets renders as its swatch, a calendar colour as its class
+		String eventColor = colorService.toCalendarEventCssClass(event.getColor());
+		if (eventColor != null) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(eventColor);
+			// the calendar colour as border
+			String secondaryCssClass = cal.getSecondaryCssClass();
+			if(secondaryCssClass != null) {
+				sb.append(" ").append(secondaryCssClass);
 			}
+			return sb.toString();
 		}
 		
 		return cal.getCssClass();

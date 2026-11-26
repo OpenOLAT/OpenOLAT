@@ -83,8 +83,6 @@ public class CreateBadge02CustomizationStep extends BasicStep {
 		private final String tmpSvgFileName;
 
 		@Autowired
-		private ColorService colorService;
-		@Autowired
 		private OpenBadgesManager openBadgesManager;
 
 		public CreateBadgeCustomizationForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
@@ -125,17 +123,17 @@ public class CreateBadge02CustomizationStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			Set<String> templateVariables = createContext.getTemplateVariables();
-			List<String> colorNames = colorService.getColorsForBadges();
-			List<ColorPickerElement.Color> colors = ColorUIFactory.createColors(colorNames, getLocale());
+			// gold, silver, bronze, then the colours of the set M
+			List<ColorPickerElement.Color> colors = ColorUIFactory.createBadgeColors(getLocale());
 			if (templateVariables != null) {
 				if (templateVariables.contains(OpenBadgesManager.VAR_BACKGROUND)) {
 					backgroundColor = uifactory.addColorPickerElement("backgroundColor", "var.background",
-							formLayout, colors);
+							formLayout, getWindowControl(), colors);
 					backgroundColor.addActionListener(FormEvent.ONCHANGE);
 					if (createContext.getBackgroundColorId() != null) {
 						backgroundColor.setColor(createContext.getBackgroundColorId());
 					} else {
-						backgroundColor.setColor(colorNames.get(0));
+						backgroundColor.setColor(ColorService.BADGE_COLORS.get(0));
 					}
 				}
 				if (templateVariables.contains(OpenBadgesManager.VAR_TITLE)) {

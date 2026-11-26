@@ -27,9 +27,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.commons.services.color.ColorService;
+import org.olat.core.commons.services.color.ColorSet;
+import org.olat.core.commons.services.color.ColorUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -57,11 +62,13 @@ public class ColorCategoryEditController extends FormBasicController {
 	
 	private TextElement identifierEl;
 	private SingleSelection enableEl;
-	private TextElement cssClassEl;
+	private ColorPickerElement colorEl;
 	private List<TextElement> localeElements;
 	
 	private ColorCategory colorCategory;
 	
+	@Autowired
+	private ColorService colorService;
 	@Autowired
 	private CourseStyleService courseStyleService;
 	@Autowired
@@ -108,9 +115,29 @@ public class ColorCategoryEditController extends FormBasicController {
 			localeElements.add(localeEl);
 		}
 		
+		// The colours of the set M: the hues, then the theme colours of the active theme
+		List<ColorPickerElement.Color> colors = ColorUIFactory.appendThemeColors(
+				ColorUIFactory.createColors(colorService.getHueColors(ColorSet.M), getLocale(), ColorService.SWATCH_CSS_CLASS_PREFIX),
+				getLocale());
+		colorEl = uifactory.addColorPickerElement("color.category.color", "color.category.color", formLayout, getWindowControl(), colors);
+		colorEl.setNonSelectedText(translate("color.category.color.select"));
+		
+		// A class that is not a swatch of the chooser (a class entered before the
+		// chooser) is shown and kept until a colour is selected.
 		String cssClass = colorCategory != null? colorCategory.getCssClass(): null;
-		cssClassEl = uifactory.addTextElement("color.category.css.class", 128, cssClass, formLayout);
-		cssClassEl.setMandatory(true);
+		// Mandatory only without a stored class: a stored class is saved without a pick
+		colorEl.setMandatory(!StringHelper.containsNonWhitespace(cssClass));
+		String swatchKey = CourseStyleUIFactory.getSwatchKey(cssClass, colors.stream().map(ColorPickerElement.Color::id).toList());
+		if (swatchKey != null) {
+			colorEl.setColor(swatchKey);
+		}
+		if (StringHelper.containsNonWhitespace(cssClass)) {
+			StaticTextElement cssClassEl = uifactory.addStaticTextElement("color.category.css.class",
+					StringHelper.escapeHtml(cssClass), formLayout);
+			if (swatchKey == null) {
+				cssClassEl.setExampleKey("color.category.css.class.kept", null);
+			}
+		}
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -148,17 +175,19 @@ public class ColorCategoryEditController extends FormBasicController {
 			}
 		}
 		
-		cssClassEl.clearError();
-		if (!StringHelper.containsNonWhitespace(cssClassEl.getValue())) {
-			cssClassEl.setErrorKey("form.legende.mandatory");
+		colorEl.clearError();
+		if (colorEl.getColor() == null
+				&& (colorCategory == null || !StringHelper.containsNonWhitespace(colorCategory.getCssClass()))) {
+			colorEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} 
+		}
 		
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String storedCssClass = colorCategory == null ? null : colorCategory.getCssClass();
 		if (colorCategory == null) {
 			colorCategory = courseStyleService.createColorCategory(identifierEl.getValue());
 		}
@@ -175,8 +204,14 @@ public class ColorCategoryEditController extends FormBasicController {
 		boolean enabled = "true".equals(enableEl.getSelectedKey());
 		colorCategory.setEnabled(enabled);
 		
-		String cssClass = cssClassEl.getValue();
-		colorCategory.setCssClass(cssClass);
+		// The swatch class of the colour (e.g. "o_swatch_blue") if the user picked a
+		// colour, else the category keeps its class as it is
+		ColorPickerElement.Color color = colorEl.getColor();
+		String pickedCssClass = color != null? colorService.toSwatchCssClass(color.id()): null;
+		String cssClass = ColorUIFactory.getValueToSave(storedCssClass, colorEl.isColorPicked(), pickedCssClass);
+		if (StringHelper.containsNonWhitespace(cssClass)) {
+			colorCategory.setCssClass(cssClass);
+		}
 		
 		courseStyleService.updateColorCategory(colorCategory);
 		

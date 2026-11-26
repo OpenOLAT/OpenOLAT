@@ -19,13 +19,13 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.List;
-
+import org.olat.core.commons.services.color.ColorValidator;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -34,13 +34,18 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
+ * The button of the colour picker in the form: the selected colour, the
+ * hidden field of the value and the hidden field of the pick. A click (or
+ * Arrow Down, Arrow Up) sends a request to the element, which opens the
+ * colours in a callout, see {@link ColorPickerPopupRenderer}.
+ * 
  * Initial date: 2023-03-23<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class ColorPickerRenderer extends DefaultComponentRenderer {
 
-	private static final String UNSELECT_KEY = "__color_unselect__";
+	static final String UNSELECT_KEY = "__color_unselect__";
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
@@ -48,35 +53,53 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 		ColorPickerComponent colorPickerComponent = (ColorPickerComponent) source;
 		ColorPickerElementImpl colorPickerEl = colorPickerComponent.getFormItem();
-		List<ColorPickerElement.Color> colors = colorPickerEl.getColors();
 		ColorPickerElement.Color selectedColor = colorPickerEl.getColor();
 
 		String inputId = colorPickerEl.getFormDispatchId();
-		String dropdownId = inputId + "_D";
-		String buttonId = inputId + "_B";
+		String buttonId = inputId + ColorPickerElementImpl.BUTTON_SUFFIX;
+		boolean enabled = colorPickerEl.isEnabled();
 
 		sb.append("<div class='o_color_picker_wrapper'>");
+		// "true" after the user picked a colour, see ColorPickerElement.isColorPicked()
+		String pickedFieldName = inputId + ColorPickerElementImpl.PICKED_SUFFIX;
+		sb.append("<input type='hidden' id='").append(pickedFieldName).append("' name='").append(pickedFieldName)
+				.append("' value='").append(colorPickerEl.isColorPicked() ? "true" : "").append("'>");
 
-		sb.append("<div id='").append(dropdownId).append("'");
-		sb.append(" class='button-group dropdown");
-		sb.append("'>");
-
+		boolean open = enabled && colorPickerEl.isCalloutOpen();
 		sb.append("<button style='padding-left: ").append(selectedColor != null ? "32" : "12")
-				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button o_button_printed' type='button' ")
-				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
-				.append("aria-expanded='false' ")
-				.append("aria-labelledby='o_cl" + colorPickerComponent.getDispatchID() + " " + buttonId + "' ", colorPickerEl.hasLabel())
-				.append(!colorPickerEl.isEnabled() ? " disabled" : "").append(">");
+				.append("px;' class='btn btn-default o_color_picker_button o_button_printed' type='button' ")
+				.append("id='").append(buttonId).append("' ")
+				.append("aria-haspopup='dialog' aria-expanded='").append(open).append("' ");
+		if (open) {
+			sb.append("aria-controls='").append(inputId).append(ColorPickerElementImpl.POPUP_SUFFIX).append("' ");
+		}
+		if (colorPickerEl.hasLabel()) {
+			sb.append("aria-labelledby='o_cl").append(colorPickerComponent.getDispatchID()).append(" ").append(buttonId).append("' ");
+		} else if (StringHelper.containsNonWhitespace(colorPickerEl.getButtonAriaLabel())) {
+			// no label: "Color" and the current colour
+			sb.append("aria-label='").append(attribute(colorPickerEl.getButtonAriaLabel())).append("' ");
+		}
+		if (enabled) {
+			// with the values of the form: the callout redraws the form below it
+			String openCall = getXHRCall(colorPickerEl.getRootForm(), inputId, ColorPickerElementImpl.CMD_OPEN);
+			sb.append("onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" ")
+					.append("onclick=\"").append(openCall).append("; return false;\" ")
+					.append("onkeydown=\"if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); ")
+					.append(openCall).append("; }\"");
+		} else {
+			sb.append("disabled");
+		}
+		sb.append(">");
 		if (selectedColor != null) {
 			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
-					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(selectedColor != null ? selectedColor.cssClass() : "")
+					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(cssClass(selectedColor.cssClass()))
 					.append("' aria-hidden='true'></i>");
-			sb.append("<span>").append(selectedColor.translatedName()).append("</span>");
+			sb.append("<span>").append(text(selectedColor.translatedName())).append("</span>");
 		} else {
 			sb.append("<i class='o_icon ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background' aria-hidden='true'></i>");
 			if (StringHelper.containsNonWhitespace(colorPickerEl.getNonSelectedText())) {
-				sb.append("<span>").append(colorPickerEl.getNonSelectedText()).append("</span>");
+				sb.append("<span>").append(text(colorPickerEl.getNonSelectedText())).append("</span>");
 			} else {
 				sb.append("<span></span>");
 			}
@@ -85,96 +108,55 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 		sb.append("<input type='hidden' id='").append(inputId).append("' name='").append(inputId)
 				.append("' value='")
-				.append(selectedColor != null ? selectedColor.id() : "")
-				.append("' cssclass='")
-				.append(selectedColor != null ? selectedColor.cssClass() : "")
+				.append(selectedColor != null ? attribute(selectedColor.id()) : "")
 				.append("'>");
 
 		sb.append("</button>");
-
-		sb.append("<ul class='dropdown-menu o_color_picker_dropdown");
-		sb.append(" o_drop_up", colorPickerEl.isDropUp());
-		sb.append("' aria-labelledby='");
-		sb.append(buttonId).append("'>");
-
-		for (ColorPickerElement.Color color : colors) {
-			boolean selected = selectedColor != null && color.id().equals(selectedColor.id());
-			renderColorItem(sb, inputId, dropdownId, buttonId, colorPickerEl, color.id(), color.translatedName(),
-					color.cssClass(), selected);
-		}
-
-		if (colorPickerEl.isAllowUnselect() && selectedColor != null && StringHelper.containsNonWhitespace(colorPickerEl.getNonSelectedText())) {
-			renderColorItem(sb, inputId, dropdownId, buttonId, colorPickerEl, UNSELECT_KEY,
-					colorPickerEl.getNonSelectedText(), "o_color_unselect", false);
-		}
-
-		sb.append("</ul>"); // dropdown-menu
-		sb.append("</div>"); // dropdown
 		sb.append("</div>"); // o_color_picker_wrapper
 
-		sb.append("<script>\n");
-		sb.append("\"use strict\";\n");
-		sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssClass) {\n");
-		sb.append("  const hiddenInput = jQuery('#' + inputId);\n");
-		sb.append("  let oldColorId = hiddenInput.val();\n");
-		sb.append("  let oldCssClass = hiddenInput.attr('cssClass'); \n");
-		sb.append("  hiddenInput.val(colorId);\n");
-		sb.append("  hiddenInput.attr('cssClass', cssClass); \n");
-		sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
-		sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(oldCssClass).addClass('o_color_picker_colored_area o_icon_a ' + cssClass);\n");
-		sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
-		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected').children('a').attr('aria-pressed', 'false');\n");
-		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected').children('a').attr('aria-pressed', 'true');\n");
-		sb.append("  setFlexiFormDirty(formDispatchFieldId);\n");
-		sb.append("}\n");
 		if (colorPickerEl.getResetButtonId() != null) {
+			sb.append("<script>\n");
+			sb.append("\"use strict\";\n");
 			sb.append("jQuery('#").append(colorPickerEl.getResetButtonId()).append("').on('click', function() { jQuery('#").append(buttonId).append("').focus(); });\n");
+			sb.append("</script>");
 		}
-		sb.append("</script>");
 	}
 
-	private void renderColorItem(StringOutput sb, String inputId, String dropdownId, String buttonId,
-								 ColorPickerElementImpl colorPickerEl, String colorId, String colorName,
-								 String colorCss, boolean selected) {
-		sb.append("<li data-color='").append(colorId).append("'");
-		if (selected) {
-			sb.append(" class='o_selected'");
+	/**
+	 * @return The CSS classes if they are valid class names, else no class:
+	 * 		the colour renders without colour
+	 */
+	static String cssClass(String cssClass) {
+		if (cssClass == null || cssClass.isBlank()) {
+			return "";
 		}
-		sb.append(">");
-		sb.append("<a tabindex='0' role='button' aria-pressed='").append(selected).append("' class='dropdown-item o_color_picker_link' ");
-
-		String updateFunctionCall = "o_cp_set_color('" + colorId + "', '" +
-				colorName + "', '" +
-				buttonId + "', '" +
-				inputId + "', '" +
-				dropdownId + "', '" +
-				colorPickerEl.getRootForm().getDispatchFieldId() + "', '" +
-				colorCss + "'); ";
-		String submitFunctionCall = getRawJSFor(colorPickerEl.getRootForm(), inputId, colorPickerEl.getAction()) + "; ";
-		submitFunctionCall = "setTimeout(function() { " + submitFunctionCall + " }, 0);";
-		String functionCall = updateFunctionCall + submitFunctionCall;
-		sb.append("onclick=\"").append(functionCall).append("\" ");
-		sb.append("onKeyDown=\"if (event.keyCode === 13 || event.keyCode === 32) { event.preventDefault(); ").append(functionCall)
-				.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
-
-		sb.append(">");
-
-		sb.append("<i class='o_color_picker_colored_area o_icon o_icon_a ")
-				.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(colorCss)
-				.append("' aria-hidden='true'></i>");
-		sb.append("<span>").append(colorName).append("</span>");
-
-		sb.append("</a>");
-		sb.append("</li>");
+		String valid = ColorValidator.validCssClasses(cssClass, "colour picker");
+		return valid == null ? "" : valid;
 	}
 
-	private String getRawJSFor(Form form, String formItemDispatchId, int action) {
-		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(form, formItemDispatchId, action, false, null);
-		String onKeyword = "onchange=";
-		int onPos = eventHandlers.indexOf(onKeyword);
-		if (onPos != -1) {
-			return eventHandlers.substring(onPos + onKeyword.length() + 1, eventHandlers.length() - 1);
-		}
-		return "";
+	/**
+	 * @return The text escaped for the content of an element
+	 */
+	static String text(String text) {
+		return text == null ? "" : StringHelper.escapeHtml(text);
+	}
+
+	/**
+	 * @return The value escaped for an attribute in single or double quotes
+	 */
+	static String attribute(String value) {
+		return value == null ? "" : StringHelper.escapeHtml(value).replace("'", "&#39;");
+	}
+
+	/**
+	 * @param form The form of the picker
+	 * @param inputId The dispatch id of the picker
+	 * @param cmd The command, see ColorPickerElementImpl
+	 * @return The JavaScript call of a request to the picker which submits
+	 * 		the values of the form (also of a multipart form, without its files)
+	 */
+	static String getXHRCall(Form form, String inputId, String cmd) {
+		return FormJSHelper.getXHRFnCallFor(form, inputId, 0, false, false, true, true,
+				new NameValuePair(ColorPickerElementImpl.CMD_PARAM, cmd));
 	}
 }
