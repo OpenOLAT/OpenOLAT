@@ -744,7 +744,8 @@ public class UserAdminController extends BasicController implements Activateable
 						.enableRoles()
 						.enableAllRoles()
 						.enableFullStructure()
-						.enableCalendar();
+						.enableCalendar()
+						.enableSingleCourseImplementations();
 				ImplementationsListConfig config = configBuilder.build();
 				
 				implementationsCtrl = new ImplementationsListController(uureq, getWindowControl(), implementationsPanel, identity, config);

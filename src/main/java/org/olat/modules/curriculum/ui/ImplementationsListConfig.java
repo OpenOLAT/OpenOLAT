@@ -50,7 +50,8 @@ public record ImplementationsListConfig(
 		boolean withStatus,
 		boolean withCompletion,
 		boolean withCalendar,
-		boolean withCancelledFilter) {
+		boolean withCancelledFilter,
+		boolean withSingleCourseImplementations) {
 
 	public static Builder builder(List<CurriculumRoles> asRoles) {
 		return new Builder(asRoles);
@@ -78,6 +79,7 @@ public record ImplementationsListConfig(
 		private boolean withCompletion;
 		private boolean withCalendar;
 		private boolean withCancelledFilter;
+		private boolean withSingleCourseImplementations;
 
 		private Builder(List<CurriculumRoles> asRoles) {
 			this.asRoles = asRoles;
@@ -178,11 +180,22 @@ public record ImplementationsListConfig(
 			return this;
 		}
 
+		/**
+		 * Enables listing of single-course implementations even if they have no
+		 * course linked yet. Only intended for the user-management context, where
+		 * all memberships of a user must be visible regardless of the implementation's
+		 * perspective-driven default of hiding incomplete single-course implementations.
+		 */
+		public Builder enableSingleCourseImplementations() {
+			this.withSingleCourseImplementations = true;
+			return this;
+		}
+
 		public ImplementationsListConfig build() {
 			return new ImplementationsListConfig(asRoles, coachIdentity, withPreparation, withPreparationWarning,
 					withCatalogDetailsHeader, withFormTitle, withFormLegend, customLegendText, customLegendIconCss,
 					helpUrl, withBookmarks, withId, extRefVisibilityDefault, withRoles, withAllRoles, withFullStructure,
-					withStatus, withCompletion, withCalendar, withCancelledFilter);
+					withStatus, withCompletion, withCalendar, withCancelledFilter, withSingleCourseImplementations);
 		}
 	}
 }

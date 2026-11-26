@@ -226,7 +226,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(!guestOnly) {
 			if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
 				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(),
-						true, asRoles, STATUS_WITHOUT_PREPARATION);
+						true, asRoles, STATUS_WITHOUT_PREPARATION, false);
 				for(CurriculumElement implementation:implementations) {
 					String name = StringHelper.escapeHtml(implementation.getDisplayName());
 					String hint = scopeDatesHint(implementation);

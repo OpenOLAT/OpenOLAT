@@ -330,10 +330,11 @@ public class ImplementationsListController extends FormBasicController implement
 				? markManager.getMarkResourceIds(assessedIdentity, "CurriculumElement", List.of())
 				: Set.of();
 		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(assessedIdentity,
-				false, config.asRoles(), status);
+				false, config.asRoles(), status, config.withSingleCourseImplementations());
 		if (config.coachIdentity() != null) {
 			Set<Long> coachImplementationKeys = myImplementationsQueries
-					.searchImplementations(config.coachIdentity(), false, List.of(CurriculumRoles.coach), status).stream()
+					.searchImplementations(config.coachIdentity(), false, List.of(CurriculumRoles.coach), status,
+							config.withSingleCourseImplementations()).stream()
 					.map(CurriculumElement::getKey)
 					.collect(Collectors.toSet());
 			implementations = implementations.stream()

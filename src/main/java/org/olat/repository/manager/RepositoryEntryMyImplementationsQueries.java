@@ -61,11 +61,11 @@ public class RepositoryEntryMyImplementationsQueries {
 	private CurriculumElementDAO curriculumElementDao;
 	
 	public boolean hasImplementations(IdentityRef identity, List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
-		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, roles, status);
+		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, roles, status, false);
 		if (elements != null && !elements.isEmpty()) {
 			return true;
 		}
-		List<CurriculumElement> subMemberImplementations = loadSubMemberImplementations(identity, 0, 1, roles, status);
+		List<CurriculumElement> subMemberImplementations = loadSubMemberImplementations(identity, 0, 1, roles, status, false);
 		if (subMemberImplementations != null && !subMemberImplementations.isEmpty()) {
 			return true;
 		}
@@ -73,9 +73,9 @@ public class RepositoryEntryMyImplementationsQueries {
 	}
 
 	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly,
-			List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
-		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, roles, status);
-		List<CurriculumElement> subMemberImplementations = loadSubMemberImplementations(identity, 0, -1, roles, status);
+			List<CurriculumRoles> roles, List<CurriculumElementStatus> status, boolean includeSingleCourseImplementations) {
+		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, roles, status, includeSingleCourseImplementations);
+		List<CurriculumElement> subMemberImplementations = loadSubMemberImplementations(identity, 0, -1, roles, status, includeSingleCourseImplementations);
 		elements.addAll(subMemberImplementations);
 
 		List<CurriculumElement> implementations;
@@ -107,7 +107,7 @@ public class RepositoryEntryMyImplementationsQueries {
 	}
 	
 	private List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults,
-			List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
+			List<CurriculumRoles> roles, List<CurriculumElementStatus> status, boolean includeSingleCourseImplementations) {
 		String query = """
 			select el from curriculumelement el
 			 inner join fetch el.type curElementType
@@ -117,7 +117,8 @@ public class RepositoryEntryMyImplementationsQueries {
 			   and membership.identity.key=:identityKey
 			   and membership.role in :roles
 			   and el.parent.key is null
-			   and (curElementType.maxRepositoryEntryRelations=-1
+			   and (:includeSingleCourseImplementations=true
+			        or curElementType.maxRepositoryEntryRelations=-1
 			        or curElementType.singleElement=false
 			       )
 			""";
@@ -125,7 +126,8 @@ public class RepositoryEntryMyImplementationsQueries {
 		TypedQuery<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("roles", roles.stream().map(CurriculumRoles::name).toList())
-				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList());
+				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList())
+				.setParameter("includeSingleCourseImplementations", includeSingleCourseImplementations);
 		if(maxResults > 0) {
 			elements = elements
 					.setFirstResult(firstResult)
@@ -135,7 +137,7 @@ public class RepositoryEntryMyImplementationsQueries {
 	}
 	
 	private List<CurriculumElement> loadSubMemberImplementations(IdentityRef identity, int firstResult, int maxResults,
-			List<CurriculumRoles> roles, List<CurriculumElementStatus> status) {
+			List<CurriculumRoles> roles, List<CurriculumElementStatus> status, boolean includeSingleCourseImplementations) {
 		String query = """
 			select implementation from curriculumelement el
 			 inner join el.group as baseGroup
@@ -147,7 +149,8 @@ public class RepositoryEntryMyImplementationsQueries {
 			   and membership.identity.key=:identityKey
 			   and membership.role in :roles
 			   and el.parent.key is not null
-			   and (implementationElementType.maxRepositoryEntryRelations=-1
+			   and (:includeSingleCourseImplementations=true
+			        or implementationElementType.maxRepositoryEntryRelations=-1
 			        or implementationElementType.singleElement=false
 			       )
 			   and not exists (select membership.key from bgroupmember as implementationMembership
@@ -158,7 +161,8 @@ public class RepositoryEntryMyImplementationsQueries {
 		TypedQuery<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("roles", roles.stream().map(CurriculumRoles::name).toList())
-				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList());
+				.setParameter("status", status.stream().map(CurriculumElementStatus::name).toList())
+				.setParameter("includeSingleCourseImplementations", includeSingleCourseImplementations);
 		if(maxResults > 0) {
 			elements = elements
 					.setFirstResult(firstResult)
