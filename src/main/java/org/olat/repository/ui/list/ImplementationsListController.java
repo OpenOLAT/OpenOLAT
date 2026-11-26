@@ -180,6 +180,10 @@ public class ImplementationsListController extends FormBasicController implement
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("withFormTitle", Boolean.valueOf(config.withFormTitle()));
 			layoutCont.contextPut("withFormLegend", Boolean.valueOf(config.withFormLegend()));
+			layoutCont.contextPut("legendText", config.customLegendText() != null
+					? config.customLegendText() : translate("implementations.list.title"));
+			layoutCont.contextPut("legendIconCss", config.customLegendIconCss() != null
+					? config.customLegendIconCss() : "o_icon_curriculum");
 			layoutCont.contextPut("helpUrl", config.helpUrl());
 		}
 		

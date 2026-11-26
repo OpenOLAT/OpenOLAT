@@ -38,6 +38,8 @@ public record ImplementationsListConfig(
 		boolean withCatalogDetailsHeader,
 		boolean withFormTitle,
 		boolean withFormLegend,
+		String customLegendText,
+		String customLegendIconCss,
 		String helpUrl,
 		boolean withBookmarks,
 		boolean withId,
@@ -63,6 +65,8 @@ public record ImplementationsListConfig(
 		private boolean withCatalogDetailsHeader;
 		private boolean withFormTitle;
 		private boolean withFormLegend;
+		private String customLegendText;
+		private String customLegendIconCss;
 		private String helpUrl;
 		private boolean withBookmarks;
 		private boolean withId;
@@ -106,6 +110,16 @@ public record ImplementationsListConfig(
 
 		public Builder enableFormLegend() {
 			this.withFormLegend = true;
+			return this;
+		}
+
+		public Builder withCustomLegendText(String customLegendText) {
+			this.customLegendText = customLegendText;
+			return this;
+		}
+
+		public Builder withCustomLegendIcon(String customLegendIconCss) {
+			this.customLegendIconCss = customLegendIconCss;
 			return this;
 		}
 
@@ -166,9 +180,9 @@ public record ImplementationsListConfig(
 
 		public ImplementationsListConfig build() {
 			return new ImplementationsListConfig(asRoles, coachIdentity, withPreparation, withPreparationWarning,
-					withCatalogDetailsHeader, withFormTitle, withFormLegend, helpUrl, withBookmarks, withId,
-					extRefVisibilityDefault, withRoles, withAllRoles, withFullStructure, withStatus, withCompletion,
-					withCalendar, withCancelledFilter);
+					withCatalogDetailsHeader, withFormTitle, withFormLegend, customLegendText, customLegendIconCss,
+					helpUrl, withBookmarks, withId, extRefVisibilityDefault, withRoles, withAllRoles, withFullStructure,
+					withStatus, withCompletion, withCalendar, withCancelledFilter);
 		}
 	}
 }

@@ -737,6 +737,8 @@ public class UserAdminController extends BasicController implements Activateable
 				
 				ImplementationsListConfig.Builder configBuilder = ImplementationsListConfig.builder(List.of(CurriculumRoles.curriculumElementsRoles()))
 						.enableFormLegend()
+						.withCustomLegendText(translate(NLS_VIEW_EDU_PRODUCTS))
+						.withCustomLegendIcon("o_icon_curriculum_implementations")
 						.enableId()
 						.enableExtRefVisibilityDefault()
 						.enableRoles()
