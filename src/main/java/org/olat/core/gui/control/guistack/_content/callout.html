@@ -97,15 +97,15 @@ jQuery(function() {
 				}
 			} else if (orientation === 'bottomOrTop') {
 				positionBottomOrTopCallout(targetEl, callout);
+				## the target can be re-rendered while the callout is open: query it again
+				var reposition = function() {
+					positionBottomOrTopCallout(jQuery('#$guimsgtarget,#o_c$guimsgtarget'), callout);
+				};
 				if (window.ResizeObserver) {
-					new ResizeObserver(function() {
-						positionBottomOrTopCallout(targetEl, callout);
-					}).observe(callout[0]);
+					new ResizeObserver(reposition).observe(callout[0]);
 				}
 				var calloutResizeNS = 'resize.' + callout.attr('id');
-				jQuery(window).on(calloutResizeNS, function() {
-					positionBottomOrTopCallout(targetEl, callout);
-				});
+				jQuery(window).on(calloutResizeNS, reposition);
 				callout.on('close', function() {
 					jQuery(window).off(calloutResizeNS);
 				});

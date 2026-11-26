@@ -64,7 +64,6 @@ public class TagSelectionController extends FormBasicController {
 	private SearchElement searchEl;
 	private FormLink createLink;
 	private FormLayoutContainer tagsCont;
-	private FormLink applyButton;
 	
 	private final List<? extends TagInfo> allTags;
 	private final Set<Long> currentSelectionKeys;
@@ -103,18 +102,17 @@ public class TagSelectionController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		searchEl = uifactory.addSearchElement("quicksearch", SearchVariant.TYPEAHEAD, formLayout);
+		searchEl.setPlaceholderKey("tag.search.placeholder");
 
 		tagsCont = FormLayoutContainer.createCustomFormLayout("tags", getTranslator(), velocity_root + "/tag_selection_tags.html");
 		tagsCont.setRootForm(mainForm);
 		formLayout.add("tags", tagsCont);
+		tagsCont.contextPut("emptyText", translate("tags.empty"));
 		searchEl.setAriaControls(Renderer.getComponentPrefix(tagsCont.getComponent()));
 		
 		createLink = uifactory.addFormLink("create", CMD_CREATE, "", null, tagsCont,  Link.NONTRANSLATED);
 		createLink.setDomReplacementWrapperRequired(true);
 		createLink.setVisible(false);
-		
-		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON);
-		applyButton.setElementCssClass("o_selection_apply o_button_primary_light");
 		
 		initTagLinks();
 	}
@@ -205,19 +203,17 @@ public class TagSelectionController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (applyButton == source) {
-			doApplySelection(ureq);
-		} else if (searchEl == source && event instanceof SearchFormEvent sfe) {
+		if (searchEl == source && event instanceof SearchFormEvent sfe) {
 			if (SearchFormEvent.RESET.equals(sfe.getCommand())) {
 				doResetSearch();
 			} else {
 				doSearch();
 			}
 		} else if (source instanceof FormToggle toggle) {
-			doToggleTag(toggle);
+			doToggleTag(ureq, toggle);
 		} else if (source instanceof FormLink link) {
 			if (CMD_CREATE.equals(link.getCmd())) {
-				doCreateTag();
+				doCreateTag(ureq);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -226,15 +222,11 @@ public class TagSelectionController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (canCreateNewTags && createLink.isVisible()) {
-			// Create a new tag on enter...
-			doCreateTag();
-		} else {
-			//.. or close this selection view.
-			doApplySelection(ureq);
+			doCreateTag(ureq);
 		}
 	}
 	
-	private void doApplySelection(UserRequest ureq) {
+	private void fireSelectionEvent(UserRequest ureq) {
 		Set<Long> selectionKeys = tagItems.stream()
 				.filter(item -> item.getKey() != null && item.isSelected())
 				.map(TagItem::getKey)
@@ -246,15 +238,17 @@ public class TagSelectionController extends FormBasicController {
 		fireEvent(ureq, new TagSelectionEvent(selectionKeys, newTags));
 	}
 	
-	private void doCreateTag() {
+	private void doCreateTag(UserRequest ureq) {
 		TagItem tagItem = createNewTagItem(searchEl.getValue());
 		tagItems.add(tagItem);
 		tagItems.sort(comparator);
 		createLink.setVisible(false);
-		doResetSearch();
+		searchEl.reset();
+		doSearch();
+		fireSelectionEvent(ureq);
 	}
 	
-	private void doToggleTag(FormToggle toggle) {
+	private void doToggleTag(UserRequest ureq, FormToggle toggle) {
 		if (toggle.getUserObject() instanceof TagItem tagItem) {
 			boolean selected = !tagItem.isSelected();
 			tagItem.setSelected(selected);
@@ -264,6 +258,7 @@ public class TagSelectionController extends FormBasicController {
 				tagItem.setCount(tagItem.getCount() - 1);
 			}
 			updateToggleUI(toggle, tagItem);
+			fireSelectionEvent(ureq);
 			
 		}
 	}

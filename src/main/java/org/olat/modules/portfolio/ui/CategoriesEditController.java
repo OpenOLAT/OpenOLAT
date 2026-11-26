@@ -116,7 +116,6 @@ public class CategoriesEditController extends FormBasicController {
 			initFormEditableState(true);
 		} else if(source == categoriesEl) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
-			initFormEditableState(false);
 		}
 	}
 	

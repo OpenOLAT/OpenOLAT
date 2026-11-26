@@ -77,6 +77,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 	private Set<String> newTags = new HashSet<>(1);
 	private boolean canCreateNewTags = true;
 	private boolean dirtyCheck = true;
+	private boolean dirty;
 
 	public TagSelectionImpl(WindowControl wControl, String name, List<? extends TagInfo> allTags) {
 		super(name);
@@ -97,6 +98,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		updateDisplayUI();
 	}
 
+	@Override
 	public void setCanCreateNewTags(boolean canCreateNewTags) {
 		this.canCreateNewTags = canCreateNewTags;
 	}
@@ -201,17 +203,12 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 					newTags = selectionEvent.getNewTags();
 					updateDisplayUI();
 					
-					if (dirtyCheck) {
-						Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
-						wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
-					}
+					dirty = true;
 					
 					if (getAction() == FormEvent.ONCHANGE) {
 						getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
 					}
 				}
-				calloutCtrl.deactivate();
-				cleanUp();
 			}
 		} else if (calloutCtrl == source) {
 			cleanUp();
@@ -225,6 +222,11 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		component.setExpanded(false);
 		component.setAriaControls(null);
 		
+		if (dirty && dirtyCheck) {
+			Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
+			wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+		}
+		dirty = false;
 	}
 	
 	private <T extends Controller> T cleanUp(T ctrl) {

@@ -29,6 +29,8 @@ import org.olat.core.gui.control.Event;
  */
 public class TagComponentEvent extends Event {
 
+	private static final long serialVersionUID = -4416261252703194524L;
+	
 	private final Link tagLink;
 
 	public TagComponentEvent(Link tagLink) {

@@ -110,7 +110,10 @@
 
 .o_tag_selection {
 	.o_tag_selection_tags {
-		padding: 2px 0px; // for focus indicator
+		padding: 4px; // for focus indicator
+		margin: 0 -4px;
+		max-width: none;
+		gap: 4px;
 	}
 }
 

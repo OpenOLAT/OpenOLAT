@@ -3,8 +3,10 @@
 		<div class="o_tag_selection_create">
 			$r.render("create")
 		</div>
+	#elseif($tags.isEmpty() && $r.isNotNull($emptyText))
+		<div><i>$emptyText</i></div>
 	#end
-	<div class="clearfix o_filter_search_list_values o_tag_selection_tags">
+	<div class="o_filter_search_list_values o_tag_selection_tags">
 		#foreach($tag in $tags)
 			## Selection
 			#if($tag.getToggle().isVisible())
