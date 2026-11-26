@@ -124,7 +124,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     solid fill when a text colour reaches 4.5:1 on it. The choosers show them as "Theme 1" ...
     "Theme n" after the 14 hues. An entry can also be a map with the 10 text steps (50: ..., 900: ...),
     the compile adds step 450. The theme colours need
-    Dart Sass 1.79.0 or later.
+    Dart Sass 1.97.1 or later: colour space functions since 1.79.0, CSS if() syntax since 1.95.0,
+    1.97.1 fixes a bug of that syntax.
   - for the greys: light/_palette_neutral.scss. The neutral scale has 18 steps: 0 (white), 25,
     50, 100, 150, 200, 250, 300, 400, 450, 500, 600, 700, 750, 800, 900, 950 and 1000 (black),
     emitted as --o-neutral-{step}. The default greys are tinted with slate. To change the tint,
@@ -583,7 +584,9 @@ Don't forget to tweet @openolat to report your success together with a screensho
 
 Install SASS
 ======================
-OpenOlat requires Dart Sass 1.79.0 or later (the theme colours use the colour space functions).
+OpenOlat requires Dart Sass 1.97.1 or later. The theme colours use the colour space functions
+(since 1.79.0). The theme sources use the CSS if() syntax (since 1.95.0); 1.97.1 fixes a bug
+of that syntax, which evaluated values whose condition did not match.
 
 Install on macOS with brew:
 brew install sass/sass/sass

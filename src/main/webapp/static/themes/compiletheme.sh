@@ -19,8 +19,9 @@ STYLE=compressed
 #STYLE=compact
 #default update command for sass
 UPDATECMD="--update"
-# Minimum Dart Sass version: the theme colours use the colour space functions (OO-10000)
-SASS_MIN_VERSION="1.79.0"
+# Minimum Dart Sass version: the theme colours use the colour space functions (since 1.79.0, OO-10000),
+# the theme sources use the CSS if() syntax (since 1.95.0, 1.97.1 fixes a bug of that syntax)
+SASS_MIN_VERSION="1.97.1"
 
 # Stop when sass is missing or older than SASS_MIN_VERSION
 checkSassVersion () {

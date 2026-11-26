@@ -30,7 +30,7 @@
  * modules/_swatches.scss emits .o_swatch_theme{n}. --o-theme{n} holds the
  * solid fill, Java reads the fill step from it.
  *
- * Needs Dart Sass 1.79.0 or later (colour spaces, OO-10000).
+ * Needs Dart Sass 1.97.1 or later (colour spaces, OO-10000, and CSS if() syntax).
  * Imported by _config.scss after $brand-primary.
  * =================================================
  */
@@ -41,7 +41,7 @@
 @use "sass:meta";
 
 @if not meta.function-exists("to-space", "color") {
-	@error "The theme colours need Dart Sass 1.79.0 or later (colour spaces), see OO-10000 and themes.README.";
+	@error "The theme colours need Dart Sass 1.97.1 or later (colour spaces, CSS if() syntax), see OO-10000 and themes.README.";
 }
 
 $o-theme-colors: ($brand-primary) !default;

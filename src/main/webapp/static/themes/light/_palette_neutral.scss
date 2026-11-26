@@ -54,7 +54,7 @@
  * so the contrast of a step on white changes by 0.08 or less for a pure
  * grey scale.
  *
- * Needs Dart Sass 1.79.0 or later (colour spaces, OO-10000).
+ * Needs Dart Sass 1.97.1 or later (colour spaces, OO-10000, and CSS if() syntax).
  * =================================================
  */
 @use "sass:color";
