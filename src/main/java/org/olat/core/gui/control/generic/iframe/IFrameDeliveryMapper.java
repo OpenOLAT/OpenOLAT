@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.modules.edusharing.EdusharingDispatcher;
 import org.olat.modules.edusharing.EdusharingModule;
 
 /**
@@ -472,11 +473,16 @@ public class IFrameDeliveryMapper implements Mapper {
 				if (edusharingModule.isEnabled()) {
 					if(useContentDomain) {
 						sb.appendStaticJs("js/openolat/resize.js");
-						sb.appendStaticJs("js/edusharing/edusharing.js");
 					}
-					if(StringHelper.containsNonWhitespace(edusharingModule.getH5pResizerUrl())
-							&& parser.getHtmlContent().indexOf("file-h5p") > -1) {
-						sb.append("<script src=\"" + edusharingModule.getH5pResizerUrl() + "\"></script>\n");
+					if(useContentDomain || parser.getHtmlContent().indexOf("file-h5p") > -1) {
+						sb.appendStaticJs("js/edusharing/h5presizer.js");
+					}
+					if(useContentDomain) {
+						sb.appendStaticJs("js/edusharing/edusharing.js");
+						sb.appendStaticJs("js/edusharing/gotobridge.js");
+						sb.append("\n<script>o_registerEdusharingGoToBridge('")
+						  .append(StringHelper.escapeJavaScript(Settings.createServerURI())).append("','")
+						  .append(StringHelper.escapeJavaScript(EdusharingDispatcher.getGoToPath())).append("');</script>\n");
 					}
 				}
 				

@@ -32,6 +32,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public class RepositoryEdusharingProvider implements EdusharingProvider {
 
+	public static final String SUB_PATH_INFO = "repository-info";
+	
 	private final RepositoryEntry repositoryEntry;
 	private final String subPath;
 

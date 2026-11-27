@@ -25,6 +25,7 @@ import static org.olat.modules.edusharing.ui.EdusharingUIFactory.validateInteger
 import static org.olat.modules.edusharing.ui.EdusharingUIFactory.validateIsMandatory;
 
 import java.security.KeyPair;
+import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -39,14 +41,17 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.edusharing.EdusharingDispatcher;
+import org.olat.modules.edusharing.EdusharingDisplayMode;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.edusharing.EdusharingProperties;
 import org.olat.modules.edusharing.EdusharingSecurityService;
@@ -73,7 +78,8 @@ public class EdusharingAdminController extends FormBasicController {
 	private StaticTextElement repoVersionEl;
 	private TextElement appIdEl;
 	private TextElement hostEl;
-	private TextElement h5pResizerUrlEl;
+	private SingleSelection displayModeEl;
+	private TextAreaElement allowedHostsEl;
 	private TextElement ticketValidEl;
 	private TextAreaElement soapPublicKeyEl;
 	private TextAreaElement repoPublicKeyEl;
@@ -132,9 +138,18 @@ public class EdusharingAdminController extends FormBasicController {
 		hostEl = uifactory.addTextElement("admin.host", 128, host, formLayout);
 		hostEl.setMandatory(true);
 		
-		String h5pResizerUrl = edusharingModule.getH5pResizerUrl();
-		h5pResizerUrlEl = uifactory.addTextElement("admin.h5p.resizer.url", 128, h5pResizerUrl, formLayout);
-		h5pResizerUrlEl.setExampleKey("admin.h5p.resizer.url.example", null);
+		SelectionValues displayModeSV = new SelectionValues();
+		Arrays.stream(EdusharingDisplayMode.values()).forEach(mode -> displayModeSV.add(
+				SelectionValues.entry(mode.name(), translate("admin.display.mode." + mode.name()))));
+		displayModeEl = uifactory.addRadiosVertical("admin.display.mode", formLayout, displayModeSV.keys(), displayModeSV.values());
+		displayModeEl.select(edusharingModule.getDisplayMode().name(), true);
+		if (!Settings.isContentDomainNameEnabled()) {
+			displayModeEl.setEnabled(false);
+			displayModeEl.setExampleKey("admin.display.mode.no.content.domain", null);
+		}
+		
+		allowedHostsEl = uifactory.addTextAreaElement("admin.allowed.hosts", 3, 72, edusharingModule.getAllowedHosts(), formLayout);
+		allowedHostsEl.setExampleKey("admin.allowed.hosts.example", null);
 		
 		int ticketValidSeconds = edusharingModule.getTicketValidSeconds();
 		ticketValidEl = uifactory.addTextElement("admin.ticket.valid", 20, Integer.toString(ticketValidSeconds), formLayout);
@@ -235,8 +250,10 @@ public class EdusharingAdminController extends FormBasicController {
 		String host = hostEl.getValue();
 		edusharingModule.setHost(host);
 		
-		String h5pResizerUrl = h5pResizerUrlEl.getValue();
-		edusharingModule.setH5pResizerUrl(h5pResizerUrl);
+		if (Settings.isContentDomainNameEnabled()) {
+			edusharingModule.setDisplayMode(EdusharingDisplayMode.valueOf(displayModeEl.getSelectedKey()));
+		}
+		edusharingModule.setAllowedHosts(allowedHostsEl.getValue());
 		
 		int ticketValid = toIntOrZero(ticketValidEl.getValue());
 		edusharingModule.setTicketValidSeconds(ticketValid);

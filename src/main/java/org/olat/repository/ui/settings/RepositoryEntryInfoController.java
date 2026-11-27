@@ -222,7 +222,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description) && !readOnly);
 		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		description.getEditorConfiguration().setPathInStatusBar(false);
-		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry, "repository-info");
+		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry, RepositoryEdusharingProvider.SUB_PATH_INFO);
 		description.getEditorConfiguration().enableEdusharing(getIdentity(), provider);
 
 		FormSection factsCont = uifactory.addFormSection("facts", translate("details.facts"), formLayout, FormSection.Level.SUB_TITLE);

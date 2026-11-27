@@ -1689,6 +1689,9 @@ function o_initContentDomainBridge(contentOrigin) {
 			} else {
 				gototool(d.id);
 			}
+		} else if (d.type === 'olat-edusharing-goto') {
+			if (typeof d.id !== 'string' || !/^[\w-]{1,64}$/.test(d.id)) return;
+			window.open(o_info.serverUri + o_info.serverContext + '/edusharing/goto?identifier=' + encodeURIComponent(d.id), '_blank', 'noopener');
 		}
 	});
 }

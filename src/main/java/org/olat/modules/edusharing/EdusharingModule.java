@@ -22,10 +22,13 @@ package org.olat.modules.edusharing;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -52,11 +55,12 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String EDUSHARING_BASE_URL = "edusharing.url";
 	private static final String EDUSHARING_APP_ID = "edusharing.app.id";
 	private static final String EDUSHARING_HOST = "edusharing.host";
-	private static final String EDUSHARING_H5P_RESIZER_URL = "edusharing.h5p.resizer.url";
 	private static final String EDUSHARING_TICKET_VALID_SECONDS = "edusharing.ticket.valid.seconds";
 	private static final String EDUSHARING_SOAP_PUBLIC_KEY = "edusharing.soap.public.key";
 	private static final String EDUSHARING_SOAP_PRIVATE_KEY = "edusharing.soap.private.key";
 	private static final String EDUSHARING_REPO_PUBLIC_KEY = "edusharing.repo.public.key";
+	private static final String EDUSHARING_DISPLAY_MODE = "edusharing.display.mode";
+	private static final String EDUSHARING_ALLOWED_HOSTS = "edusharing.allowed.hosts";
 	
 	@Value("${edusharing.enabled:false}")
 	private boolean enabled;
@@ -68,10 +72,12 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	private String appId;
 	@Value("${edusharing.host}")
 	private String host;
-	@Value("${edusharing.h5p.resizer.url}")
-	private String h5pResizerUrl;
 	@Value("${edusharing.ticket.valid.seconds:10}")
 	private int ticketValidSeconds;
+	@Value("${edusharing.display.mode:ORIGINAL_IFRAME}")
+	private EdusharingDisplayMode displayMode;
+	@Value("${edusharing.allowed.hosts:www.youtube-nocookie.com,player.vimeo.com,learningapps.org}")
+	private String allowedHosts;
 	// It's not soap anymore but used for REST
 	private KeyPair soapKeys;
 	private String soapPublicKey;
@@ -130,11 +136,6 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 			host = hostObj;
 		}
 		
-		String h5pResizerUrlObj = getStringPropertyValue(EDUSHARING_H5P_RESIZER_URL, true);
-		if(StringHelper.containsNonWhitespace(h5pResizerUrlObj)) {
-			h5pResizerUrl = h5pResizerUrlObj;
-		}
-		
 		ticketValidSeconds = getIntPropertyValue(EDUSHARING_TICKET_VALID_SECONDS);
 		
 		String soapPublicKeyObj = getStringPropertyValue(EDUSHARING_SOAP_PUBLIC_KEY, true);
@@ -151,6 +152,18 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 		if(StringHelper.containsNonWhitespace(repoPublicKeyObj)) {
 			repoPublicKeyString = repoPublicKeyObj;
 		}
+		
+		String displayModeObj = getStringPropertyValue(EDUSHARING_DISPLAY_MODE, true);
+		if(StringHelper.containsNonWhitespace(displayModeObj)) {
+			try {
+				displayMode = EdusharingDisplayMode.valueOf(displayModeObj);
+			} catch (IllegalArgumentException e) {
+				log.warn("Unknown edu-sharing display mode: {}", displayModeObj);
+				displayMode = EdusharingDisplayMode.ORIGINAL_IFRAME;
+			}
+		}
+		
+		allowedHosts = getStringPropertyValue(EDUSHARING_ALLOWED_HOSTS, true);
 	}
 
 	@Override
@@ -199,15 +212,35 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 		setStringProperty(EDUSHARING_HOST, host, true);
 	}
 
-	public String getH5pResizerUrl() {
-		return h5pResizerUrl;
+	public EdusharingDisplayMode getDisplayMode() {
+		return displayMode;
+	}
+	
+	public void setDisplayMode(EdusharingDisplayMode displayMode) {
+		this.displayMode = displayMode;
+		setStringProperty(EDUSHARING_DISPLAY_MODE, displayMode.name(), true);
 	}
 
-	public void setH5pResizerUrl(String h5pResizerUrl) {
-		this.h5pResizerUrl = h5pResizerUrl;
-		setStringProperty(EDUSHARING_H5P_RESIZER_URL, h5pResizerUrl, true);
+	public boolean isOriginalIframe() {
+		return displayMode == EdusharingDisplayMode.ORIGINAL_IFRAME && Settings.isContentDomainNameEnabled();
 	}
-
+	
+	public String getAllowedHosts() {
+		return allowedHosts;
+	}
+	
+	public List<String> getAllowedHostList() {
+		return Arrays.stream(allowedHosts.split("[,\\s]+"))
+				.map(host -> host.replaceFirst("^[a-zA-Z]+://", "").replaceFirst("[/:].*$", ""))
+				.filter(StringHelper::containsNonWhitespace)
+				.toList();
+	}
+	
+	public void setAllowedHosts(String allowedHosts) {
+		this.allowedHosts = allowedHosts;
+		setStringProperty(EDUSHARING_ALLOWED_HOSTS, allowedHosts, true);
+	}
+	
 	public int getTicketValidSeconds() {
 		return ticketValidSeconds;
 	}

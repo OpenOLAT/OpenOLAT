@@ -196,12 +196,12 @@ public class EdusharingServiceImpl implements EdusharingService, RepositoryEntry
 	}
 	
 	@Override
-	public EdusharingResponse getRendered(Identity viewer, String identifier, String version, String width,
+	public EdusharingResponse getRendered(Identity viewer, EdusharingUsage usage, String version, String width,
 			String height, String language) throws EdusharingException {
-		EdusharingUsage usage = usageDao.loadByIdentifier(identifier);
 		if (usage == null) {
 			return new EdusharingErrorResponse(404);
 		}
+		String identifier = usage.getIdentifier();
 
 		String widthChecked = width != null? width: usage.getWidth();
 		String heightChecked = height != null? height: usage.getHeight();

@@ -56,8 +56,8 @@ public interface EdusharingService {
 	
 	public EdusharingResponse getPreview(Ticket ticket, String objectUrl) throws EdusharingException;
 
-	public EdusharingResponse getRendered(Identity viewer, String identifier, String width, String height,
-			String language, String language2) throws EdusharingException;
+	public EdusharingResponse getRendered(Identity viewer, EdusharingUsage usage, String version, String width,
+			String height, String language) throws EdusharingException;
 	
 	public String getRenderAsWindowUrl(Ticket ticket, Identity viewer, String identifier, String language);
 

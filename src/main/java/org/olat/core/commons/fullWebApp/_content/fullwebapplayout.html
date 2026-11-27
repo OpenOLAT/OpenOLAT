@@ -36,6 +36,10 @@ o_info.oo_noresponse_unsaved_data = "$r.escapeJavaScript($r.translateWithPackage
 ## edu-sharing
 #if($edusharingEnabled)
 o_info.edusharing_enabled = true;
+#if($edusharingContentOrigin)
+o_info.edusharing_content_origin = "$r.escapeJavaScript($edusharingContentOrigin)";
+o_info.edusharing_iframe_all = $edusharingIframeAll;
+#end
 #end
 ## Initialize zindex manager
 o_info.zseed = 0;
@@ -118,6 +122,7 @@ function o_mathjax(fct_success) {
 	<script src='$r.staticLink("js/iframeResizer/iframeResizer.min.js")'></script>
 	<script src='$r.staticLink("js/openolat/textarea.js")'></script>
 	<script src='$r.staticLink("js/openolat/resize.js")'></script>
+	<script src='$r.staticLink("js/edusharing/h5presizer.js")'></script>
 	<script src='$r.staticLink("js/edusharing/edusharing.js")'></script>
 	## Bootstrap js
 	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/alert.js")'></script>

@@ -33,6 +33,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,16 +43,28 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.edusharing.manager.EdusharingHtmlSanitizer;
 import org.olat.modules.edusharing.model.SearchResult;
 import org.olat.modules.edusharing.ui.EdusharingUIFactory;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.settings.RepositoryEdusharingProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +83,10 @@ public class EdusharingDispatcher implements Dispatcher {
 	private static final String METADATA_PATH = "metadata";
 	private static final String SEARCH_PATH = "search";
 	private static final String SEARCH_CALLBACK_PATH = "searchcallback";
+	static final String LMS_INLINE_HELPER_SCRIPT = "{{{LMS_INLINE_HELPER_SCRIPT}}}";
+	private static final String ALLOWED_ENTRY_KEYS = "edusharing.allowed.entry.keys";
+	private static final Set<String> PREVIEW_IMAGE_TYPES = Set.of("image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml");
+	private static final String PREVIEW_CSP = "sandbox; default-src 'none'; style-src 'unsafe-inline'";
 	
 	@Autowired
 	private EdusharingModule edusharingModule;
@@ -76,6 +94,13 @@ public class EdusharingDispatcher implements Dispatcher {
 	private EdusharingService edusharingService;
 	@Autowired
 	private EdusharingConversionService conversionService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private MapperService mapperService;
+	
+	private volatile EdusharingHtmlSanitizer sanitizer;
+	private volatile String sanitizerConfig;
 	
 	public static final String getMetadataUrl() {
 		return getBaseUrl().append(METADATA_PATH).toString();
@@ -89,6 +114,19 @@ public class EdusharingDispatcher implements Dispatcher {
 		return getBaseUrl().append(SEARCH_CALLBACK_PATH).toString();
 	}
 
+	static boolean isPreviewImage(String mimeType) {
+		return StringHelper.containsNonWhitespace(mimeType)
+				&& PREVIEW_IMAGE_TYPES.contains(mimeType.split(";")[0].trim().toLowerCase(Locale.ROOT));
+	}
+	
+	private static String getGoToUrl(String identifier) {
+		return getBaseUrl().append("goto?identifier=").append(StringHelper.urlEncodeUTF8(identifier)).toString();
+	}
+	
+	public static String getGoToPath() {
+		return WebappHelper.getServletContextPath() + "/" + EDUSHARING_PATH + "/goto";
+	}
+	
 	private static StringBuilder getBaseUrl() {
 		return new StringBuilder()
 				.append(Settings.getServerContextPathURI())
@@ -131,6 +169,9 @@ public class EdusharingDispatcher implements Dispatcher {
 					break;
 				case "render":
 					buildRender(ureq, response);
+					break;
+				case "frame":
+					redirectToFrame(ureq, response);
 					break;
 				case "goto":
 					buildGoTo(ureq, response);
@@ -181,6 +222,10 @@ public class EdusharingDispatcher implements Dispatcher {
 	}
 	
 	private void redirectToSearch(UserRequest ureq, HttpServletResponse response) {
+		if (ureq.getUserSession().isContentDelivery()) {
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
 		String language = ureq.getLocale().getLanguage();
 		Ticket ticket = edusharingService.getTicket(ureq.getIdentity());
 		
@@ -202,6 +247,10 @@ public class EdusharingDispatcher implements Dispatcher {
 	}
 
 	private void buildSearchCallback(UserRequest ureq, HttpServletResponse response) throws IOException {
+		if (ureq.getUserSession().isContentDelivery()) {
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
 		log.debug("edu-sharing search callback url: " + ureq.getHttpReq().getRequestURL() + "?" + ureq.getHttpReq().getQueryString());
 		
 		SearchResult result = conversionService.toSearchResult(ureq);
@@ -234,11 +283,20 @@ public class EdusharingDispatcher implements Dispatcher {
 		
 		String objectUrl = ureq.getParameter("objectUrl");
 		Ticket ticket = edusharingService.getTicket(ureq.getIdentity());
+		if (ticket == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
 		
 		try (EdusharingResponse edusharingResponse = edusharingService.getPreview(ticket, objectUrl)) {
+			if (edusharingResponse.hasContent() && !isPreviewImage(edusharingResponse.getMimeType())) {
+				response.setStatus(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+				return;
+			}
 			response.setStatus(edusharingResponse.getStatus());
 			if (edusharingResponse.hasContent()) {
 				response.setContentType(edusharingResponse.getMimeType());
+				response.setHeader("Content-Security-Policy", PREVIEW_CSP);
 				response.setContentLengthLong(edusharingResponse.getContentLength());
 				stream(edusharingResponse.getContent(), response.getOutputStream());
 			}
@@ -256,12 +314,28 @@ public class EdusharingDispatcher implements Dispatcher {
 		Locale locale = ureq.getLocale();
 		String language = locale.getLanguage();
 		
-		try (EdusharingResponse edusharingResponse = edusharingService.getRendered(viewer, identifier, version, width, height, language)) {
+		EdusharingUsage usage = edusharingService.loadUsageByIdentifier(identifier);
+		if (usage != null && !isAllowed(ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getUserSession(), usage)) {
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
+		
+		try (EdusharingResponse edusharingResponse = edusharingService.getRendered(viewer, usage, version, width, height, language)) {
 			response.setStatus(edusharingResponse.getStatus());
 			if (edusharingResponse.hasContent()) {
-				response.setContentType(edusharingResponse.getMimeType());
-				response.setContentLengthLong(edusharingResponse.getContentLength());
-				stream(edusharingResponse.getContent(), response.getOutputStream());
+				String html = new String(edusharingResponse.getContent().readAllBytes(), StandardCharsets.UTF_8)
+						.replace(LMS_INLINE_HELPER_SCRIPT, getGoToUrl(identifier));
+				if (ureq.getUserSession().isContentDelivery()) {
+					byte[] raw = html.getBytes(StandardCharsets.UTF_8);
+					response.setContentType(edusharingResponse.getMimeType());
+					response.setContentLength(raw.length);
+					response.getOutputStream().write(raw);
+					return;
+				}
+				byte[] sanitized = getSanitizer().sanitize(html).getBytes(StandardCharsets.UTF_8);
+				response.setContentType("text/html;charset=UTF-8");
+				response.setContentLength(sanitized.length);
+				response.getOutputStream().write(sanitized);
 			} else {
 				response.setContentType("text/plain");
 				Translator translator = Util.createPackageTranslator(EdusharingUIFactory.class, locale);
@@ -276,10 +350,49 @@ public class EdusharingDispatcher implements Dispatcher {
 		}
 	}
 
+	/**
+	 * Course element "edu-sharing" and display mode ORIGINAL_IFRAME: registers a sandboxed
+	 * mapper with the unchanged edu-sharing HTML and redirects the iFrame to the content domain.
+	 */
+	private void redirectToFrame(UserRequest ureq, HttpServletResponse response) {
+		String identifier = ureq.getParameter("identifier");
+		EdusharingUsage usage = edusharingService.loadUsageByIdentifier(identifier);
+		if (!Settings.isContentDomainNameEnabled() || ureq.getUserSession().isContentDelivery() || usage == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+		UserSession usess = ureq.getUserSession();
+		if (!isAllowed(ureq.getIdentity(), usess.getRoles(), usess, usage)) {
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
+		
+		EdusharingIFrameMapper mapper = new EdusharingIFrameMapper(ureq.getIdentity(), usage, ureq.getParameter("version"),
+				ureq.getParameter("width"), ureq.getParameter("height"), ureq.getLocale().getLanguage(), getGoToUrl(identifier),
+				"hide".equals(ureq.getParameter("license")), "hide".equals(ureq.getParameter("infos")));
+		String mapperId = "edusharing:" + ureq.getHttpReq().getSession().getId() + ":" + identifier;
+		MapperKey mapperKey = mapperService.sandbox(usess, mapperId, mapper);
+		DispatcherModule.redirectTo(response, Settings.createContentServerURI() + mapperKey.getUrl()
+				+ "/frame.html?token=" + mapperKey.getToken());
+	}
+	
 	private void buildGoTo(UserRequest ureq, HttpServletResponse response) throws Exception {
 		log.debug("edu-sharing go to url: " + ureq.getHttpReq().getRequestURL() + "?" + ureq.getHttpReq().getQueryString());
 		
+		if (ureq.getUserSession().isContentDelivery()) {
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
 		String identifier = ureq.getParameter("identifier");
+		EdusharingUsage usage = edusharingService.loadUsageByIdentifier(identifier);
+		if (usage == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+		if (!isAllowed(ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getUserSession(), usage)) {
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
 		Ticket ticket = edusharingService.getTicket(ureq.getIdentity());
 		Identity viewer = ureq.getUserSession().getIdentity();
 		String language = ureq.getLocale().getLanguage();
@@ -290,6 +403,54 @@ public class EdusharingDispatcher implements Dispatcher {
 		}
 		log.debug("edu-sharing go to " + url);
 		DispatcherModule.redirectTo(response, url);
+	}
+	
+	/**
+	 * The viewer must be allowed to open the course of the usage. The course info page
+	 * is visible to everybody if the course is published and public. The allowed courses
+	 * are kept in the user session, so a page with many items checks its course only once.
+	 */
+	boolean isAllowed(Identity identity, Roles roles, UserSession usess, EdusharingUsage usage) {
+		OLATResourceable ores = usage.getOlatResourceable();
+		if (!OresHelper.calculateTypeName(RepositoryEntry.class).equals(ores.getResourceableTypeName())) {
+			return false;
+		}
+		
+		Long entryKey = ores.getResourceableId();
+		@SuppressWarnings("unchecked")
+		Set<Long> allowedEntryKeys = (Set<Long>)usess.getEntry(ALLOWED_ENTRY_KEYS);
+		if (allowedEntryKeys != null && allowedEntryKeys.contains(entryKey)) {
+			return true;
+		}
+		
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(entryKey);
+		if (entry == null) {
+			return false;
+		}
+		if (repositoryManager.isAllowed(identity, roles, entry).canLaunch()) {
+			if (allowedEntryKeys == null) {
+				allowedEntryKeys = ConcurrentHashMap.newKeySet();
+				usess.putEntry(ALLOWED_ENTRY_KEYS, allowedEntryKeys);
+			}
+			allowedEntryKeys.add(entryKey);
+			return true;
+		}
+		return RepositoryEdusharingProvider.SUB_PATH_INFO.equals(usage.getSubPath()) && isInfoPageVisible(entry);
+	}
+	
+	private boolean isInfoPageVisible(RepositoryEntry entry) {
+		RepositoryEntryStatusEnum status = entry.getEntryStatus();
+		return entry.isPublicVisible()
+				&& (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
+	}
+	
+	private EdusharingHtmlSanitizer getSanitizer() {
+		String config = edusharingModule.getBaseUrl() + "|" + edusharingModule.getAllowedHosts();
+		if (sanitizer == null || !config.equals(sanitizerConfig)) {
+			sanitizer = new EdusharingHtmlSanitizer(edusharingModule.getBaseUrl(), edusharingModule.getAllowedHostList());
+			sanitizerConfig = config;
+		}
+		return sanitizer;
 	}
 	
 	private static long stream(InputStream input, OutputStream output) throws IOException {

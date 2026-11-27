@@ -424,6 +424,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// Enable edu-sharing html snippet replacement (not available in second domain)
 		if (edusharingModule.isEnabled() && !usess.isContentDelivery()) {
 			mainVc.contextPut("edusharingEnabled", Boolean.TRUE);
+			if (Settings.isContentDomainNameEnabled()) {
+				mainVc.contextPut("edusharingContentOrigin", Settings.createContentServerURI());
+				mainVc.contextPut("edusharingIframeAll", Boolean.valueOf(edusharingModule.isOriginalIframe()));
+			}
 		}
 		
 		// content panel

@@ -2,7 +2,8 @@
 const OOEdusharing = {
 		
 	start: function() {
-		if (o_info.edusharing_enabled) {
+		if (typeof o_info !== "undefined" && o_info.edusharing_enabled) {
+			window.addEventListener("message", OOH5pResizer.resize);
 			OOEdusharing.render();
 			jQuery(document).on("oo.dom.replacement.after", OOEdusharing.render);
 			OOEdusharing.enableMetadataToggler();
@@ -29,12 +30,6 @@ const OOEdusharing = {
 		return spinner;
 	},
 
-	replaceGoTo: function(html, identifier) {
-		const url = o_info.uriprefix.replace("auth", "edusharing") + "goto?identifier=" + identifier;
-		html = html.replace("{{{LMS_INLINE_HELPER_SCRIPT}}}", url)
-		return html;
-	},
-	
 	replaceWithRendered: function(node, identifier, version, width, height, esClass, showLicense, showInfos, isIFrame) {
 		let url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
 		if (version >= 0) {
@@ -70,21 +65,26 @@ const OOEdusharing = {
 			url: url,
 			dataType : 'html',
 			success : function(data){
-				const goToData = OOEdusharing.replaceGoTo(data, identifier);
-				const esNode = container.append(goToData);
+				const esNode = container.append(data);
+				OOEdusharing.replaceMaterialIcons(esNode);
 				node.replaceWith(esNode);
+				OOH5pResizer.notifyReady(esNode.get(0));
 				o_adjustContentHeightForAbsoluteElement('.o_edusharing_container .edusharing_metadata_wrapper');
 			},
 			error : function(xhr) {
-				if (xhr.responseText) {
-					node.replaceWith("<div class='o_warning'>" + xhr.responseText + "</div>");
-				} else {
-					node.replaceWith("<div class='o_warning'>edu-sharing not available</div>");
-				}
+				node.replaceWith(jQuery("<div class='o_warning'></div>").text(xhr.responseText || "edu-sharing not available"));
 			}
 		})
 	},
 		
+	replaceMaterialIcons: function(esNode) {
+		const icons = { info_outline: "o_icon_info", person: "o_icon_user", settings: "o_icon_settings", done: "o_icon_check" };
+		esNode.find("i.material-icons").each(function() {
+			const icon = jQuery(this);
+			icon.removeClass("material-icons").addClass("o_icon " + (icons[icon.text().trim()] || "o_icon_info")).text("");
+		});
+	},
+	
 	replace: function(node, isIFrame) {
 		const identifier = node.data("es_identifier");
 		const version = node.data("es_version");
@@ -94,8 +94,44 @@ const OOEdusharing = {
 		const showLicense = node.data("es_show_license");
 		const showInfos = node.data("es_show_infos");
 
+		if (o_info.edusharing_content_origin && !isIFrame && (o_info.edusharing_iframe_all || node.data("es_display") === "iframe")) {
+			OOEdusharing.replaceWithFrame(node, identifier, version, width, height, esClass, showLicense, showInfos);
+			return;
+		}
 		const spinner = OOEdusharing.replaceWithSpinner(node, width, height);
 		OOEdusharing.replaceWithRendered(spinner, identifier, version, width, height, esClass, showLicense, showInfos, isIFrame);
+	},
+	
+	/**
+	 * Course element "edu-sharing" and display mode ORIGINAL_IFRAME: the unchanged
+	 * edu-sharing content runs in a sandboxed iFrame on the content domain.
+	 */
+	replaceWithFrame: function(node, identifier, version, width, height, esClass, showLicense, showInfos) {
+		let url = o_info.uriprefix.replace("auth", "edusharing") + "frame?identifier=" + encodeURIComponent(identifier);
+		if (version >= 0) {
+			url += "&version=" + encodeURIComponent(version);
+		}
+		if (width > 0) {
+			url += "&width=" + encodeURIComponent(width);
+		}
+		if (height) {
+			url += "&height=" + encodeURIComponent(height);
+		}
+		if ("hide" === showLicense) {
+			url += "&license=hide";
+		}
+		if ("hide" === showInfos) {
+			url += "&infos=hide";
+		}
+		const iframe = jQuery("<iframe class='o_edusharing_frame' title='edu-sharing' allow='fullscreen'></iframe>")
+			.attr("sandbox", "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms allow-presentation")
+			.attr("src", url);
+		iframe.css("width", width > 0? width + "px": "100%");
+		const container = jQuery("<div class='o_edusharing_container o_edusharing_frame_container BGlossarIgnore'></div>")
+			.addClass(esClass || "")
+			.append(iframe);
+		node.replaceWith(container);
+		iframe.iFrameResize({ checkOrigin: [o_info.edusharing_content_origin], warningTimeout: 0 });
 	},
 	
 	/**
@@ -155,6 +191,38 @@ const OOEdusharing = {
 	},
 	enableMetadataToggler: function() {
 		jQuery(document).click(OOEdusharing.toggleMetadata);
+		jQuery(document).on("click", ".o_edusharing_container .edusharing_rendering_content_video_options", OOEdusharing.toggleVideoOptions);
+		jQuery(document).on("click keydown", ".o_edusharing_container .edusharing_rendering_content_video_options_resolutions li[data-url]", OOEdusharing.selectVideoResolution);
+	},
+	
+	toggleVideoOptions: function(e) {
+		const button = jQuery(e.currentTarget);
+		const open = button.attr("aria-expanded") !== "true";
+		button.attr("aria-expanded", open);
+		button.siblings(".edusharing_rendering_content_video_options_content").toggle(open);
+	},
+	
+	selectVideoResolution: function(e) {
+		if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") {
+			return;
+		}
+		e.preventDefault();
+		const option = jQuery(e.currentTarget);
+		const video = option.closest(".edusharing_rendering_content_video_wrapper").find("video").get(0);
+		if (!video) {
+			return;
+		}
+		const time = video.currentTime;
+		const playing = !video.paused;
+		video.src = option.data("url");
+		video.currentTime = time;
+		if (playing) {
+			video.play();
+		}
+		option.siblings().attr("aria-checked", "false").find(".o_icon_check").remove();
+		option.attr("aria-checked", "true").prepend("<i class='o_icon o_icon_check' aria-hidden='true'></i>");
+		option.closest(".edusharing_rendering_content_video_options_content").hide()
+			.siblings(".edusharing_rendering_content_video_options").attr("aria-expanded", "false");
 	}
 }
 
