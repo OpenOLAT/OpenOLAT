@@ -42,6 +42,7 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	private final Roles roles;
 	private final boolean coachingContext;
 	private final boolean curriculumContext;
+	private final boolean curriculumRootContext;
 	
 	private final boolean curriculumOwner;
 	private final boolean curriculumManager;
@@ -58,10 +59,12 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	private boolean showInvoicesReports;
 	
 	public DefaultReportConfigurationAccessSecurityCallback(Identity identity, Roles roles, boolean coachingContext,
-															boolean curriculumContext, OrganisationService organisationService) {
+															boolean curriculumContext, boolean curriculumRootContext,
+															OrganisationService organisationService) {
 		this.roles = roles;
 		this.coachingContext = coachingContext;
 		this.curriculumContext = curriculumContext;
+		this.curriculumRootContext = curriculumContext && curriculumRootContext;
 		
 		CurriculumDAO curriculumDao = CoreSpringFactory.getImpl(CurriculumDAO.class);
 		curriculumOwner = curriculumDao.hasCurriculumRole(identity, CurriculumRoles.curriculumowner.name());
@@ -121,6 +124,11 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	@Override
 	public boolean isCurriculumContext() {
 		return curriculumContext;
+	}
+
+	@Override
+	public boolean isCurriculumRootContext() {
+		return curriculumRootContext;
 	}
 
 	@Override

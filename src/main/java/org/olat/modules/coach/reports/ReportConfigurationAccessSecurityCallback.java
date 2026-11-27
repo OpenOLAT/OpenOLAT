@@ -29,6 +29,12 @@ public interface ReportConfigurationAccessSecurityCallback {
 	
 	boolean isCurriculumContext();
 	
+	/**
+	 * @return true if the reports are listed on the start page of the Course Planner,
+	 * 		without a curriculum or an implementation
+	 */
+	boolean isCurriculumRootContext();
+	
 	boolean isLineOrEducationManager();
 	
 	boolean isCurriculumManager();

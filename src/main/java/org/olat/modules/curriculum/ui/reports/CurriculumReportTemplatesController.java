@@ -32,9 +32,11 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.coach.reports.AbstractReportTask;
 import org.olat.modules.coach.reports.ReportConfiguration;
+import org.olat.modules.coach.reports.ReportParameters;
+import org.olat.modules.coach.reports.ReportParametersFormatter;
 import org.olat.modules.coach.ui.manager.ReportTemplatesController;
-import org.olat.modules.coach.ui.manager.ReportTemplatesRow;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumReportConfiguration;
@@ -62,35 +64,38 @@ public class CurriculumReportTemplatesController extends ReportTemplatesControll
 			Curriculum curriculum, CurriculumElement curriculumElement, ArchiveType type) {
 		super(ureq, wControl, Util.createPackageTranslator(ReportTemplatesController.class, ureq.getLocale(),
 				Util.createPackageTranslator(CurriculumManagerRootController.class, ureq.getLocale()))
-				,"manual_user/area_modules/Course_Planner_Reports/");
+				,"manual_user/area_modules/Course_Planner_Reports/", curriculum == null && curriculumElement == null);
 		this.type = type;
 		this.curriculum = curriculum;
 		this.curriculumElement = curriculumElement;
 	}
 
 	@Override
-	protected void doRunReport(UserRequest ureq, ReportTemplatesRow row) {
-		ReportConfiguration config = row.getReportConfiguration();
+	protected void doRunReport(UserRequest ureq, ReportConfiguration config, ReportParameters params) {
 		if(config instanceof CurriculumReportConfiguration curriculumConfig) {
-			doRunReport(curriculumConfig);
-		} else {
-			row.getReportConfiguration().generateReport(getIdentity(), ureq.getLocale());
+			doRunReport(curriculumConfig, params);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
-	private void doRunReport(CurriculumReportConfiguration config) {
-		String title = config.getName(getLocale());
-		String fileName = StringHelper.transformDisplayNameToFileSystemName(title) + "_" +
-				Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".xlsx";
+	private void doRunReport(CurriculumReportConfiguration config, ReportParameters params) {
+		Date now = new Date();
+		params.setReferenceDate(now);
+		String name = config.getName(getLocale());
+		String fileName = StringHelper.transformDisplayNameToFileSystemName(name) + "_" +
+				Formatter.formatDatetimeFilesystemSave(now) + ".xlsx";
+		ReportParametersFormatter parametersFormatter = new ReportParametersFormatter(getLocale());
+		String title = parametersFormatter.formatTitle(name, params, now);
+		String description = parametersFormatter.formatDescription(config, params, now);
 		
 		OLATResource resource = null;
 		if(curriculumElement != null) {
 			resource = curriculumElement.getResource();
 		}
-		Date expirationDate = DateUtils.addDays(new Date(), 10);
-		CurriculumReportTask task = new CurriculumReportTask(title, curriculum, curriculumElement, getIdentity(), getLocale(), config);
-		ExportMetadata metadata = exportManager.startExport(task, title, config.getDescription(getLocale()), fileName,
+		Date expirationDate = DateUtils.addDays(now, AbstractReportTask.RETENTION_DAYS);
+		CurriculumReportTask task = new CurriculumReportTask(title, curriculum, curriculumElement, getIdentity(), getLocale(),
+				config.getId(), params);
+		ExportMetadata metadata = exportManager.startExport(task, title, description, fileName,
 				type, expirationDate, false, resource, CurriculumReportsListController.CURRICULUM_REPORT_IDENT, getIdentity());
 		
 		if(curriculum != null) {

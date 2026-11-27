@@ -20,6 +20,7 @@
 package org.olat.modules.coach.reports;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
@@ -113,14 +114,24 @@ public enum ReportTimeUnit {
 		LocalDate referenceLocalDate = DateUtils.toLocalDate(reference);
 
 		// The start day of the fiscal year in the year of the reference date
-		LocalDate referenceFiscalYearStart = LocalDate.of(referenceLocalDate.getYear(), fiscalYearStartMonth, fiscalYearStartDay);
+		LocalDate referenceFiscalYearStart = startDay(referenceLocalDate.getYear(), fiscalYearStartDay, fiscalYearStartMonth);
 
 		LocalDate lastFiscalStartDate;
 		if (referenceLocalDate.isBefore(referenceFiscalYearStart)) {
-			lastFiscalStartDate = referenceFiscalYearStart.minusYears(1);
+			lastFiscalStartDate = startDay(referenceLocalDate.getYear() - 1, fiscalYearStartDay, fiscalYearStartMonth);
 		} else {
 			lastFiscalStartDate = referenceFiscalYearStart;
 		}
 		return DateUtils.toDate(lastFiscalStartDate);
+	}
+
+	/**
+	 * The first day of the fiscal year which starts in the given year. A start day
+	 * after the end of the month, for example 29 February in a year which is not
+	 * a leap year, is the last day of the month.
+	 */
+	static LocalDate startDay(int year, int day, int month) {
+		YearMonth yearMonth = YearMonth.of(year, month);
+		return yearMonth.atDay(Math.min(day, yearMonth.lengthOfMonth()));
 	}
 }

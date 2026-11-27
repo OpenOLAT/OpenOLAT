@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -61,19 +60,30 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	}
 
 	@Override
+	public List<ReportParameterDefinition> getParameterDefinitions() {
+		return List.of(ReportParameterDefinition.timeRange(ReportTimeRange.last4Weeks));
+	}
+
+	@Override
+	protected String getI18nParametersPrefix() {
+		return "report.params.absences";
+	}
+
+	@Override
 	protected String getI18nCategoryKey() {
 		return "report.category.absences";
 	}
 
 	@Override
-	public void generateReport(Identity coach, Locale locale, LocalFileImpl output) {
+	public void generateReport(Identity coach, ReportParameters params, Locale locale, LocalFileImpl output) {
 		Translator translator = getTranslator(locale);
 
 		List<String> worksheetNames = new ArrayList<>();
 		worksheetNames.add(translator.translate("export.worksheet.summary"));
 		worksheetNames.add(translator.translate("export.worksheet.courses"));
+		worksheetNames.add(getMetadataSheetName(locale));
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
-		List<LectureBlockIdentityStatistics> statistics = getLecturesStatistics(userPropertyHandlers, coach);
+		List<LectureBlockIdentityStatistics> statistics = getLecturesStatistics(userPropertyHandlers, coach, resolveRange(params));
 		LectureModule lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
 		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
 		boolean countDispenseAsAttendant = lectureModule.isCountDispensationAsAttendant() && lectureModule.isAbsenceNoticeEnabled();
@@ -90,20 +100,21 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			generateCoursesHeader(coursesWorksheet, userPropertyHandlers, translator);
 			generateCoursesData(coursesWorksheet, userPropertyHandlers, statistics, workbook,
 					countAuthorizedAbsenceAsAttendant, countDispenseAsAttendant);
+			
+			generateCoachingMetadataSheet(workbook, params, locale);
 		} catch (IOException e) {
-			log.error("Unable to generate export", e);
+			throw new ReportGenerationException("Unable to generate export", e);
 		}
 	}
 
-	private List<LectureBlockIdentityStatistics> getLecturesStatistics(List<UserPropertyHandler> userPropertyHandlers, Identity coach) {
+	private List<LectureBlockIdentityStatistics> getLecturesStatistics(List<UserPropertyHandler> userPropertyHandlers,
+			Identity coach, ReportDateRange range) {
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
 		params.setLimitToRoles(List.of(OrganisationRoles.linemanager, OrganisationRoles.educationmanager));
-		if (getDurationTimeUnit() != null) {
-			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
-			params.setStartDate(getDurationTimeUnit().fromDate(new Date(), duration));
-			params.setEndDate(getDurationTimeUnit().toDate(new Date()));
-		}
+		// Lecture blocks which start and end within the range: block.endDate <= toExclusive
+		params.setStartDate(range.from());
+		params.setEndDate(range.toExclusive());
 		return lectureService.getLecturesStatistics(params, userPropertyHandlers, coach);
 	}
 	
@@ -129,7 +140,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		Map<Long, List<LectureBlockIdentityStatistics>> identityToStatistics = new HashMap<>();
 		for (LectureBlockIdentityStatistics stats : statistics) {
 			Long identityKey = stats.getIdentityKey();
-			identityToStatistics.computeIfAbsent(identityKey, k -> new ArrayList<>()).add(stats);
+			identityToStatistics.computeIfAbsent(identityKey, _ -> new ArrayList<>()).add(stats);
 		}
 
 		List<AbsencesReportSummaryRow> summaryRows = new ArrayList<>();
@@ -176,11 +187,12 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 				rate = (double) attended / (double) total;
 			}
 			String lastName = getLastName(identityProps, lastNameIndex, Long.toString(identityKey));
-			summaryRows.add(new AbsencesReportSummaryRow(identityProps, lastName, positive(units), positive(attended),
+			summaryRows.add(new AbsencesReportSummaryRow(identityKey, identityProps, lastName, positive(units), positive(attended),
 					positive(authorized), positive(notAuthorized), positive(dispensed), rate));
 		}
 		
-		summaryRows.sort(Comparator.comparing(AbsencesReportSummaryRow::lastName));
+		summaryRows.sort(Comparator.comparing(AbsencesReportSummaryRow::lastName)
+				.thenComparing(AbsencesReportSummaryRow::identityKey));
 		for (AbsencesReportSummaryRow summaryRow : summaryRows) {
 			Row row = worksheet.newRow();
 			int pos = 0;
@@ -233,7 +245,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 				continue;
 			}
 			UserCourseKey userCourseKey = new UserCourseKey(identityKey, courseKey);
-			statisticsMap.computeIfAbsent(userCourseKey, k -> new ArrayList<>()).add(stats);	
+			statisticsMap.computeIfAbsent(userCourseKey, _ -> new ArrayList<>()).add(stats);	
 		}
 		
 		List<AbsencesReportCourseRow> userCourseRows = new ArrayList<>();
@@ -288,12 +300,15 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 				rate = (double) attended / (double) total;
 			}
 			String lastName = getLastName(identityProps, lastNameIndex, userCourseKey.toString());
-			userCourseRows.add(new AbsencesReportCourseRow(identityProps, lastName, courseTitle, externalReference, 
+			userCourseRows.add(new AbsencesReportCourseRow(userCourseKey.identityKey(), userCourseKey.courseKey(), identityProps, lastName, courseTitle, externalReference, 
 					positive(units), positive(attended), positive(authorized), positive(notAuthorized), 
 					positive(dispensed), rate));
 		}
 		
-		userCourseRows.sort(Comparator.comparing(AbsencesReportCourseRow::lastName).thenComparing(AbsencesReportCourseRow::courseTitle));
+		userCourseRows.sort(Comparator.comparing(AbsencesReportCourseRow::lastName)
+				.thenComparing(AbsencesReportCourseRow::identityKey)
+				.thenComparing(AbsencesReportCourseRow::courseTitle, Comparator.nullsLast(Comparator.naturalOrder()))
+				.thenComparing(AbsencesReportCourseRow::courseKey));
 		for (AbsencesReportCourseRow userCourseRow : userCourseRows) {
 			Row row = worksheet.newRow();
 			int pos = 0;
@@ -330,7 +345,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	}
 
 	@Override
-	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, ReportParameters params, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		// Unused.
 		// Two worksheets used, this hook is for a single worksheet.
 	}

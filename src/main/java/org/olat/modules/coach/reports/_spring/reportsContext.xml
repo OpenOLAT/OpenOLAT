@@ -5,58 +5,22 @@
 	                   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- Reports -->
-	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
+	<bean id="coaching.openbookingorders" class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
 		<property name="order" value="1" />
-		<property name="i18nNameKey" value="report.name.openBookingOrdersLast4Weeks" />
-		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast4Weeks" />
-		<property name="duration" value="4" />
-		<property name="durationUnit" value="week" />
+		<property name="i18nNameKey" value="report.name.openBookingOrders" />
+		<property name="i18nDescriptionKey" value="report.description.openBookingOrders" />
 	</bean>
 
-	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
-		<property name="order" value="2" />
-		<property name="i18nNameKey" value="report.name.openBookingOrdersLast12Months" />
-		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast12Months" />
-		<property name="duration" value="12" />
-		<property name="durationUnit" value="month" />
-	</bean>
-
-	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
+	<bean id="coaching.absences" class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
 		<property name="order" value="10" />
-		<property name="i18nNameKey" value="report.name.absencesLast4Weeks" />
-		<property name="i18nDescriptionKey" value="report.description.absencesLast4Weeks" />
-		<property name="duration" value="4" />
-		<property name="durationUnit" value="week" />
+		<property name="i18nNameKey" value="report.name.absences" />
+		<property name="i18nDescriptionKey" value="report.description.absences" />
 	</bean>
 
-	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
-		<property name="order" value="20" />
-		<property name="i18nNameKey" value="report.name.absencesLast12Months" />
-		<property name="i18nDescriptionKey" value="report.description.absencesLast12Months" />
-		<property name="duration" value="12" />
-		<property name="durationUnit" value="month" />
-	</bean>
-
-	<bean class="org.olat.modules.coach.reports.CertificatesReportConfiguration">
+	<bean id="coaching.certificates" class="org.olat.modules.coach.reports.CertificatesReportConfiguration">
 		<property name="order" value="30" />
-		<property name="i18nNameKey" value="report.name.allCertificates" />
-		<property name="i18nDescriptionKey" value="report.description.allCertificates" />
-	</bean>
-
-	<bean class="org.olat.modules.coach.reports.CertificatesReportConfiguration">
-		<property name="order" value="40" />
-		<property name="i18nNameKey" value="report.name.certificatesLast4Weeks" />
-		<property name="i18nDescriptionKey" value="report.description.certificatesLast4Weeks" />
-		<property name="duration" value="4" />
-		<property name="durationUnit" value="week" />
-	</bean>
-
-	<bean class="org.olat.modules.coach.reports.CertificatesReportConfiguration">
-		<property name="order" value="50" />
-		<property name="i18nNameKey" value="report.name.certificatesLast12Months" />
-		<property name="i18nDescriptionKey" value="report.description.certificatesLast12Months" />
-		<property name="duration" value="12" />
-		<property name="durationUnit" value="month" />
+		<property name="i18nNameKey" value="report.name.certificates" />
+		<property name="i18nDescriptionKey" value="report.description.certificates" />
 	</bean>
 
 </beans>

@@ -24,7 +24,7 @@ package org.olat.modules.coach.reports;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public record AbsencesReportCourseRow(String[] identityProps, String lastName, String courseTitle, 
+public record AbsencesReportCourseRow(Long identityKey, Long courseKey, String[] identityProps, String lastName, String courseTitle, 
 									  String externalReference, long units, long attended, long authorized, 
 									  long notAuthorized, long dispensed, double attendanceRate) {
 

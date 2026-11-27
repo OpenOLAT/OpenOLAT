@@ -20,7 +20,6 @@
 package org.olat.modules.coach.reports;
 
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -52,6 +51,16 @@ public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfigu
 	@Override
 	public boolean hasAccess(ReportConfigurationAccessSecurityCallback secCallback) {
 		return secCallback.isCoachingContext() && secCallback.isShowInvoicesReports();
+	}
+
+	@Override
+	public List<ReportParameterDefinition> getParameterDefinitions() {
+		return List.of(ReportParameterDefinition.timeRange(ReportTimeRange.last4Weeks));
+	}
+
+	@Override
+	protected String getI18nParametersPrefix() {
+		return "report.params.openBookingOrders";
 	}
 
 	@Override
@@ -90,39 +99,38 @@ public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfigu
 	}
 
 	@Override
-	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		List<UserOrder> bookings = loadBookings(coach, userPropertyHandlers);
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, ReportParameters params, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		List<UserOrder> bookings = loadBookings(coach, resolveRange(params), userPropertyHandlers);
 		for (UserOrder booking : bookings) {
 			generateDataRow(workbook, sheet, userPropertyHandlers, booking);
 		}
 	}
 	
-	private List<UserOrder> loadBookings(Identity coach, List<UserPropertyHandler> userPropertyHandlers) {
+	private List<UserOrder> loadBookings(Identity coach, ReportDateRange range, List<UserPropertyHandler> userPropertyHandlers) {
 		ACOrderDAO orderDao = CoreSpringFactory.getImpl(ACOrderDAO.class);
 		
 		BookingOrdersSearchParams orgParams = new BookingOrdersSearchParams();
 		orgParams.setIdentity(coach);
-		setDateRange(orgParams);
+		setDateRange(orgParams, range);
 		orgParams.setOrganisationRoles(List.of(OrganisationRoles.educationmanager, OrganisationRoles.linemanager));
 		List<UserOrder> orgOrders = orderDao.getUserBookings(orgParams, userPropertyHandlers);
 		
 		BookingOrdersSearchParams groupParams = new BookingOrdersSearchParams();
 		groupParams.setIdentity(coach);
-		setDateRange(groupParams);
+		setDateRange(groupParams, range);
 		groupParams.setGroupRoles(List.of(GroupRoles.coach));
 		List<UserOrder> groupOrders = orderDao.getUserBookings(groupParams, userPropertyHandlers);
 		
 		Set<UserOrder> userOrders = Stream.concat(orgOrders.stream(), groupOrders.stream()).collect(Collectors.toSet());
 		return userOrders.stream()
-				.sorted(Comparator.comparing(o -> o.getOrder().getCreationDate())).collect(Collectors.toList());
+				.sorted(Comparator.comparing((UserOrder o) -> o.getOrder().getCreationDate())
+						.thenComparing(o -> o.getOrder().getKey()))
+				.collect(Collectors.toList());
 	}
 
-	private void setDateRange(BookingOrdersSearchParams params) {
-		if (getDurationTimeUnit() != null) {
-			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
-			params.setFromDate(getDurationTimeUnit().fromDate(new Date(), duration));
-			params.setToDate(getDurationTimeUnit().toDate(new Date()));
-		}
+	private void setDateRange(BookingOrdersSearchParams params, ReportDateRange range) {
+		params.setFromDate(range.from());
+		params.setToDate(range.toExclusive());
 	}
 
 	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, UserOrder bookingOrder) {

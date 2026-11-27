@@ -194,6 +194,9 @@ public class CurriculumAccountingDAO {
 		if(searchParams.getToDate() != null) {
 			sb.and().append("o.creationDate < :toDate");
 		}
+		if(searchParams.getChangedSince() != null) {
+			sb.and().append("o.lastModified >= :changedSince");
+		}
 		if(searchParams.isExcludeDeletedCurriculumElements()) {
 			sb.and().append("ce.status <> 'deleted'");
 		}
@@ -221,6 +224,9 @@ public class CurriculumAccountingDAO {
 		}
 		if(searchParams.getToDate() != null) {
 			query.setParameter("toDate", searchParams.getToDate());
+		}
+		if(searchParams.getChangedSince() != null) {
+			query.setParameter("changedSince", searchParams.getChangedSince());
 		}
 		if(searchParams.getAccessMethodType() != null) {
 			query.setParameter("methodType", searchParams.getAccessMethodType());

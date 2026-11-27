@@ -43,6 +43,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.coaching.ReportsPage;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.CalendarPage;
@@ -2423,4 +2424,57 @@ public class CourseTest extends Deployments {
 			.assertOnResourceType();
 	}
 	
+	/**
+	 * An author creates a course and adds a coach. The coach opens the reports
+	 * in the coaching tool, opens the dialog of the certificates report, which
+	 * has no field "Only changes since", and runs the report with its default
+	 * parameters.
+	 */
+	@Test
+	@RunAsClient
+	public void coachingReportsCertificates()
+	throws IOException, URISyntaxException, InterruptedException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO coach = new UserRestClient(deploymentUrl).createRandomUser("Kim");
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		String title = "Coaching-Reports-" + UUID.randomUUID();
+		navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment()
+			.createCourse(title, true)
+			.clickToolbarBack();
+		
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		course
+			.changeStatus(RepositoryEntryStatusEnum.published);
+		course
+			.members()
+			.quickAdd(coach, false, true);
+		
+		// The coach runs the certificates report
+		LoginPage coachLoginPage = LoginPage.load(browser, deploymentUrl);
+		coachLoginPage
+			.loginAs(coach.getLogin(), coach.getPassword())
+			.resume();
+		
+		String templateId = "coaching.certificates";
+		ReportsPage reports = NavigationPage.load(browser)
+			.openCoaching()
+			.openReports()
+			.assertOnTemplate(templateId);
+		reports
+			.openTemplate(templateId)
+			.assertChangedSince(false)
+			.run();
+		reports
+			.assertOnGeneratedReport()
+			.openInfos()
+			.assertOnInfosParameters()
+			.closeInfos();
+	}
 }

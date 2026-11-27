@@ -28,6 +28,8 @@ import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -49,6 +51,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -61,6 +64,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.EmailStatus;
 import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
+import org.olat.course.certificate.model.CertificateIdentityConfig;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.group.BusinessGroup;
@@ -393,6 +397,50 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Certificate lastCertificate = certificatesManager.getLastCertificate(identity, entry.getOlatResource().getKey());
 		Assert.assertNotNull(lastCertificate);
 		Assert.assertEquals(certificate, lastCertificate);
+	}
+	
+	/**
+	 * The range includes the certificates issued from 00:00 of the first day and
+	 * excludes the ones issued at 00:00 of the day after the last day.
+	 */
+	@Test
+	public void getCertificatesForGroupsBoundaries() throws URISyntaxException {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-range-1", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-range-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
+		
+		Date from = DateUtils.toDate(LocalDate.of(2026, 3, 1));
+		Date toExclusive = DateUtils.toDate(LocalDate.of(2026, 4, 1));
+		Identity beforeFrom = uploadCertificate("cer-range-3", entry, DateUtils.toDate(LocalDateTime.of(2026, 2, 28, 23, 59, 59)));
+		Identity onFrom = uploadCertificate("cer-range-4", entry, from);
+		Identity lastSecond = uploadCertificate("cer-range-5", entry, DateUtils.toDate(LocalDateTime.of(2026, 3, 31, 23, 59, 59)));
+		Identity onTo = uploadCertificate("cer-range-6", entry, toExclusive);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> inRange = certificatesManager.getCertificatesForGroups(coach, List.of(), from, toExclusive).stream()
+				.map(CertificateIdentityConfig::getIdentityKey)
+				.toList();
+		Assertions.assertThat(inRange)
+			.containsExactlyInAnyOrder(onFrom.getKey(), lastSecond.getKey());
+		
+		// Open end
+		List<Long> fromOnly = certificatesManager.getCertificatesForGroups(coach, List.of(), from, null).stream()
+				.map(CertificateIdentityConfig::getIdentityKey)
+				.toList();
+		Assertions.assertThat(fromOnly)
+			.containsExactlyInAnyOrder(onFrom.getKey(), lastSecond.getKey(), onTo.getKey())
+			.doesNotContain(beforeFrom.getKey());
+	}
+	
+	private Identity uploadCertificate(String login, RepositoryEntry entry, Date creationDate) throws URISyntaxException {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(login, defaultUnitTestOrganisation, null);
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
+		File certificateFile = new File(certificateUrl.toURI());
+		certificatesManager.uploadCertificate(participant, creationDate, null, null, null,
+				entry.getOlatResource(), null, certificateFile, participant);
+		return participant;
 	}
 	
 	@Test

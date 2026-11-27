@@ -32,11 +32,17 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.color.ColorValidator;
 import org.olat.core.commons.services.color.Swatch;
+import org.olat.core.commons.services.taskexecutor.Task;
+import org.olat.core.commons.services.taskexecutor.TaskStatus;
+import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
+import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.course.style.ColorCategory;
+import org.olat.modules.coach.ui.manager.ReportTemplatesController;
+import org.olat.modules.curriculum.ui.reports.CurriculumReportsListController;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,6 +63,11 @@ public class OLATUpgrade_21_2_0 extends OLATUpgrade {
 	private static final String INITIALIZE_USER_COURSE_ACTIVITY = "INITIALIZE USER COURSE ACTIVITY";
 	private static final String MIGRATE_COLOR_VALUES = "MIGRATE COLOR VALUES";
 	private static final String MIGRATE_COLOR_CATEGORIES = "MIGRATE COLOR CATEGORIES";
+	private static final String REPORT_TASKS_FAILED = "REPORT TASKS FAILED";
+	
+	/** The sub-paths of the tasks of the Course Planner and coaching reports */
+	private static final List<String> REPORT_TASKS_SUB_PATHS = List.of(
+			CurriculumReportsListController.CURRICULUM_REPORT_IDENT, ReportTemplatesController.COACHING_REPORT_IDENT);
 	
 	/*
 	 * The colour values of the 4 columns that stored a CSS class of an old
@@ -150,6 +161,8 @@ public class OLATUpgrade_21_2_0 extends OLATUpgrade {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private PersistentTaskDAO persistentTaskDao;
+	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 
 	@Override
@@ -170,6 +183,7 @@ public class OLATUpgrade_21_2_0 extends OLATUpgrade {
 		allOk &= initializeUserCourseActivity(upgradeManager, uhd);
 		allOk &= migrateColorValues(upgradeManager, uhd, MIGRATE_COLOR_VALUES, COLOR_COLUMNS);
 		allOk &= migrateColorValues(upgradeManager, uhd, MIGRATE_COLOR_CATEGORIES, COLOR_CATEGORY_COLUMNS);
+		allOk &= reportTasksFailed(upgradeManager, uhd);
 
 		//uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -222,6 +236,60 @@ public class OLATUpgrade_21_2_0 extends OLATUpgrade {
 		return allOk;
 	}
 
+	/**
+	 * The report tasks saved before the update store the report template itself
+	 * and cannot be read anymore. The unfinished tasks whose XML cannot be read
+	 * are marked as failed, the readable ones are left as they are, so the step
+	 * can run twice safely. The finished tasks are already deleted.
+	 */
+	private boolean reportTasksFailed(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(REPORT_TASKS_FAILED)) {
+			try {
+				log.info("Start marking unfinished report tasks as failed");
+				int count = markReportTasksFailed();
+				log.info("{} unfinished report tasks marked as failed", count);
+			} catch (Exception e) {
+				log.error("", e);
+				dbInstance.rollbackAndCloseSession();
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(REPORT_TASKS_FAILED, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	/**
+	 * @return The number of tasks marked as failed
+	 */
+	protected int markReportTasksFailed() {
+		int count = 0;
+		for (String subPath : REPORT_TASKS_SUB_PATHS) {
+			List<Task> tasks = persistentTaskDao.findTasksBySubPath(subPath);
+			for (Task task : tasks) {
+				if ((task.getStatus() == TaskStatus.newTask || task.getStatus() == TaskStatus.inWork)
+						&& task instanceof PersistentTask persistentTask
+						&& !checkXMLReadable(persistentTask)) {
+					persistentTaskDao.taskFailed(persistentTask);
+					count++;
+				}
+			}
+			dbInstance.commitAndCloseSession();
+		}
+		return count;
+	}
+	
+	private boolean checkXMLReadable(PersistentTask persistentTask) {
+		try {
+			persistentTaskDao.deserializeTask(persistentTask);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 	/**
 	 * Replaces the old colour classes of the columns with the key of the colour
 	 * set M, e.g. "o_proj_avatar_light_blue" with "cyan", or with its swatch

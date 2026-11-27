@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -30,12 +31,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.restapi.CurriculumElementTypeVO;
 import org.olat.modules.curriculum.ui.member.ConfirmationMembershipEnum;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.coaching.ReportsPage;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.curriculum.CoursePlannerPage;
@@ -457,5 +460,49 @@ public class CoursePlannerTest extends Deployments {
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(browser);
 		participantCourse
 			.assertOnLearnPathNodeDone("Participant list");
+	}
+	
+	/**
+	 * An administrator opens the reports of the Course Planner, opens the dialog
+	 * of the bookings report with its name, chooses the last 4 weeks and runs the
+	 * report. The info dialog of the generated report shows the parameters. The dialog opened with the play icon refuses
+	 * a custom range which ends before it starts.
+	 */
+	@Test
+	@RunAsClient
+	public void reportsBookingOrdersDialog()
+	throws IOException, URISyntaxException, InterruptedException {
+		UserVO administrator = new UserRestClient(deploymentUrl).createAdministrator();
+		
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs(administrator)
+			.resume();
+		
+		String templateId = "courseplanner.bookingorders";
+		ReportsPage reports = NavigationPage.load(browser)
+			.openCoursePlanner()
+			.openReports()
+			.assertOnTemplate(templateId);
+		
+		reports
+			.openTemplate(templateId)
+			.assertChangedSince(true)
+			.selectRelative("last4Weeks")
+			.run();
+		
+		reports
+			.assertOnGeneratedReport()
+			.openInfos()
+			.assertOnInfosParameters()
+			.closeInfos();
+		
+		// The end of the range is before its start
+		Date today = new Date();
+		reports
+			.runTemplate(templateId)
+			.selectCustomRange(today, DateUtils.addDays(today, -7))
+			.runAndAssertRangeError()
+			.cancel();
 	}
 }

@@ -152,7 +152,7 @@ form .o_form, form.o_form {
 		padding-bottom: ($padding-base-vertical + 1);
 	}
 	
-	.o_date_bloc {
+	.o_date_bloc:has(.o_date_ms) {
 		white-space: nowrap;
 		.o_first_date {
 			padding-right: 1em;

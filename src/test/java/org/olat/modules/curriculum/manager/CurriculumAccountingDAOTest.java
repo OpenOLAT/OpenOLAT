@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
@@ -30,6 +31,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -189,6 +191,47 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 			.map(BookingOrder::getOrder)
 			.containsExactly(accessResult.getOrder());
 		Assert.assertEquals(GroupMembershipStatus.active, (bookingOrders.get(0).getOrdererMembershipStatus()));
+	}
+	
+	/**
+	 * The time range applies to the date of the order, "changed since" to its last modification.
+	 */
+	@Test
+	public void bookingOrdersByDates() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("account-dates");
+		Organisation organisation = JunitTestHelper.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-ACCOUNTING-DATES", "Curriculum accounting dates", "Curriculum", false, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-dates", "Element for dates",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		AccessResult accessResult = createOrder(id, element.getResource(), null, true);
+		Assert.assertTrue(accessResult.isAccessible());
+		
+		Date today = DateUtils.getStartOfDay(new Date());
+		Date tomorrow = DateUtils.addDays(today, 1);
+		
+		// Today is in the range [today, tomorrow)
+		Assertions.assertThat(bookingOrders(element, today, tomorrow, null))
+			.map(BookingOrder::getOrder)
+			.containsExactly(accessResult.getOrder());
+		// The range ends today at 00:00, exclusive
+		Assertions.assertThat(bookingOrders(element, DateUtils.addDays(today, -7), today, null))
+			.isEmpty();
+		// Changed since today, but not since tomorrow
+		Assertions.assertThat(bookingOrders(element, null, null, today))
+			.map(BookingOrder::getOrder)
+			.containsExactly(accessResult.getOrder());
+		Assertions.assertThat(bookingOrders(element, null, null, tomorrow))
+			.isEmpty();
+	}
+	
+	private List<BookingOrder> bookingOrders(CurriculumElement element, Date from, Date toExclusive, Date changedSince) {
+		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+		searchParams.setCurriculumElement(element);
+		searchParams.setFromDate(from);
+		searchParams.setToDate(toExclusive);
+		searchParams.setChangedSince(changedSince);
+		return curriculumAccountingDao.bookingOrders(searchParams, new ArrayList<>());
 	}
 	
 	/**

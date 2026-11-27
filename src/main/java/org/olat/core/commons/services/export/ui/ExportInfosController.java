@@ -80,6 +80,12 @@ public class ExportInfosController extends FormBasicController {
 			uifactory.addStaticTextElement("export.archive.type", type, formLayout);
 		}
 
+		if(isReport(exportRow.getArchiveType()) && StringHelper.containsNonWhitespace(exportRow.getDescription())) {
+			String parameters = StringHelper.escapeHtml(exportRow.getDescription()).replace("\n", "<br>");
+			uifactory.addStaticTextElement("export.parameters", parameters, formLayout)
+				.setElementCssClass("o_sel_export_parameters");
+		}
+
 		VFSLeaf archive = exportRow.getArchive();
 		if(archive != null) {
 			uifactory.addStaticTextElement("filename", archive.getName(), formLayout);
@@ -122,6 +128,15 @@ public class ExportInfosController extends FormBasicController {
 		uifactory.addFormSubmitButton("close", formLayout);
 	}
 	
+	/**
+	 * The reports of the Course Planner and of the coaching tool save the summary
+	 * of their parameters in the description.
+	 */
+	private static boolean isReport(ArchiveType type) {
+		return type == ArchiveType.COURSEPLANNER || type == ArchiveType.CURRICULUM
+				|| type == ArchiveType.CURRICULUMELEMENT || type == ArchiveType.COACHING;
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == entryLink) {

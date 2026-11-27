@@ -19,6 +19,9 @@
  */
 package org.olat.modules.coach.reports;
 
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * Initial date: 2025-01-29<br>
  *
@@ -26,29 +29,15 @@ package org.olat.modules.coach.reports;
  */
 public abstract class TimeBoundReportConfiguration extends AbstractReportConfiguration {
 
-	private String duration;
-	private String durationUnit;
-
-	public void setDuration(String duration) {
-		this.duration = duration;
-	}
-
-	protected String getDuration() {
-		return duration;
-	}
-
-	public void setDurationUnit(String durationUnit) {
-		this.durationUnit = durationUnit;
-	}
-
-	private String getDurationUnit() {
-		return durationUnit;
-	}
-
-	protected ReportTimeUnit getDurationTimeUnit() {
-		if (getDurationUnit() == null) {
-			return null;
-		}
-		return ReportTimeUnit.valueOf(getDurationUnit());
+	/**
+	 * Resolves the time range of the parameters, with the current time as reference.
+	 * 
+	 * @param params The parameters of the report
+	 * @return The time range, never null
+	 */
+	@Override
+	protected ReportDateRange resolveRange(ReportParameters params) {
+		// The locale is irrelevant, only the dates are used
+		return new ReportParametersFormatter(Locale.ENGLISH).resolve(params, params.getReferenceDate() == null ? new Date() : params.getReferenceDate());
 	}
 }

@@ -20,29 +20,23 @@
 package org.olat.modules.curriculum.reports;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.export.AbstractExportTask;
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.ExportMetadata;
-import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
-import org.olat.core.commons.services.taskexecutor.TaskStatus;
-import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.coach.reports.AbstractReportTask;
+import org.olat.modules.coach.reports.ReportConfiguration;
+import org.olat.modules.coach.reports.ReportGenerationException;
+import org.olat.modules.coach.reports.ReportParameters;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumReportConfiguration;
@@ -57,95 +51,40 @@ import org.olat.modules.curriculum.model.CurriculumRefImpl;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CurriculumReportTask extends AbstractExportTask {
+public class CurriculumReportTask extends AbstractReportTask {
 	
 	private static final long serialVersionUID = -4740082752176076855L;
 
-	private transient VFSLeaf exportZip;
-
-	private String title;
-	private Long doerKey;
-	private Locale locale;
-	private Long curriculumKey;
-	private Long curriculumElementKey;
-	private CurriculumReportConfiguration implementation;
+	private final Long curriculumKey;
+	private final Long curriculumElementKey;
 	
 	public CurriculumReportTask(String title, Curriculum curriculum, CurriculumElement curriculumElement,
-			IdentityRef doer, Locale locale, CurriculumReportConfiguration implementation) {
-		this.title = title;
-		this.locale = locale;
-		this.implementation = implementation;
-		doerKey = doer == null ? null : doer.getKey();
+			IdentityRef doer, Locale locale, String templateId, ReportParameters params) {
+		super(title, doer, locale, templateId, params);
 		curriculumKey = curriculum == null ? null : curriculum.getKey();
 		curriculumElementKey = curriculumElement == null ? null : curriculumElement.getKey();
 	}
 
 	@Override
-	public boolean isDelayed() {
-		return false;
+	protected VFSContainer getOutputFolder(Identity doer) {
+		return VFSManager.olatRootContainer("/reports/curriculum/" + task.getKey() + "/");
 	}
 
 	@Override
-	public String getTitle() {
-		return title;
-	}
-
-	@Override
-	public VFSLeaf getExportZip() {
-		return exportZip;
-	}
-
-	@Override
-	public void run() {
-		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		final ExportManager exportManager = CoreSpringFactory.getImpl(ExportManager.class);
-		final CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
-		final TaskExecutorManager taskExecutorManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
-		final VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+	protected void generateReport(ReportConfiguration template, Identity doer, ReportParameters parameters,
+			Locale locale, VFSLeaf output, ExportMetadata metadata) {
+		if(!(template instanceof CurriculumReportConfiguration curriculumTemplate)) {
+			throw new ReportGenerationException("Not a Course Planner report template: " + getTemplateId());
+		}
 		
-		Identity doer = doerKey == null ? null : securityManager.loadIdentityByKey(doerKey);
+		final CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		Curriculum curriculum = curriculumKey == null
 				? null : curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
 		CurriculumElement curriculumElement = curriculumElementKey == null
 				? null : curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
-
-		VFSContainer subFolder = VFSManager.olatRootContainer("/reports/curriculum/" + task.getKey() + "/");
 		
-		ExportMetadata metadata = exportManager.getExportMetadataByTask((PersistentTask)task);
-		String vfsName = metadata.getFilename();
-		exportZip = subFolder.createChildLeaf(vfsName);
-		if(exportZip == null) {
-			vfsName = VFSManager.rename(subFolder, vfsName);
-			exportZip = subFolder.createChildLeaf(vfsName);
-		} else {
-			String metadataDescr = Formatter.truncate(metadata.getDescription(), 31000);
-			Date expirationDate = CalendarUtils.endOfDay(DateUtils.addDays(new Date(), 10));
-			fillMetadata(exportZip, title, metadataDescr, expirationDate);
-		}
-
-		if(task.getStatus() == TaskStatus.cancelled) {
-			if(exportZip != null) {
-				exportZip.deleteSilently();
-			}
-			return;
-		}
-		
-		metadata.setFilename(exportZip.getName());
-		metadata.setFilePath(exportZip.getRelPath());
-		metadata.setMetadata(exportZip.getMetaInfo());
-		metadata = exportManager.updateMetadata(metadata);
-		
-		ReportContent content = implementation.generateReport(curriculum, curriculumElement, doer, locale, exportZip);
-		
-		metadata = addRelations(metadata, curriculum, curriculumElement, content);
-		
-		TaskStatus status = taskExecutorManager.getStatus(task);
-		if(status == TaskStatus.cancelled) {
-			exportZip.deleteSilently();
-			taskExecutorManager.delete(task);
-		} else {
-			vfsRepositoryService.getMetadataFor(exportZip);
-		}
+		ReportContent content = curriculumTemplate.generateReport(curriculum, curriculumElement, doer, parameters, locale, output);
+		addRelations(metadata, curriculum, curriculumElement, content);
 	}
 	
 	private ExportMetadata addRelations(ExportMetadata metadata, Curriculum curriculum, CurriculumElement element, ReportContent content) {
@@ -159,7 +98,7 @@ public class CurriculumReportTask extends AbstractExportTask {
 		if(element != null) {
 			curriculumElements.add(element);
 			if(element.getCurriculum() != null && element.getCurriculum().getOrganisation() != null) {
-				organisations.add(curriculum.getOrganisation());
+				organisations.add(element.getCurriculum().getOrganisation());
 			}
 		}
 		if(content != null && content.curriculumElements() != null && !content.curriculumElements().isEmpty()) {

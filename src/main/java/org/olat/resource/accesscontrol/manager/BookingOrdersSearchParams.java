@@ -71,6 +71,9 @@ public class BookingOrdersSearchParams {
 		this.fromDate = fromDate;
 	}
 
+	/**
+	 * @param toDate The upper bound of the order date, exclusive
+	 */
 	public void setToDate(Date toDate) {
 		this.toDate = toDate;
 	}

@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -78,29 +79,39 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 	}
 
 	@Override
+	public List<ReportParameterDefinition> getParameterDefinitions() {
+		return List.of(ReportParameterDefinition.timeRange(ReportTimeRange.all));
+	}
+
+	@Override
+	protected String getI18nParametersPrefix() {
+		return "report.params.certificates";
+	}
+
+	@Override
 	protected String getI18nCategoryKey() {
 		return "report.category.certificates";
 	}
 
 	@Override
-	public void generateReport(Identity identity, Locale locale, LocalFileImpl output) {
+	public void generateReport(Identity identity, ReportParameters params, Locale locale, LocalFileImpl output) {
 		Translator translator = getTranslator(locale);
 		Formatter formatter = Formatter.getInstance(locale);
 		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		boolean curriculumEnabled = curriculumModule.isEnabled();
-		int numberOfWorksheets = curriculumEnabled ? 2 : 1;
 		List<String> worksheetNames = new ArrayList<>();
 		worksheetNames.add(translator.translate("export.worksheet.individual.courses"));
 		if (curriculumEnabled) {
 			worksheetNames.add(translator.translate("export.worksheet.curricula"));
 		}
+		worksheetNames.add(getMetadataSheetName(locale));
 		
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
 		try (OutputStream out = new FileOutputStream(output.getBasefile());
-			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, numberOfWorksheets, worksheetNames)) {
+			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, worksheetNames.size(), worksheetNames)) {
 			OpenXMLWorksheet coursesWorksheet = workbook.nextWorksheet();
 			generateCoursesHeader(coursesWorksheet, userPropertyHandlers, translator);
-			List<CertificateIdentityConfig> certificates = loadCertificates(identity, userPropertyHandlers);
+			List<CertificateIdentityConfig> certificates = loadCertificates(identity, resolveRange(params), userPropertyHandlers);
 			Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements = new HashMap<>();
 			if (curriculumEnabled) {
 				Set<RepositoryEntryRef> repositoryEntries = certificates.stream().map(CertificateIdentityConfig::getEntry)
@@ -119,8 +130,9 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 				generateCurriculaData(curriculaWorksheet, certificates, userPropertyHandlers, formatter, 
 						courseToCurriculumElements, translator);
 			}
+			generateCoachingMetadataSheet(workbook, params, locale);
 		} catch (IOException e) {
-			log.error("Unable to generate export", e);
+			throw new ReportGenerationException("Unable to generate export", e);
 		}
 	}
 
@@ -228,15 +240,10 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		return certificateIdentityConfig.getPassed() ? translator.translate("export.value.passed") : translator.translate("export.value.failed");
 	}
 
-	private List<CertificateIdentityConfig> loadCertificates(Identity identity, 
+	private List<CertificateIdentityConfig> loadCertificates(Identity identity, ReportDateRange range,
 															 List<UserPropertyHandler> userPropertyHandlers) {
-		Date from = null;
-		Date to = null;
-		if (getDurationTimeUnit() != null) {
-			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
-			from = getDurationTimeUnit().fromDate(new Date(), duration);
-			to = getDurationTimeUnit().toDate(new Date());
-		}
+		Date from = range.from();
+		Date to = range.toExclusive();
 
 		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
 		
@@ -248,7 +255,10 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		Set<CertificateIdentityConfig> certificates = Stream.concat(groupCertificates.stream(), orgCertificates.stream()).collect(Collectors.toSet());
 		certificatesManager.enhanceCertificatesWithPassedInformation(certificates);
 		
-		return certificates.stream().toList();
+		return certificates.stream()
+				.sorted(Comparator.comparing((CertificateIdentityConfig c) -> c.getCertificate().getCreationDate())
+						.thenComparing(c -> c.getCertificate().getKey()))
+				.toList();
 	}
 
 	private void generateCurriculaData(OpenXMLWorksheet curriculaWorksheet,
@@ -300,7 +310,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 	}
 
 	@Override
-	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet,
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, ReportParameters params, OpenXMLWorksheet sheet,
 								List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		// Unused.
 		// Two worksheets used, this hook is for a single worksheet.

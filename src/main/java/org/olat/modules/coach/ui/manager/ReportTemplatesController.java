@@ -41,18 +41,26 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.coach.reports.AbstractReportTask;
 import org.olat.modules.coach.reports.DefaultReportConfigurationAccessSecurityCallback;
 import org.olat.modules.coach.reports.ReportConfiguration;
+import org.olat.modules.coach.reports.ReportParameters;
+import org.olat.modules.coach.reports.ReportParametersFormatter;
+import org.olat.modules.coach.reports.ReportParametersText;
 import org.olat.modules.coach.ui.manager.ReportTemplatesDataModel.ReportTemplateCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,8 +71,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ReportTemplatesController extends FormBasicController {
 	private static final String PLAY_CMD = "play";
+	private static final String SELECT_CMD = "select";
 	private static final String FILTER_CATEGORY = "filter.category";
-	private static final String COACHING_REPORT_IDENT = "coaching";
+	public static final String COACHING_REPORT_IDENT = "coaching";
 
 	private final String helpUrl;
 	private final DefaultReportConfigurationAccessSecurityCallback secContext;
@@ -72,6 +81,9 @@ public class ReportTemplatesController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private ReportTemplatesDataModel tableModel;
 	private int count = 0;
+	
+	private CloseableModalController cmc;
+	private ReportParametersController parametersCtrl;
 
 	@Autowired
 	private List<ReportConfiguration> reportConfigurations;
@@ -86,7 +98,7 @@ public class ReportTemplatesController extends FormBasicController {
 		super(ureq, wControl, "report_templates");
 		this.helpUrl = helpUrl;
 		secContext = new DefaultReportConfigurationAccessSecurityCallback(getIdentity(), 
-				ureq.getUserSession().getRoles(), true, false, organisationService);
+				ureq.getUserSession().getRoles(), true, false, false, organisationService);
 
 		initForm(ureq);
 		loadModel();
@@ -94,11 +106,17 @@ public class ReportTemplatesController extends FormBasicController {
 		initFilters();
 	}
 	
-	public ReportTemplatesController(UserRequest ureq, WindowControl wControl, Translator translator, String helpUrl) {
+	/**
+	 * Constructor for the Course Planner.
+	 * 
+	 * @param curriculumRootContext true on the start page of the Course Planner (no curriculum, no implementation)
+	 */
+	public ReportTemplatesController(UserRequest ureq, WindowControl wControl, Translator translator, String helpUrl,
+			boolean curriculumRootContext) {
 		super(ureq, wControl, "report_templates", translator);
 		this.helpUrl = helpUrl;
 		secContext = new DefaultReportConfigurationAccessSecurityCallback(getIdentity(),
-				ureq.getUserSession().getRoles(), false, true, organisationService);
+				ureq.getUserSession().getRoles(), false, true, curriculumRootContext, organisationService);
 
 		initForm(ureq);
 		loadModel();
@@ -113,7 +131,9 @@ public class ReportTemplatesController extends FormBasicController {
 		}
 		
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.name));
+		StaticFlexiCellRenderer nameRenderer = new StaticFlexiCellRenderer(SELECT_CMD, new TextFlexiCellRenderer());
+		nameRenderer.setAriaDialogOpener();
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.name, SELECT_CMD, nameRenderer));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.category));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.description));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.type));
@@ -123,6 +143,7 @@ public class ReportTemplatesController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "list",
 				tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setElementCssClass("o_sel_report_templates");
 	}
 	
 	private void loadModel() {
@@ -172,6 +193,10 @@ public class ReportTemplatesController extends FormBasicController {
 		FormLink playLink = uifactory.addFormLink(playId, PLAY_CMD, "", null, flc, Link.NONTRANSLATED);
 		playLink.setIconLeftCSS("o_icon o_icon-lg o_icon_play");
 		playLink.setTitle(translate("start.report"));
+		playLink.setAriaDialogOpener();
+		if(row.getReportConfiguration().getId() != null) {
+			playLink.setElementCssClass("o_sel_report_" + row.getReportConfiguration().getId().replace('.', '_'));
+		}
 		playLink.setUserObject(row);
 		row.setPlayLink(playLink);
 		flc.add(playLink);
@@ -183,26 +208,73 @@ public class ReportTemplatesController extends FormBasicController {
 		if (source instanceof FormLink formLink) {
 			if (PLAY_CMD.equals(formLink.getCmd())) {
 				if (formLink.getUserObject() instanceof ReportTemplatesRow row) {
-					doRunReport(ureq, row);
+					doOpenParameters(ureq, row);
 				}
 			}
 		} else if (tableEl == source) {
-			if (event instanceof FlexiTableSearchEvent) {
+			if (event instanceof SelectionEvent se && SELECT_CMD.equals(se.getCommand())) {
+				doOpenParameters(ureq, tableModel.getObject(se.getIndex()));
+			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	protected void doRunReport(UserRequest ureq, ReportTemplatesRow row) {
-		ReportConfiguration config = row.getReportConfiguration();
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (parametersCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				ReportConfiguration template = parametersCtrl.getTemplate();
+				ReportParameters params = parametersCtrl.getParameters();
+				cmc.deactivate();
+				cleanUp();
+				doRunReport(ureq, template, params);
+			} else if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(parametersCtrl);
+		removeAsListenerAndDispose(cmc);
+		parametersCtrl = null;
+		cmc = null;
+	}
+	
+	private void doOpenParameters(UserRequest ureq, ReportTemplatesRow row) {
+		if (guardModalController(parametersCtrl) || row == null) {
+			return;
+		}
 		
-		String title = config.getName(getLocale());
-		String fileName = StringHelper.transformDisplayNameToFileSystemName(title) + "_" +
-				Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".xlsx";
-		Date expirationDate = DateUtils.addDays(new Date(), 10);
-		CoachingReportTask task = new CoachingReportTask(title, getIdentity(), getLocale(), config);
-		exportManager.startExport(task, title, config.getDescription(getLocale()), fileName, ArchiveType.COACHING, 
+		ReportConfiguration template = row.getReportConfiguration();
+		parametersCtrl = new ReportParametersController(ureq, getWindowControl(), template);
+		listenTo(parametersCtrl);
+		
+		String title = template.getParametersText(ReportParametersText.title, getLocale());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				parametersCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	protected void doRunReport(UserRequest ureq, ReportConfiguration config, ReportParameters params) {
+		Date now = new Date();
+		params.setReferenceDate(now);
+		String name = config.getName(getLocale());
+		String fileName = StringHelper.transformDisplayNameToFileSystemName(name) + "_" +
+				Formatter.formatDatetimeFilesystemSave(now) + ".xlsx";
+		ReportParametersFormatter parametersFormatter = new ReportParametersFormatter(getLocale());
+		String title = parametersFormatter.formatTitle(name, params, now);
+		String description = parametersFormatter.formatDescription(config, params, now);
+		Date expirationDate = DateUtils.addDays(now, AbstractReportTask.RETENTION_DAYS);
+		CoachingReportTask task = new CoachingReportTask(title, getIdentity(), getLocale(), config.getId(), params);
+		exportManager.startExport(task, title, description, fileName, ArchiveType.COACHING, 
 				expirationDate, false, COACHING_REPORT_IDENT, getIdentity());
 
 		fireEvent(ureq, Event.DONE_EVENT);

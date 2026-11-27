@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.reports;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
@@ -78,15 +79,31 @@ public interface ReportConfiguration {
 	boolean isDynamic();
 
 	/**
+	 * @return The unique identifier of the report template.
+	 */
+	String getId();
+
+	/**
+	 * @return The parameters the user can choose before the report is generated.
+	 */
+	List<ReportParameterDefinition> getParameterDefinitions();
+
+	/**
+	 * @param text The text of the parameters dialog
+	 * @param locale The locale
+	 * @return The translated text, specific to this template
+	 */
+	String getParametersText(ReportParametersText text, Locale locale);
+
+	/**
 	 * Generate the report. Implementations are free to decide where and in what format the reports should be.
      *
-	 * @param coach Coach who triggered the report generation.
+	 * @param identity The person who triggered the report generation.
+	 * @param params The parameters of the report.
 	 * @param locale The locale to use for localized/translated text.
-	 * @param output The target file to store the output to.                 
+	 * @param output The target file to store the output to.
 	 */
-	void generateReport(Identity identity, Locale locale, LocalFileImpl output);
-
-	void generateReport(Identity coach, Locale locale);
+	void generateReport(Identity identity, ReportParameters params, Locale locale, LocalFileImpl output);
 
 	/**
 	 * Provide a number to be used as a sorting order. This is used to display report configurations in an ordered

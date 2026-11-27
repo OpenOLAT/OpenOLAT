@@ -884,7 +884,7 @@ public class ACOrderDAO {
 			sb.and().append("o.creationDate >= :fromDate");
 		}
 		if (params.getToDate() != null) {
-			sb.and().append("o.creationDate <= :toDate");
+			sb.and().append("o.creationDate < :toDate");
 		}
 		
 		TypedQuery<Object[]> typedQuery = dbInstance.getCurrentEntityManager()

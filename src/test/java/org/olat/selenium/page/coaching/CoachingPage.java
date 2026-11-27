@@ -72,6 +72,11 @@ public class CoachingPage {
 		return this;
 	}
 	
+	public ReportsPage openReports() {
+		By reportsBy = By.cssSelector(".o_overview_nav a.o_sel_coaching_reports");
+		OOGraphene.waitElement(reportsBy, browser).click();
+		return new ReportsPage(browser).assertOnTemplates();
+	}
 
 	public CoachingPage assertCourseList() {
 		By ownerOnBy = By.xpath("//div[@class='o_coaching_course_list']//div[contains(@class,'o_table_flexi')]");

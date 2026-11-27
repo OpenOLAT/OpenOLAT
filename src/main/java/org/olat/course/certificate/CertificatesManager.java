@@ -209,7 +209,7 @@ public interface CertificatesManager {
 	 * @param identity The logged-in identity.
 	 * @param userPropertyHandlers User properties that should be set for each result entry.
 	 * @param from The start date of the date range to consider for the returned result.
-	 * @param to The end date of the date range to consider for the returned result.
+	 * @param to The end date of the date range to consider for the returned result (exclusive).
 	 * @return A list of certificates enhanced with data about the certificate recipient and the related course.
 	 */
 	public List<CertificateIdentityConfig> getCertificatesForGroups(Identity identity, 
@@ -223,7 +223,7 @@ public interface CertificatesManager {
 	 * @param identity The logged-in identity.
 	 * @param userPropertyHandlers User properties that should be set for each result entry.
 	 * @param from The start date of the date range to consider for the returned result.
-	 * @param to The end date of the date range to consider for the returned result.
+	 * @param to The end date of the date range to consider for the returned result (exclusive).
 	 * @return A list of certificates enhanced with data about the certificate recipient and the related course.
 	 */
 	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, 

@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.curriculum;
 
+import org.olat.selenium.page.coaching.ReportsPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -41,6 +42,12 @@ public class CoursePlannerPage {
 		By curriculumListBy = By.cssSelector(".o_overview_nav a.o_sel_cur_browser");
 		OOGraphene.waitElement(curriculumListBy, browser).click();
 		return new CurriculumPage(browser).assertOnCurriculumList();
+	}
+	
+	public ReportsPage openReports() {
+		By reportsBy = By.cssSelector(".o_overview_nav a.o_sel_cur_reports");
+		OOGraphene.waitElement(reportsBy, browser).click();
+		return new ReportsPage(browser).assertOnTemplates();
 	}
 
 }

@@ -699,16 +699,21 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	private List<CertificateIdentityConfig> getCertificateIdentityConfigs(Identity identity, 
 																		  List<UserPropertyHandler> userPropertyHandlers, 
 																		  Date from, Date to, QueryBuilder sb) {
-		if (from != null && to != null) {
-			sb.and().append(" cer.creationDate between :from and :to");
+		if (from != null) {
+			sb.and().append(" cer.creationDate >= :from");
+		}
+		if (to != null) {
+			sb.and().append(" cer.creationDate < :to");
 		}
 
 		TypedQuery<Object[]> typedQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		typedQuery.setParameter("identityKey", identity.getKey());
 
-		if (from != null && to != null) {
+		if (from != null) {
 			typedQuery.setParameter("from", from);
+		}
+		if (to != null) {
 			typedQuery.setParameter("to", to);
 		}
 

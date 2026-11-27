@@ -42,6 +42,7 @@ public class CurriculumAccountingSearchParams {
 	private CurriculumElement curriculumElement;
 	private Date fromDate;
 	private Date toDate;
+	private Date changedSince;
 	private List<CurriculumRef> curriculums;
 	private boolean excludeDeletedCurriculumElements;
 
@@ -83,6 +84,17 @@ public class CurriculumAccountingSearchParams {
 
 	public Date getToDate() {
 		return toDate;
+	}
+
+	/**
+	 * @return Only orders created or changed at or after this date
+	 */
+	public Date getChangedSince() {
+		return changedSince;
+	}
+
+	public void setChangedSince(Date changedSince) {
+		this.changedSince = changedSince;
 	}
 
 	public void setCurriculums(List<CurriculumRef> curriculums) {

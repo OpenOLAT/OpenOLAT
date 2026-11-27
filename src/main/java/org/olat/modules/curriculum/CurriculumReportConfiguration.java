@@ -25,6 +25,7 @@ import java.util.Locale;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.coach.reports.ReportConfiguration;
+import org.olat.modules.coach.reports.ReportParameters;
 
 /**
  * 
@@ -34,7 +35,8 @@ import org.olat.modules.coach.reports.ReportConfiguration;
  */
 public interface CurriculumReportConfiguration extends ReportConfiguration {
 
-	ReportContent generateReport(Curriculum curriculum, CurriculumElement curriculumElement, Identity doer, Locale locale, VFSLeaf file);
+	ReportContent generateReport(Curriculum curriculum, CurriculumElement curriculumElement, Identity doer,
+			ReportParameters params, Locale locale, VFSLeaf file);
 	
 	record ReportContent(List<Curriculum> curriculums, List<CurriculumElement> curriculumElements) {
 		//

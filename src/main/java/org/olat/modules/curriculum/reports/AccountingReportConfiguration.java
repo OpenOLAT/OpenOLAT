@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +40,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
@@ -50,6 +50,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.coach.reports.AbstractReportConfiguration;
 import org.olat.modules.coach.reports.ReportConfigurationAccessSecurityCallback;
+import org.olat.modules.coach.reports.ReportDateRange;
+import org.olat.modules.coach.reports.ReportGenerationException;
+import org.olat.modules.coach.reports.ReportParameterDefinition;
+import org.olat.modules.coach.reports.ReportParameters;
+import org.olat.modules.coach.reports.ReportTimeRange;
 import org.olat.modules.coach.reports.TimeBoundReportConfiguration;
 import org.olat.modules.coach.security.CourseProgressAndStatusRightProvider;
 import org.olat.modules.coach.security.LecturesAndAbsencesRightProvider;
@@ -96,16 +101,6 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class AccountingReportConfiguration extends TimeBoundReportConfiguration implements CurriculumReportConfiguration {
 
-	private Boolean excludeDeletedCurriculumElements;
-
-	public void setExcludeDeletedCurriculumElements(Boolean excludeDeletedCurriculumElements) {
-		this.excludeDeletedCurriculumElements = excludeDeletedCurriculumElements;
-	}
-
-	public Boolean getExcludeDeletedCurriculumElements() {
-		return excludeDeletedCurriculumElements;
-	}
-
 	@Override
 	public boolean hasAccess(ReportConfigurationAccessSecurityCallback secCallback) {
 		if (!secCallback.isCurriculumContext()) {
@@ -119,8 +114,19 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	}
 
 	@Override
+	public List<ReportParameterDefinition> getParameterDefinitions() {
+		return List.of(ReportParameterDefinition.timeRange(ReportTimeRange.all),
+				ReportParameterDefinition.changedSince());
+	}
+
+	@Override
 	protected Translator getTranslator(Locale locale) {
 		return Util.createPackageTranslator(CurriculumManagerRootController.class, locale, super.getTranslator(locale));
+	}
+
+	@Override
+	protected String getI18nParametersPrefix() {
+		return "report.params.booking";
 	}
 
 	@Override
@@ -203,7 +209,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	}
 
 	@Override
-	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet,
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, ReportParameters params, OpenXMLWorksheet sheet,
 								List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		Translator translator = getTranslator(locale);
 		Translator statusTranslator = Util.createPackageTranslator(OrdersDataModel.class, locale);
@@ -212,14 +218,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
 		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
 		searchParams.setIdentity(coach);
-		if (getDurationTimeUnit() != null) {
-			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
-			searchParams.setFromDate(getDurationTimeUnit().fromDate(new Date(), duration));
-			searchParams.setToDate(getDurationTimeUnit().toDate(new Date()));
-		}
-		if (getExcludeDeletedCurriculumElements() != null) {
-			searchParams.setExcludeDeletedCurriculumElements(getExcludeDeletedCurriculumElements());
-		}
+		applyParameters(searchParams, params);
 		
 		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		List<String> selectedRights = curriculumModule.getUserOverviewRightList();
@@ -242,6 +241,15 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		}
 	}
 	
+	private void applyParameters(CurriculumAccountingSearchParams searchParams, ReportParameters params) {
+		ReportDateRange range = resolveRange(params);
+		searchParams.setFromDate(range.from());
+		searchParams.setToDate(range.toExclusive());
+		if (params != null && params.getChangedSince() != null) {
+			searchParams.setChangedSince(DateUtils.getStartOfDay(params.getChangedSince()));
+		}
+	}
+	
 	private void loadAbsences(List<BookingOrder> bookingOrders) {
 		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
@@ -250,7 +258,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		Map<BookingKey,List<BookingOrder>> ordersMap = new HashMap<>();
 		for(BookingOrder order:bookingOrders) {
 			BookingKey key = new BookingKey(order.getImplementationKey(), order.getIdentityKey());
-			ordersMap.computeIfAbsent(key, k -> new ArrayList<>(2))
+			ordersMap.computeIfAbsent(key, _ -> new ArrayList<>(2))
 				.add(order);
 			if(order.getImplementationKey() != null) {
 				elements.add(new CurriculumElementRefImpl(order.getImplementationKey()));
@@ -268,7 +276,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 						.getLecturesStatistics(params, List.of(), null);
 				List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(rawStatistics);
 				Map<Long,LectureBlockIdentityStatistics> aggregatedStatisticsMap = aggregatedStatistics.stream()
-						.collect(Collectors.toMap(LectureBlockIdentityStatistics::getIdentityKey, u -> u, (u, v) -> u));
+						.collect(Collectors.toMap(LectureBlockIdentityStatistics::getIdentityKey, u -> u, (u, _) -> u));
 				
 				for(BookingOrder order:bookingOrders) {
 					if(element.getKey().equals(order.getImplementationKey())) {
@@ -534,7 +542,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 
 	@Override
 	public ReportContent generateReport(Curriculum curriculum, CurriculumElement curriculumElement,
-										Identity doer, Locale locale, VFSLeaf file) {
+										Identity doer, ReportParameters params, Locale locale, VFSLeaf file) {
 		final CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 
 		Set<CurriculumRef> curriculums = new HashSet<>();
@@ -544,24 +552,17 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			searchParams.setCurriculum(curriculum);
 			searchParams.setCurriculumElement(curriculumElement);
 			if (curriculum == null && curriculumElement == null) {
-				CurriculumSearchParameters params = new CurriculumSearchParameters();
-				params.setCurriculumAdmin(doer);
-				List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
+				CurriculumSearchParameters curriculumParams = new CurriculumSearchParameters();
+				curriculumParams.setCurriculumAdmin(doer);
+				List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(curriculumParams);
 				searchParams.setCurriculums(ownedCurriculums.stream().map(Curriculum::getKey)
 						.map(CurriculumRefImpl::new).collect(Collectors.toList()));
 			}
-			if (getDurationTimeUnit() != null) {
-				int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
-				searchParams.setFromDate(getDurationTimeUnit().fromDate(new Date(), duration));
-				searchParams.setToDate(getDurationTimeUnit().toDate(new Date()));
-			}
-			if (getExcludeDeletedCurriculumElements() != null) {
-				searchParams.setExcludeDeletedCurriculumElements(getExcludeDeletedCurriculumElements());
-			}
-			generateReport(searchParams, curriculums, implementations, locale, out);
+			applyParameters(searchParams, params);
+			ReportMetadata metadata = new ReportMetadata(formatProductImplementation(curriculum, curriculumElement), params);
+			generateReport(searchParams, curriculums, implementations, metadata, locale, out);
 		} catch (IOException e) {
-			log.error("Unable to generate export", e);
-			return null;
+			throw new ReportGenerationException("Unable to generate export", e);
 		}
 		
 		List<Curriculum> curriculumList = curriculums.isEmpty()
@@ -573,9 +574,25 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		return new ReportContent(curriculumList, implementationList);
 	}
 	
+	/**
+	 * Generates the report without the worksheet of the additional information.
+	 */
 	public void generateReport(CurriculumAccountingSearchParams searchParams,
 							   Set<CurriculumRef> curriculumsInReport, Set<CurriculumElementRef> implementationsInReport,
 							   Locale locale, OutputStream out) {
+		try {
+			generateReport(searchParams, curriculumsInReport, implementationsInReport, null, locale, out);
+		} catch (IOException e) {
+			log.error("Unable to generate export", e);
+		}
+	}
+	
+	/**
+	 * @param metadata The additional information of the report or null to generate the report without its worksheet
+	 */
+	private void generateReport(CurriculumAccountingSearchParams searchParams,
+							   Set<CurriculumRef> curriculumsInReport, Set<CurriculumElementRef> implementationsInReport,
+							   ReportMetadata metadata, Locale locale, OutputStream out) throws IOException {
 		final CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
 		boolean customerNumberEnabled = CoreSpringFactory.getImpl(OrganisationModule.class).isCustomerNumberEnabled();
 		Translator translator = getTranslator(locale);
@@ -598,8 +615,6 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		}
 		
 		Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
-		int numOfSheets = 1 + accessTypeToName.size();
-		
 		List<SheetDefinition> sheetDefs = new ArrayList<>();
 		for(Map.Entry<String, String> entry: accessTypeToName.entrySet()) {
 			sheetDefs.add(new SheetDefinition(entry.getKey(), entry.getValue()));
@@ -607,9 +622,12 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		Collections.sort(sheetDefs);
 		sheetDefs.add(0, new SheetDefinition(null, translator.translate("report.booking.all")));
 		
-		List<String> worksheetNames = sheetDefs.stream().map(SheetDefinition::name).toList();
+		List<String> worksheetNames = new ArrayList<>(sheetDefs.stream().map(SheetDefinition::name).toList());
+		if(metadata != null) {
+			worksheetNames.add(getMetadataSheetName(locale));
+		}
 		
-		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, numOfSheets, worksheetNames)) {
+		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, worksheetNames.size(), worksheetNames)) {
 			for(SheetDefinition sheetDef:sheetDefs) {
 				List<BookingOrder> typedBookingOrders = sheetDef.type() == null
 						? bookingOrders
@@ -632,9 +650,43 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 					}
 				}
 			}
-		} catch (IOException e) {
-			log.error("Unable to generate export", e);
+			
+			if(metadata != null) {
+				String exportSource = translator.translate("report.metadata.export.source.course.planner");
+				generateMetadataSheet(workbook, exportSource, metadata.productImplementation(), metadata.params(), locale);
+			}
 		}
+	}
+	
+	/**
+	 * @return "Product [reference]" or "Product [reference]/Implementation [reference]",
+	 * 		null if the report is not limited to a product
+	 */
+	private String formatProductImplementation(Curriculum curriculum, CurriculumElement curriculumElement) {
+		if(curriculum == null && curriculumElement != null) {
+			curriculum = curriculumElement.getCurriculum();
+		}
+		if(curriculum == null) {
+			return null;
+		}
+		
+		String product = formatWithReference(curriculum.getDisplayName(), curriculum.getIdentifier());
+		if(curriculumElement == null) {
+			return product;
+		}
+		return product + "/" + formatWithReference(curriculumElement.getDisplayName(), curriculumElement.getIdentifier());
+	}
+	
+	private String formatWithReference(String title, String reference) {
+		String text = title == null ? "" : title;
+		if(StringHelper.containsNonWhitespace(reference)) {
+			text += " [" + reference + "]";
+		}
+		return text;
+	}
+	
+	private record ReportMetadata(String productImplementation, ReportParameters params) {
+		//
 	}
 	
 	private List<BookingOrder> filterBookingOrders(List<BookingOrder> bookingOrders, String type) {
