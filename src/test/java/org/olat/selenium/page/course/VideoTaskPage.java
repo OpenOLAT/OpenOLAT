@@ -65,13 +65,13 @@ public class VideoTaskPage extends VideoPage {
 	 * @return Itself
 	 */
 	public VideoTaskPage selectFirstSegment() {
-		By segmentBy = By.xpath("//div[@id='o_videotask_categories']/button[contains(@class,'o_video_marker')][1]");
+		By segmentBy = By.xpath("//div[@id='o_videotask_categories']/button[contains(@class,'o_swatch_') and contains(@class,'btn')][1]");
 		OOGraphene.waitElement(segmentBy, browser).click();
 		return this;
 	}
 	
 	public VideoTaskPage assertOnSegmentCorrect() {
-		By correctSegmentBy = By.xpath("//div[@id='o_videotask_categories']/button[contains(@class,'o_video_marker')][i[contains(@class,'o_icon_correct_answer')]]");
+		By correctSegmentBy = By.xpath("//div[@id='o_videotask_categories']/button[contains(@class,'o_swatch_')][i[contains(@class,'o_icon_correct_answer')]]");
 		OOGraphene.waitElement(correctSegmentBy, browser);
 		return this;
 	}
