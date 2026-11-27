@@ -746,19 +746,24 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		entries = removeRepositoryEntry(entries);
+		boolean handled = false;
 		if(entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Editor".equalsIgnoreCase(type)) {
+				handled = true;
 				if(handler.supportsEdit(re, ureq.getIdentity(), ureq.getUserSession().getRoles()) == EditionSupport.yes
 						&& !reSecurity.isReadOnly()) {
 					doEdit(ureq);
 				}
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
+				handled = true;
 				doMembers(ureq);
 			} else if("Settings".equalsIgnoreCase(type) || "EditDescription".equalsIgnoreCase(type)) {
+				handled = true;
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doSettings(ureq, subEntries);
 			} else if("Infos".equalsIgnoreCase(type)) {
+				handled = true;
 				Activateable2 activateable = doDetails(ureq);
 				if(activateable != null) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
@@ -767,7 +772,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 
-		if(runtimeController instanceof Activateable2) {
+		// These business-path entries (Editor/MembersMgmt/Settings/Infos) are consumed by this
+		// wrapper controller alone. Forwarding them on to runtimeController as well hands the
+		// still-current-course-run controller a top-level entry type it doesn't understand,
+		// which can leave it (and the DTab) permanently disposed.
+		if(!handled && runtimeController instanceof Activateable2) {
 			((Activateable2)runtimeController).activate(ureq, entries, state);
 		}
 	}
