@@ -1,3 +1,4 @@
+@use "sass:math";
 body.o_dmz {
 	background: transparent;
 	#o_bg {
@@ -192,7 +193,7 @@ body.o_dmz {
 		/* the login button */
 		.btn {
 			width: 100%;
-			font-size: floor($font-size-base * 1.3);
+			font-size: math.floor($font-size-base * 1.3);
 			border-radius: $border-radius-base;
 			padding: $padding-large-vertical $padding-base-horizontal;
 			margin-top: 5px;
@@ -219,8 +220,8 @@ body.o_dmz {
 
 		/* optimize input size to match buttons */		
 		input.form-control, p.o_login_username {
-			font-size: floor($font-size-base * 1.2);
-			height: floor($font-size-base * 1.6 + $padding-large-vertical * 2);
+			font-size: math.floor($font-size-base * 1.2);
+			height: math.floor($font-size-base * 1.6 + $padding-large-vertical * 2);
 		}
 		
 		#o_fiooolat_login_pass_eye {
@@ -288,7 +289,7 @@ body.o_dmz {
 	}
 	.o_login_register_wrapper { 
 		padding: 0;
-		font-size: floor($font-size-base * 1.2);
+		font-size: math.floor($font-size-base * 1.2);
 		line-height: 2em;
 	}
 	.o_login_catalog {

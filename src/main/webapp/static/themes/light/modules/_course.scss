@@ -1,3 +1,4 @@
+@use "sass:math";
 /* Course styles */
 .o_colcat_nocolor.o_square {
 	background-image: repeating-linear-gradient(135deg, transparent 0%, transparent 47%, var(--o-red-500), transparent 53%, transparent 100%);
@@ -725,7 +726,7 @@
 		display: flex;
 		align-items: center;
 		h4 {
-			font-size: ceil(($font-size-base * 1.5));
+			font-size: math.ceil(($font-size-base * 1.5));
 		}
 		:nth-child(2) {
 			margin-left: auto;

@@ -142,7 +142,7 @@ $o-token-base: (
 	// text of a disabled control: the Bootstrap disabled colour ($gray-light)
 	"text-disabled": $btn-link-disabled-color,
 	// Bootstrap default of $headings-color is "inherit": the headings use the text colour
-	"heading": if(meta.type-of($headings-color) == "color", $headings-color, $text-color),
+	"heading": if(sass(meta.type-of($headings-color) == "color"): $headings-color; else: $text-color),
 	"bg": $body-bg,
 	"bg-subtle": $panel-default-heading-bg,
 	// background of a row or an item under the pointer: level 2 in the hue
@@ -1012,7 +1012,7 @@ $o-token-layer-component: (
 	// the text of a selected competence on the white competence fill: the text
 	// of the selected tag, adjusted to 4.5:1 on the pressed fill
 	// (competence-bg-active) when it is too light
-	"competence-selected":                        (o-a11y-color($o-button-dirty-color, darken(o-neutral(0), 15%)), ("tag-selected-fg",)),
+	"competence-selected":                        (o-a11y-color($o-button-dirty-color, o-darker(o-neutral(0), 15%)), ("tag-selected-fg",)),
 	"competence-selected-border":                 ($o-competences-selected-border-color, ("btn-dirty-border",)),
 	// the competence and taxonomy tag: fill (white) and border
 	"competence-bg":                              (o-neutral(0), ()),
@@ -1217,13 +1217,13 @@ $o-token-layer-component: (
 	// plot box). A theme that sets the Sass variable gets its colour for
 	// the colour and the text.
 	"evaluation-insufficient":                    ($o-evaluation-insufficient-color, ("state-danger-bg",)),
-	"evaluation-insufficient-text":               (if($o-evaluation-insufficient-color == o-state-color("danger", "bg"), o-state-color("danger", "text"), $o-evaluation-insufficient-color), ("state-danger-text",)),
+	"evaluation-insufficient-text":               (if(sass($o-evaluation-insufficient-color == o-state-color("danger", "bg")): o-state-color("danger", "text"); else: $o-evaluation-insufficient-color), ("state-danger-text",)),
 	"evaluation-insufficient-fill":               ($o-evaluation-insufficient-fill, ()),
 	"evaluation-neutral":                         ($o-evaluation-neutral-color, ("state-warning-bg",)),
-	"evaluation-neutral-text":                    (if($o-evaluation-neutral-color == o-state-color("warning", "bg"), o-state-color("warning", "text"), $o-evaluation-neutral-color), ("state-warning-text",)),
+	"evaluation-neutral-text":                    (if(sass($o-evaluation-neutral-color == o-state-color("warning", "bg")): o-state-color("warning", "text"); else: $o-evaluation-neutral-color), ("state-warning-text",)),
 	"evaluation-neutral-fill":                    ($o-evaluation-neutral-fill, ()),
 	"evaluation-sufficient":                      ($o-evaluation-sufficient-color, ("state-success-bg",)),
-	"evaluation-sufficient-text":                 (if($o-evaluation-sufficient-color == o-state-color("success", "bg"), o-state-color("success", "text"), $o-evaluation-sufficient-color), ("state-success-text",)),
+	"evaluation-sufficient-text":                 (if(sass($o-evaluation-sufficient-color == o-state-color("success", "bg")): o-state-color("success", "text"); else: $o-evaluation-sufficient-color), ("state-success-text",)),
 	"evaluation-sufficient-fill":                 ($o-evaluation-sufficient-fill, ()),
 	// the fill of a step of the evaluation slider and of a step under the
 	// pointer; the quality analysis: the base fill of the heat map and the
@@ -1624,7 +1624,7 @@ $o-token-elements: map.merge(map.merge($o-token-layer-base, $o-token-layer-frame
 // keeps 4.5:1, so the lighter-step rule (o-token-shade-lighter()) selects
 // yellow 200 for the hover and the active fill.
 @function o-token-active-percent($fg, $bg) {
-	@return if(luminance($fg) < luminance($bg), 16%, 17%);
+	@return if(sass(luminance($fg) < luminance($bg)): 16%; else: 17%);
 }
 
 $o-token-shades: (
@@ -1851,14 +1851,14 @@ $o-token-state-text-buttons: ("btn-primary", "chelp", "tag-selection-selected", 
 		@return o-contrast-shade($color, list.nth($def, 2));
 	}
 	@if list.length($def) > 2 and list.nth($def, 3) == "lighten" {
-		@return lighten($color, list.nth($def, 2));
+		@return o-lighter($color, list.nth($def, 2));
 	}
 	@if list.length($def) > 2 and list.nth($def, 3) == "hue" {
 		// adjust-hue() as the old call: a grey keeps its colour (color.adjust() in
 		// the hsl space stops at a grey, its hue is missing)
-		@return adjust-hue($color, list.nth($def, 2));
+		@return color.adjust($color, $hue: list.nth($def, 2));
 	}
-	@return darken($color, list.nth($def, 2));
+	@return o-darker($color, list.nth($def, 2));
 }
 
 // The contrast pairs of a token: list of (other token or colour, ratio)
@@ -2924,9 +2924,9 @@ $o-token-values: o-token-shade-trios($o-token-values);
 		$ratio: list.nth($pair, 3);
 		$bg-is-token: meta.type-of($bg) == "string";
 		$fg-color: map.get($o-token-values, $fg);
-		$bg-color: if($bg-is-token, map.get($o-token-values, $bg), $bg);
+		$bg-color: if(sass($bg-is-token): map.get($o-token-values, $bg); else: $bg);
 		$default-fg: map.get($o-token-defaults, $fg);
-		$default-bg: if($bg-is-token, map.get($o-token-defaults, $bg), $bg);
+		$default-bg: if(sass($bg-is-token): map.get($o-token-defaults, $bg); else: $bg);
 		$fg-changed: $fg-color != $default-fg;
 		$bg-changed: $bg-color != $default-bg;
 		// a transparent background has no contrast to check

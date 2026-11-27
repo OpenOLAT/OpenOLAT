@@ -1,3 +1,4 @@
+@use "sass:math";
 .o_table_wrapper {
 
 	&.o_table_flexi {
@@ -751,7 +752,7 @@ a.o_orderby, a.o_orderby:hover {
 }
 
 .o_table_config {
-	font-size: floor($font-size-base * 0.9);
+	font-size: math.floor($font-size-base * 0.9);
 }
 
 .o_table_tools {

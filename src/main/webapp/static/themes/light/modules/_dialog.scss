@@ -1,3 +1,4 @@
+@use "sass:math";
 /* Info and other dialog boxes, displayed inline in content */
 .o_info, %o_info { 
 	@include o-make-message-box(var(--o-box-info-bg), var(--o-box-info-border));
@@ -145,8 +146,8 @@ div.o_callout_overlay {
 	
 	.o_icon_info_msg {
 		position: absolute;
-		left: floor($line-height-computed * 0.5);
-		top: floor($line-height-computed * 0.25);
+		left: math.floor($line-height-computed * 0.5);
+		top: math.floor($line-height-computed * 0.25);
 		font-size: $line-height-computed * 2;
 	}
 	

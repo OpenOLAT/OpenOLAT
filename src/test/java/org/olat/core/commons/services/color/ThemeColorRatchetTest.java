@@ -103,8 +103,11 @@ public class ThemeColorRatchetTest {
 			// ($dropdown-link-hover-bg, $hr-border, $modal-content-border-color), not $modal-lg or $popover-arrow-width
 			Pattern.compile("\\$(?![a-zA-Z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-zA-Z0-9-]*(?:style|gradient-to|gradient-steps|-img|-position-left|-position-top|-ratio|-break|-blend-mode)(?![\\w-]))(?:dropdown|popover|modal|pre|hr|legend|blockquote|thumbnail|progress|tooltip|code|kbd|badge|pagination|pager|breadcrumb|list-group|well|jumbotron(?=-bg)|close|nav|carousel|component-active|headings-small|abbr|page-header)-[a-zA-Z-]*?(?:color|bg|border)(?![\\w-])"),
 			Pattern.compile("\\$(?![a-zA-Z0-9-]*(?:radius|width|height|padding|size|margin|offset)|[a-zA-Z0-9-]*(?:style|gradient-to|gradient-steps|-img|-position-left|-position-top|-ratio|-break|-blend-mode)(?![\\w-]))o-[a-zA-Z0-9-]*(?:color|bg|border|background)[a-zA-Z0-9-]*"),
-			// color-mix( is the decided form of a translucent token colour: only a Sass mix( or color.mix( counts
-			Pattern.compile("\\b(?:darken|lighten|rgba|fade-in|fade-out|adjust-color|scale-color|transparentize|opacify)\\(|(?<![\\w-])mix\\("),
+			// color-mix( is the decided form of a translucent token colour: only a Sass mix( or color.mix( counts.
+			// The module functions color.adjust(, color.scale(, color.change( and o-lighter(, o-darker(
+			// (_functions.scss) replace the global functions and count the same (OO-9995).
+			Pattern.compile("\\b(?:darken|lighten|rgba|fade-in|fade-out|adjust-color|scale-color|transparentize|opacify)\\(|(?<![\\w-])mix\\("
+					+ "|\\bcolor\\.(?:adjust|scale|change)\\(|\\bo-(?:lighter|darker)\\("),
 			Pattern.compile("\\b(?:rgb|hsla?)\\("),
 			Pattern.compile("\\bo-(?:a11y-color|state-color|palette|swatch-color)\\("));
 

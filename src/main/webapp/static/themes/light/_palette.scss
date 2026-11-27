@@ -465,6 +465,6 @@ $o-states: (
 	@if $hue == null {
 		@error "o-state-color: unknown state '#{$state}'";
 	}
-	$key: if($style == "solid" or $role == "text", $role, "#{$style}-#{$role}");
+	$key: if(sass($style == "solid" or $role == "text"): $role; else: "#{$style}-#{$role}");
 	@return map.get($o-swatches, $hue, $key);
 }

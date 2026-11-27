@@ -29,6 +29,7 @@
 @use "sass:color";
 @use "sass:map";
 @use "sass:meta";
+@use "sass:list";
 
 @import "functions";
 // the colour variables below read the palette swatches
@@ -209,19 +210,19 @@ $o-focus-color-from-input-border: meta.global-variable-exists("input-border-focu
    nearest scale colour of the result while the source is a colour of a
    default. The greys keep the derivation from $gray-base. */
 $gray-base						: o-neutral(1000) !default;
-$gray-dark						: o-scale-snap($gray-base, lighten($gray-base, 20%)) !default;
-$gray							: o-scale-snap($gray-base, lighten($gray-base, 33.5%)) !default;
-$gray-light						: o-scale-snap($gray-base, lighten($gray-base, 46.7%)) !default;
-$gray-lighter					: o-scale-snap($gray-base, lighten($gray-base, 93.5%)) !default;
+$gray-dark						: o-scale-snap($gray-base, o-lighter($gray-base, 20%)) !default;
+$gray							: o-scale-snap($gray-base, o-lighter($gray-base, 33.5%)) !default;
+$gray-light						: o-scale-snap($gray-base, o-lighter($gray-base, 46.7%)) !default;
+$gray-lighter					: o-scale-snap($gray-base, o-lighter($gray-base, 93.5%)) !default;
 $body-bg						: o-neutral(0) !default;
 $link-color						: $brand-primary !default;
-$link-hover-color				: o-scale-snap($link-color, darken($link-color, 15%)) !default;
+$link-hover-color				: o-scale-snap($link-color, o-darker($link-color, 15%)) !default;
 $btn-primary-bg					: $brand-primary !default;
 // The text of the primary button: white, or the colour with 4.5:1 on the
 // fill. Before the Bootstrap import, which sets white with !default. A dark
 // text gets lighter hover and pressed fills ($o-token-state-text-buttons).
 $btn-primary-color				: o-a11y-color(o-neutral(0), $btn-primary-bg) !default;
-$btn-primary-border				: o-scale-snap($btn-primary-bg, darken($btn-primary-bg, 5%)) !default;
+$btn-primary-border				: o-scale-snap($btn-primary-bg, o-darker($btn-primary-bg, 5%)) !default;
 
 /* Focus ring of every control (OO-10043): outline of
    $o-focus-ring-width in the colour of the token focus, $o-focus-ring-offset
@@ -264,22 +265,22 @@ $input-color-placeholder		: o-neutral(500) !default;
 $input-color					: o-own-or($gray, o-neutral(600), $text-color) !default;
 $legend-border-color			: o-neutral(150) !default;
 $dropdown-divider-bg			: o-neutral(150) !default;
-$dropdown-link-hover-color		: o-scale-snap($gray-dark, darken($gray-dark, 5%)) !default;
+$dropdown-link-hover-color		: o-scale-snap($gray-dark, o-darker($gray-dark, 5%)) !default;
 $navbar-default-color			: o-neutral(500) !default;
 $navbar-default-link-hover-color	: o-neutral(800) !default;
 // neutral-700: the link (neutral-600), its hover (neutral-750) and the active link differ
 $navbar-default-link-active-color	: o-neutral(700) !default;
-$navbar-default-link-active-bg	: o-scale-snap($navbar-default-bg, darken($navbar-default-bg, 6.5%)) !default;
+$navbar-default-link-active-bg	: o-scale-snap($navbar-default-bg, o-darker($navbar-default-bg, 6.5%)) !default;
 $navbar-default-link-disabled-color	: o-neutral(300) !default;
 $navbar-default-brand-color		: $navbar-default-link-color !default;
-$navbar-default-brand-hover-color	: o-scale-snap($navbar-default-brand-color, darken($navbar-default-brand-color, 10%)) !default;
+$navbar-default-brand-hover-color	: o-scale-snap($navbar-default-brand-color, o-darker($navbar-default-brand-color, 10%)) !default;
 $navbar-default-toggle-icon-bar-bg	: o-neutral(450) !default;
 // the Bootstrap default #222
 $navbar-inverse-bg				: o-palette("gray", 900) !default;
-$navbar-inverse-border			: o-scale-snap($navbar-inverse-bg, darken($navbar-inverse-bg, 10%)) !default;
-$navbar-inverse-link-active-bg	: o-scale-snap($navbar-inverse-bg, darken($navbar-inverse-bg, 10%)) !default;
+$navbar-inverse-border			: o-scale-snap($navbar-inverse-bg, o-darker($navbar-inverse-bg, 10%)) !default;
+$navbar-inverse-link-active-bg	: o-scale-snap($navbar-inverse-bg, o-darker($navbar-inverse-bg, 10%)) !default;
 $popover-bg						: o-neutral(0) !default;
-$popover-title-bg				: o-scale-snap($popover-bg, darken($popover-bg, 3%)) !default;
+$popover-title-bg				: o-scale-snap($popover-bg, o-darker($popover-bg, 3%)) !default;
 // the translucent black of Bootstrap: the token shadow-color with the alpha
 $popover-border-color			: color-mix(in srgb, var(--o-shadow-color) 20%, transparent) !default;
 // fade_in($popover-border-color, 0.05) of Bootstrap
@@ -294,12 +295,12 @@ $pre-border-color				: color-mix(in srgb, var(--o-shadow-color) 10%, transparent
 @import "../../bootstrap/stylesheets/bootstrap/variables";
 
 /* General purpose brand based style */
-$o-brand-box-border				: o-scale-snap($brand-primary, darken($brand-primary, 5%)) !default;
+$o-brand-box-border				: o-scale-snap($brand-primary, o-darker($brand-primary, 5%)) !default;
 $o-brand-box-bg 				: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
 $o-brand-text					: $brand-primary !default;
 /* override primary button to match a11y standards */
 $btn-primary-bg:                 $brand-primary !default;
-$btn-primary-border:             o-scale-snap($btn-primary-bg, darken($btn-primary-bg, 5%)) !default;
+$btn-primary-border:             o-scale-snap($btn-primary-bg, o-darker($btn-primary-bg, 5%)) !default;
 
 /* ---- OpenOLAT specific configurations ---- */
 $o-images-path : "../light/images/" !default; 
@@ -308,7 +309,7 @@ $o-images-path : "../light/images/" !default;
 $o-content-font-family-base		: $font-family-base !default;
 $o-content-font-size-base		: $font-size-base !default;
 $o-content-line-height-base		: $line-height-base !default;
-$o-content-line-height-computed	: floor(($o-content-font-size-base * $o-content-line-height-base)) !default;
+$o-content-line-height-computed	: math.floor(($o-content-font-size-base * $o-content-line-height-base)) !default;
 $o-content-link-color			: $link-color !default;
 $o-content-link-hover-color		: $link-hover-color !default;
 $o-content-link-decoration		: underline !default;
@@ -338,9 +339,9 @@ $o-content-border-img-border	: $thumbnail-border !default;
 $o-content-border-img-radius	: $thumbnail-border-radius !default;
 $o-content-border-img-padding	: 3px !default;
 
-$o-font-size-xlarge				: ceil(($font-size-base * 1.7)) !default;  // ~24px
-$o-font-size-xsmall				: ceil(($font-size-base * 0.71)) !default; // ~10px
-$o-font-size-section-title		: ceil(($font-size-base * 1.3)) !default; // ~18px
+$o-font-size-xlarge				: math.ceil(($font-size-base * 1.7)) !default;  // ~24px
+$o-font-size-xsmall				: math.ceil(($font-size-base * 0.71)) !default; // ~10px
+$o-font-size-section-title		: math.ceil(($font-size-base * 1.3)) !default; // ~18px
 // the selected row: the selected fill (level 1 in the hue of the focus colour)
 $o-table-row-selected-color     : $table-bg-active !default;
 
@@ -359,7 +360,7 @@ $o-table-details-bg							: $table-bg-active !default;
 	@if $bg == $table-bg-active and $table-bg-hover != $table-bg-active {
 		@return $table-bg-hover;
 	}
-	@return o-scale-snap($bg, darken($bg, 10%));
+	@return o-scale-snap($bg, o-darker($bg, 10%));
 }
 // The darkest fill of a table row: page, striped row, row under the pointer,
 // selected row, opened row and its details row with and without the
@@ -435,7 +436,7 @@ $o-navbar-bg						: $navbar-default-bg !default;
 // to 4.5:1 on the navbar, #777 has 4.48:1 on white
 $o-navbar-color						: o-a11y-color($navbar-default-color, $o-navbar-bg) !default;
 $o-navbar-link-color				: o-neutral(600) !default;
-$o-navbar-link-hover-color			: o-scale-snap($o-navbar-link-color, darken($o-navbar-link-color, 10%)) !default;
+$o-navbar-link-hover-color			: o-scale-snap($o-navbar-link-color, o-darker($o-navbar-link-color, 10%)) !default;
 $o-navbar-link-hover-bg 			: $navbar-default-link-hover-bg !default;
 $o-navbar-link-active-color 		: $navbar-default-link-active-color !default;
 $o-navbar-link-active-bg 			: $navbar-default-link-active-bg !default;
@@ -447,7 +448,7 @@ $o-navbar-toggle-hover-bg			: $navbar-default-toggle-hover-bg !default;
 $o-navbar-toggle-icon-bar-bg		: $navbar-default-toggle-icon-bar-bg !default;
 $o-navbar-tab-close-color			: o-state-color("danger", "text") !default;
 // darker on hover; on a dark navbar the close colour itself when the darker colour has less than 3:1 (OO-10043)
-$o-navbar-tab-close-hover-color		: o-contrast-hover(o-scale-snap($o-navbar-tab-close-color, darken($o-navbar-tab-close-color, 10%)), $o-navbar-tab-close-color, $o-navbar-bg) !default;
+$o-navbar-tab-close-hover-color		: o-contrast-hover(o-scale-snap($o-navbar-tab-close-color, o-darker($o-navbar-tab-close-color, 10%)), $o-navbar-tab-close-color, $o-navbar-bg) !default;
 $o-navbar-tools-permanent-color		: o-a11y-color($navbar-default-color, $o-navbar-bg) !default;
 $o-navbar-logout-color				: o-state-color("danger", "text") !default;
 $o-navbar-brand-font-size			: $font-size-large !default;
@@ -500,7 +501,7 @@ $o-offcanvas-link-hover-bg 			: $navbar-inverse-link-hover-bg!default;
 $o-offcanvas-link-active-color		: $navbar-inverse-link-active-color!default;
 $o-offcanvas-link-active-bg			: $navbar-inverse-link-active-bg!default;
 $o-offcanvas-logout-color			: o-palette("red", 300) !default;
-$o-offcanvas-logout-hover-color		: o-scale-snap($o-offcanvas-logout-color, darken($o-offcanvas-logout-color, 10%))!default;
+$o-offcanvas-logout-hover-color		: o-scale-snap($o-offcanvas-logout-color, o-darker($o-offcanvas-logout-color, 10%))!default;
 $o-offcanvas-dropdown-bg			: $o-offcanvas-bg !default;
 $o-offcanvas-dropdown-font-size		: $font-size-base !default;
 
@@ -535,13 +536,13 @@ $o-toolbar-link-disabled-color	: $btn-link-disabled-color !default;
 $o-toolbar-link-active-color	: $link-color !default;
 $o-toolbar-link-active-bg		: transparent !default;
 $o-toolbar-dropdown-active-bg	: transparent !default;
-$o-toolbar-size-icon-md 		: ceil($font-size-base * 1.25) !default;
-$o-toolbar-size-text-md 		: ceil($font-size-base * 0.85) !default;
+$o-toolbar-size-icon-md 		: math.ceil($font-size-base * 1.25) !default;
+$o-toolbar-size-text-md 		: math.ceil($font-size-base * 0.85) !default;
 $o-toolbar-size-caret-md 		: $font-size-base !default;
-$o-toolbar-size-icon-sm 		: ceil($font-size-base * 1.1) !default;
-$o-toolbar-size-text-sm 		: ceil($font-size-base * 0.75) !default;
-$o-toolbar-size-caret-sm 		: ceil($font-size-base * 0.85) !default;
-$o-toolbar-size-icon-xs 		: ceil($font-size-base * 1.4) !default;
+$o-toolbar-size-icon-sm 		: math.ceil($font-size-base * 1.1) !default;
+$o-toolbar-size-text-sm 		: math.ceil($font-size-base * 0.75) !default;
+$o-toolbar-size-caret-sm 		: math.ceil($font-size-base * 0.85) !default;
+$o-toolbar-size-icon-xs 		: math.ceil($font-size-base * 1.4) !default;
 $o-toolbar-height-md			: 37px !default;
 $o-toolbar-height-sm			: 35px !default;
 $o-toolbar-height-xs			: 22px !default;
@@ -560,9 +561,9 @@ $o-toolbar-breadcrumb-line-height	: $line-height-base !default;
 $o-toolbar-nav-link-disabled-color	: $o-toolbar-link-disabled-color !default; 
 $o-toolbar-nav-bg-color				: $gray-lighter !default;
 $o-toolbar-nav-border-radius		: 4px !default; 
-$o-toolbar-nav-size-icon-md 		: ceil($font-size-base * 1.5) !default;
-$o-toolbar-nav-size-icon-sm 		: ceil($font-size-base * 1.25) !default;
-$o-toolbar-nav-size-icon-xs 		: ceil($font-size-base * 1.4) !default;
+$o-toolbar-nav-size-icon-md 		: math.ceil($font-size-base * 1.5) !default;
+$o-toolbar-nav-size-icon-sm 		: math.ceil($font-size-base * 1.25) !default;
+$o-toolbar-nav-size-icon-xs 		: math.ceil($font-size-base * 1.4) !default;
 
 /* Form styles */
 $o-radio-cards-gap					: 10px !default;
@@ -578,8 +579,8 @@ $o-radio-card-border-color-checked	: $brand-primary !default;
 $o-radio-card-bg-checked			: o-palette("theme1", 50) !default;
 $o-radio-card-label-color-checked	: $o-brand-text !default;
 
-$o-radio-card-border-color-hover	: o-scale-snap($input-border, darken($input-border, 6%)) !default;
-$o-radio-card-bg-hover				: o-scale-snap($btn-default-bg, darken($btn-default-bg, 5%)) !default;
+$o-radio-card-border-color-hover	: o-scale-snap($input-border, o-darker($input-border, 6%)) !default;
+$o-radio-card-bg-hover				: o-scale-snap($btn-default-bg, o-darker($btn-default-bg, 5%)) !default;
 
 $o-radio-card-image-border-radius	: $border-radius-small !default;
 $o-radio-card-icon-font-size		: 28px !default;
@@ -642,8 +643,8 @@ $o-autocomplete-color 				: $input-color !default;
 /* Chart library configuration for visualized statistics */
 $o-d3chart-default 				: $brand-primary !default;
 // the light bar is a fill without text: the fill step 450 is a candidate
-$o-d3chart-light 				: o-scale-snap($brand-primary, lighten($brand-primary, 15%), $fill: true) !default;
-$o-d3chart-dark 				: o-scale-snap($brand-primary, darken($brand-primary, 15%)) !default;
+$o-d3chart-light 				: o-scale-snap($brand-primary, o-lighter($brand-primary, 15%), $fill: true) !default;
+$o-d3chart-dark 				: o-scale-snap($brand-primary, o-darker($brand-primary, 15%)) !default;
 
 /* Toggle sliders */
 $o-toggle-size					: 14px !default;
@@ -658,8 +659,8 @@ $o-toggle-on-text-color			: o-scale-on-color($gray-lighter, $brand-primary) !def
    it (OO-10043, decisions S5 and S3). The text of an own fill of the theme
    stays the adjusted white. */
 $o-button-dirty-bg				: o-state-color("warning", "bg") !default;
-$o-button-dirty-color			: if($o-button-dirty-bg == o-state-color("warning", "bg"), o-state-color("warning", "fg"), o-a11y-color($btn-warning-color, $o-button-dirty-bg)) !default;
-$o-button-dirty-border			: o-scale-snap($o-button-dirty-bg, darken($o-button-dirty-bg, 5%), $distinct: false) !default;
+$o-button-dirty-color			: if(sass($o-button-dirty-bg == o-state-color("warning", "bg")): o-state-color("warning", "fg"); else: o-a11y-color($btn-warning-color, $o-button-dirty-bg)) !default;
+$o-button-dirty-border			: o-scale-snap($o-button-dirty-bg, o-darker($o-button-dirty-bg, 5%), $distinct: false) !default;
 /* Ghost button */
 $o-button-ghost-background-color			: transparent !default;
 $o-button-ghost-border-color				: transparent !default;
@@ -746,11 +747,11 @@ $o-coursesite-rowelem-hover-box-shadow	: inset 0 1px 4px color-mix(in srgb, var(
 $o-coursesite-rowelem-hover-visual-transform	: scale(1.02) !default;
 $o-coursesite-catalog-space 		: $padding-large-vertical * 2 !default;
 $o-coursesite-catalog-space-sm 		: $padding-large-vertical !default;
-$o-coursesite-catalog-space-xs 		: ceil($padding-large-vertical * 0.5) !default;
+$o-coursesite-catalog-space-xs 		: math.ceil($padding-large-vertical * 0.5) !default;
 $o-coursesite-catalog-border 		: $o-coursesite-rowelem-border !default;
 $o-coursesite-meta-title-color		: $o-content-header-base-color !default;
 $o-coursesite-meta-author-color		: $text-color !default;
-$o-coursesite-meta-title-font-size	: ceil(($font-size-base * 2.6)) !default; /* same as h1 default size: 36px */
+$o-coursesite-meta-title-font-size	: math.ceil(($font-size-base * 2.6)) !default; /* same as h1 default size: 36px */
 $o-coursesite-meta-header-border-width	: 1px !default; 
 $o-coursesite-meta-header-padding-bottom	: 2em !default;
 $o-coursesite-sidecol-radius	: $border-radius-base !default;
@@ -764,11 +765,11 @@ $o-coursesite-start-color-default	: o-a11y-color(o-neutral(0), $o-coursesite-sta
 	$o-coursesite-start-color-default	: o-a11y-color($btn-primary-color, $o-coursesite-start-bg);
 }
 $o-coursesite-start-color		: $o-coursesite-start-color-default !default;
-$o-coursesite-start-border		: o-scale-snap($o-coursesite-start-bg, darken($o-coursesite-start-bg, 5%)) !default;
+$o-coursesite-start-border		: o-scale-snap($o-coursesite-start-bg, o-darker($o-coursesite-start-bg, 5%)) !default;
 // the book button follows the dirty button: warning state (OO-10043, S5 and S3)
 $o-coursesite-book-bg			: o-state-color("warning", "bg") !default;
-$o-coursesite-book-color		: if($o-coursesite-book-bg == o-state-color("warning", "bg"), o-state-color("warning", "fg"), o-a11y-color($btn-warning-color, $o-coursesite-book-bg)) !default;
-$o-coursesite-book-border		: o-scale-snap($o-coursesite-book-bg, darken($o-coursesite-book-bg, 5%), $distinct: false) !default;
+$o-coursesite-book-color		: if(sass($o-coursesite-book-bg == o-state-color("warning", "bg")): o-state-color("warning", "fg"); else: o-a11y-color($btn-warning-color, $o-coursesite-book-bg)) !default;
+$o-coursesite-book-border		: o-scale-snap($o-coursesite-book-bg, o-darker($o-coursesite-book-bg, 5%), $distinct: false) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-cat2-header-height			: 240px !default;
 $o-cat2-header-noimage-bg				: linear-gradient(190deg, var(--o-catalog-header-noimage-stop-1) 10%, var(--o-primary) 100%), linear-gradient(40deg, var(--o-catalog-header-noimage-stop-3) 0%, var(--o-catalog-header-noimage-stop-4) 60%) !default;
@@ -1047,8 +1048,8 @@ $o-portfolio-editor-border-width					: 25px !default;
 $o-portfolio-media-content-background-color			: o-neutral(25) !default;
 $o-portfolio-media-content-space					: $padding-large-vertical !default;
 $o-portfolio-lead-space-sm							: $padding-large-vertical !default;
-$o-portfolio-lead-background-color					: o-scale-snap($gray-base, lighten($gray-base, 95%)) !default;
-$o-portfolio-lead-border-color						: o-scale-snap($o-portfolio-lead-background-color, darken($o-portfolio-lead-background-color, 10%)) !default;
+$o-portfolio-lead-background-color					: o-scale-snap($gray-base, o-lighter($gray-base, 95%)) !default;
+$o-portfolio-lead-border-color						: o-scale-snap($o-portfolio-lead-background-color, o-darker($o-portfolio-lead-background-color, 10%)) !default;
 $o-portfolio-lead-border-radius						: $border-radius-small !default;
 // the lead of an ended section: the soft swatch of the state danger (as the error box), body text and links keep 4.5:1
 $o-portfolio-lead-ended-background-color			: o-state-color("danger", "soft-bg") !default;
@@ -1158,22 +1159,22 @@ $o-qti-match-source-bg								: o-state-color("warning", "soft-bg") !default;
 $o-qti-match-source-border-style						: dashed !default;
 $o-qti-match-selected-border-color					: o-state-color("warning", "bg") !default;
 $o-qti-match-selected-bg								: o-state-color("warning", "bg", "tint") !default;
-$o-qti-match-drop-accept-border-color				: o-scale-snap(o-state-color("neutral", "bg"), darken(o-state-color("neutral", "bg"), 25%)) !default;
+$o-qti-match-drop-accept-border-color				: o-scale-snap(o-state-color("neutral", "bg"), o-darker(o-state-color("neutral", "bg"), 25%)) !default;
 $o-qti-match-target-border-color						: o-state-color("neutral", "bg") !default;
 $o-qti-match-target-bg								: o-state-color("neutral", "soft-bg") !default;
 $o-qti-match-border-radius							: $panel-border-radius !default;
-$o-qti-match-true-false-unanswered-bg				: o-scale-snap($gray-lighter, lighten($gray-lighter, 5%)) !default;
+$o-qti-match-true-false-unanswered-bg				: o-scale-snap($gray-lighter, o-lighter($gray-lighter, 5%)) !default;
 // the right and correct cells: the soft fill of the success state (OO-10043, S4)
 $o-qti-match-true-false-right-bg						: o-state-color("success", "soft-bg") !default;
-$o-qti-match-true-false-wrong-bg						: o-scale-snap(o-state-color("danger", "bg"), lighten(o-state-color("danger", "bg"), 40%)) !default;
+$o-qti-match-true-false-wrong-bg						: o-scale-snap(o-state-color("danger", "bg"), o-lighter(o-state-color("danger", "bg"), 40%)) !default;
 $o-qti-match-kprim-correct-bg						: o-state-color("success", "soft-bg") !default;
-$o-qti-match-kprim-wrong-bg							: o-scale-snap(o-state-color("danger", "bg"), lighten(o-state-color("danger", "bg"), 40%)) !default;
+$o-qti-match-kprim-wrong-bg							: o-scale-snap(o-state-color("danger", "bg"), o-lighter(o-state-color("danger", "bg"), 40%)) !default;
 $o-qti-order-source-border-style					: dashed !default;
 $o-qti-order-sources-border-color					: $o-qti-run-infos-border-color !default;
 $o-qti-order-border-radius							: $panel-border-radius !default;
 $o-qti-order-source-bg								: o-state-color("warning", "soft-bg") !default;
 $o-qti-order-sources-bg								: $o-qti-run-infos-bg !default;
-$o-qti-order-drop-accept-border-color				: o-scale-snap(o-state-color("neutral", "bg"), darken(o-state-color("neutral", "bg"), 25%)) !default;
+$o-qti-order-drop-accept-border-color				: o-scale-snap(o-state-color("neutral", "bg"), o-darker(o-state-color("neutral", "bg"), 25%)) !default;
 $o-qti-order-target-bg								: o-state-color("neutral", "soft-bg") !default;
 $o-qti-order-target-border-color					: o-state-color("neutral", "bg") !default;
 $o-qti-textEntryInteraction-color					: $text-color !default;
@@ -1237,7 +1238,7 @@ $o-im-chat-message-bg-me			: o-neutral(50) !default;
 $o-im-chat-message-bg-status		: o-state-color("warning", "soft-bg") !default;
 $o-im-chat-message-bg-error			: o-state-color("danger", "soft-bg") !default;
 $o-im-chat-message-border-radius	: $border-radius-base !default;
-$o-im-chat-roster-bg				: o-scale-snap($gray-lighter, lighten($gray-lighter, 5%)) !default;
+$o-im-chat-roster-bg				: o-scale-snap($gray-lighter, o-lighter($gray-lighter, 5%)) !default;
 $o-im-chat-border				: $gray-lighter !default;
 
 // the name and the time of a message: neutral 600, 4.5:1 also on the grey
@@ -1246,10 +1247,10 @@ $o-im-chat-from-color			: o-own-or($gray-light, o-neutral(500), o-neutral(600)) 
 $o-im-chat-from-font-size		: $font-size-base !default;
 $o-im-chat-date-font-size		: $font-size-small !default;
 $o-im-chat-body-font-size		: $font-size-base !default;
-$o-im-groupchat-font-size		: floor($font-size-base * 0.9) !default;
+$o-im-groupchat-font-size		: math.floor($font-size-base * 0.9) !default;
 $o-im-groupchat-vip-color 		: o-state-color("success", "text") !default;
 $o-im-groupchat-anonymous-color : o-state-color("neutral", "text") !default;
-$o-im-buddies-font-size			: floor($font-size-base * 0.9) !default;
+$o-im-buddies-font-size			: math.floor($font-size-base * 0.9) !default;
 $o-im-summary-color				: $badge-color !default;
 $o-im-summary-bg				: $badge-bg !default;
 $o-im-status-available-color	: o-state-color("success", "text") !default;
@@ -1257,7 +1258,7 @@ $o-im-status-dnd-color			: o-state-color("critical", "text") !default;
 $o-im-status-unavailable-color	: o-state-color("danger", "text") !default;
 $o-im-newmessage-color			: o-state-color("danger", "text") !default;
 // the icon is in the navbar: the lighter warning text when it has 3:1 on the navbar, else the warning text (OO-10043)
-$o-im-newmessage-hover-color	: o-contrast-hover(lighten(o-state-color("warning", "text"), 10%), o-state-color("warning", "text"), $o-navbar-bg) !default;
+$o-im-newmessage-hover-color	: o-contrast-hover(o-lighter(o-state-color("warning", "text"), 10%), o-state-color("warning", "text"), $o-navbar-bg) !default;
 
 /* Forum module */
 $o-forum-message-header-bg				: $panel-default-heading-bg !default;
@@ -1281,16 +1282,16 @@ $o-evaluation-slider-hover-background-color	: $table-bg-hover !default;
 // The rubric ratings: the fill of the state; the fill of the box plot is the
 // light fill of the state (lighten() would make the danger fill white)
 $o-evaluation-insufficient-color 			: o-state-color("danger", "bg") !default;
-$o-evaluation-insufficient-fill 			: if($o-evaluation-insufficient-color == o-state-color("danger", "bg"), o-state-color("danger", "bg", "light"), lighten($o-evaluation-insufficient-color, 50%)) !default;
+$o-evaluation-insufficient-fill 			: if(sass($o-evaluation-insufficient-color == o-state-color("danger", "bg")): o-state-color("danger", "bg", "light"); else: o-lighter($o-evaluation-insufficient-color, 50%)) !default;
 $o-evaluation-neutral-color					: o-state-color("warning", "bg") !default;
-$o-evaluation-neutral-fill					: if($o-evaluation-neutral-color == o-state-color("warning", "bg"), o-state-color("warning", "bg", "light"), lighten($o-evaluation-neutral-color, 30%)) !default;
+$o-evaluation-neutral-fill					: if(sass($o-evaluation-neutral-color == o-state-color("warning", "bg")): o-state-color("warning", "bg", "light"); else: o-lighter($o-evaluation-neutral-color, 30%)) !default;
 $o-evaluation-sufficient-color				: o-state-color("success", "bg") !default;
-$o-evaluation-sufficient-fill				: if($o-evaluation-sufficient-color == o-state-color("success", "bg"), o-state-color("success", "bg", "light"), lighten($o-evaluation-sufficient-color, 30%)) !default;
+$o-evaluation-sufficient-fill				: if(sass($o-evaluation-sufficient-color == o-state-color("success", "bg")): o-state-color("success", "bg", "light"); else: o-lighter($o-evaluation-sufficient-color, 30%)) !default;
 $o-evaluation-anonymous-info-display		: inherit !default;
 
 /* Box-Plot graphic */
 $o-box-plot-axis-color						: $gray-dark !default;
-$o-box-plot-quartile-fill		 			: o-scale-snap($brand-primary, lighten($brand-primary, 45%)) !default;
+$o-box-plot-quartile-fill		 			: o-scale-snap($brand-primary, o-lighter($brand-primary, 45%)) !default;
 
 /* Quality management */
 $o-qual-hm-base-background-color	: o-palette("cyan", 500);
@@ -1423,9 +1424,9 @@ $o-hs-histogram-axis-color				: o-neutral(450) !default;
 // the axis and value labels of the histogram: the muted text
 $o-hs-histogram-text-color				: $text-muted !default;
 // a fill without text: the fill step 450 is a candidate
-$o-hs-histogram-bar-myself-hover-color	: o-scale-snap($brand-primary, lighten($brand-primary, 10%), $fill: true) !default;
+$o-hs-histogram-bar-myself-hover-color	: o-scale-snap($brand-primary, o-lighter($brand-primary, 10%), $fill: true) !default;
 $o-hs-histogram-bar-other-color			: $gray-light !default;
-$o-hs-histogram-bar-other-hover-color	: o-scale-snap($gray-light, lighten($gray-light, 10%)) !default;
+$o-hs-histogram-bar-other-hover-color	: o-scale-snap($gray-light, o-lighter($gray-light, 10%)) !default;
 $o-hs-histogram-bar-empty-color			: o-neutral(1000) !default;
 
 /* Radial progress component */
@@ -1527,7 +1528,7 @@ $o-ap-planned-color					: o-state-color("warning", "bg") !default;
 $o-ap-confirmed-color				: o-state-color("success", "bg") !default;
 // text of the confirm button on the planned fill: the fg role on the state
 // fill (OO-10043), else the old near-white
-$o-ap-select-icon-color				: if($o-ap-planned-color == o-state-color("warning", "bg"), o-state-color("warning", "fg"), o-neutral(25)) !default;
+$o-ap-select-icon-color				: if(sass($o-ap-planned-color == o-state-color("warning", "bg")): o-state-color("warning", "fg"); else: o-neutral(25)) !default;
 
 /* Reminders */
 $o-reminder-cell-padding			: 0.4em 0.6em 0.4em 0em !default;
@@ -1641,7 +1642,7 @@ $o-tag-selection-remove-selected-background-color 	: o-state-color("danger", "bg
 $o-tag-selection-remove-selected-font-color			: o-state-color("danger", "fg") !default;
 
 /* Competences */
-$o-competences-color				: o-scale-snap($brand-primary, darken($brand-primary, 5%));
+$o-competences-color				: o-scale-snap($brand-primary, o-darker($brand-primary, 5%));
 $o-competences-font-color			: $o-competences-color;
 $o-competences-selected-border-color: $o-button-dirty-border;
 
@@ -1849,13 +1850,13 @@ $o-scope-toggle-bg-color					: o-neutral(0) !default;
 $o-scope-toggle-on-bg-color					: $brand-primary !default;
 $o-scope-toggle-on-color					: o-neutral(0) !default;
 $o-scope-toggle-on-border-color				: o-neutral(0) !default;
-$o-scope-toggle-bg-hover-color				: o-scale-snap($o-scope-toggle-bg-color, darken($o-scope-toggle-bg-color, 10%)) !default;
+$o-scope-toggle-bg-hover-color				: o-scale-snap($o-scope-toggle-bg-color, o-darker($o-scope-toggle-bg-color, 10%)) !default;
 // lighter under the pointer, at most 10%: the text keeps 4.5:1.
 // Below 3% the hover fill is 10% lighter and the text gets the
 // colour of the token scope-toggle-on-hover-fg. A scale colour
 // takes the nearest other step of its scale with 4.5:1 for the text
 // (o-scale-snap()).
-$o-scope-toggle-on-bg-hover-color			: o-scale-snap($o-scope-toggle-on-bg-color, lighten($o-scope-toggle-on-bg-color, o-contrast-shade-amount($o-scope-toggle-on-color, $o-scope-toggle-on-bg-color, 10%, "lighten")), $fg: $o-scope-toggle-on-color) !default;
+$o-scope-toggle-on-bg-hover-color			: o-scale-snap($o-scope-toggle-on-bg-color, o-lighter($o-scope-toggle-on-bg-color, o-contrast-shade-amount($o-scope-toggle-on-color, $o-scope-toggle-on-bg-color, 10%, "lighten")), $fg: $o-scope-toggle-on-color) !default;
 $o-scope-pref-wdith							: 180px !default;
 $o-scope-height								: 45px !default;
 $o-scope-title-font-weight					: bold !default;
@@ -1946,7 +1947,7 @@ $o-figure-card-label-font-size				: 14px !default;
 $o-figure-card-icon-size						: 22px !default;
 $o-figure-card-icon-color					: $brand-primary !default;
 $o-figure-card-icon-bg-color					: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
-$o-dashboard-widget-indicators-min-height		: math.ceil(max($o-figure-card-figure-font-size * $line-height-base, $o-figure-card-icon-size) + $o-figure-card-label-font-size * $line-height-base + 2 * nth($o-figure-card-padding, 1) + 2 * $o-card-border-width) !default;
+$o-dashboard-widget-indicators-min-height		: math.ceil(max($o-figure-card-figure-font-size * $line-height-base, $o-figure-card-icon-size) + $o-figure-card-label-font-size * $line-height-base + 2 * list.nth($o-figure-card-padding, 1) + 2 * $o-card-border-width) !default;
 
 /* day navigation */
 $o-day-nav-period-font-size					: 16px !default;

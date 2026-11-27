@@ -1,3 +1,4 @@
+@use "sass:math";
 // Remove all borders from main layout
 body.o_doceditor_body {
 	margin-bottom: 0px;
@@ -45,7 +46,7 @@ body.o_doceditor_body {
 				min-height: 200px;
 				margin-top: 10px;
 				// Remove the margin of o_web_content
-				margin-bottom: floor($grid-gutter-width * -0.5);
+				margin-bottom: math.floor($grid-gutter-width * -0.5);
 				border-width: 1px;
 			}
 		}

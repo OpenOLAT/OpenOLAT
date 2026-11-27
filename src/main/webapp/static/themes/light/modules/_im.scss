@@ -1,3 +1,4 @@
+@use "sass:math";
 /* Instant Messaging components in navbar */
 #o_navbar_imclient {
 	.o_im_messages {
@@ -16,13 +17,13 @@
 		   x-height rather than to the middle of the line box. Both only lined up at
 		   the default $font-size-base; with a larger base size the status dot and the
 		   message badge drifted below the site tabs. */
-		padding: 0 floor($grid-gutter-width * 0.125);
+		padding: 0 math.floor($grid-gutter-width * 0.125);
 		height: $navbar-height;
 		display: flex;
 		align-items: center;
 	}
 	#o_im_status, #o_im_message {
-		padding-left: floor($grid-gutter-width * 0.5);
+		padding-left: math.floor($grid-gutter-width * 0.5);
 	}
 	#o_im_summary {
 		.badge {

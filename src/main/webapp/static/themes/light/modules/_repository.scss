@@ -1,3 +1,4 @@
+@use "sass:math";
 .o_info_page {
 	position: relative;
 
@@ -165,7 +166,7 @@
 		.o_info_page_thumbnail {
 			grid-column: 2;
 			grid-row: 1;
-			max-width: floor(570px * 0.5); //570x380
+			max-width: math.floor(570px * 0.5); //570x380
 		}
 	}
 

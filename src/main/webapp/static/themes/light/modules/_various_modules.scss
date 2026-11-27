@@ -1,3 +1,4 @@
+@use "sass:math";
 /* HELP, context sensitive */
 a.o_chelp,
 .tox .tox-dialog .tox-form a.o_chelp {
@@ -8,7 +9,7 @@ a.o_chelp,
 	white-space: nowrap;
 	font-size: $o-chelp-font-size;
 	font-weight: $o-chelp-font-weight;
-	line-height: floor($o-chelp-font-size *1.5);
+	line-height: math.floor($o-chelp-font-size *1.5);
 	color: var(--o-chelp-fg);
 	background-color: var(--o-chelp-bg);
 	border: 1px solid var(--o-chelp-border);
@@ -564,7 +565,7 @@ ul.o_dropdown {
 	width: $line-height-computed * 2; 
 	min-width: $line-height-computed * 2; 
 	max-width: $line-height-computed * 2; 
-	height: $line-height-computed + floor($line-height-computed * 1.5) + 2px; 
+	height: $line-height-computed + math.floor($line-height-computed * 1.5) + 2px; 
 	border: 1px solid var(--o-datecomp-border); 
 	margin-right: $padding-base-horizontal; 
 	text-align: center; 
@@ -577,7 +578,7 @@ ul.o_dropdown {
 		top: -$line-height-computed; 
 		height: $line-height-computed; 
 		line-height: $line-height-computed; 
-		font-size: ceil($font-size-base * 0.7);
+		font-size: math.ceil($font-size-base * 0.7);
 	}
 	div.o_month {
 		height: $line-height-computed; 
@@ -587,8 +588,8 @@ ul.o_dropdown {
 		color: var(--o-datecomp-month-fg);
 	}
 	div.o_day {
-		height: floor($line-height-computed * 1.5);
-		line-height: floor($line-height-computed * 1.5);
+		height: math.floor($line-height-computed * 1.5);
+		line-height: math.floor($line-height-computed * 1.5);
 		font-size: $font-size-large;
 		border-top: 1px solid var(--o-datecomp-border);
 		background-color: var(--o-datecomp-day-bg);
@@ -863,7 +864,7 @@ ul.o_certificates li {
 	dl {
 		dt {
 			&:first-letter { 
-				font-size: ceil(($font-size-base * 1.5));
+				font-size: math.ceil(($font-size-base * 1.5));
 			}
 			small {
 				color: var(--o-text-muted);
@@ -1233,7 +1234,7 @@ div.o_reminder_custom_email {
 	}
 	.btn-primary {
 		color: var(--o-text);
-		font-size: ceil(($font-size-base * 1.7));
+		font-size: math.ceil(($font-size-base * 1.7));
 		background: none;
 	}
 	.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus {
@@ -1585,12 +1586,12 @@ dialog#o_ajax_busy {
 		margin: 0 0 $padding-large-vertical $padding-large-horizontal;
 
 		@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-			width: floor(500px *0.75);
-			height: floor(333px *0.75);		
+			width: math.floor(500px *0.75);
+			height: math.floor(333px *0.75);		
 		}
 		@media (min-width: 500px) and (max-width: $screen-xs-max) { 
-			width: floor(500px *0.5);
-			height: floor(333px *0.5);		
+			width: math.floor(500px *0.5);
+			height: math.floor(333px *0.5);		
 		}	
 		@media (max-width: 500px){ 
 			background-size: cover;	
@@ -1818,7 +1819,7 @@ ul.o_assessment_docs>li:last-child {
 
 /* web documents */
 .o_web_content {
-	padding-bottom: floor($grid-gutter-width * 0.5);
+	padding-bottom: math.floor($grid-gutter-width * 0.5);
 }
 
 

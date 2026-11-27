@@ -1,3 +1,5 @@
+@use "sass:map";
+@use "sass:math";
 .o_curriculum_el_listing {
 	tr.o_curriculum_element_inactive, tr.o_curriculum_element_inactive td, tr.o_curriculum_element_inactive td span, tr.o_curriculum_element_inactive td a {
 		color: var(--o-curriculum-element-inactive);
@@ -226,10 +228,10 @@ a.o_validation_open_results {
 			background-color: var(--o-sw-soft-bg);
 		}
 		&.o_ac_offer_bookable {
-			@extend %o_swatch_#{map-get($o-states, "success")};
+			@extend %o_swatch_#{map.get($o-states, "success")};
 		}
 		&.o_ac_offer_fully_booked {
-			@extend %o_swatch_#{map-get($o-states, "critical")};
+			@extend %o_swatch_#{map.get($o-states, "critical")};
 		}
 	}
 }

@@ -1,3 +1,4 @@
+@use "sass:math";
 .o_breadcrumb {
 	position:relative;
 	
@@ -18,7 +19,7 @@
 				color: var(--o-toolbar-close-hover);
 			}
 			i {
-				font-size: floor($o-toolbar-breadcrumb-font-size * 1.5);
+				font-size: math.floor($o-toolbar-breadcrumb-font-size * 1.5);
 			}
 			span {
 				display: none;

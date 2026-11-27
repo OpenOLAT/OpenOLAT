@@ -1,3 +1,4 @@
+@use "sass:color";
 /* OpenOLAT colors */
 $o-brand-chocolate				: rgb(52,44,36);
 $o-brand-sprout					: rgb(178,207,66);
@@ -22,7 +23,7 @@ $brand-primary 					: $o-brand-sea;
 $o-theme-colors					: ($brand-primary, $o-brand-peach, $o-brand-berry, $o-brand-sprout);
 $text-color						: $o-brand-black;
 $link-color						: $o-brand-sea;
-$link-hover-color				: darken($o-brand-sea, 10%);
+$link-hover-color				: color.adjust($o-brand-sea, $lightness: -10%);
 $o-content-link-color			: $link-color;
 $o-content-link-hover-color		: $link-hover-color;
 $o-content-link-decoration		: underline;

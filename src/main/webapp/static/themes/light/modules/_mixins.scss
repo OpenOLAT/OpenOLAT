@@ -18,14 +18,14 @@
 		@include o-add-icon($boxicon);
 		&:before {
 			position: absolute;
-			left: floor($o-box-padding * 0.5);
+			left: math.floor($o-box-padding * 0.5);
 			top: $o-box-padding;
-			color: if($iconcolor, $iconcolor, $color);
-			font-size: floor($font-size-base * 1.5);
+			color: if(sass($iconcolor): $iconcolor; else: $color);
+			font-size: math.floor($font-size-base * 1.5);
 			text-align: center;
 			width: $fa-fw-width;
 		}
-		padding-left: floor($font-size-base * 1.8) + $o-box-padding;
+		padding-left: math.floor($font-size-base * 1.8) + $o-box-padding;
 	}
 }
 @mixin o-make-message-line($bgcolor, $color) {
@@ -60,7 +60,7 @@
 					text-align: center;
 					width: $fa-fw-width;
 				}
-				padding-left: floor($font-size-base * 2.5) + $o-box-padding;
+				padding-left: math.floor($font-size-base * 2.5) + $o-box-padding;
 			}
 		}
 		button {
@@ -75,7 +75,7 @@
 	    	border-top: 0;
 	  	}		
 		margin: 0;
-		padding: floor($o-box-padding * 2) $o-box-padding;
+		padding: math.floor($o-box-padding * 2) $o-box-padding;
 		background-color: $bgcolor;
 		h2, h3, h4, h5 { color: var(--o-text);}
 	}
@@ -124,7 +124,7 @@
 	}
 	@if $beforeElement {
 		&:before { 
-			content : unquote("\"#{ $faVar }\"");
+			content : string.unquote("\"#{ $faVar }\"");
 			@if $solidStyle {
 				font-weight: 800;
 			} @else {
@@ -134,7 +134,7 @@
 	}
 	@else {
 		&:after { 			
-			content : unquote("\"#{ $faVar }\""); 
+			content : string.unquote("\"#{ $faVar }\""); 
 			@if $solidStyle {
 				font-weight: 800;
 			} @else {
@@ -151,7 +151,7 @@
 	font-weight: 400;
 	&:before { 
 		$faVar : map.get( $fa-brand-icons, $iconName);
-		content : unquote("\"#{ $faVar }\""); 
+		content : string.unquote("\"#{ $faVar }\""); 
 		@if not $faVar {
 			@debug 'FontAwesome icon not found with name "' + $iconName + '"';
 		}

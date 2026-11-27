@@ -185,7 +185,7 @@ table {
 	// pure hue gray gets the class b_gray_hue.
 	@each $key, $swatch in $o-swatches {
 		$class: map.get($o-content-table-class-names, $key);
-		$selector: if($class, "&.b_#{$class}", "&.b_#{$key}");
+		$selector: if(sass($class): "&.b_#{$class}"; else: "&.b_#{$key}");
 		@if $key == "slate" {
 			$selector: "&.b_slate, &.b_gray";
 		}
@@ -384,7 +384,7 @@ img.b_with_border {
 /* headers and captions for images or tables */
 p.b_figure_title {
 	margin: $line-height-computed 0 ($line-height-computed * 0.25) 0;
-	font-size: floor(math.div(100% * $font-size-small, $font-size-base));
+	font-size: math.floor(math.div(100% * $font-size-small, $font-size-base));
 	font-family: $headings-font-family;
 }
 p.b_figure_caption {

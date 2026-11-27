@@ -1,3 +1,4 @@
+@use "sass:math";
 
 .o_portfolio {
 	div#o_main_toolbar.o_toolbar {
@@ -357,7 +358,7 @@
 			padding-right: 5px;
 			
 			.o_xsmall {
-				font-size: ceil($font-size-small * .9);
+				font-size: math.ceil($font-size-small * .9);
 			}
 			
 			.o_small {
@@ -396,7 +397,7 @@
 		padding-right: 80px;
 		
 		.o_xsmall {
-			font-size: ceil($font-size-small * .9);
+			font-size: math.ceil($font-size-small * .9);
 		}
 		
 		.o_small {
@@ -698,7 +699,7 @@
 
 .o_portfolio_section {
 	.o_xsmall {
-		font-size: ceil($font-size-small * .9);
+		font-size: math.ceil($font-size-small * .9);
 	}
 	.o_small {
 		font-size: $font-size-small;

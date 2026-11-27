@@ -72,7 +72,7 @@ $o-state-hue-exceptions: ("lime": "lime");
 			}
 			// caret of a labeled dropdown (DropdownRenderer): sibling of the label, so the colour is set here
 			& + .o_label + .o_icon_caret {
-				color: o-hex(map.get($o-swatches, $hue, if($style == "solid", "fg", if($style == "text", "text", "#{$style}-fg"))));
+				color: o-hex(map.get($o-swatches, $hue, if(sass($style == "solid"): "fg"; else: if(sass($style == "text"): "text"; else: "#{$style}-fg"))));
 			}
 		}
 	}

@@ -1,3 +1,4 @@
+@use "sass:math";
 
 .o_toolbar {
 	position: relative;
@@ -36,7 +37,7 @@
 						color: var(--o-toolbar-close-hover);
 					}
 					i {
-						font-size: floor($o-toolbar-breadcrumb-font-size * 1.5);
+						font-size: math.floor($o-toolbar-breadcrumb-font-size * 1.5);
 					}
 					span {
 						display: none;
@@ -169,7 +170,7 @@
 					right: 50%;
 					top: $o-toolbar-size-text-md * -1.5;
 					margin-right:-$o-toolbar-size-text-md;
-					font-size: floor($o-toolbar-size-icon-md * 0.75);
+					font-size: math.floor($o-toolbar-size-icon-md * 0.75);
 				}
 			}
 			@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
@@ -181,7 +182,7 @@
 					&.badge {
 						top: $o-toolbar-size-text-sm * -1.5;
 						margin-right:-$o-toolbar-size-text-sm;
-						font-size: floor($o-toolbar-size-icon-sm * 0.75);
+						font-size: math.floor($o-toolbar-size-icon-sm * 0.75);
 					}
 				}
 			}
@@ -264,7 +265,7 @@
 	
 	.o_tool_next, .o_tool_previous {
 		padding: 0;
-		margin-top: floor($o-toolbar-nav-size-icon-md * 0.25);
+		margin-top: math.floor($o-toolbar-nav-size-icon-md * 0.25);
 		border: 1px solid var(--o-toolbar-nav-border);
 		background-color: var(--o-toolbar-nav-bg);
 		a {
@@ -285,7 +286,7 @@
 			font-size: $o-toolbar-nav-size-icon-md;
 		}
 		@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
-			margin-top: floor($o-toolbar-nav-size-icon-sm * 0.25);
+			margin-top: math.floor($o-toolbar-nav-size-icon-sm * 0.25);
 			i {
 				font-size: $o-toolbar-nav-size-icon-sm;
 			}
@@ -327,8 +328,8 @@
 			.o_icon_caret {
 				position: absolute;
 				right: 50%;
-				top: floor($o-toolbar-size-icon-md * 0.25);
-				margin-right: floor($o-toolbar-size-icon-md * -1.1);
+				top: math.floor($o-toolbar-size-icon-md * 0.25);
+				margin-right: math.floor($o-toolbar-size-icon-md * -1.1);
 				font-size: $o-toolbar-size-caret-md;
 			}
 			@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
@@ -339,8 +340,8 @@
 					font-size: $o-toolbar-size-text-sm;
 				}
 				.o_icon_caret {
-					top: floor($o-toolbar-size-icon-sm * 0.25);
-					margin-right: floor($o-toolbar-size-icon-sm * -1.1);	
+					top: math.floor($o-toolbar-size-icon-sm * 0.25);
+					margin-right: math.floor($o-toolbar-size-icon-sm * -1.1);	
 					font-size: $o-toolbar-size-caret-sm;				
 				}
 			}
