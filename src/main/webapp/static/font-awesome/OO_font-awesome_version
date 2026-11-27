@@ -3,3 +3,11 @@
 Only the webfonts, scss and svgs package needed
 
 Get newest version from https://fontawesome.com/download
+
+PATCHES:
+
+- OO-9995: the SCSS sources in scss/ are migrated to the Sass module
+  functions for Dart Sass 1.97.1+ and differ from upstream: @use "sass:math"
+  and "sass:string" with namespaced calls (math.abs, string.unquote) and the
+  CSS if() syntax if(sass(cond): a; else: b). @import is unchanged. Redo this
+  migration after an update from upstream.

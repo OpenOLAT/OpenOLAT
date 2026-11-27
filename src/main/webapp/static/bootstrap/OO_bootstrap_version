@@ -17,3 +17,13 @@ PATCHES:
   > .table,
 
 
+- OO-9995: the SCSS sources in stylesheets/ are migrated to the Sass module
+  functions for Dart Sass 1.97.1+ and differ from upstream: @use "sass:math"
+  and "sass:color" with namespaced calls (math.floor, math.ceil,
+  math.percentage, math.div, color.adjust, color.channel, color.ie-hex-str),
+  the CSS if() syntax if(sass(cond): a; else: b), no slash division.
+  lighten() and darken() of a variable are replaced by o-lighter() and
+  o-darker() from themes/light/_functions.scss (same clamping of the HSL
+  lightness to 0%-100%). These files compile only in the OpenOlat theme
+  context that imports _functions.scss first. @import is unchanged. Redo
+  this migration after an update from upstream.

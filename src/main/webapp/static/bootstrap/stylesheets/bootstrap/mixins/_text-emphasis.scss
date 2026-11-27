@@ -7,6 +7,6 @@
   }
   a#{$parent}:hover,
   a#{$parent}:focus {
-    color: darken($color, 10%);
+    color: o-darker($color, 10%);
   }
 }

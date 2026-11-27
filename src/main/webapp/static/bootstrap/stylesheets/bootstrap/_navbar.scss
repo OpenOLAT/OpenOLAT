@@ -629,7 +629,7 @@
 
   .navbar-collapse,
   .navbar-form {
-    border-color: darken($navbar-inverse-bg, 7%);
+    border-color: o-darker($navbar-inverse-bg, 7%);
   }
 
   .navbar-link {
