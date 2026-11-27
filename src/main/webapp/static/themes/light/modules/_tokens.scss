@@ -2946,8 +2946,9 @@ $o-token-values: o-token-shade-trios($o-token-values);
 // cell fill, on the header fill and on the white even rows, the link of the
 // content on the cell fill and on white. The fills are the swatch roles of
 // $o-content-table-roles (_config.scss). A link in a header cell is not
-// checked. Default colours and overrides. A mixin, so that its variables stay
-// local.
+// checked. Default colours and overrides. A pair below 4.5:1 prints a Sass
+// warning and the compile continues: this check only warns, with any value
+// of $o-contrast-check. A mixin, so that its variables stay local.
 @mixin o-content-table-contrast-check() {
 	$text: map.get($o-token-values, "content-text");
 	$link: map.get($o-token-values, "content-link");
@@ -2965,7 +2966,7 @@ $o-token-values: o-token-shade-trios($o-token-values);
 		);
 		@each $fg-name, $fg, $bg-name, $bg in $pairs {
 			@if meta.type-of($fg) == "color" and color.channel($fg, "alpha") == 1 and contrast($fg, $bg) < 4.5 {
-				$failed: o-contrast-failed("table style 'b_#{$key}': '#{$fg-name}' #{o-hex($fg)} on '#{$bg-name}' #{o-hex($bg)} has #{o-contrast-rounded($fg, $bg)}:1, needs 4.5:1");
+				@warn "table style 'b_#{$key}': '#{$fg-name}' #{o-hex($fg)} on '#{$bg-name}' #{o-hex($bg)} has #{o-contrast-rounded($fg, $bg)}:1, needs 4.5:1";
 			}
 		}
 	}

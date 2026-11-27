@@ -432,6 +432,8 @@ A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme)
     (palette, theme colours, $o-tokens) as a warning and accepts it. The default "error" stops
     the compile. With "warn" the theme does not meet WCAG 2.1 AA; set it only on the explicit
     wish of the client. The light and openolat themes always use "error".
+    The check of the table styles b_{key} (text and link of the content on the table fills,
+    4.5:1) only warns, with any value of $o-contrast-check.
 - Open mytheme/_mytheme_theme.scss and override or extend styles from the light theme. Best is to use the 
   browser to lookup the CSS classes and then search in the light theme for the definitions. Don't miss the 
   tag hierarchies and the responsive rules!

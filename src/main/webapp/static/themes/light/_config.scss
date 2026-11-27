@@ -324,9 +324,9 @@ $o-content-table-header			: $gray-light !default;
 // cells (soft fill), for the fill of the header cells (light fill) and for
 // the lines of the white even rows (border of the soft fill); the cell lines
 // are white. The roles follow the variant steps of the hue, e.g. the light
-// fill of yellow is step 100, of blue step 200. The text of the content keeps
-// 4.5:1 on the three fills, the link on the cell fill and on white
-// (o-content-table-contrast-check(), _tokens.scss).
+// fill of yellow is step 100, of blue step 200. The compile warns when the
+// text of the content has less than 4.5:1 on the three fills or the link on
+// the cell fill and on white (o-content-table-contrast-check(), _tokens.scss).
 $o-content-table-roles			: ("bg": "soft-bg", "header-bg": "light-bg", "line": "soft-border") !default;
 // class name of a table swatch key when it differs from b_{key}: the pure hue gray is b_gray_hue, because b_gray is the slate table
 $o-content-table-class-names	: ("gray": "gray_hue") !default;
