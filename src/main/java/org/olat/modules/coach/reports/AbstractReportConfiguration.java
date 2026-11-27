@@ -142,7 +142,7 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	@Override
 	public void generateReport(Identity coach, ReportParameters params, Locale locale, LocalFileImpl output) {
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
-		List<String> worksheetNames = Arrays.asList(null, getMetadataSheetName(locale));
+		List<String> worksheetNames = Arrays.asList("", getMetadataSheetName(locale));
 		try (OutputStream out = new FileOutputStream(output.getBasefile());
 			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, worksheetNames.size(), worksheetNames)) {
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
