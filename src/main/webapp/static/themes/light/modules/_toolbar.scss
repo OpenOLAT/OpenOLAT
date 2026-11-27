@@ -3,586 +3,585 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-toolbar {
-
-.o_toolbar {
-	position: relative;
-  	margin-bottom: $o-toolbar-margin-bottom;
-  	&:not(:is(.o_toolbar_top *)) {
-		margin-top: $o-toolbar-margin-top; 	// don't waste so much space with a toolbar
-	}
-  	@include clearfix();
-
-	border: 1px solid var(--o-toolbar-border);
- 	@media (min-width: $grid-float-breakpoint) {
-    	@include border-top-radius($o-toolbar-border-radius);
-    	@include border-bottom-radius($o-toolbar-border-radius);
-    }
-    
-    &.o_toolbar_with_segments {
-    	margin-bottom: ($o-toolbar-margin-bottom + $line-height-computed * 0.5);
-    }
-
-	.o_breadcrumb {
-	  	@include clearfix();
-		.breadcrumb {
-			margin-bottom: 0;
-			padding: 5px 9px;
-			background-color: var(--o-toolbar-breadcrumb-bg);
-			font-size: $o-toolbar-breadcrumb-font-size;
-			line-height: $o-toolbar-breadcrumb-line-height;
-	    	border-radius: 0; // reset from default breadcrumb style
-	    	@include border-top-radius($o-toolbar-border-radius); // don't hide background
-
-			.o_breadcrumb_close {
-				a {
-					line-height: $o-toolbar-breadcrumb-line-height;
-					color: var(--o-toolbar-close);
-					&:hover {
-						color: var(--o-toolbar-close-hover);
-					}
-					i {
-						font-size: math.floor($o-toolbar-breadcrumb-font-size * 1.5);
-					}
-					span {
-						display: none;
-					}
-				}
-				&:before {
-					content: none;
-				}
-			}
-		}
-	}
-	
-	// Toolbar has no tools and no navigation (= breadcrumb only)
-	&:not(:has(.o_tools_container)):not(:has(+ .o_toolbar_navigation)) {
-		.o_breadcrumb {
-			.breadcrumb {
-				background-color: transparent;
-			}
-		}
-	}
-	
-	.o_tools_container {
-		text-align: center;
-	  	min-height: $o-toolbar-height-md; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
-	  	position: relative;
-	  	@include clearfix();
-
-	  	background-color: var(--o-toolbar-bg);
-	  	box-shadow: $o-toolbar-box-shadow;
-    	@include border-bottom-radius($o-toolbar-border-radius); // don't hide background
-		
-		@media (max-width: $screen-sm-max) { 
-			min-height: $o-toolbar-height-sm;
-		}
-		@media (max-width: $screen-xs-max) { 
-			min-height: $o-toolbar-height-xs;
-			text-align: left;
-		}
-		
-		span.o_tool_text {
-			color: var(--o-toolbar-link);
-			display: inline-block;
-		}
-
-		a {
-			// Following rules copied from .navbar-link;
-			// a status label as link keeps the colours of its state (_states.scss, OO-10042)
-			&:not(.o_labeled, .o_labeled_light) {
-				color: var(--o-toolbar-link);
-				&:hover {
-					color: var(--o-toolbar-link-hover);
-				}
-			}
-	    	@extend %o_undecorated;
-	    	display: inline-block;
-	    	
-	    	&.o_disabled {
-		    	color: var(--o-toolbar-link-disabled) !important;
-		    	&:hover {
-		      		color: var(--o-toolbar-link-disabled) !important;
-		    	}
-	    	}
-			&.active {
-				color: var(--o-toolbar-link-active);
-				background-color: var(--o-toolbar-link-active-bg);
-			}
-	    }
-	    // a primary button and the help button keep the text colour of their
-	    // fill in every state, also against the hover and disabled rules above
-	    a.btn-primary {
-	    	&, &:hover, &:focus, &:active {
-	    		color: var(--o-btn-primary-fg);
-	    	}
-	    	&.o_disabled, &.o_disabled:hover {
-	    		color: var(--o-btn-primary-fg) !important;
-	    	}
-	    	// the active rule above sets the fill of a link
-	    	&.active {
-	    		background-color: var(--o-btn-primary-bg-hover);
-	    		&:hover, &:focus {
-	    			background-color: var(--o-btn-primary-bg-active);
-	    		}
-	    	}
-	    }
-	    a.o_chelp {
-	    	&, &:hover, &:focus, &:active {
-	    		color: var(--o-chelp-fg);
-	    	}
-	    }
-	    
-	    .dropdown-menu {
-			a {
-				// override rule from above
-		    	display: block;
-		    	&.active {
-					color: var(--o-toolbar-dropdown-active);
-					background-color: var(--o-toolbar-dropdown-active-bg);
-		    	}
-		    }
-	    }
-	}
-	// add border when directly after a breadcrumb as a separator
-	.o_breadcrumb + .o_tools_container {
-		border-top: 1px solid var(--o-toolbar-border);
-	}
-	
-	.o_tools {
-		margin-top: $o-toolbar-tools-margin-top-md;
-		margin-bottom: $o-toolbar-tools-margin-bottom-md;
-	}
-
-	.o_tool, .o_text {
+	.o_toolbar {
 		position: relative;
-		margin: 0 10px;	
-		&:first-child {
-			margin-left: 0;	
+	  	margin-bottom: $o-toolbar-margin-bottom;
+	  	&:not(:is(.o_toolbar_top *)) {
+			margin-top: $o-toolbar-margin-top; 	// don't waste so much space with a toolbar
 		}
-		&:last-child {
-			margin-right: 0;	
-		}
-		a, .o_disabled {
-			i {
-				font-size: $o-toolbar-size-icon-md;
-			}
-			span {
-				display: block;
-				font-size: $o-toolbar-size-text-md;
-				&.badge {
-					position: absolute;
-					right: 50%;
-					top: $o-toolbar-size-text-md * -1.5;
-					margin-right:-$o-toolbar-size-text-md;
-					font-size: math.floor($o-toolbar-size-icon-md * 0.75);
-				}
-			}
-			@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
-				i {
-					font-size: $o-toolbar-size-icon-sm;
-				}
-				span {
-					font-size: $o-toolbar-size-text-sm;
-					&.badge {
-						top: $o-toolbar-size-text-sm * -1.5;
-						margin-right:-$o-toolbar-size-text-sm;
-						font-size: math.floor($o-toolbar-size-icon-sm * 0.75);
+	  	@include clearfix();
+
+		border: 1px solid var(--o-toolbar-border);
+	 	@media (min-width: $grid-float-breakpoint) {
+	    	@include border-top-radius($o-toolbar-border-radius);
+	    	@include border-bottom-radius($o-toolbar-border-radius);
+	    }
+    
+	    &.o_toolbar_with_segments {
+	    	margin-bottom: ($o-toolbar-margin-bottom + $line-height-computed * 0.5);
+	    }
+
+		.o_breadcrumb {
+		  	@include clearfix();
+			.breadcrumb {
+				margin-bottom: 0;
+				padding: 5px 9px;
+				background-color: var(--o-toolbar-breadcrumb-bg);
+				font-size: $o-toolbar-breadcrumb-font-size;
+				line-height: $o-toolbar-breadcrumb-line-height;
+		    	border-radius: 0; // reset from default breadcrumb style
+		    	@include border-top-radius($o-toolbar-border-radius); // don't hide background
+
+				.o_breadcrumb_close {
+					a {
+						line-height: $o-toolbar-breadcrumb-line-height;
+						color: var(--o-toolbar-close);
+						&:hover {
+							color: var(--o-toolbar-close-hover);
+						}
+						i {
+							font-size: math.floor($o-toolbar-breadcrumb-font-size * 1.5);
+						}
+						span {
+							display: none;
+						}
+					}
+					&:before {
+						content: none;
 					}
 				}
+			}
+		}
+	
+		// Toolbar has no tools and no navigation (= breadcrumb only)
+		&:not(:has(.o_tools_container)):not(:has(+ .o_toolbar_navigation)) {
+			.o_breadcrumb {
+				.breadcrumb {
+					background-color: transparent;
+				}
+			}
+		}
+	
+		.o_tools_container {
+			text-align: center;
+		  	min-height: $o-toolbar-height-md; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
+		  	position: relative;
+		  	@include clearfix();
+
+		  	background-color: var(--o-toolbar-bg);
+		  	box-shadow: $o-toolbar-box-shadow;
+	    	@include border-bottom-radius($o-toolbar-border-radius); // don't hide background
+		
+			@media (max-width: $screen-sm-max) { 
+				min-height: $o-toolbar-height-sm;
 			}
 			@media (max-width: $screen-xs-max) { 
-				i {
-					font-size: $o-toolbar-size-icon-xs;
+				min-height: $o-toolbar-height-xs;
+				text-align: left;
+			}
+		
+			span.o_tool_text {
+				color: var(--o-toolbar-link);
+				display: inline-block;
+			}
+
+			a {
+				// Following rules copied from .navbar-link;
+				// a status label as link keeps the colours of its state (_states.scss, OO-10042)
+				&:not(.o_labeled, .o_labeled_light) {
+					color: var(--o-toolbar-link);
+					&:hover {
+						color: var(--o-toolbar-link-hover);
+					}
 				}
-				span:not(.badge) {
-					// a11y: hidden, but kept in the accessible name; @extend %sr-only cannot be used inside @media
-					position: absolute;
-					width: 1px;
-					height: 1px;
-					padding: 0;
-					margin: -1px;
-					overflow: hidden;
-					clip: rect(0, 0, 0, 0);
-					border: 0;
+		    	@extend %o_undecorated;
+		    	display: inline-block;
+	    	
+		    	&.o_disabled {
+			    	color: var(--o-toolbar-link-disabled) !important;
+			    	&:hover {
+			      		color: var(--o-toolbar-link-disabled) !important;
+			    	}
+		    	}
+				&.active {
+					color: var(--o-toolbar-link-active);
+					background-color: var(--o-toolbar-link-active-bg);
+				}
+		    }
+		    // a primary button and the help button keep the text colour of their
+		    // fill in every state, also against the hover and disabled rules above
+		    a.btn-primary {
+		    	&, &:hover, &:focus, &:active {
+		    		color: var(--o-btn-primary-fg);
+		    	}
+		    	&.o_disabled, &.o_disabled:hover {
+		    		color: var(--o-btn-primary-fg) !important;
+		    	}
+		    	// the active rule above sets the fill of a link
+		    	&.active {
+		    		background-color: var(--o-btn-primary-bg-hover);
+		    		&:hover, &:focus {
+		    			background-color: var(--o-btn-primary-bg-active);
+		    		}
+		    	}
+		    }
+		    a.o_chelp {
+		    	&, &:hover, &:focus, &:active {
+		    		color: var(--o-chelp-fg);
+		    	}
+		    }
+	    
+		    .dropdown-menu {
+				a {
+					// override rule from above
+			    	display: block;
+			    	&.active {
+						color: var(--o-toolbar-dropdown-active);
+						background-color: var(--o-toolbar-dropdown-active-bg);
+			    	}
+			    }
+		    }
+		}
+		// add border when directly after a breadcrumb as a separator
+		.o_breadcrumb + .o_tools_container {
+			border-top: 1px solid var(--o-toolbar-border);
+		}
+	
+		.o_tools {
+			margin-top: $o-toolbar-tools-margin-top-md;
+			margin-bottom: $o-toolbar-tools-margin-bottom-md;
+		}
+
+		.o_tool, .o_text {
+			position: relative;
+			margin: 0 10px;	
+			&:first-child {
+				margin-left: 0;	
+			}
+			&:last-child {
+				margin-right: 0;	
+			}
+			a, .o_disabled {
+				i {
+					font-size: $o-toolbar-size-icon-md;
 				}
 				span {
+					display: block;
+					font-size: $o-toolbar-size-text-md;
 					&.badge {
-						display: block;
-						position: relative;
-						top: 0;
-						left: 0;
-						margin-right: 0;
+						position: absolute;
+						right: 50%;
+						top: $o-toolbar-size-text-md * -1.5;
+						margin-right:-$o-toolbar-size-text-md;
+						font-size: math.floor($o-toolbar-size-icon-md * 0.75);
+					}
+				}
+				@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+					i {
+						font-size: $o-toolbar-size-icon-sm;
+					}
+					span {
+						font-size: $o-toolbar-size-text-sm;
+						&.badge {
+							top: $o-toolbar-size-text-sm * -1.5;
+							margin-right:-$o-toolbar-size-text-sm;
+							font-size: math.floor($o-toolbar-size-icon-sm * 0.75);
+						}
+					}
+				}
+				@media (max-width: $screen-xs-max) { 
+					i {
+						font-size: $o-toolbar-size-icon-xs;
+					}
+					span:not(.badge) {
+						// a11y: hidden, but kept in the accessible name; @extend %sr-only cannot be used inside @media
+						position: absolute;
+						width: 1px;
+						height: 1px;
+						padding: 0;
+						margin: -1px;
+						overflow: hidden;
+						clip: rect(0, 0, 0, 0);
+						border: 0;
+					}
+					span {
+						&.badge {
+							display: block;
+							position: relative;
+							top: 0;
+							left: 0;
+							margin-right: 0;
+						}
 					}
 				}
 			}
-		}
-		/* context help button */
-		.o_chelp {
-			position: relative;
-			top: -1em;
-			vertical-align: top;
-			color: var(--o-chelp-fg);
-		}
-		
-		/* Auto completer element: small by default and enlarged when in focus */
-		.o_form_auto_completer {
-			.form-control {
-				width: 100px;
-				height: 26px;
-				padding: 3px 6px;			
+			/* context help button */
+			.o_chelp {
 				position: relative;
-				top: -10px;		
-				/* make it lager when in focus */
-				 -webkit-transition: all 0.7s ease 0s;
-				 -moz-transition: all 0.7s ease 0s;
-				 -o-transition: all 0.7s ease 0s;
-				 transition: all 0.7s ease 0s;
-				 @media (min-width: $screen-md-min) { 
-					&:focus {
+				top: -1em;
+				vertical-align: top;
+				color: var(--o-chelp-fg);
+			}
+		
+			/* Auto completer element: small by default and enlarged when in focus */
+			.o_form_auto_completer {
+				.form-control {
+					width: 100px;
+					height: 26px;
+					padding: 3px 6px;			
+					position: relative;
+					top: -10px;		
+					/* make it lager when in focus */
+					 -webkit-transition: all 0.7s ease 0s;
+					 -moz-transition: all 0.7s ease 0s;
+					 -o-transition: all 0.7s ease 0s;
+					 transition: all 0.7s ease 0s;
+					 @media (min-width: $screen-md-min) { 
+						&:focus {
+							width: 200px;
+						}
+					}
+				}
+				.tt-menu {
+					width: 100px;
+					text-align: left;
+					margin-top: -6px;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					/* make it lager when in focus */
+					 -webkit-transition: all 0.7s ease 0s;
+					 -moz-transition: all 0.7s ease 0s;
+					 -o-transition: all 0.7s ease 0s;
+					 transition: all 0.7s ease 0s;
+					 @media (min-width: $screen-md-min) { 
 						width: 200px;
 					}
 				}
+
+				.form-control, .tt-suggestion {
+					font-size: $font-size-small;
+					line-height: $line-height-small;
+				}			
 			}
-			.tt-menu {
-				width: 100px;
-				text-align: left;
-				margin-top: -6px;
-				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
-				/* make it lager when in focus */
-				 -webkit-transition: all 0.7s ease 0s;
-				 -moz-transition: all 0.7s ease 0s;
-				 -o-transition: all 0.7s ease 0s;
-				 transition: all 0.7s ease 0s;
-				 @media (min-width: $screen-md-min) { 
-					width: 200px;
+		}
+	
+		.o_tool_next, .o_tool_previous {
+			padding: 0;
+			margin-top: math.floor($o-toolbar-nav-size-icon-md * 0.25);
+			border: 1px solid var(--o-toolbar-nav-border);
+			background-color: var(--o-toolbar-nav-bg);
+			a {
+				color: var(--o-toolbar-nav-link);
+				&:hover {
+					color: var(--o-toolbar-nav-link-hover);			
 				}
-			}
 
-			.form-control, .tt-suggestion {
-				font-size: $font-size-small;
-				line-height: $line-height-small;
-			}			
-		}
-	}
-	
-	.o_tool_next, .o_tool_previous {
-		padding: 0;
-		margin-top: math.floor($o-toolbar-nav-size-icon-md * 0.25);
-		border: 1px solid var(--o-toolbar-nav-border);
-		background-color: var(--o-toolbar-nav-bg);
-		a {
-			color: var(--o-toolbar-nav-link);
-			&:hover {
-				color: var(--o-toolbar-nav-link-hover);			
-			}
-
-			&.o_disabled {
-		    	color: var(--o-toolbar-nav-link-disabled) !important;
-		    	&:hover {
-		      		color: var(--o-toolbar-nav-link-disabled) !important;
+				&.o_disabled {
+			    	color: var(--o-toolbar-nav-link-disabled) !important;
+			    	&:hover {
+			      		color: var(--o-toolbar-nav-link-disabled) !important;
+			    	}
 		    	}
-	    	}
 			
-		}
-		i {
-			font-size: $o-toolbar-nav-size-icon-md;
-		}
-		@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
-			margin-top: math.floor($o-toolbar-nav-size-icon-sm * 0.25);
+			}
 			i {
-				font-size: $o-toolbar-nav-size-icon-sm;
-			}
-		}
-		@media (max-width: $screen-xs-max) { 
-			margin-top: 0;
-			i {
-				font-size: $o-toolbar-nav-size-icon-xs;
-			}
-		}
-	}
-	.o_tool_previous {
-		margin-left: 10px;
-		@include border-left-radius($o-toolbar-nav-border-radius);
-		border-right: 0;
-	}
-	.o_tool_next {
-		@include border-right-radius($o-toolbar-nav-border-radius);
-	}
-	
-	.o_tool_dropdown {
-		margin: 0 10px;	
-		&:first-child {
-			margin-left: 0;	
-		}
-		&:last-child {
-			margin-right: 0;	
-		}
-		a.dropdown-toggle {
-			position: relative;
-			i {
-				font-size: $o-toolbar-size-icon-md;
-			}
-			span.o_label {
-				display: block;
-				font-size: $o-toolbar-size-text-md;
-				text-align: center;
-			}
-			.o_icon_caret {
-				position: absolute;
-				right: 50%;
-				top: math.floor($o-toolbar-size-icon-md * 0.25);
-				margin-right: math.floor($o-toolbar-size-icon-md * -1.1);
-				font-size: $o-toolbar-size-caret-md;
+				font-size: $o-toolbar-nav-size-icon-md;
 			}
 			@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+				margin-top: math.floor($o-toolbar-nav-size-icon-sm * 0.25);
 				i {
-					font-size: $o-toolbar-size-icon-sm;
-				}
-				span.o_label, .o_icon_caret {
-					font-size: $o-toolbar-size-text-sm;
-				}
-				.o_icon_caret {
-					top: math.floor($o-toolbar-size-icon-sm * 0.25);
-					margin-right: math.floor($o-toolbar-size-icon-sm * -1.1);	
-					font-size: $o-toolbar-size-caret-sm;				
+					font-size: $o-toolbar-nav-size-icon-sm;
 				}
 			}
-			@media (max-width: $screen-xs-max) {
-				padding: 0 10px 0 5px;
+			@media (max-width: $screen-xs-max) { 
+				margin-top: 0;
 				i {
-					font-size: $o-toolbar-size-icon-xs;
+					font-size: $o-toolbar-nav-size-icon-xs;
+				}
+			}
+		}
+		.o_tool_previous {
+			margin-left: 10px;
+			@include border-left-radius($o-toolbar-nav-border-radius);
+			border-right: 0;
+		}
+		.o_tool_next {
+			@include border-right-radius($o-toolbar-nav-border-radius);
+		}
+	
+		.o_tool_dropdown {
+			margin: 0 10px;	
+			&:first-child {
+				margin-left: 0;	
+			}
+			&:last-child {
+				margin-right: 0;	
+			}
+			a.dropdown-toggle {
+				position: relative;
+				i {
+					font-size: $o-toolbar-size-icon-md;
 				}
 				span.o_label {
+					display: block;
+					font-size: $o-toolbar-size-text-md;
+					text-align: center;
+				}
+				.o_icon_caret {
 					position: absolute;
-					width: 1px;
-					height: 1px;
-					padding: 0;
-					margin: -1px;
-					overflow: hidden;
-					clip: rect(0, 0, 0, 0);
-					border: 0;
+					right: 50%;
+					top: math.floor($o-toolbar-size-icon-md * 0.25);
+					margin-right: math.floor($o-toolbar-size-icon-md * -1.1);
+					font-size: $o-toolbar-size-caret-md;
 				}
-			}				
-		}
-		.dropdown-menu {
-			text-align: left;
-		}			
+				@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+					i {
+						font-size: $o-toolbar-size-icon-sm;
+					}
+					span.o_label, .o_icon_caret {
+						font-size: $o-toolbar-size-text-sm;
+					}
+					.o_icon_caret {
+						top: math.floor($o-toolbar-size-icon-sm * 0.25);
+						margin-right: math.floor($o-toolbar-size-icon-sm * -1.1);	
+						font-size: $o-toolbar-size-caret-sm;				
+					}
+				}
+				@media (max-width: $screen-xs-max) {
+					padding: 0 10px 0 5px;
+					i {
+						font-size: $o-toolbar-size-icon-xs;
+					}
+					span.o_label {
+						position: absolute;
+						width: 1px;
+						height: 1px;
+						padding: 0;
+						margin: -1px;
+						overflow: hidden;
+						clip: rect(0, 0, 0, 0);
+						border: 0;
+					}
+				}				
+			}
+			.dropdown-menu {
+				text-align: left;
+			}			
 		
-		/* drop down with status style rendering */
-		.o_inner_wrapper.o_labeled,
-		.o_inner_wrapper.o_labeled_light {
-			line-height: ($o-toolbar-size-icon-md - 2px);
-			font-size: 14px;
-			padding: 0 23px 0 4px;
-			&:is(.dropdown-toggle.o_empty *) {
-				padding: 0 4px 0 4px;
-			}
-			position: relative;
-			top: -2px;
+			/* drop down with status style rendering */
+			.o_inner_wrapper.o_labeled,
+			.o_inner_wrapper.o_labeled_light {
+				line-height: ($o-toolbar-size-icon-md - 2px);
+				font-size: 14px;
+				padding: 0 23px 0 4px;
+				&:is(.dropdown-toggle.o_empty *) {
+					padding: 0 4px 0 4px;
+				}
+				position: relative;
+				top: -2px;
 						
-			i {
-				font-size: ($o-toolbar-size-icon-md - 6px) !important;
-				margin: 0 0 3px 0;
-			}
-			
-			+ .o_label + .o_icon_caret {
-				position: absolute;
-				right: 5px;
-				top: 2px;
-				margin-right: 0;
-			}
-			
-			@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
-				line-height: ($o-toolbar-size-icon-sm - 2px);
 				i {
-					font-size: ($o-toolbar-size-icon-sm - 6px) !important;
+					font-size: ($o-toolbar-size-icon-md - 6px) !important;
+					margin: 0 0 3px 0;
 				}
+			
 				+ .o_label + .o_icon_caret {
-					right: -1px;
-					top: 2px;
-					margin-right: 5px;
-					font-size: $o-toolbar-size-caret-sm;				
-				}
-			}
-			@media (max-width: $screen-xs-max) {
-				padding: 0 18px 0 4px;
-				i {
-					font-size: $o-toolbar-size-icon-xs;
-				}
-				+ .o_label + .o_icon_caret {
-					right: 15px;
+					position: absolute;
+					right: 5px;
 					top: 2px;
 					margin-right: 0;
 				}
-				span.o_inner_text,
-				span.o_label {
-					position: absolute;
-					width: 1px;
-					height: 1px;
-					padding: 0;
-					margin: -1px;
-					overflow: hidden;
-					clip: rect(0, 0, 0, 0);
-					border: 0;
-				}
-			}				
 			
-		}
-	}	
+				@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+					line-height: ($o-toolbar-size-icon-sm - 2px);
+					i {
+						font-size: ($o-toolbar-size-icon-sm - 6px) !important;
+					}
+					+ .o_label + .o_icon_caret {
+						right: -1px;
+						top: 2px;
+						margin-right: 5px;
+						font-size: $o-toolbar-size-caret-sm;				
+					}
+				}
+				@media (max-width: $screen-xs-max) {
+					padding: 0 18px 0 4px;
+					i {
+						font-size: $o-toolbar-size-icon-xs;
+					}
+					+ .o_label + .o_icon_caret {
+						right: 15px;
+						top: 2px;
+						margin-right: 0;
+					}
+					span.o_inner_text,
+					span.o_label {
+						position: absolute;
+						width: 1px;
+						height: 1px;
+						padding: 0;
+						margin: -1px;
+						overflow: hidden;
+						clip: rect(0, 0, 0, 0);
+						border: 0;
+					}
+				}				
+			
+			}
+		}	
 	
-	.o_tools_container > .container-fluid {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-start;
-		&:before, &:after {
-			content: none;
+		.o_tools_container > .container-fluid {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: flex-start;
+			&:before, &:after {
+				content: none;
+			}
 		}
-	}
-	.o_tools_center {
-		flex: 1 1 0;
-		min-width: 0;
-		margin-left: 0;
-	}
-	.o_tools_right, .o_tools_right_edge:not(.o_tools_right + *) {
-		margin-left: auto;
-	}
+		.o_tools_center {
+			flex: 1 1 0;
+			min-width: 0;
+			margin-left: 0;
+		}
+		.o_tools_right, .o_tools_right_edge:not(.o_tools_right + *) {
+			margin-left: auto;
+		}
 	
-	.o_tools_segments {
-    	margin: 0 auto -1.1em auto;
+		.o_tools_segments {
+	    	margin: 0 auto -1.1em auto;
 		
-		a > span {
-			display: inline-block;
+			a > span {
+				display: inline-block;
+			}
+			a > span.badge {
+				display: inline-block;
+				position: initial;
+				margin: 0 0 0 5px;
+				font-size: 12px;
+			}
 		}
-		a > span.badge {
-			display: inline-block;
-			position: initial;
-			margin: 0 0 0 5px;
-			font-size: 12px;
-		}
-	}
 	
-	.o_tools_segments.o_tools_segments_alone {
-		margin-top: 1.5em;
-	}
-	
-	@media (max-width: $screen-sm-max) { 
-		.o_tools {
-			margin-top: $o-toolbar-tools-margin-top-sm;
-			margin-bottom: $o-toolbar-tools-margin-bottom-sm;
-		}
-		.o_tools.o_tools_segments {
-    		margin: 0 auto -1.1em auto;
-		}
 		.o_tools_segments.o_tools_segments_alone {
 			margin-top: 1.5em;
 		}
-		.o_tool {
-			span {
-				max-width: 10em;
-				@include text-overflow();	
+	
+		@media (max-width: $screen-sm-max) { 
+			.o_tools {
+				margin-top: $o-toolbar-tools-margin-top-sm;
+				margin-bottom: $o-toolbar-tools-margin-bottom-sm;
 			}
-			&.o_quick_add span { /* reset overflow rule from above for quick-add */
-				max-width: unset;
-				overflow: unset;
-				text-overflow: unset;
+			.o_tools.o_tools_segments {
+	    		margin: 0 auto -1.1em auto;
+			}
+			.o_tools_segments.o_tools_segments_alone {
+				margin-top: 1.5em;
+			}
+			.o_tool {
+				span {
+					max-width: 10em;
+					@include text-overflow();	
+				}
+				&.o_quick_add span { /* reset overflow rule from above for quick-add */
+					max-width: unset;
+					overflow: unset;
+					text-overflow: unset;
+				}
+			}
+			.o_tools_segments .o_tool span {
+				display: block;
+			}
+			.o_tool, .o_text, .o_tool_dropdown {
+				margin: 0 5px;	
 			}
 		}
-		.o_tools_segments .o_tool span {
-			display: block;
-		}
-		.o_tool, .o_text, .o_tool_dropdown {
-			margin: 0 5px;	
-		}
-	}
-	@media (max-width: $screen-xs-max) { 
-		.o_tools {
-			margin-top: $o-toolbar-tools-margin-top-xs;
-			margin-bottom: $o-toolbar-tools-margin-bottom-xs;
-			.o_chelp {
-				top: 0;
-				vertical-align: top;
+		@media (max-width: $screen-xs-max) { 
+			.o_tools {
+				margin-top: $o-toolbar-tools-margin-top-xs;
+				margin-bottom: $o-toolbar-tools-margin-bottom-xs;
+				.o_chelp {
+					top: 0;
+					vertical-align: top;
+				}
 			}
-		}
-		.o_tools.o_tools_segments {
-			margin: 0 auto -1.1em auto;
-			text-align: center; /* override the override from o_tools_container */
-		}
-		.o_tools_segments.o_tools_segments_alone {
-			margin-top: 1.5em;
-		}
-		.o_tool, .o_text, .o_tool_dropdown {
-			margin: 0 0;
-			//this allows full-width dropdown menus
-			position: static;
-		}
-		//make dropdown bigger for small screens
-		.o_tool_dropdown .dropdown-menu {
-			left: 0px;
-			right: 0px;
+			.o_tools.o_tools_segments {
+				margin: 0 auto -1.1em auto;
+				text-align: center; /* override the override from o_tools_container */
+			}
+			.o_tools_segments.o_tools_segments_alone {
+				margin-top: 1.5em;
+			}
+			.o_tool, .o_text, .o_tool_dropdown {
+				margin: 0 0;
+				//this allows full-width dropdown menus
+				position: static;
+			}
+			//make dropdown bigger for small screens
+			.o_tool_dropdown .dropdown-menu {
+				left: 0px;
+				right: 0px;
 
-			a, i {
-				line-height: $line-height-computed * 1.5;
+				a, i {
+					line-height: $line-height-computed * 1.5;
+				}
+				.o_navbar_tab_close {
+					line-height: inherit;
+				}
 			}
-			.o_navbar_tab_close {
-				line-height: inherit;
-			}
-		}
 		
-	}
+		}
 	
-}
-
-#o_main_container .o_toolbar_navigation {
-	position: relative;
-}
-
-#o_main_container .o_toolbar_message {
-	display: table;
-	margin: 0 auto $o-toolbar-margin-bottom auto;
-
-	&.o_warning {
-		padding-top:10px;
-		padding-bottom:10px;
-		border: 1px solid var(--o-box-warning-border);
-		border-radius: $border-radius-small;
 	}
-}
 
-/* render toolbar with zebra effect in edit mode */
-.o_edit_mode .o_toolbar {
+	#o_main_container .o_toolbar_navigation {
+		position: relative;
+	}
+
+	#o_main_container .o_toolbar_message {
+		display: table;
+		margin: 0 auto $o-toolbar-margin-bottom auto;
+
+		&.o_warning {
+			padding-top:10px;
+			padding-bottom:10px;
+			border: 1px solid var(--o-box-warning-border);
+			border-radius: $border-radius-small;
+		}
+	}
+
+	/* render toolbar with zebra effect in edit mode */
+	.o_edit_mode .o_toolbar {
 	
-	.o_tools_container {
-		background: repeating-linear-gradient(
-	    	300deg,
-		    var(--o-toolbar-edit-stripe),
-		    var(--o-toolbar-edit-stripe) 10px,
-		    var(--o-toolbar-edit-bg) 10px,
-		    var(--o-toolbar-edit-bg) 20px
-		);
-	}
-	/* in QTI 1.2 there is a toolbar below the toolbar - only render the first one in edit mode style */
-	.o_edit_mode .o_tools_container {
-		background: var(--o-toolbar-bg);
-	}
-}
-.o_breadcrump_edit_mode {
-	>.o_breadcrumb {
-		>.breadcrumb {
+		.o_tools_container {
 			background: repeating-linear-gradient(
-				300deg,
-				var(--o-toolbar-edit-stripe),
-				var(--o-toolbar-edit-stripe) 10px,
-				var(--o-toolbar-edit-bg) 10px,
-				var(--o-toolbar-edit-bg) 20px
+		    	300deg,
+			    var(--o-toolbar-edit-stripe),
+			    var(--o-toolbar-edit-stripe) 10px,
+			    var(--o-toolbar-edit-bg) 10px,
+			    var(--o-toolbar-edit-bg) 20px
 			);
 		}
+		/* in QTI 1.2 there is a toolbar below the toolbar - only render the first one in edit mode style */
+		.o_edit_mode .o_tools_container {
+			background: var(--o-toolbar-bg);
+		}
 	}
-}
+	.o_breadcrump_edit_mode {
+		>.o_breadcrumb {
+			>.breadcrumb {
+				background: repeating-linear-gradient(
+					300deg,
+					var(--o-toolbar-edit-stripe),
+					var(--o-toolbar-edit-stripe) 10px,
+					var(--o-toolbar-edit-bg) 10px,
+					var(--o-toolbar-edit-bg) 20px
+				);
+			}
+		}
+	}
 
-/* Test / Assessment coach view */
-.o_segment_toolbar .o_toolbar {
-	margin-top: 0px;
-}
+	/* Test / Assessment coach view */
+	.o_segment_toolbar .o_toolbar {
+		margin-top: 0px;
+	}
 }

@@ -4,609 +4,609 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-contenteditor-quiz {
-$brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
+	$brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 
 
-.o_page_layout.o_apply_background_color {
-	.o_page_run_quiz {
-		.o_background_placeholder {
-			background-color: unset;
-		}
-	}
-}
-
-.o_page_run_quiz {
-	.o_background_image_wrapper {
-		position: relative;
-
-		img {
-			width: 100%;
-		}
-	}
-	.o_background_placeholder {
-		position: relative;
-		background-color: var(--o-qti-box-bg);
-
-		img {
-			width: 100%;
-		}
-	}
-
-	.o_quiz_progress {
-		line-height: 12px;
-		padding-bottom: 12px;
-		position: relative;
-
-		.o_progress {
-			display: inline-block;
-			width: 100%;
-
-			.o_progress-sm {
-				height: 10px;
-				background-color: var(--o-bg);
-				border: 1px solid var(--o-modal-content-border);
-			}
-		}
-
-		.o_progress_label_wrapper {
-			display: none;
-		}
-	}
-
-	.o_quiz {
-		border: 1px solid var(--o-modal-content-border);
-		border-radius: $border-radius-base;
-		background-color: var(--o-bg-subtle);
-		padding: 12px 20px 20px 20px;
-
-		&.o_correct {
-			border-color: var(--o-state-success-border);
-		}
-
-		&.o_incorrect {
-			border-color: var(--o-state-danger-border);
-		}
-
-		.o_quiz_progress_label {
-			font-size: 12px;
-		}
-
-		.o_quiz_question {
-			border-radius: $border-radius-base;
-			background-color: var(--o-bg);
-			padding: 12px 20px 20px 20px;
-
-			.itemTitle {
-				padding: 0;
-				border: none;
-				background: unset;
-				line-height: 32px;
-				
-				h4 {
-					font-weight: 400;
-				}
-			}
-
-			.o_qti_item_body {
-				padding: 0;
-				border: none;
-				background: unset;
-
-				span.textEntryInteraction, span.inlineChoiceInteraction {
-					&.o_correct, &.o_incorrect {
-						margin-right: 5px;
-					}
-
-					&.o_correct {
-						@include o-add-icon('circle-check', true, false);
-						@include o-add-icon-font(false);
-
-						&:after {
-							margin-left: -24px;
-							color: var(--o-state-success-text);
-							background-color: var(--o-bg);
-						}
-					}
-
-					&.o_incorrect {
-						@include o-add-icon('circle-xmark', true, false);
-						@include o-add-icon-font(false);
-
-						&:after {
-							margin-left: -24px;
-							color: var(--o-state-danger-text);
-							background-color: var(--o-bg);
-						}
-					}
-				}
-
-				span.textEntryInteraction {
-					input.text, input.numeric {
-						background: transparent;
-						border-radius: $border-radius-small;
-						border-width: 1px;
-						border-style: solid;
-						padding: 2px 24px 2px 5px;
-						margin-bottom: 4px;
-						-webkit-appearance: none;
-
-						&.o_correct {
-							border-color: var(--o-state-success-border);
-						}
-
-						&.o_incorrect {
-							border-color: var(--o-state-danger-border);
-						}
-					}
-				}
-
-				span.inlineChoiceInteraction {
-					select {
-						background: transparent;
-						border-radius: $border-radius-small;
-						border-width: 1px;
-						border-style: solid;
-						padding: 2px 24px 2px 5px;
-						margin-bottom: 4px;
-						-webkit-appearance: none;
-
-						&.o_correct {
-							border-color: var(--o-state-success-border);
-						}
-
-						&.o_incorrect {
-							border-color: var(--o-state-danger-border);
-						}
-					}
-				}
-			}
-
-			.o_assessmentitem_wrapper {
-				display: flex;
-				flex-direction: column;
-				min-height: 180px;
-
-				.o_qti_item_body {
-					background-color: unset;
-					min-height: unset;
-				}
-
-				.o_assessmentitem_status {
-					&.solution {
-						@extend %o_state_success_solid;
-					}
-					// the icon takes the text colour of the state (OO-10042)
-					i, i:before {
-						color: inherit;
-					}
-				}
-			}
-
-			.choiceInteraction {
-
-				.o_qti_item_choice_option_flow {
-					i:before {
-						color: var(--o-primary-text);
-					}
-
-					border-color: var(--o-primary);
-					border-width: 1px;
-					border-radius: $border-radius-base;
-
-					&.o_selected {
-						background-color: $brand-primary-bg;
-						color: var(--o-primary-text);
-					}
-
-					&.o_correct {
-						background-color: var(--o-state-success-soft-bg);
-						color: var(--o-state-success-text);
-						border-color: var(--o-state-success-border);
-
-						i:before {
-							color: var(--o-state-success-text);
-						}
-					}
-
-					&.o_incorrect {
-						background-color: var(--o-state-danger-soft-bg);
-						color: var(--o-state-danger-text);
-						border-color: var(--o-state-danger-border);
-
-						i:before {
-							color: var(--o-state-danger-text);
-						}
-					}
-
-					.check {
-						font-weight: 700;
-					}
-
-					label {
-						user-select: none;
-
-						margin: 0;
-						p {
-							margin: 0;
-						}
-					}
-				}
-
-				table {
-					border-collapse: separate;
-					border-spacing: 0 4px;
-				}
-
-				input + i  {
-					display: unset;
-				}
-
-				&.choiceright {
-					table {
-						tr {
-							td {
-								&.choiceInteraction {
-									background-color: unset;
-
-									border-left-style: solid;
-									border-right-style: unset;
-
-									border-top-left-radius: $border-radius-base;
-									border-bottom-left-radius: $border-radius-base;
-									border-top-right-radius: unset;
-									border-bottom-right-radius: unset;
-
-									label {
-										padding-left: 11px;
-										padding-right: 0;
-									}
-								}
-
-								&.control {
-									border-left-style: unset;
-									border-right-style: solid;
-
-									border-top-left-radius: unset;
-									border-bottom-left-radius: unset;
-									border-top-right-radius: $border-radius-base;
-									border-bottom-right-radius: $border-radius-base;
-								}
-							}
-
-							&.o_selected td {
-								&.choiceInteraction {
-									background-color: $brand-primary-bg;
-								}
-							}
-
-							&.o_correct td {
-								&.choiceInteraction {
-									background-color: var(--o-state-success-soft-bg);
-								}
-							}
-
-							&.o_incorrect td {
-								&.choiceInteraction {
-									background-color: var(--o-state-danger-soft-bg);
-								}
-							}
-						}
-					}
-				}
-			}
-
-			tr.choiceinteraction {
-				height: 40px;
-
-				td {
-					padding: 0;
-					border-color: var(--o-primary);
-					border-width: 1px;
-					border-top-style: solid;
-					border-bottom-style: solid;
-
-					&.control {
-						vertical-align: middle;
-						border-top-left-radius: $border-radius-base;
-						border-bottom-left-radius: $border-radius-base;
-						border-left-style: solid;
-
-						label {
-							margin: 0;
-							padding: 11px 7px 11px 10px;
-							width: 100%;
-						}
-					}
-
-					&.choiceInteraction {
-						line-height: 18px;
-						border-top-right-radius: $border-radius-base;
-						border-bottom-right-radius: $border-radius-base;
-						border-right-style: solid;
-
-						width: 100%;
-						color: var(--o-primary-text);
-
-						p {
-							margin: 0;
-						}
-
-						label {
-							margin: 0;
-							padding: 11px 10px 11px 0;
-							width: 100%;
-							user-select: none;
-						}
-					}
-				}
-
-				&.o_selected td {
-					&.control, &.choiceInteraction {
-						background-color: $brand-primary-bg;
-						color: var(--o-primary-text);
-					}
-				}
-
-				&.o_correct td {
-					&.control, &.choiceInteraction {
-						background-color: var(--o-state-success-soft-bg);
-						color: var(--o-state-success-text);
-						border-color: var(--o-state-success-border);
-					}
-
-					i:before {
-						color: var(--o-state-success-text);
-					}
-				}
-
-				&.o_incorrect td {
-					&.control, &.choiceInteraction {
-						background-color: var(--o-state-danger-soft-bg);
-						color: var(--o-state-danger-text);
-						border-color: var(--o-state-danger-border);
-					}
-
-					i:before {
-						color: var(--o-state-danger-text);
-					}
-				}
-
-				td i:before {
-					color: var(--o-primary-text);
-				}
-			}
-
-			input[type="radio"], input[type="checkbox"] {
-				display: none;
-			}
-
-			.o_assessmentitem_wrapper {
-				.itemTitle {
-					line-height: 40px;
-
-					.o_qti_item_meta {
-						margin-top: 8px;
-					}
-				}
-
-				.modalFeedback.o_togglebox_wrapper {
-					margin-top: 20px;
-
-					h4 {
-						border: unset;
-						font-size: unset;
-						font-weight: unset;
-						padding: 8px 16px;
-
-						a:hover, a:focus {
-							text-decoration: none;
-						}
-					}
-				}
-			}
-
-			.o_assessmentitem_controls {
-				background: unset;
-				border: unset;
-				margin-top: auto;
-				margin-right: unset;
-				margin-bottom: unset;
-				margin-left: unset;
-				padding: unset;
-				padding-top: 20px;
-
-				.o_sel_show_solution span::before {
-					content: unset;
-				}
-			}
-		}
-	}
-
-	.o_quiz_panel {
-		position: absolute;
-		border-radius: $border-radius-large;
-		background-color: var(--o-bg);
-		padding: 12px 5% 20px 5%;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		width: 75%;
-		max-height: 98%;
-		overflow-y: auto;
-
-		.o_quiz_title {
-			font-weight: bold;
-			font-size: 20px;
-			text-align: center;
-			margin-bottom: 10px;
-		}
-
-		.o_quiz_description {
-			text-align: center;
-		}
-
-		.o_quiz_button {
-			margin-top: 20px;
-			text-align: center;
-
-			a {
-				padding-left: 8px;
-			}
-		}
-	}
-
-	@media (max-width: $screen-xs-max) {
-		.o_quiz_panel {
-			padding: 5px 5px 10px 5px;
-			width: 90%;
-		}
-	}
-}
-
-.o_page_edit_quiz {
-
-	.o_rendertype_classic {
-		th {
-			&.o_up, &.o_down {
-				width: 32px;
-			}
-		}
-	}
-
-	.o_quiz_edit_header {
-		display: flex;
-
-		.o_quiz_title {
-			display: inline-block;
-			margin-right: 4px;
-			font-weight: bold;
-			font-size: 18px;
-			line-height: 34px;
-			flex-grow: 1;
-		}
-
-		.o_quiz_add_question {
-			margin-right: 4px;
-		}
-
-		.o_quiz_commands {
-			margin-right: 2px;
-		}
-	}
-
-	.o_quiz_questions {
-		margin-top: 4px;
-		padding: 2px;
-
-		.o_table_wrapper {
-			.o_col_sticky_right {
+	.o_page_layout.o_apply_background_color {
+		.o_page_run_quiz {
+			.o_background_placeholder {
 				background-color: unset;
 			}
 		}
 	}
-}
 
-// ---------------------------------------------------------------------------
-// Essay AI correction overlay + feedback block.
-// Rendered inside the .o_quiz_question container while an async grading
-// job is in flight, and replaced by the feedback block when it completes.
-// ---------------------------------------------------------------------------
-.o_quiz .o_quiz_question.o_essay_ai_correction_host {
-	position: relative !important;
-	min-height: 200px;
+	.o_page_run_quiz {
+		.o_background_image_wrapper {
+			position: relative;
 
-	&.o_essay_ai_correction_in_progress .o_qti_item_body,
-	&.o_essay_ai_correction_in_progress .itemTitle {
-		opacity: 0.6;
-		pointer-events: none;
-	}
-
-	.o_essay_ai_correction_overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		background-color: color-mix(in srgb, var(--o-backdrop) 60%, transparent);
-		border-radius: $border-radius-base;
-		z-index: 100;
-		color: var(--o-white);
-
-		.o_icon {
-			font-size: 3rem;
-			margin-bottom: 1rem;
-			color: var(--o-white);
+			img {
+				width: 100%;
+			}
 		}
+		.o_background_placeholder {
+			position: relative;
+			background-color: var(--o-qti-box-bg);
 
-		.o_essay_ai_correction_message {
-			font-size: 1.1rem;
-			color: var(--o-white);
-		}
-	}
-
-	// Hide the QTI "submitted / awaiting correction" badge once the AI
-	// feedback box has rendered — the badge is misleading after grading.
-	&:has(.o_essay_ai_correction_box) .o_assessmentitem_status.o_labeled.submitted {
-		display: none;
-	}
-}
-
-.o_essay_ai_correction_error {
-	margin-top: 1rem;
-}
-
-.o_essay_ai_correction_box {
-	margin-top: 1.25rem;
-	background-color: var(--o-box-warning-bg);
-	border: 1px solid var(--o-box-warning-border);
-	border-radius: $border-radius-base;
-	padding: 1rem 1.25rem;
-
-	h4.o_essay_ai_correction_title {
-		margin: 0 0 0.75rem 0;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-
-		.o_icon {
-			font-size: 1.4rem;
-		}
-	}
-
-	.o_essay_ai_correction_feedback {
-		> div {
-			margin-bottom: 0.75rem;
-
-			&:last-child {
-				margin-bottom: 0;
+			img {
+				width: 100%;
 			}
 		}
 
-		.o_essay_ai_correction_overall p,
-		.o_essay_ai_correction_wentwell p,
-		.o_essay_ai_correction_missing p,
-		.o_essay_ai_correction_nextstep p {
-			margin: 0.25rem 0 0 0;
-		}
+		.o_quiz_progress {
+			line-height: 12px;
+			padding-bottom: 12px;
+			position: relative;
 
-		.o_essay_ai_correction_badges {
-			display: flex;
-			gap: 0.5rem;
-			flex-wrap: wrap;
-
-			.label {
+			.o_progress {
 				display: inline-block;
+				width: 100%;
+
+				.o_progress-sm {
+					height: 10px;
+					background-color: var(--o-bg);
+					border: 1px solid var(--o-modal-content-border);
+				}
+			}
+
+			.o_progress_label_wrapper {
+				display: none;
 			}
 		}
 
-		.o_essay_ai_correction_language_details {
-			summary {
-				cursor: pointer;
+		.o_quiz {
+			border: 1px solid var(--o-modal-content-border);
+			border-radius: $border-radius-base;
+			background-color: var(--o-bg-subtle);
+			padding: 12px 20px 20px 20px;
+
+			&.o_correct {
+				border-color: var(--o-state-success-border);
+			}
+
+			&.o_incorrect {
+				border-color: var(--o-state-danger-border);
+			}
+
+			.o_quiz_progress_label {
+				font-size: 12px;
+			}
+
+			.o_quiz_question {
+				border-radius: $border-radius-base;
+				background-color: var(--o-bg);
+				padding: 12px 20px 20px 20px;
+
+				.itemTitle {
+					padding: 0;
+					border: none;
+					background: unset;
+					line-height: 32px;
+				
+					h4 {
+						font-weight: 400;
+					}
+				}
+
+				.o_qti_item_body {
+					padding: 0;
+					border: none;
+					background: unset;
+
+					span.textEntryInteraction, span.inlineChoiceInteraction {
+						&.o_correct, &.o_incorrect {
+							margin-right: 5px;
+						}
+
+						&.o_correct {
+							@include o-add-icon('circle-check', true, false);
+							@include o-add-icon-font(false);
+
+							&:after {
+								margin-left: -24px;
+								color: var(--o-state-success-text);
+								background-color: var(--o-bg);
+							}
+						}
+
+						&.o_incorrect {
+							@include o-add-icon('circle-xmark', true, false);
+							@include o-add-icon-font(false);
+
+							&:after {
+								margin-left: -24px;
+								color: var(--o-state-danger-text);
+								background-color: var(--o-bg);
+							}
+						}
+					}
+
+					span.textEntryInteraction {
+						input.text, input.numeric {
+							background: transparent;
+							border-radius: $border-radius-small;
+							border-width: 1px;
+							border-style: solid;
+							padding: 2px 24px 2px 5px;
+							margin-bottom: 4px;
+							-webkit-appearance: none;
+
+							&.o_correct {
+								border-color: var(--o-state-success-border);
+							}
+
+							&.o_incorrect {
+								border-color: var(--o-state-danger-border);
+							}
+						}
+					}
+
+					span.inlineChoiceInteraction {
+						select {
+							background: transparent;
+							border-radius: $border-radius-small;
+							border-width: 1px;
+							border-style: solid;
+							padding: 2px 24px 2px 5px;
+							margin-bottom: 4px;
+							-webkit-appearance: none;
+
+							&.o_correct {
+								border-color: var(--o-state-success-border);
+							}
+
+							&.o_incorrect {
+								border-color: var(--o-state-danger-border);
+							}
+						}
+					}
+				}
+
+				.o_assessmentitem_wrapper {
+					display: flex;
+					flex-direction: column;
+					min-height: 180px;
+
+					.o_qti_item_body {
+						background-color: unset;
+						min-height: unset;
+					}
+
+					.o_assessmentitem_status {
+						&.solution {
+							@extend %o_state_success_solid;
+						}
+						// the icon takes the text colour of the state (OO-10042)
+						i, i:before {
+							color: inherit;
+						}
+					}
+				}
+
+				.choiceInteraction {
+
+					.o_qti_item_choice_option_flow {
+						i:before {
+							color: var(--o-primary-text);
+						}
+
+						border-color: var(--o-primary);
+						border-width: 1px;
+						border-radius: $border-radius-base;
+
+						&.o_selected {
+							background-color: $brand-primary-bg;
+							color: var(--o-primary-text);
+						}
+
+						&.o_correct {
+							background-color: var(--o-state-success-soft-bg);
+							color: var(--o-state-success-text);
+							border-color: var(--o-state-success-border);
+
+							i:before {
+								color: var(--o-state-success-text);
+							}
+						}
+
+						&.o_incorrect {
+							background-color: var(--o-state-danger-soft-bg);
+							color: var(--o-state-danger-text);
+							border-color: var(--o-state-danger-border);
+
+							i:before {
+								color: var(--o-state-danger-text);
+							}
+						}
+
+						.check {
+							font-weight: 700;
+						}
+
+						label {
+							user-select: none;
+
+							margin: 0;
+							p {
+								margin: 0;
+							}
+						}
+					}
+
+					table {
+						border-collapse: separate;
+						border-spacing: 0 4px;
+					}
+
+					input + i  {
+						display: unset;
+					}
+
+					&.choiceright {
+						table {
+							tr {
+								td {
+									&.choiceInteraction {
+										background-color: unset;
+
+										border-left-style: solid;
+										border-right-style: unset;
+
+										border-top-left-radius: $border-radius-base;
+										border-bottom-left-radius: $border-radius-base;
+										border-top-right-radius: unset;
+										border-bottom-right-radius: unset;
+
+										label {
+											padding-left: 11px;
+											padding-right: 0;
+										}
+									}
+
+									&.control {
+										border-left-style: unset;
+										border-right-style: solid;
+
+										border-top-left-radius: unset;
+										border-bottom-left-radius: unset;
+										border-top-right-radius: $border-radius-base;
+										border-bottom-right-radius: $border-radius-base;
+									}
+								}
+
+								&.o_selected td {
+									&.choiceInteraction {
+										background-color: $brand-primary-bg;
+									}
+								}
+
+								&.o_correct td {
+									&.choiceInteraction {
+										background-color: var(--o-state-success-soft-bg);
+									}
+								}
+
+								&.o_incorrect td {
+									&.choiceInteraction {
+										background-color: var(--o-state-danger-soft-bg);
+									}
+								}
+							}
+						}
+					}
+				}
+
+				tr.choiceinteraction {
+					height: 40px;
+
+					td {
+						padding: 0;
+						border-color: var(--o-primary);
+						border-width: 1px;
+						border-top-style: solid;
+						border-bottom-style: solid;
+
+						&.control {
+							vertical-align: middle;
+							border-top-left-radius: $border-radius-base;
+							border-bottom-left-radius: $border-radius-base;
+							border-left-style: solid;
+
+							label {
+								margin: 0;
+								padding: 11px 7px 11px 10px;
+								width: 100%;
+							}
+						}
+
+						&.choiceInteraction {
+							line-height: 18px;
+							border-top-right-radius: $border-radius-base;
+							border-bottom-right-radius: $border-radius-base;
+							border-right-style: solid;
+
+							width: 100%;
+							color: var(--o-primary-text);
+
+							p {
+								margin: 0;
+							}
+
+							label {
+								margin: 0;
+								padding: 11px 10px 11px 0;
+								width: 100%;
+								user-select: none;
+							}
+						}
+					}
+
+					&.o_selected td {
+						&.control, &.choiceInteraction {
+							background-color: $brand-primary-bg;
+							color: var(--o-primary-text);
+						}
+					}
+
+					&.o_correct td {
+						&.control, &.choiceInteraction {
+							background-color: var(--o-state-success-soft-bg);
+							color: var(--o-state-success-text);
+							border-color: var(--o-state-success-border);
+						}
+
+						i:before {
+							color: var(--o-state-success-text);
+						}
+					}
+
+					&.o_incorrect td {
+						&.control, &.choiceInteraction {
+							background-color: var(--o-state-danger-soft-bg);
+							color: var(--o-state-danger-text);
+							border-color: var(--o-state-danger-border);
+						}
+
+						i:before {
+							color: var(--o-state-danger-text);
+						}
+					}
+
+					td i:before {
+						color: var(--o-primary-text);
+					}
+				}
+
+				input[type="radio"], input[type="checkbox"] {
+					display: none;
+				}
+
+				.o_assessmentitem_wrapper {
+					.itemTitle {
+						line-height: 40px;
+
+						.o_qti_item_meta {
+							margin-top: 8px;
+						}
+					}
+
+					.modalFeedback.o_togglebox_wrapper {
+						margin-top: 20px;
+
+						h4 {
+							border: unset;
+							font-size: unset;
+							font-weight: unset;
+							padding: 8px 16px;
+
+							a:hover, a:focus {
+								text-decoration: none;
+							}
+						}
+					}
+				}
+
+				.o_assessmentitem_controls {
+					background: unset;
+					border: unset;
+					margin-top: auto;
+					margin-right: unset;
+					margin-bottom: unset;
+					margin-left: unset;
+					padding: unset;
+					padding-top: 20px;
+
+					.o_sel_show_solution span::before {
+						content: unset;
+					}
+				}
+			}
+		}
+
+		.o_quiz_panel {
+			position: absolute;
+			border-radius: $border-radius-large;
+			background-color: var(--o-bg);
+			padding: 12px 5% 20px 5%;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			width: 75%;
+			max-height: 98%;
+			overflow-y: auto;
+
+			.o_quiz_title {
 				font-weight: bold;
-				padding: 0.25rem 0;
+				font-size: 20px;
+				text-align: center;
+				margin-bottom: 10px;
+			}
+
+			.o_quiz_description {
+				text-align: center;
+			}
+
+			.o_quiz_button {
+				margin-top: 20px;
+				text-align: center;
+
+				a {
+					padding-left: 8px;
+				}
+			}
+		}
+
+		@media (max-width: $screen-xs-max) {
+			.o_quiz_panel {
+				padding: 5px 5px 10px 5px;
+				width: 90%;
 			}
 		}
 	}
-}
+
+	.o_page_edit_quiz {
+
+		.o_rendertype_classic {
+			th {
+				&.o_up, &.o_down {
+					width: 32px;
+				}
+			}
+		}
+
+		.o_quiz_edit_header {
+			display: flex;
+
+			.o_quiz_title {
+				display: inline-block;
+				margin-right: 4px;
+				font-weight: bold;
+				font-size: 18px;
+				line-height: 34px;
+				flex-grow: 1;
+			}
+
+			.o_quiz_add_question {
+				margin-right: 4px;
+			}
+
+			.o_quiz_commands {
+				margin-right: 2px;
+			}
+		}
+
+		.o_quiz_questions {
+			margin-top: 4px;
+			padding: 2px;
+
+			.o_table_wrapper {
+				.o_col_sticky_right {
+					background-color: unset;
+				}
+			}
+		}
+	}
+
+	// ---------------------------------------------------------------------------
+	// Essay AI correction overlay + feedback block.
+	// Rendered inside the .o_quiz_question container while an async grading
+	// job is in flight, and replaced by the feedback block when it completes.
+	// ---------------------------------------------------------------------------
+	.o_quiz .o_quiz_question.o_essay_ai_correction_host {
+		position: relative !important;
+		min-height: 200px;
+
+		&.o_essay_ai_correction_in_progress .o_qti_item_body,
+		&.o_essay_ai_correction_in_progress .itemTitle {
+			opacity: 0.6;
+			pointer-events: none;
+		}
+
+		.o_essay_ai_correction_overlay {
+			position: absolute;
+			inset: 0;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			background-color: color-mix(in srgb, var(--o-backdrop) 60%, transparent);
+			border-radius: $border-radius-base;
+			z-index: 100;
+			color: var(--o-white);
+
+			.o_icon {
+				font-size: 3rem;
+				margin-bottom: 1rem;
+				color: var(--o-white);
+			}
+
+			.o_essay_ai_correction_message {
+				font-size: 1.1rem;
+				color: var(--o-white);
+			}
+		}
+
+		// Hide the QTI "submitted / awaiting correction" badge once the AI
+		// feedback box has rendered — the badge is misleading after grading.
+		&:has(.o_essay_ai_correction_box) .o_assessmentitem_status.o_labeled.submitted {
+			display: none;
+		}
+	}
+
+	.o_essay_ai_correction_error {
+		margin-top: 1rem;
+	}
+
+	.o_essay_ai_correction_box {
+		margin-top: 1.25rem;
+		background-color: var(--o-box-warning-bg);
+		border: 1px solid var(--o-box-warning-border);
+		border-radius: $border-radius-base;
+		padding: 1rem 1.25rem;
+
+		h4.o_essay_ai_correction_title {
+			margin: 0 0 0.75rem 0;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+
+			.o_icon {
+				font-size: 1.4rem;
+			}
+		}
+
+		.o_essay_ai_correction_feedback {
+			> div {
+				margin-bottom: 0.75rem;
+
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+
+			.o_essay_ai_correction_overall p,
+			.o_essay_ai_correction_wentwell p,
+			.o_essay_ai_correction_missing p,
+			.o_essay_ai_correction_nextstep p {
+				margin: 0.25rem 0 0 0;
+			}
+
+			.o_essay_ai_correction_badges {
+				display: flex;
+				gap: 0.5rem;
+				flex-wrap: wrap;
+
+				.label {
+					display: inline-block;
+				}
+			}
+
+			.o_essay_ai_correction_language_details {
+				summary {
+					cursor: pointer;
+					font-weight: bold;
+					padding: 0.25rem 0;
+				}
+			}
+		}
+	}
 }

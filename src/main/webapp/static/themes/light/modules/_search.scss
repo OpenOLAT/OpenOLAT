@@ -3,145 +3,145 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-search {
-.o_search {
-	/* Takes the place of the .form-control cell so the reset button can overlap the input's right edge. */
-	.o_search_input_wrapper {
-		position: relative;
-		display: table-cell;
-		width: 100%;
-		vertical-align: middle;
-
-		/* flow-root: block-level (no baseline gap) but still its own formatting
-		   context, so .tt-input's margin can't collapse it to height:0 and break
-		   the .tt-menu dropdown position. Overrides typeahead.js's inline style. */
-		.twitter-typeahead {
-			display: flow-root !important;
+	.o_search {
+		/* Takes the place of the .form-control cell so the reset button can overlap the input's right edge. */
+		.o_search_input_wrapper {
+			position: relative;
+			display: table-cell;
 			width: 100%;
+			vertical-align: middle;
+
+			/* flow-root: block-level (no baseline gap) but still its own formatting
+			   context, so .tt-input's margin can't collapse it to height:0 and break
+			   the .tt-menu dropdown position. Overrides typeahead.js's inline style. */
+			.twitter-typeahead {
+				display: flow-root !important;
+				width: 100%;
+			}
+
+			/* .tt-input is the field once AutoCompleterImpl's typeahead.js wraps it. */
+			.o_search_input,
+			.tt-input {
+				width: 100%;
+				padding-right: 28px;
+				height: $input-height-base;
+			}
 		}
 
-		/* .tt-input is the field once AutoCompleterImpl's typeahead.js wraps it. */
-		.o_search_input,
-		.tt-input {
-			width: 100%;
-			padding-right: 28px;
-			height: $input-height-base;
+		/* Restore corners Bootstrap's .input-group .form-control:first-child zeroes. */
+		.input-group-addon + .o_search_input_wrapper {
+			.o_search_input,
+			.tt-input {
+				border-top-left-radius: 0;
+				border-bottom-left-radius: 0;
+			}
+		}
+		.input-group > .o_search_input_wrapper:last-child {
+			.o_search_input,
+			.tt-input {
+				border-top-right-radius: $input-border-radius;
+				border-bottom-right-radius: $input-border-radius;
+			}
+		}
+
+		.o_search_reset {
+			position: absolute;
+			top: 50%;
+			right: 3px;
+			transform: translateY(-50%);
+			width: 22px;
+			height: 22px;
+			padding: 0;
+			border-radius: 50%;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 3;
 		}
 	}
 
-	/* Restore corners Bootstrap's .input-group .form-control:first-child zeroes. */
-	.input-group-addon + .o_search_input_wrapper {
-		.o_search_input,
-		.tt-input {
-			border-top-left-radius: 0;
-			border-bottom-left-radius: 0;
+	/* Large: reuse Bootstrap's .input-lg / .btn-lg sizing (its .input-group-lg selectors need a direct child, which this isn't). */
+	.o_search_large {
+		.o_search_input_wrapper {
+			.o_search_input,
+			.tt-input {
+				padding: $padding-large-vertical $padding-large-horizontal;
+				padding-right: 36px;
+				font-size: $font-size-large;
+				line-height: $line-height-large;
+				border-top-left-radius: $border-radius-large;
+				border-bottom-left-radius: $border-radius-large;
+				height: $input-height-large;
+			}
 		}
-	}
-	.input-group > .o_search_input_wrapper:last-child {
-		.o_search_input,
-		.tt-input {
-			border-top-right-radius: $input-border-radius;
-			border-bottom-right-radius: $input-border-radius;
+		.input-group-addon + .o_search_input_wrapper {
+			.o_search_input,
+			.tt-input {
+				border-top-left-radius: 0;
+				border-bottom-left-radius: 0;
+			}
 		}
-	}
-
-	.o_search_reset {
-		position: absolute;
-		top: 50%;
-		right: 3px;
-		transform: translateY(-50%);
-		width: 22px;
-		height: 22px;
-		padding: 0;
-		border-radius: 50%;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 3;
-	}
-}
-
-/* Large: reuse Bootstrap's .input-lg / .btn-lg sizing (its .input-group-lg selectors need a direct child, which this isn't). */
-.o_search_large {
-	.o_search_input_wrapper {
-		.o_search_input,
-		.tt-input {
+		.input-group > .o_search_input_wrapper:last-child {
+			.o_search_input,
+			.tt-input {
+				border-top-right-radius: $border-radius-large;
+				border-bottom-right-radius: $border-radius-large;
+			}
+		}
+		.input-group-addon,
+		.o_search_button {
 			padding: $padding-large-vertical $padding-large-horizontal;
-			padding-right: 36px;
 			font-size: $font-size-large;
 			line-height: $line-height-large;
-			border-top-left-radius: $border-radius-large;
-			border-bottom-left-radius: $border-radius-large;
-			height: $input-height-large;
+			border-radius: $border-radius-large;
+		}
+		.o_search_reset {
+			right: 6px;
+			width: 28px;
+			height: 28px;
+			font-size: $font-size-large;
 		}
 	}
-	.input-group-addon + .o_search_input_wrapper {
-		.o_search_input,
-		.tt-input {
-			border-top-left-radius: 0;
-			border-bottom-left-radius: 0;
+
+	.o_search_demo_fixed_width {
+		.o_search {
+			max-width: 300px;
 		}
 	}
-	.input-group > .o_search_input_wrapper:last-child {
-		.o_search_input,
-		.tt-input {
-			border-top-right-radius: $border-radius-large;
-			border-bottom-right-radius: $border-radius-large;
+
+	#o_navbar_search {
+		.o_search {
+			width: 320px;
 		}
 	}
-	.input-group-addon,
-	.o_search_button {
-		padding: $padding-large-vertical $padding-large-horizontal;
-		font-size: $font-size-large;
-		line-height: $line-height-large;
-		border-radius: $border-radius-large;
-	}
-	.o_search_reset {
-		right: 6px;
-		width: 28px;
-		height: 28px;
-		font-size: $font-size-large;
-	}
-}
 
-.o_search_demo_fixed_width {
-	.o_search {
-		max-width: 300px;
-	}
-}
-
-#o_navbar_search {
-	.o_search {
-		width: 320px;
-	}
-}
-
-.o_table_search {
-	.o_search {
-		max-width: 340px;
-		display: inline-block;
-		vertical-align: middle;
-		margin-right: 15px;
-	}
-}
-
-.o_table_large_search {
-	.o_search {
-		max-width: 450px;
-		width: 90%;
-		display: inline-block;
-		vertical-align: middle;
+	.o_table_search {
+		.o_search {
+			max-width: 340px;
+			display: inline-block;
+			vertical-align: middle;
+			margin-right: 15px;
+		}
 	}
 
-	.o_table_rowcount {
-		display: inline-block;
-		vertical-align: middle;
-		margin-left: 15px;
-	}
-}
+	.o_table_large_search {
+		.o_search {
+			max-width: 450px;
+			width: 90%;
+			display: inline-block;
+			vertical-align: middle;
+		}
 
-@media (max-width: 540px) {
-	.o_table_toolbar .o_table_search .o_search {
-		max-width: 170px;
+		.o_table_rowcount {
+			display: inline-block;
+			vertical-align: middle;
+			margin-left: 15px;
+		}
 	}
-}
+
+	@media (max-width: 540px) {
+		.o_table_toolbar .o_table_search .o_search {
+			max-width: 170px;
+		}
+	}
 }

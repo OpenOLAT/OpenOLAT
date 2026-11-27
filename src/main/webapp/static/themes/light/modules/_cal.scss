@@ -15,345 +15,344 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-cal {
+	/* calender colors for events: must be the last thing in the file !! */
+	// Each old calendar class o_cal_<key> (grey, maroon, navy, fuchsia,
+	// rebeccapurple, olive) sets the swatch tokens --o-sw-* through $o-swatch-aliases
+	// (_palette.scss). The class sits on the FullCalendar event element, on the
+	// colour chooser and on the print view bar; the tokens inherit to children.
+	// An event with a key of the chooser sets has the class o_cal_swatch and the
+	// swatch classes, e.g. "o_cal_swatch o_swatch_blue o_swatch_light"
+	// (ColorService.toCalendarEventCssClass()).
+	#{o-swatch-alias-selector("o_cal_")}, .o_cal_swatch {
+		background: var(--o-sw-bg);
+		border-color: var(--o-sw-border);
+		color: var(--o-sw-fg);
 
-/* calender colors for events: must be the last thing in the file !! */
-// Each old calendar class o_cal_<key> (grey, maroon, navy, fuchsia,
-// rebeccapurple, olive) sets the swatch tokens --o-sw-* through $o-swatch-aliases
-// (_palette.scss). The class sits on the FullCalendar event element, on the
-// colour chooser and on the print view bar; the tokens inherit to children.
-// An event with a key of the chooser sets has the class o_cal_swatch and the
-// swatch classes, e.g. "o_cal_swatch o_swatch_blue o_swatch_light"
-// (ColorService.toCalendarEventCssClass()).
-#{o-swatch-alias-selector("o_cal_")}, .o_cal_swatch {
-	background: var(--o-sw-bg);
-	border-color: var(--o-sw-border);
-	color: var(--o-sw-fg);
-
-	.fc-list-event-dot { border-color: var(--o-sw-bg); }
-	div.fc-event-main { color: var(--o-sw-fg); }
-}
-#{o-swatch-alias-selector("o_cal_", ".o_cal_class")}, .o_cal_class.o_cal_swatch { border-left: $o-cal-color-width solid var(--o-sw-bg); }
-
-// Secondary colour: the calendar colour on an event with its own colour,
-// e.g. "o_cal_navy o_cal_sec o_cal_olive_sec". The element carries the
-// tokens of the event colour, the calendar colour is set as a value.
-@each $class, $alias in $o-swatch-aliases {
-	@if string.index($class, "o_cal_") == 1 {
-		.o_cal_sec.#{$class}_sec { border-left: $o-cal-sec-border-width solid o-swatch-alias-color($class); }
+		.fc-list-event-dot { border-color: var(--o-sw-bg); }
+		div.fc-event-main { color: var(--o-sw-fg); }
 	}
-}
-// The calendar colour of a key of the chooser sets, e.g. "o_cal_sec o_cal_sec_blue"
-// or "o_cal_sec o_cal_sec_blue-light" (KalendarRenderWrapper.getSecondaryCssClass())
-@each $key, $swatch in $o-swatches {
-	.o_cal_sec.o_cal_sec_#{$key} { border-left: $o-cal-sec-border-width solid o-hex(map.get($swatch, "bg")); }
-	@each $variant in ("soft", "light", "tint", "dark") {
-		.o_cal_sec.o_cal_sec_#{$key}-#{$variant} { border-left: $o-cal-sec-border-width solid o-hex(map.get($swatch, "#{$variant}-bg")); }
-	}
-}
+	#{o-swatch-alias-selector("o_cal_", ".o_cal_class")}, .o_cal_class.o_cal_swatch { border-left: $o-cal-color-width solid var(--o-sw-bg); }
 
-
-.o_sel_calendar_print_chooser {
-	padding-right:4em;
-}
-
-.o_cal_config_enabled, .o_cal_config_disabled {
-	position: relative;
-	float: left; display: inline;
-}
-
-.o_cal_config_calendar {
-	margin: 0 5px; 
-	padding: 1px 6px 1px 4px;
-	position: relative; 
-	width: 200px;
-	overflow: hidden;
-	float: left;
-	display: inline;
-}
-
-.o_cal_colorchooser_selected {
-	@include o-add-icon('check');
-}
-
-#o_cal_colorchooser {
-	div {
-		border-style: solid;
-		border-width: 1px;
-		margin: 5px 4px;
-		display: inline-block;
-	}
-	
-	div:hover {
-		border: 1px solid var(--o-text); 
-	}
-	
-	a {
-		width: 20px;
-		height: 20px;
-		display: inline-block;
-	}
-}
-
-.o_cal_color_element {
-	display: inline-block;
-	width: 20px;
-	height: 20px;
-	border-style: solid;
-	border-width: 1px;
-}
-.o_cal_event_color {
-	display: flex;
-	align-items: center;
-	gap: 5px;
-}
-
-.o_cal_wv_event_tooltip_content {
-	.o_cal_description {
-		background-color: var(--o-cal-desc-bg);
-		padding: 10px 7px;
-		margin: 10px -7px;
-		text-overflow: ellipsis;
-		overflow-x: hidden;
-	}
-	.o_cal_tooltip_buttons {
-		text-align: center;
-		margin-top: 20px;
-	}
-}
-
-
-.fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title {
-	padding-right: 1em;
-	@extend %o_nowrap;
-}
-	
-	
-.o_cal_event_managed > .fc-event-title, .o_cal_event_managed .fc-event-title-container  {
-	@include o-cal-event-icon('lock');
-}
-
-.o_cal_event_not_managed > .fc-event-title, .o_cal_event_not_managed .fc-event-title-container {
-	@include o-cal-event-icon('user');
-}
-
-.o_cal_event_livestream > .fc-event-title, .o_cal_event_livestream .fc-event-title-container {
-	@include o-cal-event-icon('video-camera');
-}
-
-.o_cal_event_managed.o_cal_event_livestream > .fc-event-title, .o_cal_event_managed.o_cal_event_livestream .fc-event-title-container {
-	@include o-cal-event-icon('video-camera');
-	&:before {
-		content : "#{$fa-var-video-camera}\00a0#{$fa-var-lock}"; /* override dual icon */ 
-	}
-}
-
-.o_cal_event_not_managed.o_cal_event_livestream > .fc-event-title, .o_cal_event_not_managed.o_cal_event_livestream .fc-event-title-container {
-	@include o-cal-event-icon('video-camera');
-	&:before {
-		content: "#{$fa-var-video-camera}\00a0#{$fa-var-user}"; /* override dual icon */
-	}
-}
-
-.o_cal .fc {
-	.fc-toolbar {
-		flex-wrap: wrap;
-		gap: 5px;
-	}
-}
-
-/* 
- * fullcalendar bootstrapify
- */
- .o_cal .fc {
- 
-	.fc-button {
-		@include button-variant(var(--o-btn-default-fg), var(--o-btn-default-bg), var(--o-btn-default-border));
-		
-		&.fc-button-default {
-			text-shadow: none;
-		}
-		&.fc-button-active {
-			@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
+	// Secondary colour: the calendar colour on an event with its own colour,
+	// e.g. "o_cal_navy o_cal_sec o_cal_olive_sec". The element carries the
+	// tokens of the event colour, the calendar colour is set as a value.
+	@each $class, $alias in $o-swatch-aliases {
+		@if string.index($class, "o_cal_") == 1 {
+			.o_cal_sec.#{$class}_sec { border-left: $o-cal-sec-border-width solid o-swatch-alias-color($class); }
 		}
 	}
-	
-	.fc-listYear-button {
-			@include o-add-button-icon-left('rectangle-list', false);
-	}
-	.fc-dayGridMonth-button{
-			@include o-add-button-icon-left('calendar-days');
-	}
-	.fc-timeGridWeek-button{
-			@include o-add-button-icon-left('calendar-week');
-	}
-	.fc-timeGridDay-button {
-			@include o-add-button-icon-left('calendar-day');
-	}
-	
-	table.fc-list-table .fc-list-event {
-		background-color: var(--o-bg);
-		color: var(--o-text) ! important;
-		
-		a, span {
-			color: var(--o-text) ! important;
+	// The calendar colour of a key of the chooser sets, e.g. "o_cal_sec o_cal_sec_blue"
+	// or "o_cal_sec o_cal_sec_blue-light" (KalendarRenderWrapper.getSecondaryCssClass())
+	@each $key, $swatch in $o-swatches {
+		.o_cal_sec.o_cal_sec_#{$key} { border-left: $o-cal-sec-border-width solid o-hex(map.get($swatch, "bg")); }
+		@each $variant in ("soft", "light", "tint", "dark") {
+			.o_cal_sec.o_cal_sec_#{$key}-#{$variant} { border-left: $o-cal-sec-border-width solid o-hex(map.get($swatch, "#{$variant}-bg")); }
 		}
 	}
-}
-
-/*
- * Print view
- */
-body.o_cal_print {
-	fieldset {
-		border: none;
-		margin-bottom: 2em;
-	}
-	legend {
-		font-size: 2em;
-		font-weight: bold;
-		span {
-			display: block;
-			font-size: $font-size-base;
-			font-weight: normal;
-		}
-	}
-	
-	ul.o_cal_wv_list {
-		list-style-type: none;
-		padding: 0;
-		>li {
-			page-break-inside : avoid;
-			margin-bottom: 2em;
-		}
-		.o_cal_date {
-			font-size: 1.25em;
-			font-weight: bold;
-			padding: 0.5em 0 0.5em 0;
-		}
-		ul.o_cal_events {
-			list-style-type: none;
-			padding: 0.5em 0 0 0;
-			li.o_cal_event {
-				position: relative;
-				left: ($o-cal-color-width + 10px);
-				page-break-inside : avoid;
-				clear: both;				
-				margin-bottom: 1.5em;
-				padding-right: ($o-cal-color-width + 10px);
 
 
-				.o_cal_time {
-					float: left;
-					font-weight: bold;
-					margin-right: 1em;
-				}
-				.o_cal_subject {
-					font-weight: bold;
-					
-					p {
-						margin: 0;
-					}
-				}
-				
-				.o_cal_location,
-				.o_cal_description,
-				.o_cal_freebusy {
-					clear: both;				
-				}
-				
-				.o_cal_freebusy {
-					font-style: italic;
-				}
-			}
-		}
+	.o_sel_calendar_print_chooser {
+		padding-right:4em;
 	}
-	/* show calendar color as a border (background color is not printed) */
-	.o_cal_class {
-		position: absolute;
-		left: -($o-cal-color-width + 10px);
-		width: $o-cal-color-width;
+
+	.o_cal_config_enabled, .o_cal_config_disabled {
+		position: relative;
+		float: left; display: inline;
 	}
-	
-	/* the calendar legend - color info */
-	#o_cal_config {
-		legend {
-			font-size: 1.25em;
-		}
-		.o_cal_config_calendar {
-			margin: 0;
-			padding: 0;
-		}
-		.o_cal_config_calendar {
-			position: relative;
-			left: ($o-cal-color-width + 10px);
-			float: none;
-			padding-right: ($o-cal-color-width + 10px);
-		}
+
+	.o_cal_config_calendar {
+		margin: 0 5px; 
+		padding: 1px 6px 1px 4px;
+		position: relative; 
+		width: 200px;
+		overflow: hidden;
+		float: left;
+		display: inline;
 	}
-	
-}
-.o_cal_entry_edit {
-	.o_cal_all_day {
+
+	.o_cal_colorchooser_selected {
+		@include o-add-icon('check');
+	}
+
+	#o_cal_colorchooser {
 		div {
+			border-style: solid;
+			border-width: 1px;
+			margin: 5px 4px;
+			display: inline-block;
+		}
+	
+		div:hover {
+			border: 1px solid var(--o-text); 
+		}
+	
+		a {
+			width: 20px;
+			height: 20px;
 			display: inline-block;
 		}
 	}
-	.o_first_date.form-group {
-		>div {
-			margin-bottom: 0;
-		}
+
+	.o_cal_color_element {
+		display: inline-block;
+		width: 20px;
+		height: 20px;
+		border-style: solid;
+		border-width: 1px;
 	}
-	.o_cal_status_color_reset {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: 1fr 1fr 1fr;
-		.btn {
-			width: 100%;
-		}
-		p {
-			margin-top: 25px;
-			padding-top: 0;
-			padding-bottom: 0;
-		}
-	}
-	.o_cal_color_reset {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: 2fr 1fr;
-		.btn {
-			width: 100%;
-		}
-		p {
-			margin-top: 25px;
-			padding-top: 0;
-			padding-bottom: 0;
-		}
-	}
-}
-.o_cal_entry_links {
-	margin-bottom: 15px;
-	padding: 0 5px;
-	.o_cal_link_item {
+	.o_cal_event_color {
 		display: flex;
-		.o_cal_links_pair {
-			display: flex;
-			margin-top: 20px;
-			.o_cal_pair_item {
-				min-width: 80%;
-			}
-			@media (max-width: $screen-md) {
-				flex-direction: column;
-			}
+		align-items: center;
+		gap: 5px;
+	}
+
+	.o_cal_wv_event_tooltip_content {
+		.o_cal_description {
+			background-color: var(--o-cal-desc-bg);
+			padding: 10px 7px;
+			margin: 10px -7px;
+			text-overflow: ellipsis;
+			overflow-x: hidden;
 		}
-		.o_cal_link_delete {
-			padding-top: 44px;
-			margin-left: auto;
+		.o_cal_tooltip_buttons {
+			text-align: center;
+			margin-top: 20px;
 		}
 	}
-}
-.o_cal_links {
-	display: flex;
-	margin-top: 4%;
-	flex-direction: column;
-}
+
+
+	.fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title {
+		padding-right: 1em;
+		@extend %o_nowrap;
+	}
+	
+	
+	.o_cal_event_managed > .fc-event-title, .o_cal_event_managed .fc-event-title-container  {
+		@include o-cal-event-icon('lock');
+	}
+
+	.o_cal_event_not_managed > .fc-event-title, .o_cal_event_not_managed .fc-event-title-container {
+		@include o-cal-event-icon('user');
+	}
+
+	.o_cal_event_livestream > .fc-event-title, .o_cal_event_livestream .fc-event-title-container {
+		@include o-cal-event-icon('video-camera');
+	}
+
+	.o_cal_event_managed.o_cal_event_livestream > .fc-event-title, .o_cal_event_managed.o_cal_event_livestream .fc-event-title-container {
+		@include o-cal-event-icon('video-camera');
+		&:before {
+			content : "#{$fa-var-video-camera}\00a0#{$fa-var-lock}"; /* override dual icon */ 
+		}
+	}
+
+	.o_cal_event_not_managed.o_cal_event_livestream > .fc-event-title, .o_cal_event_not_managed.o_cal_event_livestream .fc-event-title-container {
+		@include o-cal-event-icon('video-camera');
+		&:before {
+			content: "#{$fa-var-video-camera}\00a0#{$fa-var-user}"; /* override dual icon */
+		}
+	}
+
+	.o_cal .fc {
+		.fc-toolbar {
+			flex-wrap: wrap;
+			gap: 5px;
+		}
+	}
+
+	/* 
+	 * fullcalendar bootstrapify
+	 */
+	 .o_cal .fc {
+ 
+		.fc-button {
+			@include button-variant(var(--o-btn-default-fg), var(--o-btn-default-bg), var(--o-btn-default-border));
+		
+			&.fc-button-default {
+				text-shadow: none;
+			}
+			&.fc-button-active {
+				@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
+			}
+		}
+	
+		.fc-listYear-button {
+				@include o-add-button-icon-left('rectangle-list', false);
+		}
+		.fc-dayGridMonth-button{
+				@include o-add-button-icon-left('calendar-days');
+		}
+		.fc-timeGridWeek-button{
+				@include o-add-button-icon-left('calendar-week');
+		}
+		.fc-timeGridDay-button {
+				@include o-add-button-icon-left('calendar-day');
+		}
+	
+		table.fc-list-table .fc-list-event {
+			background-color: var(--o-bg);
+			color: var(--o-text) ! important;
+		
+			a, span {
+				color: var(--o-text) ! important;
+			}
+		}
+	}
+
+	/*
+	 * Print view
+	 */
+	body.o_cal_print {
+		fieldset {
+			border: none;
+			margin-bottom: 2em;
+		}
+		legend {
+			font-size: 2em;
+			font-weight: bold;
+			span {
+				display: block;
+				font-size: $font-size-base;
+				font-weight: normal;
+			}
+		}
+	
+		ul.o_cal_wv_list {
+			list-style-type: none;
+			padding: 0;
+			>li {
+				page-break-inside : avoid;
+				margin-bottom: 2em;
+			}
+			.o_cal_date {
+				font-size: 1.25em;
+				font-weight: bold;
+				padding: 0.5em 0 0.5em 0;
+			}
+			ul.o_cal_events {
+				list-style-type: none;
+				padding: 0.5em 0 0 0;
+				li.o_cal_event {
+					position: relative;
+					left: ($o-cal-color-width + 10px);
+					page-break-inside : avoid;
+					clear: both;				
+					margin-bottom: 1.5em;
+					padding-right: ($o-cal-color-width + 10px);
+
+
+					.o_cal_time {
+						float: left;
+						font-weight: bold;
+						margin-right: 1em;
+					}
+					.o_cal_subject {
+						font-weight: bold;
+					
+						p {
+							margin: 0;
+						}
+					}
+				
+					.o_cal_location,
+					.o_cal_description,
+					.o_cal_freebusy {
+						clear: both;				
+					}
+				
+					.o_cal_freebusy {
+						font-style: italic;
+					}
+				}
+			}
+		}
+		/* show calendar color as a border (background color is not printed) */
+		.o_cal_class {
+			position: absolute;
+			left: -($o-cal-color-width + 10px);
+			width: $o-cal-color-width;
+		}
+	
+		/* the calendar legend - color info */
+		#o_cal_config {
+			legend {
+				font-size: 1.25em;
+			}
+			.o_cal_config_calendar {
+				margin: 0;
+				padding: 0;
+			}
+			.o_cal_config_calendar {
+				position: relative;
+				left: ($o-cal-color-width + 10px);
+				float: none;
+				padding-right: ($o-cal-color-width + 10px);
+			}
+		}
+	
+	}
+	.o_cal_entry_edit {
+		.o_cal_all_day {
+			div {
+				display: inline-block;
+			}
+		}
+		.o_first_date.form-group {
+			>div {
+				margin-bottom: 0;
+			}
+		}
+		.o_cal_status_color_reset {
+			display: grid;
+			gap: 10px;
+			grid-template-columns: 1fr 1fr 1fr;
+			.btn {
+				width: 100%;
+			}
+			p {
+				margin-top: 25px;
+				padding-top: 0;
+				padding-bottom: 0;
+			}
+		}
+		.o_cal_color_reset {
+			display: grid;
+			gap: 10px;
+			grid-template-columns: 2fr 1fr;
+			.btn {
+				width: 100%;
+			}
+			p {
+				margin-top: 25px;
+				padding-top: 0;
+				padding-bottom: 0;
+			}
+		}
+	}
+	.o_cal_entry_links {
+		margin-bottom: 15px;
+		padding: 0 5px;
+		.o_cal_link_item {
+			display: flex;
+			.o_cal_links_pair {
+				display: flex;
+				margin-top: 20px;
+				.o_cal_pair_item {
+					min-width: 80%;
+				}
+				@media (max-width: $screen-md) {
+					flex-direction: column;
+				}
+			}
+			.o_cal_link_delete {
+				padding-top: 44px;
+				margin-left: auto;
+			}
+		}
+	}
+	.o_cal_links {
+		display: flex;
+		margin-top: 4%;
+		flex-direction: column;
+	}
 }

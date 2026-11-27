@@ -2,182 +2,182 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-tags {
-.o_tag {
-	padding: 1px 0.5em;
-	margin-right: 2px;
-	margin-bottom: 2px;
-	font-weight: 450;
-	font-size: 12px;
-	text-align: center;
-	white-space: nowrap;
-	border-radius: 1em;
-	border-width: 1px;
-	border-style: solid;
-	border-color: var(--o-tag-bg);
-	color: var(--o-tag-fg);
-	background-color: var(--o-tag-bg);
-	
-	&:hover {
-		text-decoration: none;
-		color: var(--o-tag-fg);
-	}
-	
-	&.o_tag_clickable {
-		&:hover {
-			text-decoration: none;
-			background-color: var(--o-tag-bg-hover);
-			border-color: var(--o-tag-bg-hover);
-		}
-		
-		&:active {
-			background-color: var(--o-tag-bg-active);
-			border-color: var(--o-tag-bg-active);
-		}
-	}
-	
-	&.o_tag_selected {
-		color: var(--o-tag-selected-fg);
-		background-color: var(--o-tag-selected-bg);
-		border-color: var(--o-tag-selected-border);
-
-		&.o_tag_clickable {
-			&:hover {
-				text-decoration: none;
-				background-color: var(--o-tag-selected-bg-hover);
-				border-color: var(--o-tag-selected-border-hover);
-			}
-			
-			&:active {
-				background-color: var(--o-tag-selected-bg-active);
-				border-color: var(--o-tag-selected-border-active);
-			}
-		}
-	}
-
-	&.o_tag_selected_remove {
-		color: var(--o-tag-selected-fg);
-		background-color: var(--o-tag-selected-bg);
-		border-color: var(--o-tag-selected-border);
-
-		&.o_tag_clickable {
-			&:hover {
-				text-decoration: none;
-				background-color: var(--o-tag-selected-bg-hover);
-				border-color: var(--o-tag-selected-border-hover);
-			}
-
-			&:active {
-				background-color: var(--o-tag-selected-bg-active);
-				border-color: var(--o-tag-selected-border-active);
-			}
-		}
-	}
-}
-	
-.o_tags_with_icon {
-	width: 100%;
-	display: inline-flex;
-	align-items: center;
-}
-
-.o_textbox_dropdown_info {
-	font-size: 75%;
-	font-weight: normal;
-}
-
-
-/** Tag selection element **/
-.o_tag_selection_button_tags {
-	display: flex;
-	flex-wrap: wrap;
-}
-
-.o_tag_selection_search {
-	margin-bottom: 10px;
-}
-
-.o_tag_selection_results {
-	.o_tag_selection_create {
-		line-height: 2em;
-	}
-}
-.o_tag_selection_tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 2px;
-	max-width: 100%;
 	.o_tag {
-		@extend %o_nowrap;
-		margin: 0;
-	}
-}
-
-.o_tag_selection {
-	.o_tag_selection_tags {
-		padding: 4px; // for focus indicator
-		margin: 0 -4px;
-		max-width: none;
-		gap: 4px;
-	}
-}
-
-.o_tag.o_selection_tag {
-	border-color: var(--o-tag-selection-border);
-	background-color: var(--o-tag-selection-bg);
-	color: var(--o-tag-selection-fg);
-	.o_tag_count {
-		font-size: 85%;
-	}
+		padding: 1px 0.5em;
+		margin-right: 2px;
+		margin-bottom: 2px;
+		font-weight: 450;
+		font-size: 12px;
+		text-align: center;
+		white-space: nowrap;
+		border-radius: 1em;
+		border-width: 1px;
+		border-style: solid;
+		border-color: var(--o-tag-bg);
+		color: var(--o-tag-fg);
+		background-color: var(--o-tag-bg);
 	
-	&.o_tag_clickable {
 		&:hover {
 			text-decoration: none;
-			background-color: var(--o-tag-selection-bg-hover);
-			border-color: var(--o-tag-selection-border-hover);
+			color: var(--o-tag-fg);
 		}
+	
+		&.o_tag_clickable {
+			&:hover {
+				text-decoration: none;
+				background-color: var(--o-tag-bg-hover);
+				border-color: var(--o-tag-bg-hover);
+			}
 		
-		&:active {
-			background-color: var(--o-tag-selection-bg-active);
-			border-color: var(--o-tag-selection-bg-active);
+			&:active {
+				background-color: var(--o-tag-bg-active);
+				border-color: var(--o-tag-bg-active);
+			}
+		}
+	
+		&.o_tag_selected {
+			color: var(--o-tag-selected-fg);
+			background-color: var(--o-tag-selected-bg);
+			border-color: var(--o-tag-selected-border);
+
+			&.o_tag_clickable {
+				&:hover {
+					text-decoration: none;
+					background-color: var(--o-tag-selected-bg-hover);
+					border-color: var(--o-tag-selected-border-hover);
+				}
+			
+				&:active {
+					background-color: var(--o-tag-selected-bg-active);
+					border-color: var(--o-tag-selected-border-active);
+				}
+			}
+		}
+
+		&.o_tag_selected_remove {
+			color: var(--o-tag-selected-fg);
+			background-color: var(--o-tag-selected-bg);
+			border-color: var(--o-tag-selected-border);
+
+			&.o_tag_clickable {
+				&:hover {
+					text-decoration: none;
+					background-color: var(--o-tag-selected-bg-hover);
+					border-color: var(--o-tag-selected-border-hover);
+				}
+
+				&:active {
+					background-color: var(--o-tag-selected-bg-active);
+					border-color: var(--o-tag-selected-border-active);
+				}
+			}
 		}
 	}
 	
-	&.o_tag_selected {
-		border-color: var(--o-tag-selection-selected-border);
-		background-color: var(--o-tag-selection-selected-bg);
-		color: var(--o-tag-selection-selected-fg);
+	.o_tags_with_icon {
+		width: 100%;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.o_textbox_dropdown_info {
+		font-size: 75%;
+		font-weight: normal;
+	}
+
+
+	/** Tag selection element **/
+	.o_tag_selection_button_tags {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.o_tag_selection_search {
+		margin-bottom: 10px;
+	}
+
+	.o_tag_selection_results {
+		.o_tag_selection_create {
+			line-height: 2em;
+		}
+	}
+	.o_tag_selection_tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2px;
+		max-width: 100%;
+		.o_tag {
+			@extend %o_nowrap;
+			margin: 0;
+		}
+	}
+
+	.o_tag_selection {
+		.o_tag_selection_tags {
+			padding: 4px; // for focus indicator
+			margin: 0 -4px;
+			max-width: none;
+			gap: 4px;
+		}
+	}
+
+	.o_tag.o_selection_tag {
+		border-color: var(--o-tag-selection-border);
+		background-color: var(--o-tag-selection-bg);
+		color: var(--o-tag-selection-fg);
+		.o_tag_count {
+			font-size: 85%;
+		}
+	
+		&.o_tag_clickable {
+			&:hover {
+				text-decoration: none;
+				background-color: var(--o-tag-selection-bg-hover);
+				border-color: var(--o-tag-selection-border-hover);
+			}
 		
-		&.o_tag_clickable {
-			&:hover {
-				text-decoration: none;
-				background-color: var(--o-tag-selection-selected-bg-hover);
-				border-color: var(--o-tag-selection-selected-border-hover);
+			&:active {
+				background-color: var(--o-tag-selection-bg-active);
+				border-color: var(--o-tag-selection-bg-active);
 			}
+		}
+	
+		&.o_tag_selected {
+			border-color: var(--o-tag-selection-selected-border);
+			background-color: var(--o-tag-selection-selected-bg);
+			color: var(--o-tag-selection-selected-fg);
+		
+			&.o_tag_clickable {
+				&:hover {
+					text-decoration: none;
+					background-color: var(--o-tag-selection-selected-bg-hover);
+					border-color: var(--o-tag-selection-selected-border-hover);
+				}
 			
-			&:active {
-				background-color: var(--o-tag-selection-selected-bg-active);
-				border-color: var(--o-tag-selection-selected-border-active);
+				&:active {
+					background-color: var(--o-tag-selection-selected-bg-active);
+					border-color: var(--o-tag-selection-selected-border-active);
+				}
+			}
+		}
+
+		&.o_tag_selected_remove {
+			border-color: var(--o-tag-selection-remove-selected-border);
+			background-color: var(--o-tag-selection-remove-selected-bg);
+			color: var(--o-tag-selection-remove-selected-fg);
+
+			&.o_tag_clickable {
+				&:hover {
+					text-decoration: none;
+					background-color: var(--o-tag-selection-remove-selected-bg-hover);
+					border-color: var(--o-tag-selection-remove-selected-border-hover);
+				}
+
+				&:active {
+					background-color: var(--o-tag-selection-remove-selected-bg-active);
+					border-color: var(--o-tag-selection-remove-selected-border-active);
+				}
 			}
 		}
 	}
-
-	&.o_tag_selected_remove {
-		border-color: var(--o-tag-selection-remove-selected-border);
-		background-color: var(--o-tag-selection-remove-selected-bg);
-		color: var(--o-tag-selection-remove-selected-fg);
-
-		&.o_tag_clickable {
-			&:hover {
-				text-decoration: none;
-				background-color: var(--o-tag-selection-remove-selected-bg-hover);
-				border-color: var(--o-tag-selection-remove-selected-border-hover);
-			}
-
-			&:active {
-				background-color: var(--o-tag-selection-remove-selected-bg-active);
-				border-color: var(--o-tag-selection-remove-selected-border-active);
-			}
-		}
-	}
-}
 }

@@ -2,103 +2,103 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-scope {
-.o_scopes {
-	list-style: none;
-	padding: 0;
+	.o_scopes {
+		list-style: none;
+		padding: 0;
 
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax($o-scope-pref-wdith, 1fr));
-	gap: $o-scopes-gap;
-	justify-items: stretch;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax($o-scope-pref-wdith, 1fr));
+		gap: $o-scopes-gap;
+		justify-items: stretch;
 	
+		.o_scope_toggle {
+			width: 100%;
+		}
+	}
+
 	.o_scope_toggle {
-		width: 100%;
-	}
-}
-
-.o_scope_toggle {
-	background-color: var(--o-scope-toggle-bg);
-	color: var(--o-scope-toggle-fg);
-	border-color: var(--o-scope-toggle-border);
-	&.btn:hover {
-		background-color: var(--o-scope-toggle-hover-bg);
-	}
-	&.btn[disabled] {
-		opacity: 1;
-	}
-	
-	&.o_toggle_on {
-		background-color: var(--o-scope-toggle-on-bg);
-		color: var(--o-scope-toggle-on-fg);
-		border-color: var(--o-scope-toggle-on-border);
-		&:hover {
-			background-color: var(--o-scope-toggle-on-hover-bg);
-			color: var(--o-scope-toggle-on-hover-fg);
+		background-color: var(--o-scope-toggle-bg);
+		color: var(--o-scope-toggle-fg);
+		border-color: var(--o-scope-toggle-border);
+		&.btn:hover {
+			background-color: var(--o-scope-toggle-hover-bg);
 		}
-	}
-	
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: initial;
-	
-	.o_toggle_button_text {
-		width: 100%;
-		>span:is(.o_scope_toggle_hints *) {
-			overflow: hidden;
-			text-overflow: ellipsis;
+		&.btn[disabled] {
+			opacity: 1;
 		}
 	
-		.o_scope {
-			text-align: right;
-			height: $o-scope-height;
+		&.o_toggle_on {
+			background-color: var(--o-scope-toggle-on-bg);
+			color: var(--o-scope-toggle-on-fg);
+			border-color: var(--o-scope-toggle-on-border);
+			&:hover {
+				background-color: var(--o-scope-toggle-on-hover-bg);
+				color: var(--o-scope-toggle-on-hover-fg);
+			}
+		}
+	
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: initial;
+	
+		.o_toggle_button_text {
+			width: 100%;
+			>span:is(.o_scope_toggle_hints *) {
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+	
+			.o_scope {
+				text-align: right;
+				height: $o-scope-height;
 		
-			display: flex;
-			flex-direction: column;
+				display: flex;
+				flex-direction: column;
 		
-			.o_scope_title {
-				font-weight: $o-scope-title-font-weight;
-				&:not(:is(.o_scope_toggle_hints *)) {
-					height: $o-scope-height;
-					overflow: hidden;
+				.o_scope_title {
+					font-weight: $o-scope-title-font-weight;
+					&:not(:is(.o_scope_toggle_hints *)) {
+						height: $o-scope-height;
+						overflow: hidden;
+					}
+					&:is(.o_scope_toggle_hints *) {
+						@extend %o_flex_item_max;
+					}
 				}
-				&:is(.o_scope_toggle_hints *) {
+				.o_scope_hint {
 					@extend %o_flex_item_max;
 				}
 			}
-			.o_scope_hint {
-				@extend %o_flex_item_max;
+		}
+	}
+
+	form .o_form {
+		.o_date_scope_range {
+			.o_date {
+				padding-right: 0;
 			}
 		}
 	}
-}
-
-form .o_form {
-	.o_date_scope_range {
-		.o_date {
-			padding-right: 0;
+	.o_date_scope_predefs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+		@media (min-width: $screen-sm-min) {
+			padding-top: ($padding-base-vertical + 1);
 		}
 	}
-}
-.o_date_scope_predefs {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 5px;
-	@media (min-width: $screen-sm-min) {
-		padding-top: ($padding-base-vertical + 1);
+
+	dialog .o_scopes_dropdown {
+		min-width: 400px;
 	}
-}
 
-dialog .o_scopes_dropdown {
-	min-width: 400px;
-}
+	.o_scope_with_actions {
+		display: flex;
+		align-items: flex-start;
+		gap: $o-scopes-gap;
 
-.o_scope_with_actions {
-	display: flex;
-	align-items: flex-start;
-	gap: $o-scopes-gap;
-
-	>div:has(.o_scopes) {
-		flex: 1;
+		>div:has(.o_scopes) {
+			flex: 1;
+		}
 	}
-}
 }

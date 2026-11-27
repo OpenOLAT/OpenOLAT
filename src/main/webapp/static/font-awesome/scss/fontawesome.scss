@@ -14,22 +14,22 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin fa-rules-fontawesome {
-/*!
- * Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com
- * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
- * Copyright 2024 Fonticons, Inc.
- */
-// Font Awesome core compile (Web Fonts-based)
-// -------------------------
+  /*!
+   * Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com
+   * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+   * Copyright 2024 Fonticons, Inc.
+   */
+  // Font Awesome core compile (Web Fonts-based)
+  // -------------------------
 
-@include fa-rules-core;
-@include fa-rules-sizing;
-@include fa-rules-fixed-width;
-@include fa-rules-list;
-@include fa-rules-bordered-pulled;
-@include fa-rules-animated;
-@include fa-rules-rotated-flipped;
-@include fa-rules-stacked;
-@include fa-rules-icons;
-@include fa-rules-screen-reader;
+  @include fa-rules-core;
+  @include fa-rules-sizing;
+  @include fa-rules-fixed-width;
+  @include fa-rules-list;
+  @include fa-rules-bordered-pulled;
+  @include fa-rules-animated;
+  @include fa-rules-rotated-flipped;
+  @include fa-rules-stacked;
+  @include fa-rules-icons;
+  @include fa-rules-screen-reader;
 }

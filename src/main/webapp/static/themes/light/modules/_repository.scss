@@ -3,951 +3,964 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-repository {
-.o_info_page {
-	position: relative;
+	.o_info_page {
+		position: relative;
 
-	.o_header {
-		.o_lead {
-			display: flex;
-			flex-direction: column;
-			width: 100%;
-
-			.o_meta_wrapper {
+		.o_header {
+			.o_lead {
 				display: flex;
 				flex-direction: column;
-				gap: 1em;
-
-				flex-grow: 1;
-				flex-shrink: 1;
 				width: 100%;
-			}
 
-			.o_meta {
-				display: flex;
-				flex-direction: column;
-			}
+				.o_meta_wrapper {
+					display: flex;
+					flex-direction: column;
+					gap: 1em;
 
-			.o_ext_ref {
-				color: var(--o-text-muted);
-			}
-			h2 {
-				font-size: $o-coursesite-meta-title-font-size;
-				margin-top: 0;
-				white-space: normal;
-				i {
-					display: none;
-				}
-			}
-			.o_teaser {
-				white-space: normal;
-			}
-
-			.o_header_actions {
-				display: flex;
-				gap: 5px;
-				margin-bottom: 10px;
-			}
-
-			.o_tags {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 5px;
-
-				// Let the individual taxonomy tags wrap alongside the
-				// educational type badge instead of the whole group jumping
-				// to the next line as one atomic block.
-				.o_taxonomy_tags {
-					display: contents;
-				}
-
-				// Spacing between all tags comes only from the flex gap
-				// above; each tag's own margin would otherwise stack on top.
-				.o_educational_type,
-				.o_tag {
-					margin-right: 0;
-				}
-
-				.o_tag {
-					font-weight: normal;
-				}
-			}
-
-			.o_educational_type {
-				margin-top: 0;
-				margin-bottom: 2px;
-				line-height: inherit;
-				font-size: 12px;
-				padding: 1px 0.5em;
-				border-radius: 0.5em;
-			}
-			
-			.o_author {
-				color: var(--o-coursesite-meta-author);
-				white-space: normal;
-			}
-		}
-	}
-
-	// The start/leave/admin buttons are rendered inside the "Get started"
-	// card (get_started.html), not inside the header - not nested under
-	// .o_header here.
-	.o_get_started {
-		.o_header_offers {
-			margin-top: auto;
-		}
-
-		.o_start_wrapper {
-			.o_start_message {
-				width: $o-ac-offers-container-max-width;
-				max-width: $o-ac-offers-container-max-width;
-				margin-bottom: math.div($o-radio-cards-gap, 2);
-			}
-			// Open/admin always stacked, one below the other.
-			.o_start_inner {
-				display: flex;
-				flex-direction: column;
-				gap: 5px; // matches .o_button_group's inter-button spacing
-
-				> .o_button_call_to_action {
-					max-width: 100%;
-					margin-top: 0;
-				}
-			}
-		}
-	}
-
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 20px;
-
-	// Mobile: both column wrappers disappear from the box tree, their items
-	// become direct grid children so `order` alone controls the sequence.
-	.o_info_page_column_aside,
-	.o_info_page_column_main {
-		display: contents;
-	}
-
-	.o_info_page_thumbnail { order: 1; }
-	.o_info_page_header { order: 2; }
-	.o_info_page_get_started { order: 3; }
-	.o_info_page_my_course { order: 4; }
-	.o_info_page_benefits { order: 5; }
-	.o_info_page_facts { order: 6; }
-	.o_info_page_sections { order: 7; }
-	.o_info_page_events { order: 8; }
-	.o_info_page_licence { order: 9; }
-	.o_info_page_rating { order: 10; }
-
-	.o_info_page_print_header,
-	.o_info_page_print_qrcode {
-		display: none;
-	}
-
-	.o_info_page_thumbnail {
-		.o_image, img, .o_video, video {
-			width: auto;
-			max-width: 100%;
-			border-radius: $o-repo-info-border-radius;
-		}
-	}
-
-	// Tablet width: still a single overall column (aside/main stacked), but
-	// wide enough to put the thumbnail next to the title again, as before
-	// the redesign moved it into its own grid item. Print / PDF (A4 minus
-	// margins is narrower than the tablet breakpoint) uses the same layout.
-	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max), print {
-		grid-template-columns: 1fr auto;
-
-		.o_info_page_item {
-			grid-column: 1 / -1;
-		}
-
-		.o_info_page_header {
-			grid-column: 1;
-			grid-row: 1;
-		}
-
-		.o_info_page_thumbnail {
-			grid-column: 2;
-			grid-row: 1;
-			max-width: math.floor(570px * 0.5); //570x380
-		}
-	}
-
-	@media (min-width: $screen-md-min) {
-		grid-template-columns: 2fr 1fr;
-		align-items: start;
-
-		// Desktop: the wrappers regain their box, each an independent-height
-		// flex column; `order` above still sorts correctly within each one.
-		.o_info_page_column_aside,
-		.o_info_page_column_main {
-			display: flex;
-			flex-direction: column;
-			gap: 20px;
-		}
-
-		.o_info_page_column_main {
-			grid-column: 1;
-			grid-row: 1;
-		}
-
-		.o_info_page_column_aside {
-			grid-column: 2;
-			grid-row: 1;
-			// Without this, a non-shrinkable child (e.g. the teaser video's
-			// fixed pixel width) sets the grid item's automatic minimum size,
-			// pinning this 1fr track wider than its fair share and breaking
-			// the 2:1 column ratio.
-			min-width: 0;
-		}
-	}
-
-	// Print / PDF: hide the interactive parts, add the logo header and the
-	// QR code footer.
-	@media print {
-		.o_info_page_print_header {
-			display: block;
-			width: 100%;
-			grid-column: 1 / -1;
-			grid-row: 1;
-			margin-bottom: 20px;
-		}
-
-		.o_info_page_header,
-		.o_info_page_thumbnail {
-			grid-row: 2;
-		}
-
-		.o_info_page_print_header {
-
-			img {
-				max-height: $o-repo-info-print-logo-height;
-				max-width: 100%;
-			}
-		}
-
-		.o_info_page_print_qrcode {
-			display: flex;
-			align-items: center;
-			gap: 20px;
-			order: 11;
-
-			.o_qrcode {
-				width: 128px;
-				height: 128px;
-				flex-shrink: 0;
-			}
-
-			legend {
-				margin-bottom: 5px;
-				border-bottom: none;
-			}
-		}
-
-		.o_header .o_header_actions {
-			display: none;
-		}
-
-		.o_header_start {
-			display: none;
-		}
-
-		// Get started: only the details of the selected offer. Without any
-		// details the whole card is hidden.
-		.o_get_started {
-			.o_ac_offers_container {
-				max-width: none;
-			}
-
-			.o_info_with_icon,
-			.o_warning_with_icon,
-			.o_ac_offer_selection,
-			.o_ac_offer_message,
-			.o_ac_offer_custom,
-			.o_ac_start_admin,
-			.o_header_offers > .btn,
-			.o_header_offers > p {
-				display: none;
-			}
-		}
-
-		.o_info_page_get_started:not(:has(.o_ac_offer_details > *)),
-		&.o_info_page_member .o_info_page_get_started,
-		.o_info_page_my_course:not(:has(.o_facts > *)) {
-			display: none;
-		}
-		
-		.o_info_page_my_course .o_fact_sheet_footer {
-			display: none;
-		}
-
-		.o_info_page_sections .collapse {
-			display: block;
-			height: auto !important;
-		}
-
-		.o_info_page_rating {
-			#o_comments_area {
-				display: none;
-			}
-		}
-	}
-
-	.o_get_started .o_header_offers .btn {
-		width: 100%;
-	}
-
-	.o_info_page_rating {
-		@include clearfix();
-		.o_comments {
-			@extend %o_undecorated;
-			margin-left: 1em;
-		}
-	}
-    .o_tag {
-    	display: inline-block;
-    }
-}
-
-.o_repo_info_panel {
-	border: 1px solid var(--o-coursesite-sidecol-border);
-	border-radius: $o-coursesite-sidecol-radius;
-	background: var(--o-coursesite-sidecol-bg);
-	padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
-}
-
-.o_repo_info_panel > .o_repo_info_panel {
-	background: var(--o-bg);
-}
-
-.o_infopanel th {
-	width: 1%;
-	white-space: nowrap;
-}
-
-.o_license_info {
-	margin: 2em 0 1em 0;
-	.o_icon {
-		float: left;
-		margin-right: 0.5em;
-	}
-	.o_license,
-	.o_licensor {
-		font-weight: bold;
-		font-size: 110%;
-		line-height: 2em;
-		vertical-align: text-bottom;
-		display: inline-block;
-	}
-	.o_license_text {
-		clear: both;
-		font-style: italic;
-		margin-top: 1em;
-	}
-}
-
-.o_meta .o_closed {
-	padding: 2px 5px;
-	margin: 5px 0;
-}
-
-.o_overview .o_closed {
-	padding: 5px 10px;
-	margin: 15px 15px 15px 0;
-	display: inline-block;
-}
-.o_benefits {
-	margin: 15px 0;
-	
-	h4.o_benefit, h5.o_benefit {
-		display: grid;
-		grid-template-columns: 36px 1fr;
-		
-		> i {
-			align-self: center;
-		}
-		> small {
-			grid-column-start: 2;
-			margin-top: 3px;
-		}
-	}
-	
-	h5.o_benefit {
-		font-size: 1.25em;
-	}
-}
-
-.o_re_access_denied {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.5em;
-	
-	.o_re_access_denied_cross {
-		fill: $o-repo-access-denied-cross-fill;
-	}
-	.o_re_access_denied_message {
-		text-align: center;
-		font-size: 1.5em
-	}
-	.o_re_access_denied_hint {
-		text-align: center;
-	}
-}
-
-.o_ac_runtime_type {
-	padding: 12px;
-	display: grid;
-	align-items: center;
-	grid-template-columns: 50px 1fr auto;
-	
-	>i {
-		font-size: 200%;
-	}
-	h5 {
-		margin: 0 0 5px 0;
-	}
-	p {
-		margin: 0;
-		color: var(--o-text-muted);
-	}
-}
-
-@media (min-width: 768px) {
-	.o_form.form-horizontal.o_ac_runtime_type_form label {
-		padding-top: 1.5em;
-	}
-}
-
-.o_ac_overview {
-	.panel-body {
-		padding: 0px;
-	}
-}
-.o_ac_offers_container {
-	max-width: $o-ac-offers-container-max-width;
-}
-.o_ac_start_admin {
-	display: flex;
-	justify-content: center;
-}
-.o_ac_offers {
-	.o_ac_offer_details {
-		display: flex;
-		flex-direction: column;
-		
-		.o_ac_offer_price_ammount {
-			font-size: 180%;
-			font-weight: bold;
-		}
-		.o_ac_offer_details_description {
-			margin-top: 10px;
-		}
-	}
-	.o_ac_offer_selection {
-		margin-bottom: $o-radio-cards-gap;
-		.form-group {
-			margin-bottom: 0;
-		}
-	}
-	.o_ac_offer_message {
-		margin-bottom: math.div($o-radio-cards-gap, 2);
-		width: 100%;
-		&.o_catalog_seats_left {
-			width: fit-content;
-		}
-	}
-	.o_ac_offer_custom {
-		button {
-			margin-top: 0;
-			width: 100%;
-		}
-	}
-}
-
-.o_ac_offers_details_text {
-	display: flex;
-	a {
-		margin-left: 10px;
-		flex-shrink: 0;
-	}
-}
-
-.o_ac_invoice_fee_free {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 5px;
-}
-
-.o_ac_order_details .o_ac_order_header p {
-	font-size: 2em;
-	font-weight: 900;
-}
-
-.o_ac_order_header {
-	display: flex;
-	flex-wrap: wrap;
-	margin-bottom: 30px;
-	
-	.form-group {
-		margin-bottom: 0;
-		.form-control-static {
-			padding-bottom: 0;
-		}
-	}
-	.o_ac_order_status {
-		display: flex;
-		flex-direction: column;
-		justify-content: end;
-		margin-left: 10px;
-		margin-bottom: 8px;
-	}
-	.o_ac_order_cmds {
-		margin-left: auto;
-		padding: 5px 0;
-	}
-}
-
-.o_ac_order_details_container {
-	container-type: inline-size;
-	container-name: o_ac_order_details_container;
-	
-	.o_table_row_details_container {
-		width: calc(100cqw - 65px); // 65px = padding from o_table_row_details...
-	}
-}
-.o_ac_order_details {
-	.o_ac_order_details_content {
-		display: flex;
-		flex-direction: column;
-		column-gap: 30px;
-		row-gap: 20px;
-		.o_ac_order_details_content_left {
-			flex-grow: 2;
-			order: 2;
-		}
-		.o_ac_order_details_content_right {
-			width: 100%;
-		
-			display: grid;
-			grid-template-columns: 1fr;
-			gap: 20px;
-			
-			.o_ac_billing_address {
-				max-width: unset;
-			}
-		}
-	}
-	
-	@container o_ac_order_details_container (min-width: 700px) {
-		.o_ac_order_details_content {
-			.o_ac_order_details_content_right {
-				margin-right: unset;
-				grid-template-columns: 1fr 1fr;
-				
-				>div {
+					flex-grow: 1;
+					flex-shrink: 1;
 					width: 100%;
-					.o_user_info_profile {
-						width: 100%;
+				}
+
+				.o_meta {
+					display: flex;
+					flex-direction: column;
+				}
+
+				.o_ext_ref {
+					color: var(--o-text-muted);
+				}
+				h2 {
+					font-size: $o-coursesite-meta-title-font-size;
+					margin-top: 0;
+					white-space: normal;
+					i {
+						display: none;
+					}
+				}
+				.o_teaser {
+					white-space: normal;
+				}
+
+				.o_header_actions {
+					display: flex;
+					gap: 5px;
+					margin-bottom: 10px;
+				}
+
+				.o_tags {
+					display: flex;
+					flex-wrap: wrap;
+					gap: 5px;
+
+					// Let the individual taxonomy tags wrap alongside the
+					// educational type badge instead of the whole group jumping
+					// to the next line as one atomic block.
+					.o_taxonomy_tags {
+						display: contents;
+					}
+
+					// Spacing between all tags comes only from the flex gap
+					// above; each tag's own margin would otherwise stack on top.
+					.o_educational_type,
+					.o_tag {
+						margin-right: 0;
+					}
+
+					.o_tag {
+						font-weight: normal;
+					}
+				}
+
+				.o_educational_type {
+					margin-top: 0;
+					margin-bottom: 2px;
+					line-height: inherit;
+					font-size: 12px;
+					padding: 1px 0.5em;
+					border-radius: 0.5em;
+				}
+			
+				.o_author {
+					color: var(--o-coursesite-meta-author);
+					white-space: normal;
+				}
+			}
+		}
+
+		// The start/leave/admin buttons are rendered inside the "Get started"
+		// card (get_started.html), not inside the header - not nested under
+		// .o_header here.
+		.o_get_started {
+			.o_header_offers {
+				margin-top: auto;
+			}
+
+			.o_start_wrapper {
+				.o_start_message {
+					width: $o-ac-offers-container-max-width;
+					max-width: $o-ac-offers-container-max-width;
+					margin-bottom: math.div($o-radio-cards-gap, 2);
+				}
+				// Open/admin always stacked, one below the other.
+				.o_start_inner {
+					display: flex;
+					flex-direction: column;
+					gap: 5px; // matches .o_button_group's inter-button spacing
+
+					> .o_button_call_to_action {
+						max-width: 100%;
+						margin-top: 0;
 					}
 				}
 			}
 		}
-	}
-	
-	@container o_ac_order_details_container (min-width: 840px) {
-		.o_ac_order_details_content {
-			flex-direction: row;
-			.o_ac_order_details_content_left {
-				order: 1;
-			}
-			.o_ac_order_details_content_right {
-				order: 2;
-				
-				display: flex;
-				flex-direction: column;
-				flex: 0 0 350px;
-				align-content: start;
-				max-width: 350px;
-			}
-		}
-	}
-	
-	.o_ac_order_metadata {
-		display: grid;
-		column-gap: 20px;
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	}
-}
 
-.o_offer_survey_participation_details {
-	.o_flex_header {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: 1fr;
 		gap: 20px;
-		align-items: center;
-		min-height: 34px;
-		margin-bottom: 20px;
 
-		.o_offer_survey_title {
-			display: flex;
-			gap: 4px;
-			align-items: baseline;
+		// Mobile: both column wrappers disappear from the box tree, their items
+		// become direct grid children so `order` alone controls the sequence.
+		.o_info_page_column_aside,
+		.o_info_page_column_main {
+			display: contents;
+		}
 
-			h3 {
-				margin: 0;
+		.o_info_page_thumbnail { order: 1; }
+		.o_info_page_header { order: 2; }
+		.o_info_page_get_started { order: 3; }
+		.o_info_page_my_course { order: 4; }
+		.o_info_page_benefits { order: 5; }
+		.o_info_page_facts { order: 6; }
+		.o_info_page_sections { order: 7; }
+		.o_info_page_events { order: 8; }
+		.o_info_page_licence { order: 9; }
+		.o_info_page_rating { order: 10; }
+
+		.o_info_page_print_header,
+		.o_info_page_print_qrcode {
+			display: none;
+		}
+
+		.o_info_page_thumbnail {
+			.o_image, img, .o_video, video {
+				width: auto;
+				max-width: 100%;
+				border-radius: $o-repo-info-border-radius;
 			}
 		}
 
-		.o_offer_survey_header_spacer {
-			flex-grow: 1;
+		// Tablet width: still a single overall column (aside/main stacked), but
+		// wide enough to put the thumbnail next to the title again, as before
+		// the redesign moved it into its own grid item. Print / PDF (A4 minus
+		// margins is narrower than the tablet breakpoint) uses the same layout.
+		@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max), print {
+			grid-template-columns: 1fr auto;
+
+			.o_info_page_item {
+				grid-column: 1 / -1;
+			}
+
+			.o_info_page_header {
+				grid-column: 1;
+				grid-row: 1;
+			}
+
+			.o_info_page_thumbnail {
+				grid-column: 2;
+				grid-row: 1;
+				max-width: math.floor(570px * 0.5); //570x380
+			}
 		}
-	}
-}
 
+		@media (min-width: $screen-md-min) {
+			grid-template-columns: 2fr 1fr;
+			align-items: start;
 
-
-.o_ac_billing_address {
-	background-color: var(--o-ac-billing-address-bg);
-	border: $o-ac-ba-border-width $o-ac-ba-border-style var(--o-ac-billing-address-border);
-	border-radius: $o-ac-ba-border-radius;
-	padding: $o-ac-ba-padding;
-	min-width: $o-ac-ba-min-width;
-	max-width: max-content;
-	
-	.o_ac_billing_address_inner {
-		display: flex;
-	}
-	.o_ac_billing_address_icon {
-		width: $o-ac-ba-icon-width;
-		font-size: $o-ac-ba-icon-font-size;
-		display: grid;
-		place-items: center;
-	}
-	.o_ac_billing_address_identifier {
-		font-weight: bold;
-		margin-bottom: .5em;
-	}
-	&.o_ac_billing_address_temporary {
-		background-color: var(--o-ac-billing-address-temporary-bg);
-	}
-}
-.o_labeled_light {
-	&.o_ac_billing_address_active_light {
-		font-weight: normal;
-	}
-	&.o_ac_billing_address_inactive_light {
-		font-weight: normal;
-	}
-}
-.o_ac_billing_address_selection.o_form {
-.o_radio_cards_wrapper {
-	.o_radio_cards {
-		label {
-			flex-basis: $o-ac-ba-radio-card-width;
-		}
-	}
-}}
-.o_ac_rate_config {
-	display: flex;
-	align-items: center;
-	gap: 5px;
-}
-
-
-tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
-tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td span {
-	text-decoration: line-through;
-}
-
-/* status element in dropdown menu */
-a.o_repo_tools_status {
-	cursor:pointer;
-	margin: 0 2px 2px 2px;
-	text-align: left;
-}
-
-/* Colours of the repository statuses (o_repo_status_*): semantic states in _states.scss (OO-10042) */
-
-.o_fake_participant_stop {
-	display: flex;
-	align-items: center;
-	@media (max-width: $screen-sm-min) {
-		flex-wrap: wrap;
-	}
-	.o_fps_message {
-		display: flex;
-		align-items: center;
-		.o_icon {
-			color: var(--o-state-warning-text);
-			font-size: 200%;
-		}
-		.o_fps_text {
-			margin: 0 10px;
-		}
-	}
-	.o_fps_button {
-		display: flex;
-		gap: 5px;
-		@media (max-width: $screen-sm-min) {
-			justify-content: center;
-			width: 100%;
-			margin-top: 5px;
-		}
-	}
-}
-
-form { .o_form { .o_radio_cards_wrapper {
-.o_course_design.o_radio_cards {
-	label {
-		flex-basis: 279px;
-		.o_radio_text_wrapper {
-			display: flex;
-			flex-direction: column;
-			.o_radio_desc {
-				height: 100%;
+			// Desktop: the wrappers regain their box, each an independent-height
+			// flex column; `order` above still sorts correctly within each one.
+			.o_info_page_column_aside,
+			.o_info_page_column_main {
 				display: flex;
 				flex-direction: column;
-				.o_course_design_desc {
-					height: 100%;
-					
-					// small aus dem o_course_design_desc rausnehmen
+				gap: 20px;
+			}
+
+			.o_info_page_column_main {
+				grid-column: 1;
+				grid-row: 1;
+			}
+
+			.o_info_page_column_aside {
+				grid-column: 2;
+				grid-row: 1;
+				// Without this, a non-shrinkable child (e.g. the teaser video's
+				// fixed pixel width) sets the grid item's automatic minimum size,
+				// pinning this 1fr track wider than its fair share and breaking
+				// the 2:1 column ratio.
+				min-width: 0;
+			}
+		}
+
+		// Print / PDF: hide the interactive parts, add the logo header and the
+		// QR code footer.
+		@media print {
+			.o_info_page_print_header {
+				display: block;
+				width: 100%;
+				grid-column: 1 / -1;
+				grid-row: 1;
+				margin-bottom: 20px;
+			}
+
+			.o_info_page_header,
+			.o_info_page_thumbnail {
+				grid-row: 2;
+			}
+
+			.o_info_page_print_header {
+
+				img {
+					max-height: $o-repo-info-print-logo-height;
+					max-width: 100%;
+				}
+			}
+
+			.o_info_page_print_qrcode {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+				order: 11;
+
+				.o_qrcode {
+					width: 128px;
+					height: 128px;
+					flex-shrink: 0;
+				}
+
+				legend {
+					margin-bottom: 5px;
+					border-bottom: none;
+				}
+			}
+
+			.o_header .o_header_actions {
+				display: none;
+			}
+
+			.o_header_start {
+				display: none;
+			}
+
+			// Get started: only the details of the selected offer. Without any
+			// details the whole card is hidden.
+			.o_get_started {
+				.o_ac_offers_container {
+					max-width: none;
+				}
+
+				.o_info_with_icon,
+				.o_warning_with_icon,
+				.o_ac_offer_selection,
+				.o_ac_offer_message,
+				.o_ac_offer_custom,
+				.o_ac_start_admin,
+				.o_header_offers > .btn,
+				.o_header_offers > p {
+					display: none;
+				}
+			}
+
+			.o_info_page_get_started:not(:has(.o_ac_offer_details > *)),
+			&.o_info_page_member .o_info_page_get_started,
+			.o_info_page_my_course:not(:has(.o_facts > *)) {
+				display: none;
+			}
+		
+			.o_info_page_my_course .o_fact_sheet_footer {
+				display: none;
+			}
+
+			.o_info_page_sections .collapse {
+				display: block;
+				height: auto !important;
+			}
+
+			.o_info_page_rating {
+				#o_comments_area {
+					display: none;
 				}
 			}
 		}
-		.o_radio_icon:not(.o_icon) {
-			height: 130px;
-			border: none;
+
+		.o_get_started .o_header_offers .btn {
+			width: 100%;
 		}
-	}
-	.o_course_design_desc {
-		ul {
-			 padding-left: 1em;
-		}
-	}
-}
-}}}
-.o_course_design_assistance {
-	table {
-		table-layout: fixed;
-		tr {
-			th:not(:last-child), td:not(:last-child) {
-				border-right: 1px solid var(--o-table-border);
+
+		.o_info_page_rating {
+			@include clearfix();
+			.o_comments {
+				@extend %o_undecorated;
+				margin-left: 1em;
 			}
+		}
+	    .o_tag {
+	    	display: inline-block;
+	    }
+	}
+
+	.o_repo_info_panel {
+		border: 1px solid var(--o-coursesite-sidecol-border);
+		border-radius: $o-coursesite-sidecol-radius;
+		background: var(--o-coursesite-sidecol-bg);
+		padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
+	}
+
+	.o_repo_info_panel > .o_repo_info_panel {
+		background: var(--o-bg);
+	}
+
+	.o_infopanel th {
+		width: 1%;
+		white-space: nowrap;
+	}
+
+	.o_license_info {
+		margin: 2em 0 1em 0;
+		.o_icon {
+			float: left;
+			margin-right: 0.5em;
+		}
+		.o_license,
+		.o_licensor {
+			font-weight: bold;
+			font-size: 110%;
+			line-height: 2em;
+			vertical-align: text-bottom;
+			display: inline-block;
+		}
+		.o_license_text {
+			clear: both;
+			font-style: italic;
+			margin-top: 1em;
+		}
+	}
+
+	.o_meta .o_closed {
+		padding: 2px 5px;
+		margin: 5px 0;
+	}
+
+	.o_overview .o_closed {
+		padding: 5px 10px;
+		margin: 15px 15px 15px 0;
+		display: inline-block;
+	}
+	.o_benefits {
+		margin: 15px 0;
+	
+		h4.o_benefit, h5.o_benefit {
+			display: grid;
+			grid-template-columns: 36px 1fr;
+		
+			> i {
+				align-self: center;
+			}
+			> small {
+				grid-column-start: 2;
+				margin-top: 3px;
+			}
+		}
+	
+		h5.o_benefit {
+			font-size: 1.25em;
+		}
+	}
+
+	.o_re_access_denied {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5em;
+	
+		.o_re_access_denied_cross {
+			fill: $o-repo-access-denied-cross-fill;
+		}
+		.o_re_access_denied_message {
+			text-align: center;
+			font-size: 1.5em
+		}
+		.o_re_access_denied_hint {
+			text-align: center;
+		}
+	}
+
+	.o_ac_runtime_type {
+		padding: 12px;
+		display: grid;
+		align-items: center;
+		grid-template-columns: 50px 1fr auto;
+	
+		>i {
+			font-size: 200%;
+		}
+		h5 {
+			margin: 0 0 5px 0;
+		}
+		p {
+			margin: 0;
+			color: var(--o-text-muted);
+		}
+	}
+
+	@media (min-width: 768px) {
+		.o_form.form-horizontal.o_ac_runtime_type_form label {
+			padding-top: 1.5em;
+		}
+	}
+
+	.o_ac_overview {
+		.panel-body {
+			padding: 0px;
+		}
+	}
+	.o_ac_offers_container {
+		max-width: $o-ac-offers-container-max-width;
+	}
+	.o_ac_start_admin {
+		display: flex;
+		justify-content: center;
+	}
+	.o_ac_offers {
+		.o_ac_offer_details {
+			display: flex;
+			flex-direction: column;
+		
+			.o_ac_offer_price_ammount {
+				font-size: 180%;
+				font-weight: bold;
+			}
+			.o_ac_offer_details_description {
+				margin-top: 10px;
+			}
+		}
+		.o_ac_offer_selection {
+			margin-bottom: $o-radio-cards-gap;
+			.form-group {
+				margin-bottom: 0;
+			}
+		}
+		.o_ac_offer_message {
+			margin-bottom: math.div($o-radio-cards-gap, 2);
+			width: 100%;
+			&.o_catalog_seats_left {
+				width: fit-content;
+			}
+		}
+		.o_ac_offer_custom {
+			button {
+				margin-top: 0;
+				width: 100%;
+			}
+		}
+	}
+
+	.o_ac_offers_details_text {
+		display: flex;
+		a {
+			margin-left: 10px;
+			flex-shrink: 0;
+		}
+	}
+
+	.o_ac_invoice_fee_free {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 5px;
+	}
+
+	.o_ac_order_details .o_ac_order_header p {
+		font-size: 2em;
+		font-weight: 900;
+	}
+
+	.o_ac_order_header {
+		display: flex;
+		flex-wrap: wrap;
+		margin-bottom: 30px;
+	
+		.form-group {
+			margin-bottom: 0;
+			.form-control-static {
+				padding-bottom: 0;
+			}
+		}
+		.o_ac_order_status {
+			display: flex;
+			flex-direction: column;
+			justify-content: end;
+			margin-left: 10px;
+			margin-bottom: 8px;
+		}
+		.o_ac_order_cmds {
+			margin-left: auto;
+			padding: 5px 0;
+		}
+	}
+
+	.o_ac_order_details_container {
+		container-type: inline-size;
+		container-name: o_ac_order_details_container;
+	
+		.o_table_row_details_container {
+			width: calc(100cqw - 65px); // 65px = padding from o_table_row_details...
+		}
+	}
+	.o_ac_order_details {
+		.o_ac_order_details_content {
+			display: flex;
+			flex-direction: column;
+			column-gap: 30px;
+			row-gap: 20px;
+			.o_ac_order_details_content_left {
+				flex-grow: 2;
+				order: 2;
+			}
+			.o_ac_order_details_content_right {
+				width: 100%;
+		
+				display: grid;
+				grid-template-columns: 1fr;
+				gap: 20px;
+			
+				.o_ac_billing_address {
+					max-width: unset;
+				}
+			}
+		}
+	
+		@container o_ac_order_details_container (min-width: 700px) {
+			.o_ac_order_details_content {
+				.o_ac_order_details_content_right {
+					margin-right: unset;
+					grid-template-columns: 1fr 1fr;
+				
+					>div {
+						width: 100%;
+						.o_user_info_profile {
+							width: 100%;
+						}
+					}
+				}
+			}
+		}
+	
+		@container o_ac_order_details_container (min-width: 840px) {
+			.o_ac_order_details_content {
+				flex-direction: row;
+				.o_ac_order_details_content_left {
+					order: 1;
+				}
+				.o_ac_order_details_content_right {
+					order: 2;
+				
+					display: flex;
+					flex-direction: column;
+					flex: 0 0 350px;
+					align-content: start;
+					max-width: 350px;
+				}
+			}
+		}
+	
+		.o_ac_order_metadata {
+			display: grid;
+			column-gap: 20px;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		}
+	}
+
+	.o_offer_survey_participation_details {
+		.o_flex_header {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 20px;
+			align-items: center;
+			min-height: 34px;
+			margin-bottom: 20px;
+
+			.o_offer_survey_title {
+				display: flex;
+				gap: 4px;
+				align-items: baseline;
+
+				h3 {
+					margin: 0;
+				}
+			}
+
+			.o_offer_survey_header_spacer {
+				flex-grow: 1;
+			}
+		}
+	}
+
+
+
+	.o_ac_billing_address {
+		background-color: var(--o-ac-billing-address-bg);
+		border: $o-ac-ba-border-width $o-ac-ba-border-style var(--o-ac-billing-address-border);
+		border-radius: $o-ac-ba-border-radius;
+		padding: $o-ac-ba-padding;
+		min-width: $o-ac-ba-min-width;
+		max-width: max-content;
+	
+		.o_ac_billing_address_inner {
+			display: flex;
+		}
+		.o_ac_billing_address_icon {
+			width: $o-ac-ba-icon-width;
+			font-size: $o-ac-ba-icon-font-size;
+			display: grid;
+			place-items: center;
+		}
+		.o_ac_billing_address_identifier {
+			font-weight: bold;
+			margin-bottom: .5em;
+		}
+		&.o_ac_billing_address_temporary {
+			background-color: var(--o-ac-billing-address-temporary-bg);
+		}
+	}
+	.o_labeled_light {
+		&.o_ac_billing_address_active_light {
+			font-weight: normal;
+		}
+		&.o_ac_billing_address_inactive_light {
+			font-weight: normal;
+		}
+	}
+	.o_ac_billing_address_selection.o_form {
+	.o_radio_cards_wrapper {
+		.o_radio_cards {
+			label {
+				flex-basis: $o-ac-ba-radio-card-width;
+			}
+		}
+	}}
+	.o_ac_rate_config {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+
+
+	tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
+	tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td span {
+		text-decoration: line-through;
+	}
+
+	/* status element in dropdown menu */
+	a.o_repo_tools_status {
+		cursor:pointer;
+		margin: 0 2px 2px 2px;
+		text-align: left;
+	}
+
+	/* Colours of the repository statuses (o_repo_status_*): semantic states in _states.scss (OO-10042) */
+
+	.o_fake_participant_stop {
+		display: flex;
+		align-items: center;
+		@media (max-width: $screen-sm-min) {
+			flex-wrap: wrap;
+		}
+		.o_fps_message {
+			display: flex;
+			align-items: center;
+			.o_icon {
+				color: var(--o-state-warning-text);
+				font-size: 200%;
+			}
+			.o_fps_text {
+				margin: 0 10px;
+			}
+		}
+		.o_fps_button {
+			display: flex;
+			gap: 5px;
+			@media (max-width: $screen-sm-min) {
+				justify-content: center;
+				width: 100%;
+				margin-top: 5px;
+			}
+		}
+	}
+
+	form { .o_form { .o_radio_cards_wrapper {
+	.o_course_design.o_radio_cards {
+		label {
+			flex-basis: 279px;
+			.o_radio_text_wrapper {
+				display: flex;
+				flex-direction: column;
+				.o_radio_desc {
+					height: 100%;
+					display: flex;
+					flex-direction: column;
+					.o_course_design_desc {
+						height: 100%;
+					
+						// small aus dem o_course_design_desc rausnehmen
+					}
+				}
+			}
+			.o_radio_icon:not(.o_icon) {
+				height: 130px;
+				border: none;
+			}
+		}
+		.o_course_design_desc {
 			ul {
 				 padding-left: 1em;
 			}
 		}
 	}
-	.o_course_design_icon {
-		height: 130px;
-		background-position: top left;
-		background-repeat: no-repeat;
-		background-size: contain;
-	}
-}
-.o_course_design_path_icon {
-	background-image:url('#{$o-images-path}course/course-design-path.png')
-}
-.o_course_design_progress_icon {
-	background-image:url('#{$o-images-path}course/course-design-progress.png')
-}
-.o_course_design_classic_icon {
-	background-image:url('#{$o-images-path}course/course-design-classic.png')
-}
-
-.o_settings_bulk_overview {
-	table {
-		width: auto;
-		tbody {
-			td {
-				border-top: 0;
-				&:is(.o_bulk_overview_change *) {
-					padding: 2px 8px;
+	}}}
+	.o_course_design_assistance {
+		table {
+			table-layout: fixed;
+			tr {
+				th:not(:last-child), td:not(:last-child) {
+					border-right: 1px solid var(--o-table-border);
+				}
+				ul {
+					 padding-left: 1em;
 				}
 			}
-			.o_bulk_overview_step {
-				font-size: 20px;
-			}
-			.o_bulk_overview_change + .o_bulk_overview_step {
+		}
+		.o_course_design_icon {
+			height: 130px;
+			background-position: top left;
+			background-repeat: no-repeat;
+			background-size: contain;
+		}
+	}
+	.o_course_design_path_icon {
+		background-image:url('#{$o-images-path}course/course-design-path.png')
+	}
+	.o_course_design_progress_icon {
+		background-image:url('#{$o-images-path}course/course-design-progress.png')
+	}
+	.o_course_design_classic_icon {
+		background-image:url('#{$o-images-path}course/course-design-classic.png')
+	}
+
+	.o_settings_bulk_overview {
+		table {
+			width: auto;
+			tbody {
 				td {
-					padding: 24px 8px 8px 8px;
+					border-top: 0;
+					&:is(.o_bulk_overview_change *) {
+						padding: 2px 8px;
+					}
+				}
+				.o_bulk_overview_step {
+					font-size: 20px;
+				}
+				.o_bulk_overview_change + .o_bulk_overview_step {
+					td {
+						padding: 24px 8px 8px 8px;
+					}
 				}
 			}
 		}
 	}
-}
 
 
-/* Repository info */
-.o_repo_info {
-	border: $o-repo-info-border-style $o-repo-info-border-width var(--o-repo-info-border);
-	border-radius: $o-repo-info-border-radius;
-	padding: $o-repo-info-padding;
+	/* Repository info */
+	.o_repo_info {
+		border: $o-repo-info-border-style $o-repo-info-border-width var(--o-repo-info-border);
+		border-radius: $o-repo-info-border-radius;
+		padding: $o-repo-info-padding;
 	
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
 
-	.o_repo_info_header {
-		.o_repo_info_header_content {
+		.o_repo_info_header {
+			.o_repo_info_header_content {
+				display: flex;
+				gap: 10px;
+				.o_visual {
+					height: 50px;
+					width: 75px;
+					flex-shrink: 0;
+				}
+				.o_meta {
+					display: flex;
+					flex-direction: column;
+					.o_ext_ref {
+						color: var(--o-text-muted);
+						font-size: 10px;
+						line-height: 12px;
+						height: 12px;
+						@include text-overflow();
+					}
+					.o_title {
+						margin: 0;
+						overflow: hidden;
+						display: -webkit-box;
+						-webkit-line-clamp: 2;
+						-webkit-box-orient: vertical;
+					}
+				}
+			}
+		}
+	
+		.o_repo_info_separator {
+			border-top: $o-repo-info-separator-border-width $o-repo-info-separator-border-style var(--o-repo-info-separator-border);
+		}
+	
+		.o_repo_info_items {
+			display: grid;
+			column-gap: 20px;
+			.form-control-static {
+				padding: 0px;
+				min-height: 0px;
+			}
+		}
+	}
+	.o_repo_info_wrapper {
+		container-type: inline-size;
+	
+		.o_repo_info_items {
+			grid-template-columns: 1fr 1fr 1fr 1fr;
+		}
+		@container (max-width: 800px) {
+			.o_repo_info_items {
+				grid-template-columns: 1fr 1fr;
+			}
+		}
+		@container (max-width: 600px) {
+			.o_repo_info_header {
+				.o_repo_info_header_content {
+					.o_title {
+						font-size: $o-repo-info-header-size-small;
+					}
+				}
+			}
+			.o_repo_info_items {
+				grid-template-columns: 1fr;
+			}
+		}
+	}
+
+	.o_repo_user_header_container {
+		container-type: inline-size;
+		container-name: o-repo-user-header;
+	
+		$o-repo-user-header-gap: 10px;
+		.o_repo_user_header {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: $o-repo-user-header-gap;
+		
+			.o_user_info {
+				display: flex;
+				flex-direction: column;
+				align-items: start;
+				> div:has(.o_user_info_profile) {
+					width: 100%;
+					height: initial;
+					margin-top: 0;
+				}
+			}
+		}
+	
+		$o-repo-user-header-breakpoint: 2*$o-user-info-profile-breakpoint + 2*$o-repo-user-header-gap;
+		@container o-repo-user-header (min-width: #{$o-repo-user-header-breakpoint}) {
+			.o_repo_user_header {
+				grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+				// same height of the two panels
+				:is(div, form):has(:is(.o_repo_info, .o_user_info)) {
+					display: grid;
+				}
+			}
+		}
+	}
+
+	.o_ac_reservation_card {
+		container-type: inline-size;
+		display: flex;
+		width: 100%;
+		align-items: center;
+		padding: 8px 12px;
+		gap: 12px;
+		border: 1px solid var(--o-coursesite-border);
+		border-radius: $border-radius-base;
+		background-color: var(--o-bg);
+		margin-bottom: 5px;
+
+		.o_ac_reservation_item {
+			flex: 1 1 auto;
+			min-width: 0;
+			overflow: hidden;
 			display: flex;
+			align-items: center;
 			gap: 10px;
-			.o_visual {
+
+			.o_ac_reservation_visual {
 				height: 50px;
 				width: 75px;
 				flex-shrink: 0;
+				overflow: hidden;
+
+				img {
+					width: 100%;
+					height: auto;
+				}
+
+				.o_ac_reservation_visual_placeholder {
+					width: 100%;
+					height: 100%;
+					background: $o-not-available-bg; // o-color-keep(gradient)
+					background-repeat: no-repeat;
+					background-position: 50% 50%;
+					background-size: contain;
+				}
 			}
-			.o_meta {
+
+			.o_ac_reservation_meta {
+				min-width: 0;
 				display: flex;
 				flex-direction: column;
-				.o_ext_ref {
+
+				.o_ac_reservation_ref {
 					color: var(--o-text-muted);
 					font-size: 10px;
 					line-height: 12px;
 					height: 12px;
 					@include text-overflow();
 				}
+
 				.o_title {
+					line-height: 1.2;
+					font-size: 18px;
 					margin: 0;
-					overflow: hidden;
-					display: -webkit-box;
-					-webkit-line-clamp: 2;
-					-webkit-box-orient: vertical;
+					@include text-overflow();
 				}
 			}
-		}
-	}
-	
-	.o_repo_info_separator {
-		border-top: $o-repo-info-separator-border-width $o-repo-info-separator-border-style var(--o-repo-info-separator-border);
-	}
-	
-	.o_repo_info_items {
-		display: grid;
-		column-gap: 20px;
-		.form-control-static {
-			padding: 0px;
-			min-height: 0px;
-		}
-	}
-}
-.o_repo_info_wrapper {
-	container-type: inline-size;
-	
-	.o_repo_info_items {
-		grid-template-columns: 1fr 1fr 1fr 1fr;
-	}
-	@container (max-width: 800px) {
-		.o_repo_info_items {
-			grid-template-columns: 1fr 1fr;
-		}
-	}
-	@container (max-width: 600px) {
-		.o_repo_info_header {
-			.o_repo_info_header_content {
-				.o_title {
-					font-size: $o-repo-info-header-size-small;
-				}
-			}
-		}
-		.o_repo_info_items {
-			grid-template-columns: 1fr;
-		}
-	}
-}
 
-.o_repo_user_header_container {
-	container-type: inline-size;
-	container-name: o-repo-user-header;
-	
-	$o-repo-user-header-gap: 10px;
-	.o_repo_user_header {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: $o-repo-user-header-gap;
-		
-		.o_user_info {
-			display: flex;
-			flex-direction: column;
-			align-items: start;
-			> div:has(.o_user_info_profile) {
-				width: 100%;
-				height: initial;
-				margin-top: 0;
-			}
-		}
-	}
-	
-	$o-repo-user-header-breakpoint: 2*$o-user-info-profile-breakpoint + 2*$o-repo-user-header-gap;
-	@container o-repo-user-header (min-width: #{$o-repo-user-header-breakpoint}) {
-		.o_repo_user_header {
-			grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-			// same height of the two panels
-			:is(div, form):has(:is(.o_repo_info, .o_user_info)) {
-				display: grid;
-			}
-		}
-	}
-}
-
-.o_ac_reservation_card {
-	container-type: inline-size;
-	display: flex;
-	width: 100%;
-	align-items: center;
-	padding: 8px 12px;
-	gap: 12px;
-	border: 1px solid var(--o-coursesite-border);
-	border-radius: $border-radius-base;
-	background-color: var(--o-bg);
-	margin-bottom: 5px;
-
-	.o_ac_reservation_item {
-		flex: 1 1 auto;
-		min-width: 0;
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-		gap: 10px;
-
-		.o_ac_reservation_visual {
-			height: 50px;
-			width: 75px;
-			flex-shrink: 0;
-			overflow: hidden;
-
-			img {
-				width: 100%;
-				height: auto;
-			}
-
-			.o_ac_reservation_visual_placeholder {
-				width: 100%;
-				height: 100%;
-				background: $o-not-available-bg; // o-color-keep(gradient)
-				background-repeat: no-repeat;
-				background-position: 50% 50%;
-				background-size: contain;
-			}
-		}
-
-		.o_ac_reservation_meta {
-			min-width: 0;
-			display: flex;
-			flex-direction: column;
-
-			.o_ac_reservation_ref {
+			> .o_icon {
+				flex-shrink: 0;
 				color: var(--o-text-muted);
-				font-size: 10px;
-				line-height: 12px;
-				height: 12px;
-				@include text-overflow();
 			}
 
-			.o_title {
+			> .o_title {
 				line-height: 1.2;
 				font-size: 18px;
 				margin: 0;
@@ -955,54 +968,41 @@ form { .o_form { .o_radio_cards_wrapper {
 			}
 		}
 
-		> .o_icon {
+		.o_ac_reservation_actions {
 			flex-shrink: 0;
-			color: var(--o-text-muted);
+			display: flex;
+			gap: 5px;
+			align-items: center;
 		}
-
-		> .o_title {
-			line-height: 1.2;
-			font-size: 18px;
-			margin: 0;
-			@include text-overflow();
+	
+		// On mobile, hide button labels visually but keep them accessible to screen
+		// readers. @extend %sr-only cannot be used inside @media queries in SASS,
+		// so the sr-only properties are inlined here.
+		@media (max-width: $screen-xs-max) {
+			.o_ac_reservation_actions .o_label_text {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				padding: 0;
+				margin: -1px;
+				overflow: hidden;
+				clip: rect(0, 0, 0, 0);
+				border: 0;
+			}
 		}
 	}
 
-	.o_ac_reservation_actions {
-		flex-shrink: 0;
-		display: flex;
-		gap: 5px;
+	.o_ac_reservation_detail {
+		.o_ac_reservation_detail_header {
+			.o_ac_reservation_card {
+				border: none;
+			}
+		}
+	}
+
+	.o_lifecycle_status {
+		display: grid;
+		grid-template-columns: 1fr auto;
 		align-items: center;
 	}
-	
-	// On mobile, hide button labels visually but keep them accessible to screen
-	// readers. @extend %sr-only cannot be used inside @media queries in SASS,
-	// so the sr-only properties are inlined here.
-	@media (max-width: $screen-xs-max) {
-		.o_ac_reservation_actions .o_label_text {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			padding: 0;
-			margin: -1px;
-			overflow: hidden;
-			clip: rect(0, 0, 0, 0);
-			border: 0;
-		}
-	}
-}
-
-.o_ac_reservation_detail {
-	.o_ac_reservation_detail_header {
-		.o_ac_reservation_card {
-			border: none;
-		}
-	}
-}
-
-.o_lifecycle_status {
-	display: grid;
-	grid-template-columns: 1fr auto;
-	align-items: center;
-}
 }

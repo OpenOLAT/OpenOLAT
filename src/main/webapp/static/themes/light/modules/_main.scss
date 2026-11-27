@@ -3,133 +3,132 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-main {
+	#o_main_wrapper {
+		background: var(--o-main-outer-bg);
+		position: relative;
 
-#o_main_wrapper {
-	background: var(--o-main-outer-bg);
-	position: relative;
+		#o_main_container {
+			background: var(--o-main-inner-bg);
+		
+			/* keep space for #o_toplink */
+			padding-bottom: $line-height-computed * 2;
+		
+			#o_main {		
+				/* Use a 3-cols grid layout with the center column to fill all available space using 1fr.
+				   use an explicit min-width 0 in the minmax(0,1fr) rule in the center column because 
+				   the min-width default value is 'auto' which will cause the cell to expand to the content inner width.
+				   See https://stackoverflow.com/questions/52861086/why-does-minmax0-1fr-work-for-long-elements-while-1fr-doesnt
+				   The left and right col width are defined by the width of the column itself using 'auto'.
+				 */
+				width: 100%;			
+				display: grid;			
+				grid-template-columns: auto minmax(0, 1fr) auto;
+				/* adjust grid when some columns are hidden */
+				&.o_hide_main_left, 
+				&.o_offcanvas {
+					grid-template-columns: minmax(0, 1fr) auto;
+				}
+				&.o_hide_main_right {
+					grid-template-columns: auto minmax(0, 1fr);
+				}
+				&.o_hide_main_left.o_hide_main_right,
+				&.o_offcanvas.o_hide_main_right {
+					grid-template-columns: minmax(0, 1fr);
+				}
+			
+				column-gap: math.floor($grid-gutter-width * 0.5);			
+			}
+		
+			/* make columns be more or less window height size */
+			#o_main_left_content,
+			#o_main_center_content,
+			#o_main_right_content { 
+				min-height: calc( 100vh - ($o-navbar-height + 200px + $o-footer-height) );
+			}
+		
+			#o_main_left {
+				position: relative;
+				background: var(--o-main-left-bg);
 
-	#o_main_container {
-		background: var(--o-main-inner-bg);
-		
-		/* keep space for #o_toplink */
-		padding-bottom: $line-height-computed * 2;
-		
-		#o_main {		
-			/* Use a 3-cols grid layout with the center column to fill all available space using 1fr.
-			   use an explicit min-width 0 in the minmax(0,1fr) rule in the center column because 
-			   the min-width default value is 'auto' which will cause the cell to expand to the content inner width.
-			   See https://stackoverflow.com/questions/52861086/why-does-minmax0-1fr-work-for-long-elements-while-1fr-doesnt
-			   The left and right col width are defined by the width of the column itself using 'auto'.
-			 */
-			width: 100%;			
-			display: grid;			
-			grid-template-columns: auto minmax(0, 1fr) auto;
-			/* adjust grid when some columns are hidden */
-			&.o_hide_main_left, 
-			&.o_offcanvas {
-				grid-template-columns: minmax(0, 1fr) auto;
-			}
-			&.o_hide_main_right {
-				grid-template-columns: auto minmax(0, 1fr);
-			}
-			&.o_hide_main_left.o_hide_main_right,
-			&.o_offcanvas.o_hide_main_right {
-				grid-template-columns: minmax(0, 1fr);
-			}
+				#o_main_left_toggle {
+					position: absolute; 
+					display: none;
+					right: 0; 
+					top: 70px; 
+					margin-right: -30px; 
+					font-size: 25px;
+					line-height: 35px;
+					text-align: center;
+					width: 30px;
+					height: 35px;
+					z-index: 3;
+					border: 1px solid var(--o-tree-border);
+					border-left: none;
+					@include border-right-radius($o-tree-border-radius);
+					background-color: var(--o-bg-subtle);
+					@include box-shadow(2px 0px 4px 1px color-mix(in srgb, var(--o-shadow-color) 15%, transparent));
+					color: var(--o-primary-text);
+				}
 			
-			column-gap: math.floor($grid-gutter-width * 0.5);			
-		}
-		
-		/* make columns be more or less window height size */
-		#o_main_left_content,
-		#o_main_center_content,
-		#o_main_right_content { 
-			min-height: calc( 100vh - ($o-navbar-height + 200px + $o-footer-height) );
-		}
-		
-		#o_main_left {
-			position: relative;
-			background: var(--o-main-left-bg);
-
-			#o_main_left_toggle {
-				position: absolute; 
-				display: none;
-				right: 0; 
-				top: 70px; 
-				margin-right: -30px; 
-				font-size: 25px;
-				line-height: 35px;
-				text-align: center;
-				width: 30px;
-				height: 35px;
-				z-index: 3;
-				border: 1px solid var(--o-tree-border);
-				border-left: none;
-				@include border-right-radius($o-tree-border-radius);
-				background-color: var(--o-bg-subtle);
-				@include box-shadow(2px 0px 4px 1px color-mix(in srgb, var(--o-shadow-color) 15%, transparent));
-				color: var(--o-primary-text);
-			}
-			
-			&.o_offcanvas {
-				z-index: 4;
-				background: var(--o-bg-subtle);
-				@include box-shadow(0px 0px 6px 1px color-mix(in srgb, var(--o-shadow-color) 20%, transparent));
-				min-width: 250px;
-			}
-		}
-		#o_main_right {
-			position: relative;
-			background: var(--o-main-right-bg);
-		}
-		#o_main_center {
-			position: relative;
-			background: var(--o-main-center-bg);
-			
-			h2:first-child {
-				margin-top: 0;
-			}
-
-			@media screen and (max-width: 767px) {
-				margin-left: 0 !important;
-			}
-			
-			#o_main_center_content {
-				#o_main_center_content_inner {
-					/* space to top link */
-					padding-bottom: math.floor($grid-gutter-width * 0.5);
+				&.o_offcanvas {
+					z-index: 4;
+					background: var(--o-bg-subtle);
+					@include box-shadow(0px 0px 6px 1px color-mix(in srgb, var(--o-shadow-color) 20%, transparent));
+					min-width: 250px;
 				}
 			}
+			#o_main_right {
+				position: relative;
+				background: var(--o-main-right-bg);
+			}
+			#o_main_center {
+				position: relative;
+				background: var(--o-main-center-bg);
+			
+				h2:first-child {
+					margin-top: 0;
+				}
+
+				@media screen and (max-width: 767px) {
+					margin-left: 0 !important;
+				}
+			
+				#o_main_center_content {
+					#o_main_center_content_inner {
+						/* space to top link */
+						padding-bottom: math.floor($grid-gutter-width * 0.5);
+					}
+				}
 			
 			
-		}		
-	}
+			}		
+		}
 	
-	#o_toplink {
-		position: absolute;
-		bottom: 0; 
-		right: math.floor($grid-gutter-width * 0.5);
-		text-align: center;
-		z-index: 3;
-		@extend %o_undecorated;
+		#o_toplink {
+			position: absolute;
+			bottom: 0; 
+			right: math.floor($grid-gutter-width * 0.5);
+			text-align: center;
+			z-index: 3;
+			@extend %o_undecorated;
+		}
+	} 
+
+
+	/* special wrapper classes for preview and back main containers */
+	#o_back_wrapper,
+	#o_preview_wrapper {
+		margin-top: 10px;
+		&.o_toolbar .o_breadcrumb .breadcrumb {
+			font-size: $font-size-base;
+		}
 	}
-} 
 
-
-/* special wrapper classes for preview and back main containers */
-#o_back_wrapper,
-#o_preview_wrapper {
-	margin-top: 10px;
-	&.o_toolbar .o_breadcrumb .breadcrumb {
-		font-size: $font-size-base;
+	/* special wrapper for MessageWindowController */
+	body.o_message #o_main_center_content_inner {
+		min-height: 150px; 
+		max-width: 500px;
+		padding: 15px;
+		margin:60px auto;
 	}
-}
-
-/* special wrapper for MessageWindowController */
-body.o_message #o_main_center_content_inner {
-	min-height: 150px; 
-	max-width: 500px;
-	padding: 15px;
-	margin:60px auto;
-}
 }

@@ -2,67 +2,67 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-assistance-accordion {
-.o_assistance_accordion {
-  width: 100%;
+	.o_assistance_accordion {
+	  width: 100%;
 
-  .o_item {
-    border-top: 1px solid var(--o-border-subtle);
-  }
+	  .o_item {
+	    border-top: 1px solid var(--o-border-subtle);
+	  }
 
-  .o_item:last-child {
-    border-bottom: 1px solid var(--o-border-subtle);
-  }
+	  .o_item:last-child {
+	    border-bottom: 1px solid var(--o-border-subtle);
+	  }
 
-  .o_expand_collapse {
-	flex-grow: 0;
- 	a {
-	   	padding-top: 1em;
-      	padding-bottom: 1em;
-		display: block;
-		i {
-			float: right;
-		}
+	  .o_expand_collapse {
+		flex-grow: 0;
+	 	a {
+		   	padding-top: 1em;
+	      	padding-bottom: 1em;
+			display: block;
+			i {
+				float: right;
+			}
 		
-		.o_icon_details_collaps {
-			display: inline;
-		}
-		.o_icon_details_expand {
-			display: none;
-		}			
-		&.collapsed {
 			.o_icon_details_collaps {
-				display: none;
+				display: inline;
 			}
 			.o_icon_details_expand {
-				display: inline;
+				display: none;
 			}			
-		}
-	}	
-  }
+			&.collapsed {
+				.o_icon_details_collaps {
+					display: none;
+				}
+				.o_icon_details_expand {
+					display: inline;
+				}			
+			}
+		}	
+	  }
 
-  .o_item_content {
-    margin-right: 1em;
+	  .o_item_content {
+	    margin-right: 1em;
 	
-    .o_text_block {
-   	  	padding-bottom: 1em;
-    }
+	    .o_text_block {
+	   	  	padding-bottom: 1em;
+	    }
 
-    .o_components_block {
-      margin-top: 1em;
-      margin-bottom: 1em;
-      display: flex;
-      align-items: center;
+	    .o_components_block {
+	      margin-top: 1em;
+	      margin-bottom: 1em;
+	      display: flex;
+	      align-items: center;
 
-      .o_components {
-        margin: auto;
-      }
-    }
-  }
+	      .o_components {
+	        margin: auto;
+	      }
+	    }
+	  }
 
-  .o_context_help {
-  	text-align: right;
-    margin-top: 1em;
-    margin-bottom: 1em;
-  }
-}
+	  .o_context_help {
+	  	text-align: right;
+	    margin-top: 1em;
+	    margin-bottom: 1em;
+	  }
+	}
 }

@@ -2,249 +2,249 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-quality {
-.o_qual_main {
+	.o_qual_main {
 
-	/* Second css class because o_qual_main is used in home and breadcrumb ...  */
-	&.o_qual_panels {
-		display: grid;
-		gap: 20px;
-		grid-template-columns: 1fr;
-		@media (min-width: 768px) {
-			grid-template-columns: 1fr 1fr;
-		}
+		/* Second css class because o_qual_main is used in home and breadcrumb ...  */
+		&.o_qual_panels {
+			display: grid;
+			gap: 20px;
+			grid-template-columns: 1fr;
+			@media (min-width: 768px) {
+				grid-template-columns: 1fr 1fr;
+			}
 		
-		.panel {
-			height: 100%;
-			display: flex;
-			flex-direction: column;
-			margin-bottom: 0;
-			
-			.panel-body {
+			.panel {
 				height: 100%;
 				display: flex;
 				flex-direction: column;
-				.o_qual_panel_desc {
-					margin-bottom: auto;
-				}
-				.o_qual_panel_links {
-					margin-top: 1em;
-					.o_qual_panel_link {
+				margin-bottom: 0;
+			
+				.panel-body {
+					height: 100%;
+					display: flex;
+					flex-direction: column;
+					.o_qual_panel_desc {
+						margin-bottom: auto;
+					}
+					.o_qual_panel_links {
+						margin-top: 1em;
+						.o_qual_panel_link {
+							text-align: right;
+						}
+				
+					}
+					.o_qual_goto {
+						margin-top: 1em;
 						text-align: right;
 					}
-				
-				}
-				.o_qual_goto {
-					margin-top: 1em;
-					text-align: right;
 				}
 			}
 		}
 	}
-}
 
-/* Colours of the data collection statuses (o_qual_dc_status_*): semantic states in _states.scss (OO-10042) */
+	/* Colours of the data collection statuses (o_qual_dc_status_*): semantic states in _states.scss (OO-10042) */
 
-/* --- Data collection status in data collection list --- */
+	/* --- Data collection status in data collection list --- */
 
-.o_qual_dc_list {
-	tbody {
-		tr {
-			// status
-			td:nth-child(1) {
-				padding-top: 3px;
+	.o_qual_dc_list {
+		tbody {
+			tr {
+				// status
+				td:nth-child(1) {
+					padding-top: 3px;
+				}
 			}
 		}
 	}
-}
-/* --- Status in executor participation list --- */
+	/* --- Status in executor participation list --- */
 
-.o_qual_exec_list {
-	tbody {
-		tr {
-			// status
-			td:nth-child(1) {
-				padding-top: 3px;
+	.o_qual_exec_list {
+		tbody {
+			tr {
+				// status
+				td:nth-child(1) {
+					padding-top: 3px;
+				}
 			}
 		}
 	}
-}
 
-// Execution status labels (o_qual_exec_status_*_light): semantic states in _states.scss (OO-10042)
+	// Execution status labels (o_qual_exec_status_*_light): semantic states in _states.scss (OO-10042)
 
-.o_qual_execute_header, .o_qual_report_header {
-	.o_qual_context_table {
-		margin-bottom: 0;
+	.o_qual_execute_header, .o_qual_report_header {
+		.o_qual_context_table {
+			margin-bottom: 0;
 		
-		th {
-			width: 40%;
-			border-top: none;
-			padding: 4px 8px;
-		}
-		td {
-			width: 60%;
-			border-top: none;
-			padding: 4px 8px;
+			th {
+				width: 40%;
+				border-top: none;
+				padding: 4px 8px;
+			}
+			td {
+				width: 60%;
+				border-top: none;
+				padding: 4px 8px;
+			}
 		}
 	}
-}
 
-.o_qual_ana_table {
-	.o_table_body {
-		padding: 0;
+	.o_qual_ana_table {
+		.o_table_body {
+			padding: 0;
+		}
 	}
-}
 
-.o_qual_ana_filter {
-	.o_date_range {
-		margin-bottom: 0px;
+	.o_qual_ana_filter {
+		.o_date_range {
+			margin-bottom: 0px;
 		
-		.control-label {
-			margin-bottom: 5px;
-		}
-		.o_date {
-			margin-bottom: 15px;
-			padding-right: 12px;
-		}
-		.o_date_range_from {
-			padding-right: 12px;
-		}
-		.o_date_range_to {
-			padding-right: 0px;
+			.control-label {
+				margin-bottom: 5px;
+			}
+			.o_date {
+				margin-bottom: 15px;
+				padding-right: 12px;
+			}
+			.o_date_range_from {
+				padding-right: 12px;
+			}
+			.o_date_range_to {
+				padding-right: 0px;
+			}
 		}
 	}
-}
 
-.o_qual_hm_basecolor {
-	background-color: var(--o-quality-heatmap-base-bg);
-}
-.o_qual_hm {
-	.o_circle_container {
-		display: flex;
+	.o_qual_hm_basecolor {
+		background-color: var(--o-quality-heatmap-base-bg);
 	}
-	.o_circle_box {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	.o_circle {
-		border-radius: 50%;
+	.o_qual_hm {
+		.o_circle_container {
+			display: flex;
+		}
+		.o_circle_box {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.o_circle {
+			border-radius: 50%;
 		
-		&.o_rubric_insufficient {
-			background-color: var(--o-evaluation-insufficient) !important;
+			&.o_rubric_insufficient {
+				background-color: var(--o-evaluation-insufficient) !important;
+			}
+			&.o_rubric_neutral {
+				background-color: var(--o-evaluation-neutral) !important;
+			}
+			&.o_rubric_sufficient {
+				background-color: var(--o-evaluation-sufficient) !important;
+			}
 		}
-		&.o_rubric_neutral {
-			background-color: var(--o-evaluation-neutral) !important;
-		}
-		&.o_rubric_sufficient {
-			background-color: var(--o-evaluation-sufficient) !important;
+		.o_avg {
+			display: flex;
+			align-items: center;
+			margin-left: 5px;
 		}
 	}
-	.o_avg {
-		display: flex;
-		align-items: center;
-		margin-left: 5px;
-	}
-}
 
-.o_qual_trend_invisible {
-	visibility: hidden;
-}
+	.o_qual_trend_invisible {
+		visibility: hidden;
+	}
 
-.o_qual_trend {
-	.o_qual_ana_trend_up {
-		transform: rotate(315deg);
-		-webkit-transform: rotate(315deg);
-		-moz-transform: rotate(315deg);
-		-o-transform: rotate(315deg);
-	}
-	.o_qual_ana_trend_down {
-		transform: rotate(45deg);
-		-webkit-transform: rotate(45deg);
-		-moz-transform: rotate(45deg);
-		-o-transform: rotate(45deg);
-	}
-	.o_rubric_insufficient {
-		color: var(--o-evaluation-insufficient-text);
-	}
-	.o_rubric_neutral {
-		color: var(--o-evaluation-neutral-text);
-	}
-	.o_rubric_sufficient {
-		color: var(--o-evaluation-sufficient-text);
-	}
-	.o_qual_ana_unrated {
-		color: var(--o-quality-unrated);
-	}
-}
-	
-.o_qual_filtered_print {
-	.o_groupby_config,
-	.o_slider_trend_config,
-	.o_qual_hm tr td:last-child,
-	.o_qual_hm tr th:last-child {
-		display:none;
-	}
-}
-
-.o_evaluation_bar_chart_legend {
-	padding: 5px;
-	
-	li {
-		font-size: 90%;
-	}
-	.ident {
-		font-weight: bold;
-	}
-}
-
-@media (max-width: $screen-sm-min) {
-	.o_hm_group_select {
-		padding-bottom: 12px;
-	}
-	.o_hm_panel_body {
-		margin-bottom: -12px;
-	}
-}
-@media (min-width: $screen-sm-min) {
-	.o_hm_trend_row {
-		padding-top: 12px;
-	}
-}
-
-@media print {
-	.o_qual_hm .o_circle {
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-		&.o_rubric_insufficient {
-			background-color: var(--o-evaluation-insufficient) !important;
-		}
-		&.o_rubric_neutral {
-			background-color: var(--o-evaluation-neutral) !important;
-		}
-		&.o_rubric_sufficient {
-			background-color: var(--o-evaluation-sufficient) !important;
-		}
-		&.o_qual_hm_basecolor {
-			background-color: var(--o-quality-heatmap-base-bg) !important;
-		}
-	}
 	.o_qual_trend {
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-		.o_rubric_insufficient::before {
-			color: var(--o-evaluation-insufficient-text) !important;
+		.o_qual_ana_trend_up {
+			transform: rotate(315deg);
+			-webkit-transform: rotate(315deg);
+			-moz-transform: rotate(315deg);
+			-o-transform: rotate(315deg);
 		}
-		.o_rubric_neutral::before {
-			color: var(--o-evaluation-neutral-text) !important;
+		.o_qual_ana_trend_down {
+			transform: rotate(45deg);
+			-webkit-transform: rotate(45deg);
+			-moz-transform: rotate(45deg);
+			-o-transform: rotate(45deg);
 		}
-		.o_rubric_sufficient::before {
-			color: var(--o-evaluation-sufficient-text) !important;
+		.o_rubric_insufficient {
+			color: var(--o-evaluation-insufficient-text);
 		}
-		.o_qual_ana_unrated::before {
-			color: var(--o-quality-unrated) !important;
+		.o_rubric_neutral {
+			color: var(--o-evaluation-neutral-text);
+		}
+		.o_rubric_sufficient {
+			color: var(--o-evaluation-sufficient-text);
+		}
+		.o_qual_ana_unrated {
+			color: var(--o-quality-unrated);
 		}
 	}
-}
+	
+	.o_qual_filtered_print {
+		.o_groupby_config,
+		.o_slider_trend_config,
+		.o_qual_hm tr td:last-child,
+		.o_qual_hm tr th:last-child {
+			display:none;
+		}
+	}
 
-// Preview status labels (o_qual_prev_*_light): semantic states in _states.scss (OO-10042)
+	.o_evaluation_bar_chart_legend {
+		padding: 5px;
+	
+		li {
+			font-size: 90%;
+		}
+		.ident {
+			font-weight: bold;
+		}
+	}
+
+	@media (max-width: $screen-sm-min) {
+		.o_hm_group_select {
+			padding-bottom: 12px;
+		}
+		.o_hm_panel_body {
+			margin-bottom: -12px;
+		}
+	}
+	@media (min-width: $screen-sm-min) {
+		.o_hm_trend_row {
+			padding-top: 12px;
+		}
+	}
+
+	@media print {
+		.o_qual_hm .o_circle {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			&.o_rubric_insufficient {
+				background-color: var(--o-evaluation-insufficient) !important;
+			}
+			&.o_rubric_neutral {
+				background-color: var(--o-evaluation-neutral) !important;
+			}
+			&.o_rubric_sufficient {
+				background-color: var(--o-evaluation-sufficient) !important;
+			}
+			&.o_qual_hm_basecolor {
+				background-color: var(--o-quality-heatmap-base-bg) !important;
+			}
+		}
+		.o_qual_trend {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			.o_rubric_insufficient::before {
+				color: var(--o-evaluation-insufficient-text) !important;
+			}
+			.o_rubric_neutral::before {
+				color: var(--o-evaluation-neutral-text) !important;
+			}
+			.o_rubric_sufficient::before {
+				color: var(--o-evaluation-sufficient-text) !important;
+			}
+			.o_qual_ana_unrated::before {
+				color: var(--o-quality-unrated) !important;
+			}
+		}
+	}
+
+	// Preview status labels (o_qual_prev_*_light): semantic states in _states.scss (OO-10042)
 }

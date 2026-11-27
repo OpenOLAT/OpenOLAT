@@ -2,34 +2,34 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-type {
-h1 { 
-	color: var(--o-content-h1);
-}
-h2 { 
-	color: var(--o-content-h2);
-}
-h3 { 
-	color: var(--o-content-h3);
-}
-h4 { 
-	color: var(--o-content-h4);
-}
-h5 { 
-	color: var(--o-content-h5);
-}
-h5 { 
-	color: var(--o-content-h5);
-}
-fieldset legend {
-	color: var(--o-content-fieldset-legend);
-}
+	h1 { 
+		color: var(--o-content-h1);
+	}
+	h2 { 
+		color: var(--o-content-h2);
+	}
+	h3 { 
+		color: var(--o-content-h3);
+	}
+	h4 { 
+		color: var(--o-content-h4);
+	}
+	h5 { 
+		color: var(--o-content-h5);
+	}
+	h5 { 
+		color: var(--o-content-h5);
+	}
+	fieldset legend {
+		color: var(--o-content-fieldset-legend);
+	}
 
-// Description lists: space between the term/description pairs. The margin
-// sits on the last dd of a pair (the dd followed by a dt), so several dd of
-// one term stay together and the last pair adds nothing to the dl margin.
-// A bottom margin on the dd also keeps .dl-horizontal aligned: the floated
-// dt of the next pair starts below the same margin as its dd.
-dd:has(+ dt) {
-	margin-bottom: ($line-height-computed * 0.5);
-}
+	// Description lists: space between the term/description pairs. The margin
+	// sits on the last dd of a pair (the dd followed by a dt), so several dd of
+	// one term stay together and the last pair adds nothing to the dl margin.
+	// A bottom margin on the dd also keeps .dl-horizontal aligned: the floated
+	// dt of the next pair starts below the same margin as its dd.
+	dd:has(+ dt) {
+		margin-bottom: ($line-height-computed * 0.5);
+	}
 }

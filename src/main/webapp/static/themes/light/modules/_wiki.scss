@@ -2,115 +2,115 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-wiki {
-.o_wikimod_nav {
-	.o_noti {
-		margin:0;
-	}
+	.o_wikimod_nav {
+		.o_noti {
+			margin:0;
+		}
 	
-	.o_portfolio_collector {
-		/* fix awkward positioning */
-		position: relative;
-		top: -5px;
-	}
+		.o_portfolio_collector {
+			/* fix awkward positioning */
+			position: relative;
+			top: -5px;
+		}
 	
-	.o_menu,
-	.o_dropdown {
+		.o_menu,
+		.o_dropdown {
+			a {
+				@extend %o_nowrap;
+				max-width: 500px;
+			}
+		}
+	}
+
+	ul.o_wiki_dropdown {
 		a {
 			@extend %o_nowrap;
 			max-width: 500px;
 		}
 	}
-}
 
-ul.o_wiki_dropdown {
-	a {
-		@extend %o_nowrap;
-		max-width: 500px;
+	.o_wikimod_editform_wrapper {
+		margin-top: $grid-gutter-width;
 	}
-}
 
-.o_wikimod_editform_wrapper {
-	margin-top: $grid-gutter-width;
-}
-
-.o_wiki-file-deleted {
-	text-decoration:line-through;
-}
+	.o_wiki-file-deleted {
+		text-decoration:line-through;
+	}
 
 
-/* styles from wiki.css, see src/main/webapp/static/cp_offline_menu_mat/wiki.css */
-div.o_wiki_wrapper {
+	/* styles from wiki.css, see src/main/webapp/static/cp_offline_menu_mat/wiki.css */
+	div.o_wiki_wrapper {
 	
-	a.wikiimg {
-		text-decoration: none;
-		color: inherit;
-		font-weight: inherit;
-	}
-	
-	div.imgcaption {
-		padding: 0.3em 0em 0.2em 0.3em;
-	}
-	
-	div.imgleft {
-		clear:left;
-		float: left;
-		margin: 0.3em 0.3em 0.3em 0em;
-	}
-	
-	div.imgright {
-		clear:right;
-		float: right;
-		margin: 0.3em 0em 0.3em 0.3em;
-	}
-	
-	div.imgcenter {
-		clear: both;
-		overflow:hidden;
-		text-align: center;
-		margin: 0.3em 0em 0.3em 0em;
-	}
-	
-	div.imgthumb {
-		border: 1px solid var(--o-border-strong);
-		padding: 0.3em;
-	}
-	
-	table.gallery {
-		border: 1px solid var(--o-border-strong);
-		margin: 2px;
-		padding: 2px;
-		background-color: var(--o-bg);
-	}
-	
-	table.gallery tr {
-		vertical-align: middle;
-	}
-	
-	table.gallery td {
-		background-color: var(--o-bg-subtle);
-		border: solid 2px var(--o-bg);
-		text-align: center;
-		vertical-align: middle;
-		width:  150px;
-	}
-	
-	img.gallery {
-		border: 1px solid var(--o-border-strong);
-		padding: 0.3em;
-	}
-	
-	a.edit {
-		font-style: italic;
-		color: var(--o-state-danger-text);
-	}
-	
-	a.externallink {
-		@include o-add-icon('external-link');
-		@include o-add-icon-font();
-		&:before { 
-			padding-right: 0.5em;
+		a.wikiimg {
+			text-decoration: none;
+			color: inherit;
+			font-weight: inherit;
 		}
-		padding-left: 0.5em;
+	
+		div.imgcaption {
+			padding: 0.3em 0em 0.2em 0.3em;
+		}
+	
+		div.imgleft {
+			clear:left;
+			float: left;
+			margin: 0.3em 0.3em 0.3em 0em;
+		}
+	
+		div.imgright {
+			clear:right;
+			float: right;
+			margin: 0.3em 0em 0.3em 0.3em;
+		}
+	
+		div.imgcenter {
+			clear: both;
+			overflow:hidden;
+			text-align: center;
+			margin: 0.3em 0em 0.3em 0em;
+		}
+	
+		div.imgthumb {
+			border: 1px solid var(--o-border-strong);
+			padding: 0.3em;
+		}
+	
+		table.gallery {
+			border: 1px solid var(--o-border-strong);
+			margin: 2px;
+			padding: 2px;
+			background-color: var(--o-bg);
+		}
+	
+		table.gallery tr {
+			vertical-align: middle;
+		}
+	
+		table.gallery td {
+			background-color: var(--o-bg-subtle);
+			border: solid 2px var(--o-bg);
+			text-align: center;
+			vertical-align: middle;
+			width:  150px;
+		}
+	
+		img.gallery {
+			border: 1px solid var(--o-border-strong);
+			padding: 0.3em;
+		}
+	
+		a.edit {
+			font-style: italic;
+			color: var(--o-state-danger-text);
+		}
+	
+		a.externallink {
+			@include o-add-icon('external-link');
+			@include o-add-icon-font();
+			&:before { 
+				padding-right: 0.5em;
+			}
+			padding-left: 0.5em;
+		}
 	}
-}
 }

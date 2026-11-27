@@ -2,136 +2,136 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-citation {
-.o_cit {
-	position: relative;
-	margin: $o-forum-quote-padding 0;
-		
-	blockquote.o_quote { 
-		color: var(--o-citation-quote); 
-		font-size: $o-cit-quote-font-size; 
-		margin-top: $padding-base-vertical; 
-		margin-bottom: 0;
-		padding: 0 $padding-base-horizontal;
-		/* override bootstrap default */
-		font-style: italic;
-		padding: 5px 5px 0;
-		border: 0;
-		
-		p:last-child {
-			&:after {
-				content: '1)';
-				top: -0.5em;
-				font-size: 75%;
-				line-height: 0;
-				position: relative;
-				vertical-align: baseline;
-			}
-		}
-	}
-	
-	.o_cit_bibinfo {
-		font-size: 90%;
-		margin-left: 1em;
+	.o_cit {
 		position: relative;
+		margin: $o-forum-quote-padding 0;
 		
-		>div:first-child {
-			&:before {
-				content: '1)';
-				position: absolute;
-				top: 0.5em;
-				left: -1em;
-				font-size: 75%;
-				line-height: 0;
-				vertical-align: baseline;
+		blockquote.o_quote { 
+			color: var(--o-citation-quote); 
+			font-size: $o-cit-quote-font-size; 
+			margin-top: $padding-base-vertical; 
+			margin-bottom: 0;
+			padding: 0 $padding-base-horizontal;
+			/* override bootstrap default */
+			font-style: italic;
+			padding: 5px 5px 0;
+			border: 0;
+		
+			p:last-child {
+				&:after {
+					content: '1)';
+					top: -0.5em;
+					font-size: 75%;
+					line-height: 0;
+					position: relative;
+					vertical-align: baseline;
+				}
 			}
-		}	
-	}
+		}
 	
-	.title,
-	.url,
-	.authors,
-	.pages,
-	.date,
-	.dateAdded,
-	.place,
-	.institution,
-	.issue,
-	.publisher,
-	.publicationTitle,
-	.edition,
-	.series,
-	.volume {
-		margin-right :0.5em;
-	}
-
-	.title{
-		font-style: italic;
-	}
-	.publicationTitle {
-		color: var(--o-text);
-	}
-
-	.links {
-		padding-left: 2em;
-	} 
+		.o_cit_bibinfo {
+			font-size: 90%;
+			margin-left: 1em;
+			position: relative;
+		
+			>div:first-child {
+				&:before {
+					content: '1)';
+					position: absolute;
+					top: 0.5em;
+					left: -1em;
+					font-size: 75%;
+					line-height: 0;
+					vertical-align: baseline;
+				}
+			}	
+		}
 	
-	.notes {
-		padding-left: 2em;
-		color:var(--o-text-muted);
-	}
-	.note {
-		font-style: italic;
-	}
-	.note p:first-child {
-		margin-top: 0;	
-	}
-	.note p:first-child {
-		margin-bottom: 0;	
-	}
+		.title,
+		.url,
+		.authors,
+		.pages,
+		.date,
+		.dateAdded,
+		.place,
+		.institution,
+		.issue,
+		.publisher,
+		.publicationTitle,
+		.edition,
+		.series,
+		.volume {
+			margin-right :0.5em;
+		}
 
-	/* Web style formatting */
-	.listing.web .item {
-		padding-left: 0; 
-		text-indent:0;
-	}
+		.title{
+			font-style: italic;
+		}
+		.publicationTitle {
+			color: var(--o-text);
+		}
 
-	.listing.web .title {
-		display: block;
-		font-weight: bold;
-		font-style: normal;
-	}
-	.listing.web .publicationTitle {
-		display: block;
-		font-style: italic;
-	}
-	.listing.web .url {
-		display: block;
-	}
-	.listing.web .links {
-		padding-left: 0;
-	} 
-	.listing.web .notes {
-		padding-left: 0;
-	}
-
-	/* Section below the generated item listing with static infos */
-	.general-info {
-		border-top: 1px solid var(--o-border-subtle);
-		padding-top: 30px;
-		margin-top: 30px;	
-	}
+		.links {
+			padding-left: 2em;
+		} 
 	
-	.copyright {
-		display: none;
-	}
-}
+		.notes {
+			padding-left: 2em;
+			color:var(--o-text-muted);
+		}
+		.note {
+			font-style: italic;
+		}
+		.note p:first-child {
+			margin-top: 0;	
+		}
+		.note p:first-child {
+			margin-bottom: 0;	
+		}
 
-/* Print styles */
-@media print {
-	.o_cit {	
-		blockquote.o_quote {
-		    page-break-inside: avoid;
+		/* Web style formatting */
+		.listing.web .item {
+			padding-left: 0; 
+			text-indent:0;
+		}
+
+		.listing.web .title {
+			display: block;
+			font-weight: bold;
+			font-style: normal;
+		}
+		.listing.web .publicationTitle {
+			display: block;
+			font-style: italic;
+		}
+		.listing.web .url {
+			display: block;
+		}
+		.listing.web .links {
+			padding-left: 0;
+		} 
+		.listing.web .notes {
+			padding-left: 0;
+		}
+
+		/* Section below the generated item listing with static infos */
+		.general-info {
+			border-top: 1px solid var(--o-border-subtle);
+			padding-top: 30px;
+			margin-top: 30px;	
+		}
+	
+		.copyright {
+			display: none;
 		}
 	}
-}
+
+	/* Print styles */
+	@media print {
+		.o_cit {	
+			blockquote.o_quote {
+			    page-break-inside: avoid;
+			}
+		}
+	}
 }

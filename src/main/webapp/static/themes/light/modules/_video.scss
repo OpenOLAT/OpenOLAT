@@ -14,1229 +14,1228 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-video {
-
-.o_video_poster {
-	position: relative;
-	display: inline-block;
-	width: 400px;
-	max-width: 100%;
-	height: 225px;
-	background-size: cover;
-	background-repeat: no-repeat;
-	border: 1px solid var(--o-border-subtle);	
-}
-
-.o_video_poster_select {
-	text-align: center;
-	
 	.o_video_poster {
-		margin: 5px;
+		position: relative;
+		display: inline-block;
+		width: 400px;
+		max-width: 100%;
+		height: 225px;
+		background-size: cover;
+		background-repeat: no-repeat;
+		border: 1px solid var(--o-border-subtle);	
+	}
+
+	.o_video_poster_select {
+		text-align: center;
+	
+		.o_video_poster {
+			margin: 5px;
 		
+			a {
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+			
+				span {
+					position: absolute;
+					bottom: 0;
+					width: 100%;
+					display: block;
+					line-height: 3em;
+					background: var(--o-bg-subtle);
+					opacity: 0.8;
+				}
+				&:hover {
+					border: 1px solid var(--o-border-strong);
+					span {
+						opacity: 0.9;			
+					}
+				}
+			}			
+		}
+	}
+
+	.o_video_peekview {
+		text-align: center;
+	}
+
+	.o_video_listing {
+	
+		.o_table_body.container-fluid {
+			padding-right: 0;
+			padding-left: 0;
+		}
+	
+		.o_video_entry {
+			position: relative;
+			display: inline-block;
+			height: 230px;			
+			width: 250px;
+			vertical-align: top;
+			margin-right: 10px;
+		}
+		.o_video_poster {
+			width: 250px;
+			max-width: 100%;
+			height: 140px;	
+			border: 1px solid var(--o-border-subtle);
+		}
+		.o_timecode {
+			position: absolute;
+			bottom: 2px;
+			right: 3px;
+			padding: 3px 4px;
+			background: color-mix(in srgb, var(--o-backdrop) 80%, transparent);
+			color: var(--o-white);
+			font-size: $font-size-small;
+			line-height: $font-size-small;
+		}
+		.o_meta {
+			padding: 2px;
+			font-size: math.ceil(($font-size-base * 0.75));
+			h5 {
+				font-size: $font-size-base;
+				margin-top: 0;
+				margin-bottom: 5px;
+				max-width: 100%;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		}	
+		.o_date {
+			margin-left: 10px;
+			display: inline-block;
+			&:before {
+				content: '\002022';
+				margin-right: 10px;
+				display: inline-block;
+			}	
+		}
+	}
+
+	.o_video_run {
+		h1 {
+			// same as youtube
+			font-size: 1.8rem;
+			font-weight: normal;
+		}
+		.o_author {
+			margin-top: 0.5em;
+			margin-bottom: 1em;
+			line-height: normal;
+			font-size: 90%;
+			color: var(--o-coursesite-meta-author);
+		}		
+	
+		.o_ratings_and_comments {
+			margin-top: 2em;
+			border-top: 1px solid var(--o-border-subtle);
+			padding-top: 1em;
+		}
+	}
+
+	.o_video_marker_editor  {
+		.o_table_wrapper.o_table_flexi .table {
+			margin-top: 0;
+		}
+	}
+
+	.o_video_marker_editor .o_video_question.mejs__overlay {
+		overflow: scroll;
+	}
+
+	.o_video_question.mejs__overlay.o_video_large_question {
+		align-items: flex-start;
+		padding: 1em 1em 0 1em;
+		z-index: 5;
+		overflow: auto;
+	
+		#o_qti_container {
+			border: 1px solid var(--o-border-subtle);
+		}
+	}
+
+	.o_video_marker {
+		position: absolute;
+		background-color: var(--o-video-marker-bg);
+		opacity: 0.85;
+		border-left: 3px solid var(--o-video-time-marker-default-bg);
+		padding: 5px;
+	
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			border-left-color: var(--o-sw-bg);
+		}
+	}
+
+	.o_video_question {
+
+		&.mejs__overlay {
+			width: 100%;
+			height: 100%;
+			background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
+			z-index: 1;
+		}
+
+		#itemBody, .modalFeedback {
+			background-color: var(--o-bg-raised);
+			opacity: 1.0;
+		}
+	
+		.o_assessmentitem_wrapper .o_qti_item_body {
+			min-height: 50px;
+		}
+	
+		#o_qti_assessment_test_timer {
+			border: none;
+			padding: 5px;
+			margin: 0;
+		}
+	
+		#o_qti_progress .progress {
+			display: block;
+			height: 10px;
+		}
+	
+		#o_qti_container {
+			background-color: var(--o-bg-raised);
+			padding: $padding-base-horizontal $padding-base-horizontal;
+			border-radius: $border-radius-base;
+		
+			.o_assessmentitem_wrapper {
+				.o_qti_item_meta {
+					margin: 0;
+
+					.o_assessmentitem_status {
+						// the icon takes the text colour of the state (OO-10042)
+						i, i:before {
+							color: inherit;
+						}
+					}
+				}
+			}
+		}
+	
+		.o_sel_additional_feedback {
+			float: left;
+			font-size: 26px;
+			margin-right: 5px;
+
+			.o_icon_passed {
+				color: var(--o-state-success-text);
+			}
+			.o_icon_failed {
+				color: var(--o-state-danger-text);
+			}
+		}
+	}
+
+	.mejs__time-rail {
+		#{o-swatch-alias-selector("o_video_marker_")}, #{o-swatch-selector()} {
+			background: var(--o-sw-bg);
+		}
+	}
+
+	/* beautify source chooser plugin, remove radio button */
+	.mejs__controls .mejs__sourcechooser-button > button {
+	    background: transparent;
+	    display: inline-block;
+		@include o-add-icon-font();
+	    &:before {
+	 	    color: var(--o-white);
+		    font-size: 18px;
+	    }
+	}
+	.mejs__controls .mejs__sourcechooser-button > button {
+		@include o-add-icon('gear');
+	}
+	.mejs__controls .mejs__sourcechooser-button .mejs__sourcechooser-selector {
+		visibility: visible !important;
+		width: 170px;
+		padding-left: 10px;
+		right: initial;
+		background: var(--o-video-controls-bg);
+	
+		ul li {
+			label {
+				font-weight: normal;
+				font-size: 10px;
+			
+				width: 140px;
+				&:hover {
+					color: #eee; // o-color-keep(vendor-copy)
+				}
+				.type {
+					display: none;
+				}
+			}
+			input {
+				/* hide ugly input radio button */
+				visibility: hidden;
+				margin: 0;
+				width: 0;
+				&:checked+label {
+					color: $o-video-controls-selected;
+				}
+			}
+		}	
+	}
+
+	.mejs__controls .mejs__volume-button > .mejs__volume-slider {
+		background: var(--o-video-controls-bg);
+	}
+
+
+	/* beautify track plugin, remove radio button */
+	.mejs__controls .mejs__captions-button .mejs__captions-selector {
+		right: -26px;
+		background: var(--o-video-controls-bg);
+	
+		ul li {
+			label {
+				font-weight: normal;
+				font-size: 10px;
+			
+				&:hover {
+					color: #eee; // o-color-keep(vendor-copy)
+				}
+				.type {
+					display: none;
+				}
+			}
+			input {
+				/* hide ugly input radio button */
+				visibility: hidden;
+				margin: 0;
+				width: 0;
+				&:checked+label {
+					color: $o-video-controls-selected;
+				}
+			}
+		}	
+	}
+
+	/* beautify speed plugin */
+	.mejs__button.mejs__speed-button {
+		width: 36px;
+	}
+	.mejs__controls .mejs__speed-button > button {
+	    background: transparent;
+	    width: 36px;
+	    margin: 11px 0 0 0;
+	    font-size: 11px;
+	    line-height: normal;
+	    color: var(--o-white);
+	}
+
+	.mejs__controls .mejs__speed-button .mejs__speed-selector {
+		height: 150px;
+		top: auto;
+		bottom: 40px;
+		background: var(--o-video-controls-bg);
+	
+		ul li {
+			label {
+				font-weight: normal;
+				font-size: 10px
+			}
+		}
+	}
+
+	/* fix overflow of chapters when not enough space */
+	.mejs__chapters .mejs__chapter .mejs__chapter-block {
+		.ch-title,
+		.ch-time {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			display: block;
+		}
+	}
+
+	.mejs__time-marker {
+		background-color: var(--o-video-time-marker-default-bg);
+	}
+
+	/* replay button */
+	.mejs__overlay-button.o_mejs_replay {
+		background-position: -671px -4px;
+		background-size: 1677px;
+		margin-left: 20px;
+	}
+
+	/* make button better readable on white background */
+	.mejs__overlay-button {
+		filter: drop-shadow(1px 1px 5px color-mix(in srgb, var(--o-shadow-color) 50%, transparent));
+	}
+
+	/* make subtitles better readable, relative to screen size but not too small or too large */
+	.mejs__captions-layer {
+		font-size: clamp(1.5rem, 2.5vw, 3rem); 
+		line-height: clamp(2rem, 3vw, 3.5rem); 	
+	
+		/* position captions nicely at the bottom in the center, don't use full width for better readibility */
+		.mejs__captions-position {
+			bottom: 3rem !important;
+			transition: bottom 0.5s;
+			width: 80%;
+			left: 50%;
+			margin-left: -40%;
+		
+			/* make space for control bar */
+			&.mejs__captions-position-hover {
+				bottom: 5rem !important;
+			}
+		}
+	}
+
+	/* place the progress bar above the controls and use the full width */
+	.o_video_progress_full_width > .olatFlashMovieViewer > .mejs__container > .mejs__inner {
+		& > .mejs__controls {
+			height: 60px;
+			flex-wrap: wrap;
+
+			& > .mejs__time-rail {
+				order: -1;
+				flex-grow: 10;
+				width: 100%;
+				padding-top: 0;
+				height: 20px;
+			}
+
+			& > .mejs__playpause-button {
+				order: 0;
+			}
+
+			& > .mejs__currenttime-container {
+				order: 1;
+				padding-right: 0;
+			}
+
+			& > .mejs__currenttime-container:after {
+				content: '/';
+				padding-left: 5px;
+			}
+
+			& > .mejs__duration-container {
+				order: 2;
+				padding-left: 5px;
+			}
+
+			& > .mejs__volume-button {
+				order: 3;
+			}
+
+			& > .mejs__chapters-button {
+				order: 4;
+			}
+
+			& > .mejs__speed-button {
+				order: 5;
+			}
+
+			& > .mejs__captions-button {
+				order: 6;
+			}
+
+			& > .mejs__fullscreen-button {
+				order: 7;
+				margin-left: auto;
+			}
+		}
+	}
+
+
+	.mejs__fullscreen .mejs__captions-layer {
+		.mejs__captions-position {
+			bottom: 6rem !important;
+			/* make space for control bar */
+			&.mejs__captions-position-hover {
+				bottom: 8rem !important;
+			}
+		}
+		/* subtitles sizes */
+		.mejs__captions-text {
+			@include videSubtitleSize(3840px);
+			@include videSubtitleSize(2560px);
+			@include videSubtitleSize(1920px);
+			@include videSubtitleSize(1440px);
+			@include videSubtitleSize(1280px);
+			@include videSubtitleSize(1024px);
+			@include videSubtitleSize(768px);
+			@include videSubtitleSize(640px);
+			@include videSubtitleSize(480px);
+			@include videSubtitleSize(320px);
+		}
+	}
+
+
+	/* chapters */
+	.o_video .mejs__chapters-button > .mejs__chapters-selector {
+	    margin-right: -70px;
+	    width: 240px;
+	    max-height: 360px;
+	    overflow-y: auto;
+	    background: var(--o-video-controls-bg);
+
+		.mejs__chapters-selector-list-item {
+			margin-bottom: 0;
+		}
+
+		.mejs__chapters-selector-label {
+			line-height: 28px;
+			padding-top: 0;
+			margin-bottom: 0;
+		}
+	}
+
+	.o_video_download_btn {
+		margin-top: 20px;
+	}
+
+	/* Resume dialog */
+	.o_video_resume_wrapper {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	
+		.o_video_resume_panel {
+			margin: 10% auto;
+			padding: 10px 20px 20px 20px;
+			max-width: 500px;
+			background-color: var(--o-panel-bg);
+			border: 1px solid transparent;
+			border-radius: $panel-border-radius;
+			@include box-shadow(0 1px 1px color-mix(in srgb, var(--o-shadow-color) 5%, transparent));
+			text-align: center;
+		}
+		.o_video_resume_buttons {
+			margin: 20px 0
+		} 
+	}
+
+	.o_video_timeline {
+		display: flex;
+		gap: 5px;
+		flex-direction: row;
+		width: 100%;
+	}
+
+	.o_video_channels {
+		flex: 1;
+		display: flex;
+		gap: 5px;
+		flex-direction: column;
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+
+	.o_video_channel {
+		position: relative;
+
+		.o_video_timeline_event {
+		 	&.o_video_selected {
+				border-color: var(--o-primary);
+			}
+			&.o_video_segment_selection {
+				overflow: visible;
+				font-size: 0;
+				padding: 0 1px;
+				height: 30px;
+				border: none;
+				border-radius: 0;
+				z-index: 3;
+			}
+			&.o_video_segment_selection:before {
+				content: '\0020';
+				position: absolute;
+				padding: 0 1px;
+				height: 30px;
+				right: 0;
+				width: 1px;
+			}
+			&.o_selection_correct {
+				background-color: var(--o-video-timeline-correct-bg);
+			}
+			// the marker line of a selection: the blank content has the colour of
+			// its own fill, a fill token as text colour for a hidden text
+			&.o_selection_correct:before {
+				top: 30px;
+				color: var(--o-video-timeline-correct-bg);
+				background-color: var(--o-video-timeline-correct-bg);
+			}
+			&.o_selection_incorrect {
+				background-color: var(--o-video-timeline-incorrect-bg);
+			}
+			&.o_selection_incorrect:before {
+				top: -30px;
+				color: var(--o-video-timeline-incorrect-bg);
+				background-color: var(--o-video-timeline-incorrect-bg);
+			}
+		}
+	}
+
+	.o_video_channel_labels {
+		display: flex;
+		gap: 5px;
+		flex-direction: column;
+	}
+
+	.o_video_channel_label {
+		width: 50px;
+		padding: 5px;
+	}
+
+	// The rows of the timeline have the fills of the rows of a striped table:
+	// the odd rows the striped fill, the even rows the page fill. The channel
+	// labels and the channels are in two containers with the same order of rows
+	// (time bar, then the visible channels), so a label and its channel get the
+	// same fill. The active channel has the fill of a selected row.
+	.o_video_timeline_box {
+		background-color: var(--o-bg);
+
+		&:nth-child(odd) {
+			background-color: var(--o-table-striped-bg);
+		}
+
+		&.o_video_active {
+			background-color: var(--o-table-row-selected-bg);
+		}
+	}
+
+	.o_video_channel .o_video_question {
+		position: absolute;
+		display: inline-block;
+		z-index: 1;
+		height: 30px;
+		width: 30px;
+		cursor: pointer;
+
+		svg {
+			stroke: var(--o-video-border);
+			stroke-width: 32;
+			width: 30px;
+			height: 30px;
+		}
+
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			svg {
+				fill: var(--o-sw-bg);
+			}
+		}
+
+		&.o_video_selected {
+			svg {
+				stroke: var(--o-primary);
+				stroke-width: 50;
+			}
+		}
+	}
+
+	.o_video_timeline_event {
+		position: absolute;
+		display: inline-block;
+		z-index: 1;
+		height: 20px;
+		line-height: 18px;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+		padding-left: 2px;
+		padding-right: 2px;
+		font-size: 12px;
+		font-weight: normal;
+		text-align: center;
+		cursor: pointer;
+		border-style: solid;
+		border-radius: 4px;
+		border-width: 1px;
+		border-color: var(--o-video-border);
+		color: var(--o-video-bright);
+
+		&.o_video_selected {
+			z-index: 2;
+			outline: 1px solid var(--o-primary);
+		}
+
+		// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases,
+		// a key of the colour set M renders with its swatch class, e.g. o_swatch_blue
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			background-color: var(--o-sw-bg);
+			color: var(--o-sw-fg);
+		}
+	}
+
+	.o_video_timeline_tools {
+		display: flex;
+
 		a {
+			color: var(--o-text);
+			margin-right: 3px;
+		}
+
+		.o_slider_wrapper {
+			width: 100px;
+		}
+	}
+
+	.o_video_timeline_slider {
+
+		.o_has_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+			left: 10%;
+			top: .66em;
+			height: .2em;
+			width: 80%;
+			border: none;
+			background: var(--o-video-slider-bg);
+
+			.ui-slider-handle {
+				border-color: var(--o-video-slider-bg);
+				background-color: var(--o-video-slider-bg);
+				outline: 0;
+				width: 0.8em;
+				height: 0.8em;
+				border-radius: 50%;
+				translate: 3px;
+			}
+		}
+	}
+
+	.o_video_color_circle {
+		width: 16px;
+		height: 16px;
+		border-style: solid;
+		border-radius: 8px;
+		border-width: 1px;
+	}
+
+	.o_video_colored_area {
+		border-color: var(--o-video-border);
+
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			background-color: var(--o-sw-bg);
+		}
+	}
+
+	.o_video_colored_border {
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			border-color: var(--o-sw-border);
+		}
+	}
+
+	.o_video_me_colored_area {
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			background-color: var(--o-sw-bg);
+		}
+	}
+
+	#o_video_time_bar_label {
+		height: 8px;
+		padding: 0;
+	}
+
+	#o_video_time_bar_container {
+		height: 8px;
+		cursor: pointer;
+	}
+
+	#o_video_time_bar {
+		height: 100%;
+		background-color: var(--o-primary);
+	}
+
+	#o_video_play_head {
+		position: absolute;
+		left: 55px;
+		width: 3px;
+		background-color: var(--o-primary);
+		cursor: pointer;
+		z-index: 10;
+
+		.o_video_play_head_marker {
+			position: absolute;
+			left: -4px;
+			top: -8px;
+			cursor: pointer;
+
+			.o_video_play_head_marker_icon {
+				color: var(--o-primary-text);
+			}
+		}
+
+		.o_video_play_head_text {
+			position: absolute;
+			left: -30px;
+			width: 60px;
+			text-align: center;
+			top: -16px;
+			font-size: 12px;
+			font-weight: bold;
+			cursor: pointer;
+			user-select: none;
+		}
+	}
+
+	.o_video_category_container {
+		margin: 10px auto;
+		width: 90%;
+		border-spacing: 10px;
+		border-collapse: separate;
+
+		.o_color_button_placeholder {
+			display: inline-block;
+			width: 34px;
+			height: 34px;
+		}
+	}
+
+	.o_video_segments_layer {
+		position: absolute;
+	}
+
+	.o_video_edit_segments {
+
+		.o_video_segment_category {
+			width: 100%;
+			text-align: left;
+		}
+		.o_video_segment_category_icon {
+			line-height: 20px;
+			float: right;
+		}
+
+		.o_video_segment_category_placeholder {
+			color: var(--o-input-placeholder);
+			display: inline-block;
+			padding: 16px;
+		}
+	}
+
+	.o_video_me_segments {
+		position: absolute;
+		left: 10px;
+		right: 10px;
+		bottom: 40px;
+		background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
+		height: 20px;
+	}
+
+	.o_video_me_segment {
+		display: inline-block;
+		position: absolute;
+		height: 20px;
+		line-height: 22px;
+		font-size: 9px;
+		font-weight: bold;
+		text-align: center;
+		opacity: 0.9;
+
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.o_video_comment_container {
+		position: absolute;
+		overflow: auto;
+		display: flex;
+		flex-direction: column;
+		width: 38%;
+		top: 0;
+		bottom: 60px;
+		right: 0;
+		// the dark layer behind the comments
+		background-color: color-mix(in srgb, var(--o-backdrop) 50%, transparent);
+		z-index: 1;
+	}
+
+	.o_video_comment_header {
+		text-align: right;
+	}
+
+	.o_video_comment_close {
+		display: inline-block;
+		margin-top: 6px;
+		margin-bottom: 6px;
+		margin-right: 10px;
+		color: var(--o-white);
+	}
+
+	.o_video_comment_box {
+		margin-left: 10px;
+		margin-right: 10px;
+		padding: 16px 16px 6px 16px;
+		background-color: var(--o-bg-raised);
+		border-width: medium;
+		border-style: solid;
+		border-radius: 5px;
+
+		.o_video_run.o_block_large_bottom {
+			margin-bottom: 10px;
+		}
+
+		.o_video_comment_text {
+			margin-bottom: -6px;
+		}
+	}
+
+	.o_video_comment_author_box {
+		@extend %o_nowrap;
+	
+		display: flex;
+		column-gap: 5px;
+		align-items: center;
+	
+		.o_portrait {
+			&.o_video_portrait_fullscreen {
+				display: none;
+			}
+		}
+	}
+
+	.o_video_comment_player .mejs__overlay-button {
+		transform: scale(0.4);
+	}
+
+	@media all and (display-mode: fullscreen) {
+		.o_video_comment_player .mejs__overlay-button {
+			transform: inherit;
+		}
+
+		.o_video_comment_container {
+			font-size: 20px;
+		}
+
+		.o_video_comment_author_box {
+			margin-bottom: 20px;
+		}
+
+		.o_video_comment_box {
+			padding: 24px 24px 10px 24px;
+			margin-left: 16px;
+			margin-right: 16px;
+
+			.o_video_run.o_block_large_bottom {
+				margin-bottom: 16px;
+			}
+		}
+	}
+
+	@media (max-width: $screen-sm) {
+		.o_video_comment_container {
+			width: 50%;
+		}
+	}
+
+	@media (max-width: $screen-xs) {
+		.o_video_comment_container {
+			width: 62%;
+		}
+
+		.o_video_comment_box {
+			padding-top: 8px;
+			padding-bottom: 8px;
+		}
+
+		.o_video_comment_close {
+			margin-top: 4px;
+			margin-bottom: 0;
+		}
+	}
+
+	.o_video_recorder {
+		width: 100%;
+
+		.o_centered_panel {
+			position: relative;
+		}
+
+		.o_av_container {
+			position: relative;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 100%;
+			aspect-ratio: 1.778;
+			background-color: var(--o-backdrop);
+		}
+
+		#videoElement {
+			position: absolute;
+			width: 100%;
+			aspect-ratio: 1.778;
+			transform: rotateY(180deg);
+		}
+
+		#audioElement {
+			position: absolute;
+			width: 100%;
+			height: auto;
+		}
+
+		.o_video_overlay {
+			position: relative;
+			float: right;
+			width: 100%;
+			height: 100%;
+			box-sizing: border-box;
+
+			.o_video_feed_dimensions {
+				position: absolute;
+				color: var(--o-white);
+				opacity: 0.9;
+				font-size: 11px;
+				font-weight: bold;
+				height: 24px;
+				padding: 1em 1em 0;
+			}
+
+			.recording-container {
+				float: right;
+				margin-right: 0.5em;
+				margin-top: 0.5em;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: center;
+				padding: 0.5em;
+				border-radius: 0.25em;
+
+				&.o_audio_visualization {
+					margin-top: -195px;
+				}
+
+				.recording-circle {
+					width: 1em;
+					height: 1em;
+					border-radius: 50%;
+					margin-right: 0.25em;
+					background-color: var(--o-state-danger-border);
+					animation: ease pulse-background-color 2s infinite;
+				}
+
+				.recording-text {
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+					Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+					font-size: 0.75em;
+					color: var(--o-state-danger-text);
+					animation: ease pulse-color 2s infinite;
+				}
+
+				@keyframes pulse-color {
+					0% {
+						color: var(--o-state-danger-text);
+					}
+					50% {
+						color: var(--o-state-danger-soft-border);
+					}
+					100% {
+						color: var(--o-state-danger-text);
+					}
+				}
+
+				@keyframes pulse-background-color {
+					0% {
+						background-color: var(--o-state-danger-border);
+					}
+					50% {
+						background-color: var(--o-state-danger-soft-border);
+					}
+					100% {
+						background-color: var(--o-state-danger-border);
+					}
+				}
+			}
+		}
+
+		.controls {
+			opacity: 0.9;
+		}
+
+		.o_commands {
+			position: relative;
+			display: flex;
+			align-items: center;
+			margin-top: 0.5em;
+			min-height: 42px;
+
+			.o_one_button_container {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 0;
+
+				.o_one_button_icon {
+					width: 24px;
+					height: 24px;
+					display: inline-block;
+					position: absolute;
+					margin-top: -2px;
+					margin-left: -5px;
+				}
+			}
+
+			.o_quality_file_size_container {
+				padding-right: 5px;
+			}
+
+			.o_file_size {
+				display: inline-block;
+				margin-left: 0.5em;
+				height: 3em;
+				line-height: 3em;
+				white-space: nowrap;
+			}
+
+			.o_quality_dropdown_container {
+				display: inline-block;
+				padding-top: 4px;
+				padding-bottom: 4px;
+			}
+
+			.o_button_container {
+				text-align: right;
+				padding-left: 5px;
+			}
+
+			.o_button {
+				display: inline-block;
+				padding-top: 4px;
+				padding-bottom: 4px;
+			}
+		}
+
+		.one-button {
+			cursor: pointer;
+
+			width: 3em;
+			height: 3em;
+		}
+
+		.decoration {
+			fill: none;
+			stroke: var(--o-recorder-decoration);
+		}
+
+		.decoration-recording {
+			fill: var(--o-recorder-recording);
+			stroke: var(--o-recorder-decoration);
+		}
+
+		.strong-symbol {
+			fill: var(--o-recorder-record);
+		}
+
+		.strong-symbol:hover {
+			fill: var(--o-recorder-record-hover);
+		}
+
+		.strong-symbol:active {
+			fill: var(--o-recorder-record-active);
+		}
+
+		.symbol {
+			fill: var(--o-recorder-symbol);
+		}
+
+		.symbol:hover {
+			fill: var(--o-recorder-symbol-hover);
+		}
+
+		.symbol:active {
+			fill: var(--o-recorder-symbol-active);
+		}
+
+		.o_dialog {
+			position: absolute;
+			width: 80%;
+			left: 50%;
+			top: 0;
+			transform: translate(-50%, -85%);
+		}
+	}
+
+	.o_audio_canvas_wrapper {
+		position: relative;
+		width: 100%;
+		height: 200px;
+		background-color: var(--o-bg-subtle);
+
+		.o_audio_canvas {
 			position: absolute;
 			left: 0;
 			top: 0;
 			width: 100%;
-			height: 100%;
-			
-			span {
-				position: absolute;
-				bottom: 0;
-				width: 100%;
-				display: block;
-				line-height: 3em;
-				background: var(--o-bg-subtle);
-				opacity: 0.8;
+			height: 200px;
+		}
+
+		#o_start_recording_info {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			border-radius: 6px;
+			background-color: var(--o-video-recording-info-bg);
+			color: var(--o-video-recording-info-fg);
+			opacity: 0.8;
+			line-height: 24px;
+			padding: 10px 15px;
+			transform: translate(-50%, -50%);
+		}
+
+		&.o_small {
+			height: 100px;
+
+			.o_audio_canvas {
+				height: 100px;
 			}
-			&:hover {
-				border: 1px solid var(--o-border-strong);
-				span {
-					opacity: 0.9;			
+		}
+	}
+
+	@media (orientation: portrait) and (max-width: $screen-sm) {
+		dialog:has(.o_av_wrapper) {
+			min-width: 100vw;
+			margin: 0;
+			padding: 0;
+
+			.modal-content {
+				border: none;
+				border-radius: 0;
+				box-shadow: none;
+
+				.o_av_wrapper {
+					min-width: calc(100vw - 40px);
 				}
 			}
-		}			
-	}
-}
-
-.o_video_peekview {
-	text-align: center;
-}
-
-.o_video_listing {
-	
-	.o_table_body.container-fluid {
-		padding-right: 0;
-		padding-left: 0;
-	}
-	
-	.o_video_entry {
-		position: relative;
-		display: inline-block;
-		height: 230px;			
-		width: 250px;
-		vertical-align: top;
-		margin-right: 10px;
-	}
-	.o_video_poster {
-		width: 250px;
-		max-width: 100%;
-		height: 140px;	
-		border: 1px solid var(--o-border-subtle);
-	}
-	.o_timecode {
-		position: absolute;
-		bottom: 2px;
-		right: 3px;
-		padding: 3px 4px;
-		background: color-mix(in srgb, var(--o-backdrop) 80%, transparent);
-		color: var(--o-white);
-		font-size: $font-size-small;
-		line-height: $font-size-small;
-	}
-	.o_meta {
-		padding: 2px;
-		font-size: math.ceil(($font-size-base * 0.75));
-		h5 {
-			font-size: $font-size-base;
-			margin-top: 0;
-			margin-bottom: 5px;
-			max-width: 100%;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
 		}
-	}	
-	.o_date {
-		margin-left: 10px;
-		display: inline-block;
-		&:before {
-			content: '\002022';
-			margin-right: 10px;
-			display: inline-block;
-		}	
-	}
-}
-
-.o_video_run {
-	h1 {
-		// same as youtube
-		font-size: 1.8rem;
-		font-weight: normal;
-	}
-	.o_author {
-		margin-top: 0.5em;
-		margin-bottom: 1em;
-		line-height: normal;
-		font-size: 90%;
-		color: var(--o-coursesite-meta-author);
-	}		
-	
-	.o_ratings_and_comments {
-		margin-top: 2em;
-		border-top: 1px solid var(--o-border-subtle);
-		padding-top: 1em;
-	}
-}
-
-.o_video_marker_editor  {
-	.o_table_wrapper.o_table_flexi .table {
-		margin-top: 0;
-	}
-}
-
-.o_video_marker_editor .o_video_question.mejs__overlay {
-	overflow: scroll;
-}
-
-.o_video_question.mejs__overlay.o_video_large_question {
-	align-items: flex-start;
-	padding: 1em 1em 0 1em;
-	z-index: 5;
-	overflow: auto;
-	
-	#o_qti_container {
-		border: 1px solid var(--o-border-subtle);
-	}
-}
-
-.o_video_marker {
-	position: absolute;
-	background-color: var(--o-video-marker-bg);
-	opacity: 0.85;
-	border-left: 3px solid var(--o-video-time-marker-default-bg);
-	padding: 5px;
-	
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		border-left-color: var(--o-sw-bg);
-	}
-}
-
-.o_video_question {
-
-	&.mejs__overlay {
-		width: 100%;
-		height: 100%;
-		background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
-		z-index: 1;
 	}
 
-	#itemBody, .modalFeedback {
-		background-color: var(--o-bg-raised);
-		opacity: 1.0;
-	}
-	
-	.o_assessmentitem_wrapper .o_qti_item_body {
-		min-height: 50px;
-	}
-	
-	#o_qti_assessment_test_timer {
-		border: none;
-		padding: 5px;
-		margin: 0;
-	}
-	
-	#o_qti_progress .progress {
-		display: block;
-		height: 10px;
-	}
-	
-	#o_qti_container {
-		background-color: var(--o-bg-raised);
-		padding: $padding-base-horizontal $padding-base-horizontal;
-		border-radius: $border-radius-base;
-		
-		.o_assessmentitem_wrapper {
-			.o_qti_item_meta {
-				margin: 0;
+	@media (orientation: landscape) and (max-width: $screen-md) {
+		dialog:has(.o_av_wrapper) {
+			min-width: 80vw;
+			min-height: calc(100vh - 2px);
 
-				.o_assessmentitem_status {
-					// the icon takes the text colour of the state (OO-10042)
-					i, i:before {
-						color: inherit;
+			margin-top: 0;
+			margin-bottom: 0;
+			padding-top: 0;
+			padding-bottom: 0;
+
+			.modal-dialog {
+				.modal-content {
+					max-height: 100vh;
+
+					.modal-body {
+						padding-top: 0;
+						padding-bottom: 0;
+					}
+
+					.o_av_wrapper {
+						min-width: calc(80vw - 96px);
 					}
 				}
 			}
 		}
 	}
-	
-	.o_sel_additional_feedback {
-		float: left;
-		font-size: 26px;
-		margin-right: 5px;
-
-		.o_icon_passed {
-			color: var(--o-state-success-text);
-		}
-		.o_icon_failed {
-			color: var(--o-state-danger-text);
-		}
-	}
-}
-
-.mejs__time-rail {
-	#{o-swatch-alias-selector("o_video_marker_")}, #{o-swatch-selector()} {
-		background: var(--o-sw-bg);
-	}
-}
-
-/* beautify source chooser plugin, remove radio button */
-.mejs__controls .mejs__sourcechooser-button > button {
-    background: transparent;
-    display: inline-block;
-	@include o-add-icon-font();
-    &:before {
- 	    color: var(--o-white);
-	    font-size: 18px;
-    }
-}
-.mejs__controls .mejs__sourcechooser-button > button {
-	@include o-add-icon('gear');
-}
-.mejs__controls .mejs__sourcechooser-button .mejs__sourcechooser-selector {
-	visibility: visible !important;
-	width: 170px;
-	padding-left: 10px;
-	right: initial;
-	background: var(--o-video-controls-bg);
-	
-	ul li {
-		label {
-			font-weight: normal;
-			font-size: 10px;
-			
-			width: 140px;
-			&:hover {
-				color: #eee; // o-color-keep(vendor-copy)
-			}
-			.type {
-				display: none;
-			}
-		}
-		input {
-			/* hide ugly input radio button */
-			visibility: hidden;
-			margin: 0;
-			width: 0;
-			&:checked+label {
-				color: $o-video-controls-selected;
-			}
-		}
-	}	
-}
-
-.mejs__controls .mejs__volume-button > .mejs__volume-slider {
-	background: var(--o-video-controls-bg);
-}
-
-
-/* beautify track plugin, remove radio button */
-.mejs__controls .mejs__captions-button .mejs__captions-selector {
-	right: -26px;
-	background: var(--o-video-controls-bg);
-	
-	ul li {
-		label {
-			font-weight: normal;
-			font-size: 10px;
-			
-			&:hover {
-				color: #eee; // o-color-keep(vendor-copy)
-			}
-			.type {
-				display: none;
-			}
-		}
-		input {
-			/* hide ugly input radio button */
-			visibility: hidden;
-			margin: 0;
-			width: 0;
-			&:checked+label {
-				color: $o-video-controls-selected;
-			}
-		}
-	}	
-}
-
-/* beautify speed plugin */
-.mejs__button.mejs__speed-button {
-	width: 36px;
-}
-.mejs__controls .mejs__speed-button > button {
-    background: transparent;
-    width: 36px;
-    margin: 11px 0 0 0;
-    font-size: 11px;
-    line-height: normal;
-    color: var(--o-white);
-}
-
-.mejs__controls .mejs__speed-button .mejs__speed-selector {
-	height: 150px;
-	top: auto;
-	bottom: 40px;
-	background: var(--o-video-controls-bg);
-	
-	ul li {
-		label {
-			font-weight: normal;
-			font-size: 10px
-		}
-	}
-}
-
-/* fix overflow of chapters when not enough space */
-.mejs__chapters .mejs__chapter .mejs__chapter-block {
-	.ch-title,
-	.ch-time {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		display: block;
-	}
-}
-
-.mejs__time-marker {
-	background-color: var(--o-video-time-marker-default-bg);
-}
-
-/* replay button */
-.mejs__overlay-button.o_mejs_replay {
-	background-position: -671px -4px;
-	background-size: 1677px;
-	margin-left: 20px;
-}
-
-/* make button better readable on white background */
-.mejs__overlay-button {
-	filter: drop-shadow(1px 1px 5px color-mix(in srgb, var(--o-shadow-color) 50%, transparent));
-}
-
-/* make subtitles better readable, relative to screen size but not too small or too large */
-.mejs__captions-layer {
-	font-size: clamp(1.5rem, 2.5vw, 3rem); 
-	line-height: clamp(2rem, 3vw, 3.5rem); 	
-	
-	/* position captions nicely at the bottom in the center, don't use full width for better readibility */
-	.mejs__captions-position {
-		bottom: 3rem !important;
-		transition: bottom 0.5s;
-		width: 80%;
-		left: 50%;
-		margin-left: -40%;
-		
-		/* make space for control bar */
-		&.mejs__captions-position-hover {
-			bottom: 5rem !important;
-		}
-	}
-}
-
-/* place the progress bar above the controls and use the full width */
-.o_video_progress_full_width > .olatFlashMovieViewer > .mejs__container > .mejs__inner {
-	& > .mejs__controls {
-		height: 60px;
-		flex-wrap: wrap;
-
-		& > .mejs__time-rail {
-			order: -1;
-			flex-grow: 10;
-			width: 100%;
-			padding-top: 0;
-			height: 20px;
-		}
-
-		& > .mejs__playpause-button {
-			order: 0;
-		}
-
-		& > .mejs__currenttime-container {
-			order: 1;
-			padding-right: 0;
-		}
-
-		& > .mejs__currenttime-container:after {
-			content: '/';
-			padding-left: 5px;
-		}
-
-		& > .mejs__duration-container {
-			order: 2;
-			padding-left: 5px;
-		}
-
-		& > .mejs__volume-button {
-			order: 3;
-		}
-
-		& > .mejs__chapters-button {
-			order: 4;
-		}
-
-		& > .mejs__speed-button {
-			order: 5;
-		}
-
-		& > .mejs__captions-button {
-			order: 6;
-		}
-
-		& > .mejs__fullscreen-button {
-			order: 7;
-			margin-left: auto;
-		}
-	}
-}
-
-
-.mejs__fullscreen .mejs__captions-layer {
-	.mejs__captions-position {
-		bottom: 6rem !important;
-		/* make space for control bar */
-		&.mejs__captions-position-hover {
-			bottom: 8rem !important;
-		}
-	}
-	/* subtitles sizes */
-	.mejs__captions-text {
-		@include videSubtitleSize(3840px);
-		@include videSubtitleSize(2560px);
-		@include videSubtitleSize(1920px);
-		@include videSubtitleSize(1440px);
-		@include videSubtitleSize(1280px);
-		@include videSubtitleSize(1024px);
-		@include videSubtitleSize(768px);
-		@include videSubtitleSize(640px);
-		@include videSubtitleSize(480px);
-		@include videSubtitleSize(320px);
-	}
-}
-
-
-/* chapters */
-.o_video .mejs__chapters-button > .mejs__chapters-selector {
-    margin-right: -70px;
-    width: 240px;
-    max-height: 360px;
-    overflow-y: auto;
-    background: var(--o-video-controls-bg);
-
-	.mejs__chapters-selector-list-item {
-		margin-bottom: 0;
-	}
-
-	.mejs__chapters-selector-label {
-		line-height: 28px;
-		padding-top: 0;
-		margin-bottom: 0;
-	}
-}
-
-.o_video_download_btn {
-	margin-top: 20px;
-}
-
-/* Resume dialog */
-.o_video_resume_wrapper {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	
-	.o_video_resume_panel {
-		margin: 10% auto;
-		padding: 10px 20px 20px 20px;
-		max-width: 500px;
-		background-color: var(--o-panel-bg);
-		border: 1px solid transparent;
-		border-radius: $panel-border-radius;
-		@include box-shadow(0 1px 1px color-mix(in srgb, var(--o-shadow-color) 5%, transparent));
-		text-align: center;
-	}
-	.o_video_resume_buttons {
-		margin: 20px 0
-	} 
-}
-
-.o_video_timeline {
-	display: flex;
-	gap: 5px;
-	flex-direction: row;
-	width: 100%;
-}
-
-.o_video_channels {
-	flex: 1;
-	display: flex;
-	gap: 5px;
-	flex-direction: column;
-	overflow-x: auto;
-	overflow-y: hidden;
-}
-
-.o_video_channel {
-	position: relative;
-
-	.o_video_timeline_event {
-	 	&.o_video_selected {
-			border-color: var(--o-primary);
-		}
-		&.o_video_segment_selection {
-			overflow: visible;
-			font-size: 0;
-			padding: 0 1px;
-			height: 30px;
-			border: none;
-			border-radius: 0;
-			z-index: 3;
-		}
-		&.o_video_segment_selection:before {
-			content: '\0020';
-			position: absolute;
-			padding: 0 1px;
-			height: 30px;
-			right: 0;
-			width: 1px;
-		}
-		&.o_selection_correct {
-			background-color: var(--o-video-timeline-correct-bg);
-		}
-		// the marker line of a selection: the blank content has the colour of
-		// its own fill, a fill token as text colour for a hidden text
-		&.o_selection_correct:before {
-			top: 30px;
-			color: var(--o-video-timeline-correct-bg);
-			background-color: var(--o-video-timeline-correct-bg);
-		}
-		&.o_selection_incorrect {
-			background-color: var(--o-video-timeline-incorrect-bg);
-		}
-		&.o_selection_incorrect:before {
-			top: -30px;
-			color: var(--o-video-timeline-incorrect-bg);
-			background-color: var(--o-video-timeline-incorrect-bg);
-		}
-	}
-}
-
-.o_video_channel_labels {
-	display: flex;
-	gap: 5px;
-	flex-direction: column;
-}
-
-.o_video_channel_label {
-	width: 50px;
-	padding: 5px;
-}
-
-// The rows of the timeline have the fills of the rows of a striped table:
-// the odd rows the striped fill, the even rows the page fill. The channel
-// labels and the channels are in two containers with the same order of rows
-// (time bar, then the visible channels), so a label and its channel get the
-// same fill. The active channel has the fill of a selected row.
-.o_video_timeline_box {
-	background-color: var(--o-bg);
-
-	&:nth-child(odd) {
-		background-color: var(--o-table-striped-bg);
-	}
-
-	&.o_video_active {
-		background-color: var(--o-table-row-selected-bg);
-	}
-}
-
-.o_video_channel .o_video_question {
-	position: absolute;
-	display: inline-block;
-	z-index: 1;
-	height: 30px;
-	width: 30px;
-	cursor: pointer;
-
-	svg {
-		stroke: var(--o-video-border);
-		stroke-width: 32;
-		width: 30px;
-		height: 30px;
-	}
-
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		svg {
-			fill: var(--o-sw-bg);
-		}
-	}
-
-	&.o_video_selected {
-		svg {
-			stroke: var(--o-primary);
-			stroke-width: 50;
-		}
-	}
-}
-
-.o_video_timeline_event {
-	position: absolute;
-	display: inline-block;
-	z-index: 1;
-	height: 20px;
-	line-height: 18px;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
-	padding-left: 2px;
-	padding-right: 2px;
-	font-size: 12px;
-	font-weight: normal;
-	text-align: center;
-	cursor: pointer;
-	border-style: solid;
-	border-radius: 4px;
-	border-width: 1px;
-	border-color: var(--o-video-border);
-	color: var(--o-video-bright);
-
-	&.o_video_selected {
-		z-index: 2;
-		outline: 1px solid var(--o-primary);
-	}
-
-	// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases,
-	// a key of the colour set M renders with its swatch class, e.g. o_swatch_blue
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		background-color: var(--o-sw-bg);
-		color: var(--o-sw-fg);
-	}
-}
-
-.o_video_timeline_tools {
-	display: flex;
-
-	a {
-		color: var(--o-text);
-		margin-right: 3px;
-	}
-
-	.o_slider_wrapper {
-		width: 100px;
-	}
-}
-
-.o_video_timeline_slider {
-
-	.o_has_value.ui-slider.ui-slider-horizontal.ui-widget-content {
-		left: 10%;
-		top: .66em;
-		height: .2em;
-		width: 80%;
-		border: none;
-		background: var(--o-video-slider-bg);
-
-		.ui-slider-handle {
-			border-color: var(--o-video-slider-bg);
-			background-color: var(--o-video-slider-bg);
-			outline: 0;
-			width: 0.8em;
-			height: 0.8em;
-			border-radius: 50%;
-			translate: 3px;
-		}
-	}
-}
-
-.o_video_color_circle {
-	width: 16px;
-	height: 16px;
-	border-style: solid;
-	border-radius: 8px;
-	border-width: 1px;
-}
-
-.o_video_colored_area {
-	border-color: var(--o-video-border);
-
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		background-color: var(--o-sw-bg);
-	}
-}
-
-.o_video_colored_border {
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		border-color: var(--o-sw-border);
-	}
-}
-
-.o_video_me_colored_area {
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		background-color: var(--o-sw-bg);
-	}
-}
-
-#o_video_time_bar_label {
-	height: 8px;
-	padding: 0;
-}
-
-#o_video_time_bar_container {
-	height: 8px;
-	cursor: pointer;
-}
-
-#o_video_time_bar {
-	height: 100%;
-	background-color: var(--o-primary);
-}
-
-#o_video_play_head {
-	position: absolute;
-	left: 55px;
-	width: 3px;
-	background-color: var(--o-primary);
-	cursor: pointer;
-	z-index: 10;
-
-	.o_video_play_head_marker {
-		position: absolute;
-		left: -4px;
-		top: -8px;
-		cursor: pointer;
-
-		.o_video_play_head_marker_icon {
-			color: var(--o-primary-text);
-		}
-	}
-
-	.o_video_play_head_text {
-		position: absolute;
-		left: -30px;
-		width: 60px;
-		text-align: center;
-		top: -16px;
-		font-size: 12px;
-		font-weight: bold;
-		cursor: pointer;
-		user-select: none;
-	}
-}
-
-.o_video_category_container {
-	margin: 10px auto;
-	width: 90%;
-	border-spacing: 10px;
-	border-collapse: separate;
-
-	.o_color_button_placeholder {
-		display: inline-block;
-		width: 34px;
-		height: 34px;
-	}
-}
-
-.o_video_segments_layer {
-	position: absolute;
-}
-
-.o_video_edit_segments {
-
-	.o_video_segment_category {
-		width: 100%;
-		text-align: left;
-	}
-	.o_video_segment_category_icon {
-		line-height: 20px;
-		float: right;
-	}
-
-	.o_video_segment_category_placeholder {
-		color: var(--o-input-placeholder);
-		display: inline-block;
-		padding: 16px;
-	}
-}
-
-.o_video_me_segments {
-	position: absolute;
-	left: 10px;
-	right: 10px;
-	bottom: 40px;
-	background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
-	height: 20px;
-}
-
-.o_video_me_segment {
-	display: inline-block;
-	position: absolute;
-	height: 20px;
-	line-height: 22px;
-	font-size: 9px;
-	font-weight: bold;
-	text-align: center;
-	opacity: 0.9;
-
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.o_video_comment_container {
-	position: absolute;
-	overflow: auto;
-	display: flex;
-	flex-direction: column;
-	width: 38%;
-	top: 0;
-	bottom: 60px;
-	right: 0;
-	// the dark layer behind the comments
-	background-color: color-mix(in srgb, var(--o-backdrop) 50%, transparent);
-	z-index: 1;
-}
-
-.o_video_comment_header {
-	text-align: right;
-}
-
-.o_video_comment_close {
-	display: inline-block;
-	margin-top: 6px;
-	margin-bottom: 6px;
-	margin-right: 10px;
-	color: var(--o-white);
-}
-
-.o_video_comment_box {
-	margin-left: 10px;
-	margin-right: 10px;
-	padding: 16px 16px 6px 16px;
-	background-color: var(--o-bg-raised);
-	border-width: medium;
-	border-style: solid;
-	border-radius: 5px;
-
-	.o_video_run.o_block_large_bottom {
-		margin-bottom: 10px;
-	}
-
-	.o_video_comment_text {
-		margin-bottom: -6px;
-	}
-}
-
-.o_video_comment_author_box {
-	@extend %o_nowrap;
-	
-	display: flex;
-	column-gap: 5px;
-	align-items: center;
-	
-	.o_portrait {
-		&.o_video_portrait_fullscreen {
-			display: none;
-		}
-	}
-}
-
-.o_video_comment_player .mejs__overlay-button {
-	transform: scale(0.4);
-}
-
-@media all and (display-mode: fullscreen) {
-	.o_video_comment_player .mejs__overlay-button {
-		transform: inherit;
-	}
-
-	.o_video_comment_container {
-		font-size: 20px;
-	}
-
-	.o_video_comment_author_box {
-		margin-bottom: 20px;
-	}
-
-	.o_video_comment_box {
-		padding: 24px 24px 10px 24px;
-		margin-left: 16px;
-		margin-right: 16px;
-
-		.o_video_run.o_block_large_bottom {
-			margin-bottom: 16px;
-		}
-	}
-}
-
-@media (max-width: $screen-sm) {
-	.o_video_comment_container {
-		width: 50%;
-	}
-}
-
-@media (max-width: $screen-xs) {
-	.o_video_comment_container {
-		width: 62%;
-	}
-
-	.o_video_comment_box {
-		padding-top: 8px;
-		padding-bottom: 8px;
-	}
-
-	.o_video_comment_close {
-		margin-top: 4px;
-		margin-bottom: 0;
-	}
-}
-
-.o_video_recorder {
-	width: 100%;
-
-	.o_centered_panel {
-		position: relative;
-	}
-
-	.o_av_container {
-		position: relative;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 100%;
-		aspect-ratio: 1.778;
-		background-color: var(--o-backdrop);
-	}
-
-	#videoElement {
-		position: absolute;
-		width: 100%;
-		aspect-ratio: 1.778;
-		transform: rotateY(180deg);
-	}
-
-	#audioElement {
-		position: absolute;
-		width: 100%;
-		height: auto;
-	}
-
-	.o_video_overlay {
-		position: relative;
-		float: right;
-		width: 100%;
-		height: 100%;
-		box-sizing: border-box;
-
-		.o_video_feed_dimensions {
-			position: absolute;
-			color: var(--o-white);
-			opacity: 0.9;
-			font-size: 11px;
-			font-weight: bold;
-			height: 24px;
-			padding: 1em 1em 0;
-		}
-
-		.recording-container {
-			float: right;
-			margin-right: 0.5em;
-			margin-top: 0.5em;
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			justify-content: center;
-			padding: 0.5em;
-			border-radius: 0.25em;
-
-			&.o_audio_visualization {
-				margin-top: -195px;
-			}
-
-			.recording-circle {
-				width: 1em;
-				height: 1em;
-				border-radius: 50%;
-				margin-right: 0.25em;
-				background-color: var(--o-state-danger-border);
-				animation: ease pulse-background-color 2s infinite;
-			}
-
-			.recording-text {
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-				Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-				font-size: 0.75em;
-				color: var(--o-state-danger-text);
-				animation: ease pulse-color 2s infinite;
-			}
-
-			@keyframes pulse-color {
-				0% {
-					color: var(--o-state-danger-text);
-				}
-				50% {
-					color: var(--o-state-danger-soft-border);
-				}
-				100% {
-					color: var(--o-state-danger-text);
-				}
-			}
-
-			@keyframes pulse-background-color {
-				0% {
-					background-color: var(--o-state-danger-border);
-				}
-				50% {
-					background-color: var(--o-state-danger-soft-border);
-				}
-				100% {
-					background-color: var(--o-state-danger-border);
-				}
-			}
-		}
-	}
-
-	.controls {
-		opacity: 0.9;
-	}
-
-	.o_commands {
-		position: relative;
-		display: flex;
-		align-items: center;
-		margin-top: 0.5em;
-		min-height: 42px;
-
-		.o_one_button_container {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 0;
-
-			.o_one_button_icon {
-				width: 24px;
-				height: 24px;
-				display: inline-block;
-				position: absolute;
-				margin-top: -2px;
-				margin-left: -5px;
-			}
-		}
-
-		.o_quality_file_size_container {
-			padding-right: 5px;
-		}
-
-		.o_file_size {
-			display: inline-block;
-			margin-left: 0.5em;
-			height: 3em;
-			line-height: 3em;
-			white-space: nowrap;
-		}
-
-		.o_quality_dropdown_container {
-			display: inline-block;
-			padding-top: 4px;
-			padding-bottom: 4px;
-		}
-
-		.o_button_container {
-			text-align: right;
-			padding-left: 5px;
-		}
-
-		.o_button {
-			display: inline-block;
-			padding-top: 4px;
-			padding-bottom: 4px;
-		}
-	}
-
-	.one-button {
-		cursor: pointer;
-
-		width: 3em;
-		height: 3em;
-	}
-
-	.decoration {
-		fill: none;
-		stroke: var(--o-recorder-decoration);
-	}
-
-	.decoration-recording {
-		fill: var(--o-recorder-recording);
-		stroke: var(--o-recorder-decoration);
-	}
-
-	.strong-symbol {
-		fill: var(--o-recorder-record);
-	}
-
-	.strong-symbol:hover {
-		fill: var(--o-recorder-record-hover);
-	}
-
-	.strong-symbol:active {
-		fill: var(--o-recorder-record-active);
-	}
-
-	.symbol {
-		fill: var(--o-recorder-symbol);
-	}
-
-	.symbol:hover {
-		fill: var(--o-recorder-symbol-hover);
-	}
-
-	.symbol:active {
-		fill: var(--o-recorder-symbol-active);
-	}
-
-	.o_dialog {
-		position: absolute;
-		width: 80%;
-		left: 50%;
-		top: 0;
-		transform: translate(-50%, -85%);
-	}
-}
-
-.o_audio_canvas_wrapper {
-	position: relative;
-	width: 100%;
-	height: 200px;
-	background-color: var(--o-bg-subtle);
-
-	.o_audio_canvas {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 100%;
-		height: 200px;
-	}
-
-	#o_start_recording_info {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		border-radius: 6px;
-		background-color: var(--o-video-recording-info-bg);
-		color: var(--o-video-recording-info-fg);
-		opacity: 0.8;
-		line-height: 24px;
-		padding: 10px 15px;
-		transform: translate(-50%, -50%);
-	}
-
-	&.o_small {
-		height: 100px;
-
-		.o_audio_canvas {
-			height: 100px;
-		}
-	}
-}
-
-@media (orientation: portrait) and (max-width: $screen-sm) {
-	dialog:has(.o_av_wrapper) {
-		min-width: 100vw;
-		margin: 0;
-		padding: 0;
-
-		.modal-content {
-			border: none;
-			border-radius: 0;
-			box-shadow: none;
-
-			.o_av_wrapper {
-				min-width: calc(100vw - 40px);
-			}
-		}
-	}
-}
-
-@media (orientation: landscape) and (max-width: $screen-md) {
-	dialog:has(.o_av_wrapper) {
-		min-width: 80vw;
-		min-height: calc(100vh - 2px);
-
-		margin-top: 0;
-		margin-bottom: 0;
-		padding-top: 0;
-		padding-bottom: 0;
-
-		.modal-dialog {
-			.modal-content {
-				max-height: 100vh;
-
-				.modal-body {
-					padding-top: 0;
-					padding-bottom: 0;
-				}
-
-				.o_av_wrapper {
-					min-width: calc(80vw - 96px);
-				}
-			}
-		}
-	}
-}
 }

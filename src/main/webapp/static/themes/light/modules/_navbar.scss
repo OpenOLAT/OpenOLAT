@@ -3,742 +3,742 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-navbar {
-#o_navbar_wrapper {
-	z-index: $o-navbar-z-index;
-	border-top: 1px solid var(--o-navbar-border);
-	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
+	#o_navbar_wrapper {
+		z-index: $o-navbar-z-index;
+		border-top: 1px solid var(--o-navbar-border);
+		box-shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
 
-	#o_navbar_container {
+		#o_navbar_container {
+			position: relative;
+		}		
+	}
+
+	a.o_disabled.navbar-text {
+		margin:0;
+	}
+		
+	.o_navbar {
 		position: relative;
-	}		
-}
-
-a.o_disabled.navbar-text {
-	margin:0;
-}
-		
-.o_navbar {
-	position: relative;
-	min-height: $o-navbar-height; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
-	margin-bottom: $o-navbar-margin-bottom;
-	border: 1px solid var(--o-navbar-border);
-	background-color: var(--o-navbar-bg);
+		min-height: $o-navbar-height; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
+		margin-bottom: $o-navbar-margin-bottom;
+		border: 1px solid var(--o-navbar-border);
+		background-color: var(--o-navbar-bg);
 	
-	// Prevent floats from breaking the navbar
-	@include clearfix();
+		// Prevent floats from breaking the navbar
+		@include clearfix();
 
-  .o_navbar_tabs {
-    li {
-      max-width: $o-navbar-tab-max-width;
-      a {
-        @if $o-navbar-tab-enable-icons == true {
-          padding-left: $grid-gutter-width;
-        }
-        padding-right: $grid-gutter-width;
-        &:first-child {
-          span {
-            display: block;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-          }
-        }
-      }
-		}
-	.o_icon_fw,
-    .o_icon-fw {
-      position: absolute;
-      top: math.floor($grid-gutter-width * 0.5); 
-      left: 0.5em;
-      padding-top: 3px;
-      width: 1em; height: 1em;
-      @if $o-navbar-tab-enable-icons == true {
-        display: inline-block;
-      } @else {
-        display: none;
-      }
-    }
-		.o_navbar_tab_close {
-			position: absolute;
-			top: math.floor($grid-gutter-width * 0.5); 
-			right: 0.5em;
-			padding: 0;
-			width: 1em; height: 1em;
-			i {
-				&:before { color: var(--o-navbar-tab-close); }
+	  .o_navbar_tabs {
+	    li {
+	      max-width: $o-navbar-tab-max-width;
+	      a {
+	        @if $o-navbar-tab-enable-icons == true {
+	          padding-left: $grid-gutter-width;
+	        }
+	        padding-right: $grid-gutter-width;
+	        &:first-child {
+	          span {
+	            display: block;
+	            overflow: hidden;
+	            white-space: nowrap;
+	            text-overflow: ellipsis;
+	          }
+	        }
+	      }
 			}
-			&:hover {
-				i:before { color: var(--o-navbar-tab-close-hover); }
-			}
+		.o_icon_fw,
+	    .o_icon-fw {
+	      position: absolute;
+	      top: math.floor($grid-gutter-width * 0.5); 
+	      left: 0.5em;
+	      padding-top: 3px;
+	      width: 1em; height: 1em;
+	      @if $o-navbar-tab-enable-icons == true {
+	        display: inline-block;
+	      } @else {
+	        display: none;
+	      }
 	    }
-	}
-	
-	.o_custom_navbar-brand {
-		background-position: 0;
-		background-repeat: no-repeat;
-		background-size: contain;
-		height: 50px;
-		width: 120px;
-	}
-	
-	.o_navbar_button {
-		padding-top: math.floor($grid-gutter-width * 0.25);
-		.btn {
-			@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
-			&.btn-primary {
-				// the login button: the tokens navbar-login-*, by default the
-				// colours of the primary button
-				@include button-variant(var(--o-navbar-login-fg), var(--o-navbar-login-bg), var(--o-navbar-login-border));
-				// own colours of the theme: a flat fill, also with the realistic style
-				@if o-navbar-login-own-colors() {
-					background-image: none;
-				}
-				// the navbar items have the inset ring in the focus colour; on the
-				// primary fill the ring has the text colour of the fill
-				&:focus:focus-visible {
-					@include o-focus-ring-on-fill;
-				}
-			}
-		}
-	}
-	
-	#o_navbar_langchooser {
-		color: var(--o-navbar-tools);
-		padding: math.floor($grid-gutter-width * 0.25) math.floor($grid-gutter-width * 0.5);
-		form span + div {
-			display: inline;
-		}
-	}
-	#o_navbar_tools_permanent {
-		#o_navbar_print, #o_navbar_impress, #o_navbar_help {
-			a {
-				color: var(--o-navbar-tools);
-				padding-right: 0;		
-			}
-		}
-		// the login button of the guest navbar: a gap to the tool before it
-		#o_navbar_login.o_navbar_button {
-			padding-left: math.floor($grid-gutter-width * 0.25);
-		}
-	}
-	
-	.o_navbar_tools li.o_portrait>a>span {
-		@media (min-width: $screen-sm-min) {
-			display: inline;
-    	}
-	}
-	#o_navbar_tools_personal, #o_navbar_tools_permanent {
-		.o_navbar_tool a:not(.o_search_button) {
-			padding-right: 5px;
-		}
-		#o_navbar_my_menu {
-			a {
-				padding-left: math.floor($grid-gutter-width * 0.5) + 30px;
-			}
-			.dropdown-menu a {
-				padding-left: math.floor($grid-gutter-width * 0.5);
-			}
-			.o_portrait {
+			.o_navbar_tab_close {
 				position: absolute;
-				left: math.floor($grid-gutter-width * 0.25);
-				top: math.floor(30px - $line-height-computed);
-			}
-		}
-		.o_logout {
-			color: var(--o-navbar-logout);
-		}
-	}
-	
-	&.o_navbar-offcanvas {
-		.o_navbar_tab_close {
-			top: 10px; 
-			right: 10px; // Win8 issue with overlapping scrollbar
-		}
-		
-		ul.o_navbar-right {
-			padding: 3px 20px;
-			&>li {
-				margin-bottom: 1em;
-			}						
-			li {
-				padding-top: 3px;
-			}
-		}
-		.o_navbar-right {
-			h2.o_navbar_category {
-				font-size: 100%;
-				color: var(--o-offcanvas-link);
-				margin: 0 0 0.5em 0;
-				border-bottom: 1px solid var(--o-offcanvas-category-border);
-				line-height: 2em;
-			}
-			a {
-				padding: 3px 0px;
-				color: var(--o-offcanvas-link);
-				&:hover,
-				&:focus {
-					color: var(--o-offcanvas-link-hover);
-					background-color: var(--o-offcanvas-link-hover-bg);
+				top: math.floor($grid-gutter-width * 0.5); 
+				right: 0.5em;
+				padding: 0;
+				width: 1em; height: 1em;
+				i {
+					&:before { color: var(--o-navbar-tab-close); }
 				}
-				&.o_logout {
-					color: var(--o-offcanvas-logout);
-					padding-left: 0;
+				&:hover {
+					i:before { color: var(--o-navbar-tab-close-hover); }
+				}
+		    }
+		}
+	
+		.o_custom_navbar-brand {
+			background-position: 0;
+			background-repeat: no-repeat;
+			background-size: contain;
+			height: 50px;
+			width: 120px;
+		}
+	
+		.o_navbar_button {
+			padding-top: math.floor($grid-gutter-width * 0.25);
+			.btn {
+				@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
+				&.btn-primary {
+					// the login button: the tokens navbar-login-*, by default the
+					// colours of the primary button
+					@include button-variant(var(--o-navbar-login-fg), var(--o-navbar-login-bg), var(--o-navbar-login-border));
+					// own colours of the theme: a flat fill, also with the realistic style
+					@if o-navbar-login-own-colors() {
+						background-image: none;
+					}
+					// the navbar items have the inset ring in the focus colour; on the
+					// primary fill the ring has the text colour of the fill
+					&:focus:focus-visible {
+						@include o-focus-ring-on-fill;
+					}
+				}
+			}
+		}
+	
+		#o_navbar_langchooser {
+			color: var(--o-navbar-tools);
+			padding: math.floor($grid-gutter-width * 0.25) math.floor($grid-gutter-width * 0.5);
+			form span + div {
+				display: inline;
+			}
+		}
+		#o_navbar_tools_permanent {
+			#o_navbar_print, #o_navbar_impress, #o_navbar_help {
+				a {
+					color: var(--o-navbar-tools);
+					padding-right: 0;		
+				}
+			}
+			// the login button of the guest navbar: a gap to the tool before it
+			#o_navbar_login.o_navbar_button {
+				padding-left: math.floor($grid-gutter-width * 0.25);
+			}
+		}
+	
+		.o_navbar_tools li.o_portrait>a>span {
+			@media (min-width: $screen-sm-min) {
+				display: inline;
+	    	}
+		}
+		#o_navbar_tools_personal, #o_navbar_tools_permanent {
+			.o_navbar_tool a:not(.o_search_button) {
+				padding-right: 5px;
+			}
+			#o_navbar_my_menu {
+				a {
+					padding-left: math.floor($grid-gutter-width * 0.5) + 30px;
+				}
+				.dropdown-menu a {
+					padding-left: math.floor($grid-gutter-width * 0.5);
+				}
+				.o_portrait {
+					position: absolute;
+					left: math.floor($grid-gutter-width * 0.25);
+					top: math.floor(30px - $line-height-computed);
+				}
+			}
+			.o_logout {
+				color: var(--o-navbar-logout);
+			}
+		}
+	
+		&.o_navbar-offcanvas {
+			.o_navbar_tab_close {
+				top: 10px; 
+				right: 10px; // Win8 issue with overlapping scrollbar
+			}
+		
+			ul.o_navbar-right {
+				padding: 3px 20px;
+				&>li {
+					margin-bottom: 1em;
+				}						
+				li {
+					padding-top: 3px;
+				}
+			}
+			.o_navbar-right {
+				h2.o_navbar_category {
+					font-size: 100%;
+					color: var(--o-offcanvas-link);
+					margin: 0 0 0.5em 0;
+					border-bottom: 1px solid var(--o-offcanvas-category-border);
+					line-height: 2em;
+				}
+				a {
+					padding: 3px 0px;
+					color: var(--o-offcanvas-link);
 					&:hover,
 					&:focus {
-						color: var(--o-offcanvas-logout-hover);
+						color: var(--o-offcanvas-link-hover);
+						background-color: var(--o-offcanvas-link-hover-bg);
 					}
-				}				
-			}
-			.divider {
-				height: 1px;
-				margin: 9px 0;
-				overflow: hidden;
-				background-color: none;
-			}
-			/* override dropdown styles */
-			.dropdown-header {
-				padding-left: $o-navbar-padding-horizontal;	
-			}
-			.dropdown-toggle {
-				display: none;
-			}
-			.dropdown-menu {
-				box-shadow: none;
-				position: relative;
-				top: 0;
-				left: 0;
-				display: block;
-				float: none;
-				background-color: var(--o-offcanvas-dropdown-bg);
-				color: var(--o-offcanvas-link);
-				font-size: $o-offcanvas-dropdown-font-size;
-        border: none;
+					&.o_logout {
+						color: var(--o-offcanvas-logout);
+						padding-left: 0;
+						&:hover,
+						&:focus {
+							color: var(--o-offcanvas-logout-hover);
+						}
+					}				
+				}
+				.divider {
+					height: 1px;
+					margin: 9px 0;
+					overflow: hidden;
+					background-color: none;
+				}
+				/* override dropdown styles */
+				.dropdown-header {
+					padding-left: $o-navbar-padding-horizontal;	
+				}
+				.dropdown-toggle {
+					display: none;
+				}
+				.dropdown-menu {
+					box-shadow: none;
+					position: relative;
+					top: 0;
+					left: 0;
+					display: block;
+					float: none;
+					background-color: var(--o-offcanvas-dropdown-bg);
+					color: var(--o-offcanvas-link);
+					font-size: $o-offcanvas-dropdown-font-size;
+	        border: none;
 
-			 	.divider {
-				   background: none;
-			  	}
+				 	.divider {
+					   background: none;
+				  	}
+				}
 			}
-		}
-		.o_navbar-nav {
-   			a {
-   				color: var(--o-offcanvas-link);
-   				text-shadow: none;
-      			&:hover,
-      			&:focus {
-        			background-color: var(--o-offcanvas-link-hover-bg);
-        			color: var(--o-offcanvas-link-hover);
-      			}
-    		}
-   			.active a {
-      			&,
-      			&:hover,
-      			&:focus {
-        			background-color: var(--o-offcanvas-link-active-bg);
-        			color: var(--o-offcanvas-link-active);
-      			}
-    		}
-  			.o_navbar-link {
-    			color: var(--o-offcanvas-link);
-    			&:hover {
-      				color: var(--o-offcanvas-link-hover);
-    			}
-  			}
-  			// Dropdowns get custom display when collapsed
-  			.open .dropdown-menu {
-    			> li > a {
-      				color: var(--o-navbar-link);
-      				&:hover,
+			.o_navbar-nav {
+	   			a {
+	   				color: var(--o-offcanvas-link);
+	   				text-shadow: none;
+	      			&:hover,
 	      			&:focus {
-        				color: var(--o-navbar-link-hover);
-        				background-color: var(--o-navbar-link-hover-bg);
-      				}
-    			}
-    			> .active > a {
-      				&,
-      				&:hover,
-      				&:focus {
-        				color: var(--o-navbar-link-active);
-        				background-color: var(--o-navbar-link-active-bg);
-      				}
-    			}
-    			> .disabled > a {
-      				&,
-      				&:hover,
-      				&:focus {
-        				color: var(--o-navbar-link-disabled);
-        				background-color: var(--o-navbar-link-disabled-bg);
-        			}
-      			}
-    		}
-  		}
+	        			background-color: var(--o-offcanvas-link-hover-bg);
+	        			color: var(--o-offcanvas-link-hover);
+	      			}
+	    		}
+	   			.active a {
+	      			&,
+	      			&:hover,
+	      			&:focus {
+	        			background-color: var(--o-offcanvas-link-active-bg);
+	        			color: var(--o-offcanvas-link-active);
+	      			}
+	    		}
+	  			.o_navbar-link {
+	    			color: var(--o-offcanvas-link);
+	    			&:hover {
+	      				color: var(--o-offcanvas-link-hover);
+	    			}
+	  			}
+	  			// Dropdowns get custom display when collapsed
+	  			.open .dropdown-menu {
+	    			> li > a {
+	      				color: var(--o-navbar-link);
+	      				&:hover,
+		      			&:focus {
+	        				color: var(--o-navbar-link-hover);
+	        				background-color: var(--o-navbar-link-hover-bg);
+	      				}
+	    			}
+	    			> .active > a {
+	      				&,
+	      				&:hover,
+	      				&:focus {
+	        				color: var(--o-navbar-link-active);
+	        				background-color: var(--o-navbar-link-active-bg);
+	      				}
+	    			}
+	    			> .disabled > a {
+	      				&,
+	      				&:hover,
+	      				&:focus {
+	        				color: var(--o-navbar-link-disabled);
+	        				background-color: var(--o-navbar-link-disabled-bg);
+	        			}
+	      			}
+	    		}
+	  		}
+		}
 	}
-}
 
-body.o_dmz {
-	#o_navbar_print, #o_navbar_impress, #o_navbar_help, #o_navbar_search_opener {
-		a span {
-			display: inline;
-		}	
+	body.o_dmz {
+		#o_navbar_print, #o_navbar_impress, #o_navbar_help, #o_navbar_search_opener {
+			a span {
+				display: inline;
+			}	
+		}
 	}
-}
 
 
-//
-// Navbars
-// --------------------------------------------------
+	//
+	// Navbars
+	// --------------------------------------------------
 
 
-// Wrapper and base class
-//
-// Provide a static navbar from which we expand to create full-width, fixed, and
-// other navbar variations.
+	// Wrapper and base class
+	//
+	// Provide a static navbar from which we expand to create full-width, fixed, and
+	// other navbar variations.
 
-// Navbar collapse (body)
-//
-// Group your o_navbar content into this for easy collapsing and expanding across
-// various device sizes. By default, this content is collapsed when <768px, but
-// will expand past that for a horizontal display.
-//
-// To start (on mobile devices) the o_navbar links, forms, and buttons are stacked
-// vertically and include a `max-height` to overflow in case you have too much
-// content for the user's viewport.
+	// Navbar collapse (body)
+	//
+	// Group your o_navbar content into this for easy collapsing and expanding across
+	// various device sizes. By default, this content is collapsed when <768px, but
+	// will expand past that for a horizontal display.
+	//
+	// To start (on mobile devices) the o_navbar links, forms, and buttons are stacked
+	// vertically and include a `max-height` to overflow in case you have too much
+	// content for the user's viewport.
 
-.o_navbar-collapse {
-	max-height: $o-navbar-collapse-max-height;
-	overflow-x: visible;
-	padding-right: $o-navbar-padding-horizontal;
-	padding-left:  $o-navbar-padding-horizontal;
-	@include clearfix();
-	-webkit-overflow-scrolling: touch;
+	.o_navbar-collapse {
+		max-height: $o-navbar-collapse-max-height;
+		overflow-x: visible;
+		padding-right: $o-navbar-padding-horizontal;
+		padding-left:  $o-navbar-padding-horizontal;
+		@include clearfix();
+		-webkit-overflow-scrolling: touch;
 	
-	&.o_collapse {
-		display: block !important;
-		height: auto !important;
-		padding-bottom: 0; // Override default setting
-		overflow: visible !important;
+		&.o_collapse {
+			display: block !important;
+			height: auto !important;
+			padding-bottom: 0; // Override default setting
+			overflow: visible !important;
+		}
 	}
-}
 
-.o_navbar-offcanvas .o_navbar-collapse {
-	width: auto;
-	box-shadow: none;
-	margin-top: math.floor($line-height-computed * 0.5);
-    margin-right: -$o-navbar-padding-horizontal;
-    margin-left:  -$o-navbar-padding-horizontal;
-}
+	.o_navbar-offcanvas .o_navbar-collapse {
+		width: auto;
+		box-shadow: none;
+		margin-top: math.floor($line-height-computed * 0.5);
+	    margin-right: -$o-navbar-padding-horizontal;
+	    margin-left:  -$o-navbar-padding-horizontal;
+	}
 
-// Brand/project name
-.o_navbar-brand {
-  	/* put your brand logo and link here, use theme.js to change the href */
-  	float: left;  
-  	font-size: $o-navbar-brand-font-size;
-  	line-height: $line-height-computed;
-  	height: $o-navbar-brand-height;
-  	color: var(--o-navbar-brand);
-	&:hover,
-  	&:focus {
-    	text-decoration: none;
-      	color: var(--o-navbar-brand-hover);
-      	background-color: var(--o-navbar-brand-hover-bg);
-  	}
-}
+	// Brand/project name
+	.o_navbar-brand {
+	  	/* put your brand logo and link here, use theme.js to change the href */
+	  	float: left;  
+	  	font-size: $o-navbar-brand-font-size;
+	  	line-height: $line-height-computed;
+	  	height: $o-navbar-brand-height;
+	  	color: var(--o-navbar-brand);
+		&:hover,
+	  	&:focus {
+	    	text-decoration: none;
+	      	color: var(--o-navbar-brand-hover);
+	      	background-color: var(--o-navbar-brand-hover-bg);
+	  	}
+	}
 
 
-// Navbar toggle
-//
-// Custom button for toggling the `.o_navbar-collapse`, powered by the collapse
-// JavaScript plugin.
+	// Navbar toggle
+	//
+	// Custom button for toggling the `.o_navbar-collapse`, powered by the collapse
+	// JavaScript plugin.
 
-.o_navbar-toggle {
-  	position: relative;
-  	margin-right: $o-navbar-padding-horizontal;
-  	margin-left: $o-navbar-padding-horizontal;
-  	padding: 9px 10px;
-  	@include navbar-vertical-align(34px);
+	.o_navbar-toggle {
+	  	position: relative;
+	  	margin-right: $o-navbar-padding-horizontal;
+	  	margin-left: $o-navbar-padding-horizontal;
+	  	padding: 9px 10px;
+	  	@include navbar-vertical-align(34px);
   
-  	border: 1px solid var(--o-navbar-toggle-border);
-  	border-radius: $o-navbar-toggle-border-radius;
-    background-color: transparent;
- 	background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+	  	border: 1px solid var(--o-navbar-toggle-border);
+	  	border-radius: $o-navbar-toggle-border-radius;
+	    background-color: transparent;
+	 	background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
 
-  	&:hover,
-  	&:focus {
-  		outline: none;
-      	background-color: var(--o-navbar-toggle-hover-bg);
-    }
+	  	&:hover,
+	  	&:focus {
+	  		outline: none;
+	      	background-color: var(--o-navbar-toggle-hover-bg);
+	    }
 
- 	// Bars
-  	.icon-bar {
-    	display: block;
-    	width: 22px;
-    	height: 2px;
-    	border-radius: 1px;
-  		background-color: var(--o-navbar-toggle-icon);
-  	}
-  	.icon-bar + .icon-bar {
-    	margin-top: 4px;
-  	}
-}
-#o_navbar_left-toggle {
-	float: left;
-}
-#o_navbar_right-toggle {
-	float: right;
-}
-
-// Navbar nav links
-//
-// Builds on top of the `.nav` components with its own modifier class to make
-// the nav the full height of the horizontal nav (above 768px).
-
-// Add a class to ensure links outside the o_navbar nav are colored correctly.
-.o_navbar-link {
-	color: var(--o-navbar-link);
-    &:hover {
-    	color: var(--o-navbar-link-hover);
-   }
-}  
-
-// The focus ring in the navbar reads navbar-focus: 3:1 on the navbar, also
-// on a dark or coloured navbar. The items of the navbar and the logo get an
-// inset ring: the navbar is at the top edge of the window, which cuts the
-// ring, and the items touch (OO-10043). The dropdown menus of the
-// navbar are on the raised surface: they keep the focus colour.
-.o_navbar {
-	a, button {
-		&:focus:focus-visible {
-			outline-color: var(--o-navbar-focus);
-		}
+	 	// Bars
+	  	.icon-bar {
+	    	display: block;
+	    	width: 22px;
+	    	height: 2px;
+	    	border-radius: 1px;
+	  		background-color: var(--o-navbar-toggle-icon);
+	  	}
+	  	.icon-bar + .icon-bar {
+	    	margin-top: 4px;
+	  	}
 	}
-	.o_navbar-brand,
-	.o_navbar-nav > li > a {
-		&:focus:focus-visible {
-			@include o-focus-ring-inset(var(--o-navbar-focus));
-		}
+	#o_navbar_left-toggle {
+		float: left;
 	}
-	.dropdown-menu {
+	#o_navbar_right-toggle {
+		float: right;
+	}
+
+	// Navbar nav links
+	//
+	// Builds on top of the `.nav` components with its own modifier class to make
+	// the nav the full height of the horizontal nav (above 768px).
+
+	// Add a class to ensure links outside the o_navbar nav are colored correctly.
+	.o_navbar-link {
+		color: var(--o-navbar-link);
+	    &:hover {
+	    	color: var(--o-navbar-link-hover);
+	   }
+	}  
+
+	// The focus ring in the navbar reads navbar-focus: 3:1 on the navbar, also
+	// on a dark or coloured navbar. The items of the navbar and the logo get an
+	// inset ring: the navbar is at the top edge of the window, which cuts the
+	// ring, and the items touch (OO-10043). The dropdown menus of the
+	// navbar are on the raised surface: they keep the focus colour.
+	.o_navbar {
 		a, button {
 			&:focus:focus-visible {
-				outline-color: var(--o-focus);
+				outline-color: var(--o-navbar-focus);
+			}
+		}
+		.o_navbar-brand,
+		.o_navbar-nav > li > a {
+			&:focus:focus-visible {
+				@include o-focus-ring-inset(var(--o-navbar-focus));
+			}
+		}
+		.dropdown-menu {
+			a, button {
+				&:focus:focus-visible {
+					outline-color: var(--o-focus);
+				}
 			}
 		}
 	}
-}
 
-.o_navbar-nav {
-	margin: ($o-navbar-padding-vertical * 0.5) (-$o-navbar-padding-horizontal);
+	.o_navbar-nav {
+		margin: ($o-navbar-padding-vertical * 0.5) (-$o-navbar-padding-horizontal);
 
-  	> li > a {
-    	padding-top:    10px;
-    	padding-bottom: 10px;
-    	line-height: $line-height-computed;
-	    color: var(--o-navbar-link);
+	  	> li > a {
+	    	padding-top:    10px;
+	    	padding-bottom: 10px;
+	    	line-height: $line-height-computed;
+		    color: var(--o-navbar-link);
 
-	    &:hover,
-	    &:focus {
-	      	color: var(--o-navbar-link-hover);
-	     	background-color: var(--o-navbar-link-hover-bg);
+		    &:hover,
+		    &:focus {
+		      	color: var(--o-navbar-link-hover);
+		     	background-color: var(--o-navbar-link-hover-bg);
+		    }
+	  	}
+
+	    > .active > a {
+	   		&,
+	      	&:hover,
+	      	&:focus {
+	        	color: var(--o-navbar-link-active);
+	        	background-color: var(--o-navbar-link-active-bg);
+	      	}
 	    }
-  	}
+	    > .disabled > a {
+	      	&,
+	      	&:hover,
+	      	&:focus {
+	        	color: var(--o-navbar-link-disabled);
+	        	background-color: var(--o-navbar-link-disabled-bg);
+	      	}
+	    }    
+	    // Remove background color from open dropdown
+	    > .open > a {
+	      	&,
+	      	&:hover,
+	      	&:focus {
+	        	background-color: var(--o-navbar-link-active-bg);
+	        	color: var(--o-navbar-link-active);
+	      	}
+	    }
 
-    > .active > a {
-   		&,
-      	&:hover,
-      	&:focus {
-        	color: var(--o-navbar-link-active);
-        	background-color: var(--o-navbar-link-active-bg);
-      	}
-    }
-    > .disabled > a {
-      	&,
-      	&:hover,
-      	&:focus {
-        	color: var(--o-navbar-link-disabled);
-        	background-color: var(--o-navbar-link-disabled-bg);
-      	}
-    }    
-    // Remove background color from open dropdown
-    > .open > a {
-      	&,
-      	&:hover,
-      	&:focus {
-        	background-color: var(--o-navbar-link-active-bg);
-        	color: var(--o-navbar-link-active);
-      	}
-    }
-
-}
-
-.o_collapse .o_navbar-nav {
-    float: left;
-    margin: 0;
-
-    > li {
-    	float: left;
-      		> a {
-        		padding-top:    $o-navbar-padding-vertical;
-        		padding-bottom: $o-navbar-padding-vertical;
-      	}
-    }
-
-    &.o_navbar-right:last-child {
-      	margin-right: -$o-navbar-padding-horizontal;
-    }
-}
-
-// The bar under the active site or tab and under the item of the pointer,
-// next to the active item of the "More" dropdown (OO-10043): width
-// $o-navbar-tab-indicator-width (default 0: no bar), colour
-// navbar-tab-indicator. An inset shadow: the height of the items does not
-// change.
-.o_navbar_sites, .o_navbar_tabs, #o_navbar_more {
-	> li.active > a,
-	> li > a:hover,
-	> li > a:focus {
-		box-shadow: inset 0 (-1 * $o-navbar-tab-indicator-width) 0 var(--o-navbar-tab-indicator);
 	}
-}
-#o_navbar_more .dropdown-menu {
-	.o_dropdown_site, .o_dropdown_tab {
-		&.active > a,
-		> a:hover,
-		> a:focus {
-			box-shadow: inset $o-navbar-tab-indicator-width 0 0 var(--o-navbar-tab-indicator);
+
+	.o_collapse .o_navbar-nav {
+	    float: left;
+	    margin: 0;
+
+	    > li {
+	    	float: left;
+	      		> a {
+	        		padding-top:    $o-navbar-padding-vertical;
+	        		padding-bottom: $o-navbar-padding-vertical;
+	      	}
+	    }
+
+	    &.o_navbar-right:last-child {
+	      	margin-right: -$o-navbar-padding-horizontal;
+	    }
+	}
+
+	// The bar under the active site or tab and under the item of the pointer,
+	// next to the active item of the "More" dropdown (OO-10043): width
+	// $o-navbar-tab-indicator-width (default 0: no bar), colour
+	// navbar-tab-indicator. An inset shadow: the height of the items does not
+	// change.
+	.o_navbar_sites, .o_navbar_tabs, #o_navbar_more {
+		> li.active > a,
+		> li > a:hover,
+		> li > a:focus {
+			box-shadow: inset 0 (-1 * $o-navbar-tab-indicator-width) 0 var(--o-navbar-tab-indicator);
 		}
 	}
-}
-
-// The navigation bar of the login page from 768px (OO-10043): fill, link
-// text and bottom border. :where() keeps the specificity of the navbar
-// rules: the links under the pointer, the active link, the tool links and
-// the off-canvas menu keep their colours.
-@media (min-width: $screen-sm-min) {
-	:where(#o_body.o_dmz) .o_navbar {
-		background-color: var(--o-login-navbar-bg);
-		border-bottom: $o-login-navbar-border-width solid var(--o-login-navbar-border);
+	#o_navbar_more .dropdown-menu {
+		.o_dropdown_site, .o_dropdown_tab {
+			&.active > a,
+			> a:hover,
+			> a:focus {
+				box-shadow: inset $o-navbar-tab-indicator-width 0 0 var(--o-navbar-tab-indicator);
+			}
+		}
 	}
-	:where(#o_body.o_dmz) .o_navbar-nav > li > a {
-		color: var(--o-login-navbar-link);
+
+	// The navigation bar of the login page from 768px (OO-10043): fill, link
+	// text and bottom border. :where() keeps the specificity of the navbar
+	// rules: the links under the pointer, the active link, the tool links and
+	// the off-canvas menu keep their colours.
+	@media (min-width: $screen-sm-min) {
+		:where(#o_body.o_dmz) .o_navbar {
+			background-color: var(--o-login-navbar-bg);
+			border-bottom: $o-login-navbar-border-width solid var(--o-login-navbar-border);
+		}
+		:where(#o_body.o_dmz) .o_navbar-nav > li > a {
+			color: var(--o-login-navbar-link);
+		}
 	}
-}
 
 
-// Component alignment
-//
-// Repurpose the pull utilities as their own o_navbar utilities to avoid specificity
-// issues with parents and chaining. Only do this when the o_navbar is uncollapsed
-// though so that o_navbar contents properly stack and align in mobile.
-.o_collapse.o_navbar-collapse {
- 	.o_navbar-left {
-    	float: left !important;
-  	}
-  	.o_navbar-right {
-    	float: right !important;
-  	}
-}
+	// Component alignment
+	//
+	// Repurpose the pull utilities as their own o_navbar utilities to avoid specificity
+	// issues with parents and chaining. Only do this when the o_navbar is uncollapsed
+	// though so that o_navbar contents properly stack and align in mobile.
+	.o_collapse.o_navbar-collapse {
+	 	.o_navbar-left {
+	    	float: left !important;
+	  	}
+	  	.o_navbar-right {
+	    	float: right !important;
+	  	}
+	}
 
-// Navbar form
-//
-// Extension of the `.form-inline` with some extra flavor for optimum display in
-// our o_navbars.
-.o_navbar-form {
-  	margin-left: -$o-navbar-padding-horizontal;
-  	margin-right: -$o-navbar-padding-horizontal;
-  	padding: 10px $o-navbar-padding-horizontal;
-  	border-top: 1px solid var(--o-navbar-border);
-  	border-bottom: 1px solid var(--o-navbar-border);
-  	$shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent), 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
-  	@include box-shadow($shadow);
+	// Navbar form
+	//
+	// Extension of the `.form-inline` with some extra flavor for optimum display in
+	// our o_navbars.
+	.o_navbar-form {
+	  	margin-left: -$o-navbar-padding-horizontal;
+	  	margin-right: -$o-navbar-padding-horizontal;
+	  	padding: 10px $o-navbar-padding-horizontal;
+	  	border-top: 1px solid var(--o-navbar-border);
+	  	border-bottom: 1px solid var(--o-navbar-border);
+	  	$shadow: inset 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent), 0 1px 0 color-mix(in srgb, var(--o-navbar-highlight) 10%, transparent);
+	  	@include box-shadow($shadow);
 
-  	// Mixin behavior for optimum display
-  	@extend .form-inline;
+	  	// Mixin behavior for optimum display
+	  	@extend .form-inline;
 
-  	.form-group {
-    	@media (max-width: $grid-float-breakpoint-max) {
-    	  	margin-bottom: 5px;
-    	}
-  	}
+	  	.form-group {
+	    	@media (max-width: $grid-float-breakpoint-max) {
+	    	  	margin-bottom: 5px;
+	    	}
+	  	}
 
-  	// Vertically center in expanded, horizontal o_navbar
-  	@include navbar-vertical-align($input-height-base);
-}
+	  	// Vertically center in expanded, horizontal o_navbar
+	  	@include navbar-vertical-align($input-height-base);
+	}
 
-.o_collapse .o_navbar-form {
-  // Undo 100% width for pull classes
-    width: auto;
-    border: 0;
-    margin-left: 0;
-    margin-right: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    @include box-shadow(none);
+	.o_collapse .o_navbar-form {
+	  // Undo 100% width for pull classes
+	    width: auto;
+	    border: 0;
+	    margin-left: 0;
+	    margin-right: 0;
+	    padding-top: 0;
+	    padding-bottom: 0;
+	    @include box-shadow(none);
 
-    // Outdent the form if last child to line up with content down the page
-    &.o_navbar-right:last-child {
-      margin-right: -$o-navbar-padding-horizontal;
-    }
+	    // Outdent the form if last child to line up with content down the page
+	    &.o_navbar-right:last-child {
+	      margin-right: -$o-navbar-padding-horizontal;
+	    }
 
-}
+	}
 
-// Dropdown menus
+	// Dropdown menus
 
-// Menu position and menu carets
-.o_navbar-nav > li > .dropdown-menu {
-  margin-top: 0;
-  @include border-top-radius(0);
-}
-// Menu position and menu caret support for dropups via extra dropup class
-.o_navbar-fixed-bottom .o_navbar-nav > li > .dropdown-menu {
-  @include border-bottom-radius(0);
-}
-
-
-// Buttons in navbars
-//
-// Vertically center a button within a o_navbar (when *not* in a form).
-.o_navbar-btn {
-  @include navbar-vertical-align($input-height-base);
-
-  &.btn-sm {
-    @include navbar-vertical-align($input-height-small);
-  }
-  &.btn-xs {
-    @include navbar-vertical-align(22);
-  }
-}
-
-// Text in o_navbars
-//
-// Add a class to make any element properly align itself vertically within the o_navbars.
-.o_navbar-text {
-	@include navbar-vertical-align($line-height-computed);
-    color: var(--o-navbar-text);
-}
-.o_collapse .o_navbar-text {
-    float: left;
-    margin-left: $o-navbar-padding-horizontal;
-    margin-right: $o-navbar-padding-horizontal;
-
-    // Outdent the form if last child to line up with content down the page
-    &.o_navbar-right:last-child {
-      margin-right: 0;
-    }
-}
+	// Menu position and menu carets
+	.o_navbar-nav > li > .dropdown-menu {
+	  margin-top: 0;
+	  @include border-top-radius(0);
+	}
+	// Menu position and menu caret support for dropups via extra dropup class
+	.o_navbar-fixed-bottom .o_navbar-nav > li > .dropdown-menu {
+	  @include border-bottom-radius(0);
+	}
 
 
-/* styles for 'more' button and dropdown */
+	// Buttons in navbars
+	//
+	// Vertically center a button within a o_navbar (when *not* in a form).
+	.o_navbar-btn {
+	  @include navbar-vertical-align($input-height-base);
 
-//tab styles and icons
-.o_dropdown_tab {
-  position: relative;
-  > a:first-child {
-    padding-right: $grid-gutter-width; // some extra space for the close button
-    @if $o-navbar-more-dropdown-enable-icons {
-      padding-left: $grid-gutter-width + 10px; // some extra space for the icon
-    }
-	.o_icon_fw,
-    .o_icon-fw {
-      @if $o-navbar-more-dropdown-enable-icons{
-        display: inline-block;
-      } @else {
-        display: none;
-      }
-      position: absolute;
-      top: 0;
-      left: 10px;
-      padding-top: 3px;
-      line-height: $line-height-computed;
-    }
-    span {
-      display: block;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-  }
-  .o_navbar_tab_close {
-    position: absolute;
-    top: 0px; 
-    right: 10px;
-    padding-left: 0px;
-    padding-right: 0px;
-    color: var(--o-dropdown-tab-close);
-    background-color: inherit;
+	  &.btn-sm {
+	    @include navbar-vertical-align($input-height-small);
+	  }
+	  &.btn-xs {
+	    @include navbar-vertical-align(22);
+	  }
+	}
 
-    &:focus, &:hover {
-      color: var(--o-dropdown-tab-close-hover);
-      background-color: inherit;
-    }
-  }
-}
+	// Text in o_navbars
+	//
+	// Add a class to make any element properly align itself vertically within the o_navbars.
+	.o_navbar-text {
+		@include navbar-vertical-align($line-height-computed);
+	    color: var(--o-navbar-text);
+	}
+	.o_collapse .o_navbar-text {
+	    float: left;
+	    margin-left: $o-navbar-padding-horizontal;
+	    margin-right: $o-navbar-padding-horizontal;
 
-// don't display a divider in the dropdown if no elements follow it
-#o_navbar_more .dropdown-menu {
-  .divider:last-child {
-    display: none;
-  }
-}
-
-// for small screens stretch the dropdown menu to full width, otherwise set a max-width
-@media (min-width: $screen-xs-max + 1) {
-  #o_navbar_more {
-    .dropdown-menu {
-        max-width: $o-navbar-more-dropdown-max-width;
-    }
-  }
-}
-
-@media (max-width: $screen-xs-max) {
-  #o_navbar_more {
-    > li {
-      position: inherit;
-    }
-    .dropdown-menu {
-      left: 0px;
-      right: 0px;
-
-      a, i {
-        line-height: $line-height-computed * 1.5;
-      }
-      .o_navbar_tab_close {
-        line-height: inherit;
-      }
-    }
-  }
-}
-
-/* --- */
+	    // Outdent the form if last child to line up with content down the page
+	    &.o_navbar-right:last-child {
+	      margin-right: 0;
+	    }
+	}
 
 
-/* navbar in popup window */
-.o_body_popup {
-  #o_topnav_printview {
-    display: inline-block;
-  }
-  #o_topnav_close {
-    float: right;
-    span {
-      display: block;
-    }
-  }
-  #o_navbar_tools_permanent {
-    li > a {
-      background-color: transparent;
-    }
-  }
-}
+	/* styles for 'more' button and dropdown */
 
-.o_body_minimal {
-	#o_navbar_wrapper {
-		height: 2px;
-		min-height: 2px;
-		margin-bottom: 20px;
-		border: none;
-		background-color: inherit;
+	//tab styles and icons
+	.o_dropdown_tab {
+	  position: relative;
+	  > a:first-child {
+	    padding-right: $grid-gutter-width; // some extra space for the close button
+	    @if $o-navbar-more-dropdown-enable-icons {
+	      padding-left: $grid-gutter-width + 10px; // some extra space for the icon
+	    }
+		.o_icon_fw,
+	    .o_icon-fw {
+	      @if $o-navbar-more-dropdown-enable-icons{
+	        display: inline-block;
+	      } @else {
+	        display: none;
+	      }
+	      position: absolute;
+	      top: 0;
+	      left: 10px;
+	      padding-top: 3px;
+	      line-height: $line-height-computed;
+	    }
+	    span {
+	      display: block;
+	      overflow: hidden;
+	      white-space: nowrap;
+	      text-overflow: ellipsis;
+	    }
+	  }
+	  .o_navbar_tab_close {
+	    position: absolute;
+	    top: 0px; 
+	    right: 10px;
+	    padding-left: 0px;
+	    padding-right: 0px;
+	    color: var(--o-dropdown-tab-close);
+	    background-color: inherit;
+
+	    &:focus, &:hover {
+	      color: var(--o-dropdown-tab-close-hover);
+	      background-color: inherit;
+	    }
+	  }
+	}
+
+	// don't display a divider in the dropdown if no elements follow it
+	#o_navbar_more .dropdown-menu {
+	  .divider:last-child {
+	    display: none;
+	  }
+	}
+
+	// for small screens stretch the dropdown menu to full width, otherwise set a max-width
+	@media (min-width: $screen-xs-max + 1) {
+	  #o_navbar_more {
+	    .dropdown-menu {
+	        max-width: $o-navbar-more-dropdown-max-width;
+	    }
+	  }
+	}
+
+	@media (max-width: $screen-xs-max) {
+	  #o_navbar_more {
+	    > li {
+	      position: inherit;
+	    }
+	    .dropdown-menu {
+	      left: 0px;
+	      right: 0px;
+
+	      a, i {
+	        line-height: $line-height-computed * 1.5;
+	      }
+	      .o_navbar_tab_close {
+	        line-height: inherit;
+	      }
+	    }
+	  }
+	}
+
+	/* --- */
+
+
+	/* navbar in popup window */
+	.o_body_popup {
+	  #o_topnav_printview {
+	    display: inline-block;
+	  }
+	  #o_topnav_close {
+	    float: right;
+	    span {
+	      display: block;
+	    }
+	  }
+	  #o_navbar_tools_permanent {
+	    li > a {
+	      background-color: transparent;
+	    }
+	  }
+	}
+
+	.o_body_minimal {
+		#o_navbar_wrapper {
+			height: 2px;
+			min-height: 2px;
+			margin-bottom: 20px;
+			border: none;
+			background-color: inherit;
 		
-		#o_navbar_container {
-			display: none;
+			#o_navbar_container {
+				display: none;
+			}
 		}
 	}
-}
 }

@@ -9,414 +9,415 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-table {
-.o_table_wrapper {
+	.o_table_wrapper {
 
-	&.o_table_flexi {
-		.o_table_body{
-			margin-top: $line-height-computed;
-		}
-		.table {
-			margin-top: $line-height-computed;
-			td ul {
+		&.o_table_flexi {
+			.o_table_body{
+				margin-top: $line-height-computed;
+			}
+			.table {
+				margin-top: $line-height-computed;
+				td ul {
+					margin: 0;
+				}
+			}
+			&.o_table_no_margin .table {
 				margin: 0;
 			}
-		}
-		&.o_table_no_margin .table {
-			margin: 0;
-		}
-		tfoot {
-			border-top:solid var(--o-table-border) 2px;
-		}
+			tfoot {
+				border-top:solid var(--o-table-border) 2px;
+			}
 		
-		.o_multiselect {
-			width: 20px;
-			text-align: center;
-		}
+			.o_multiselect {
+				width: 20px;
+				text-align: center;
+			}
 		
-		.o_singleselect {
-			width: 32px;
-			text-align: center;
-		}
+			.o_singleselect {
+				width: 32px;
+				text-align: center;
+			}
 		
-		.o_table_pagination {
-			display: flex;
-			justify-content: space-between;
-		}
+			.o_table_pagination {
+				display: flex;
+				justify-content: space-between;
+			}
 		
-		.o_error {
-			margin-top: 1px;
+			.o_error {
+				margin-top: 1px;
+				margin-bottom: 0;
+				padding: 10px;
+			}
+		
+		
+			.o_table_row_expanded {
+				& > td {
+					background: var(--o-table-details-bg);
+				}
+			}
+			.o_table_row_details {
+				& > td {
+					background: var(--o-table-details-bg);
+					border-top: none;
+					padding: $o-table-details-padding;
+				}
+				& > td:first-child {
+					border-left: 0;
+				}
+				& > td:last-child {
+					border-right: 0;
+				}
+				.o_table_row_details_container {
+					margin: $o-table-details-container-margin;
+					padding: $o-table-details-container-padding;
+					border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
+					border-radius: $o-table-details-container-border-radius;
+					background: var(--o-table-details-container-bg);
+				}
+			}
+		}
+	
+		&.o_table_edit table tbody {
+			border-top:solid var(--o-table-edit-border) 4px;
+			background-color: var(--o-table-edit-bg);
+		}
+
+		.o_table_footer {
+			.o_table_expandall>a {
+				font-weight: normal;
+				margin-right: 10px;
+			}
+		
+			.o_table_expandall.input-sm {
+				padding: 5px 6px;
+			}	
+
+			.o_table_pagination {
+				text-align: center;
+			}
+		}
+	
+		.o_table_rows_infos {
+			float: left;
+			padding-left: 0;
+			padding-right: 20px;
+			margin: $line-height-computed 0;
+		}
+	
+		.o_row_selected + .o_table_row_details > td ,
+		.o_row_selected td { 
+			background-color: var(--o-table-row-selected-bg) !important; 
+		}
+		// The hover fill wins over the selected fill: a selected row and its
+		// details row while the pointer is on one of them. The selected fill has
+		// !important, so this rule has it too. :where() keeps the specificity
+		// below the rows with an own hover fill (selectus decision rows).
+		.table-hover > tbody {
+			> tr.o_row_selected:where(:hover, :has(+ .o_table_row_details:hover)) > td,
+			> tr.o_row_selected:where(:hover) + .o_table_row_details > td,
+			> tr.o_row_selected + .o_table_row_details:where(:hover) > td {
+				background-color: var(--o-table-hover-bg) !important;
+			}
+		}
+
+		.o_table {
 			margin-bottom: 0;
-			padding: 10px;
+		}
+		.o_marked {
+			 font-weight: bold;
+		}
+		.o_marked_deleted {
+			font-style: italic;
+			color: var(--o-text-muted);
+			text-decoration: line-through;
+			text-decoration-color: var(--o-state-danger-border);
+		}
+
+		.table {
+			margin-bottom: 0;
+			border-collapse: separate; /* fix FF border problem with sticky cols below */ 
+		}
+	
+		th {
+			a, a:hover {
+				color: var(--o-table-header);
+				text-decoration: none;
+			}
+		}
+		td a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a) {
+			/* fix a11y contrast on stipped and non-stryped cols */
+			color: var(--o-table-link);
+		}
+	
+		/* action cols must have a minimum width to users can touch it */
+		.o_col_action {
+			width: 35px;
+			.o_icon_actions {
+				width: 25px;
+			}
+		}
+
+		/* sticky first (checkboxes) and last (actions) columns on scrolling */
+		.o_col_sticky_left,
+		.o_col_sticky_right {	
+			position: sticky;
+			background: var(--o-bg);
+			z-index: 1; /* above normal columns that are positioned */
+		}
+		.o_col_sticky_left {
+			left: 0;
+		}
+		tr.success .o_col_sticky_left, tr.success .o_col_sticky_right {
+			background-color: var(--o-state-success-soft-bg) !important;
+		} 
+	
+		.o_scrollable_left .o_col_sticky_left {
+			box-shadow: 2px 0 2px -2px var(--o-table-sticky-col-edge);
+	    	background-color: var(--o-table-sticky-col-bg);
+		}
+		.o_multiselect.o_table_checkall.o_col_sticky_left {
+			z-index: 2;		/* make select-all menu appear above sticky columns */
+		}
+		.o_col_sticky_right {
+			right: 0;
+		}
+		.o_scrollable_right .o_col_sticky_right {
+			box-shadow: -2px 0 2px -2px var(--o-table-sticky-col-edge);
+	    	background-color: var(--o-table-sticky-col-bg);
 		}
 		
-		
-		.o_table_row_expanded {
-			& > td {
-				background: var(--o-table-details-bg);
-			}
-		}
-		.o_table_row_details {
-			& > td {
-				background: var(--o-table-details-bg);
-				border-top: none;
-				padding: $o-table-details-padding;
-			}
-			& > td:first-child {
-				border-left: 0;
-			}
-			& > td:last-child {
-				border-right: 0;
-			}
-			.o_table_row_details_container {
-				margin: $o-table-details-container-margin;
-				padding: $o-table-details-container-padding;
-				border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
-				border-radius: $o-table-details-container-border-radius;
-				background: var(--o-table-details-container-bg);
-			}
-		}
-	}
-	
-	&.o_table_edit table tbody {
-		border-top:solid var(--o-table-edit-border) 4px;
-		background-color: var(--o-table-edit-bg);
-	}
-
-	.o_table_footer {
-		.o_table_expandall>a {
-			font-weight: normal;
-			margin-right: 10px;
-		}
-		
-		.o_table_expandall.input-sm {
-			padding: 5px 6px;
-		}	
-
-		.o_table_pagination {
-			text-align: center;
-		}
-	}
-	
-	.o_table_rows_infos {
-		float: left;
-		padding-left: 0;
-		padding-right: 20px;
-		margin: $line-height-computed 0;
-	}
-	
-	.o_row_selected + .o_table_row_details > td ,
-	.o_row_selected td { 
-		background-color: var(--o-table-row-selected-bg) !important; 
-	}
-	// The hover fill wins over the selected fill: a selected row and its
-	// details row while the pointer is on one of them. The selected fill has
-	// !important, so this rule has it too. :where() keeps the specificity
-	// below the rows with an own hover fill (selectus decision rows).
-	.table-hover > tbody {
-		> tr.o_row_selected:where(:hover, :has(+ .o_table_row_details:hover)) > td,
-		> tr.o_row_selected:where(:hover) + .o_table_row_details > td,
-		> tr.o_row_selected + .o_table_row_details:where(:hover) > td {
-			background-color: var(--o-table-hover-bg) !important;
-		}
-	}
-
-	.o_table {
-		margin-bottom: 0;
-	}
-	.o_marked {
-		 font-weight: bold;
-	}
-	.o_marked_deleted {
-		font-style: italic;
-		color: var(--o-text-muted);
-		text-decoration: line-through;
-		text-decoration-color: var(--o-state-danger-border);
-	}
-
-	.table {
-		margin-bottom: 0;
-		border-collapse: separate; /* fix FF border problem with sticky cols below */ 
-	}
-	
-	th {
-		a, a:hover {
-			color: var(--o-table-header);
-			text-decoration: none;
-		}
-	}
-	td a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a) {
-		/* fix a11y contrast on stipped and non-stryped cols */
-		color: var(--o-table-link);
-	}
-	
-	/* action cols must have a minimum width to users can touch it */
-	.o_col_action {
-		width: 35px;
-		.o_icon_actions {
-			width: 25px;
-		}
-	}
-
-	/* sticky first (checkboxes) and last (actions) columns on scrolling */
-	.o_col_sticky_left,
-	.o_col_sticky_right {	
-		position: sticky;
-		background: var(--o-bg);
-		z-index: 1; /* above normal columns that are positioned */
-	}
-	.o_col_sticky_left {
-		left: 0;
-	}
-	tr.success .o_col_sticky_left, tr.success .o_col_sticky_right {
-		background-color: var(--o-state-success-soft-bg) !important;
-	} 
-	
-	.o_scrollable_left .o_col_sticky_left {
-		box-shadow: 2px 0 2px -2px var(--o-table-sticky-col-edge);
-    	background-color: var(--o-table-sticky-col-bg);
-	}
-	.o_multiselect.o_table_checkall.o_col_sticky_left {
-		z-index: 2;		/* make select-all menu appear above sticky columns */
-	}
-	.o_col_sticky_right {
-		right: 0;
-	}
-	.o_scrollable_right .o_col_sticky_right {
-		box-shadow: -2px 0 2px -2px var(--o-table-sticky-col-edge);
-    	background-color: var(--o-table-sticky-col-bg);
-	}
-		
-	/* Hover bg for expanded rows */
-	.table-striped {
-		> tbody {
-			> tr {
-				&.o_table_row_expanded {
-					// Case 1: If the expanded row is hovered ...
-					&:hover {
-						// ... darken the expanded row...
-						>td {
-							background-color: var(--o-table-details-bg-hover);
+		/* Hover bg for expanded rows */
+		.table-striped {
+			> tbody {
+				> tr {
+					&.o_table_row_expanded {
+						// Case 1: If the expanded row is hovered ...
+						&:hover {
+							// ... darken the expanded row...
+							>td {
+								background-color: var(--o-table-details-bg-hover);
+							}
+							// ... and the details row.
+							+.o_table_row_details {
+								>td {
+									background-color: var(--o-table-details-bg-hover);
+								}
+							}
 						}
-						// ... and the details row.
-						+.o_table_row_details {
+						// Case 2: If the details row is hovered ...
+						&:has(+.o_table_row_details:hover) {
+							// ... darken the expanded row...
 							>td {
 								background-color: var(--o-table-details-bg-hover);
 							}
 						}
 					}
-					// Case 2: If the details row is hovered ...
-					&:has(+.o_table_row_details:hover) {
-						// ... darken the expanded row...
+					// ... and the details row.
+					&.o_table_row_details:hover {
 						>td {
 							background-color: var(--o-table-details-bg-hover);
 						}
 					}
 				}
-				// ... and the details row.
-				&.o_table_row_details:hover {
-					>td {
-						background-color: var(--o-table-details-bg-hover);
+			}
+		}
+	
+		/* fix striped and hover bg colors for sticky columns */
+		.table-striped {
+	  		> tbody > tr:nth-child(odd):not(.o_table_row_expanded) {
+	  			.o_col_sticky_right,
+	  			.o_col_sticky_left {		
+			    	background-color: var(--o-table-striped-bg);
+			    }
+			}
+			/* fix a11y contrast on stipped cols */
+	 	 	> tbody > tr:nth-of-type(odd) {
+				a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a) {
+					color: var(--o-table-striped-link);
+				}
+	 	 	}
+		}
+	
+		.o_scrollable_right .table-striped {
+	  		> tbody > tr:nth-child(odd) {
+	  			.o_col_sticky_right {		
+			    	background-color: var(--o-table-sticky-col-striped-bg);
+					&:is(.o_table_row_expanded *) {
+						background: var(--o-table-details-bg);
+					}
+					// the opened row or its details row under the pointer
+					&:is(.o_table_row_expanded:hover *, .o_table_row_expanded:where(:has(+ .o_table_row_details:hover)) *) {
+						background: var(--o-table-details-bg-hover);
+					}
+			    }
+			}
+	  	}
+		.o_scrollable_left .table-striped {
+	  		> tbody > tr:nth-child(odd) {
+	  			.o_col_sticky_left {		
+			    	background-color: var(--o-table-sticky-col-striped-bg);		    
+					&:is(.o_table_row_expanded *) {
+						background: var(--o-table-details-bg);
+					}
+					// the opened row or its details row under the pointer
+					&:is(.o_table_row_expanded:hover *, .o_table_row_expanded:where(:has(+ .o_table_row_details:hover)) *) {
+						background: var(--o-table-details-bg-hover);
 					}
 				}
 			}
-		}
-	}
-	
-	/* fix striped and hover bg colors for sticky columns */
-	.table-striped {
-  		> tbody > tr:nth-child(odd):not(.o_table_row_expanded) {
-  			.o_col_sticky_right,
-  			.o_col_sticky_left {		
-		    	background-color: var(--o-table-striped-bg);
-		    }
-		}
-		/* fix a11y contrast on stipped cols */
- 	 	> tbody > tr:nth-of-type(odd) {
-			a:not(.btn):not(.o_practice_play):not(.o_link_uncolored):not(.o_table_row_details_container a) {
-				color: var(--o-table-striped-link);
-			}
- 	 	}
-	}
-	
-	.o_scrollable_right .table-striped {
-  		> tbody > tr:nth-child(odd) {
-  			.o_col_sticky_right {		
-		    	background-color: var(--o-table-sticky-col-striped-bg);
-				&:is(.o_table_row_expanded *) {
-					background: var(--o-table-details-bg);
-				}
-				// the opened row or its details row under the pointer
-				&:is(.o_table_row_expanded:hover *, .o_table_row_expanded:where(:has(+ .o_table_row_details:hover)) *) {
-					background: var(--o-table-details-bg-hover);
-				}
-		    }
-		}
-  	}
-	.o_scrollable_left .table-striped {
-  		> tbody > tr:nth-child(odd) {
-  			.o_col_sticky_left {		
-		    	background-color: var(--o-table-sticky-col-striped-bg);		    
-				&:is(.o_table_row_expanded *) {
-					background: var(--o-table-details-bg);
-				}
-				// the opened row or its details row under the pointer
-				&:is(.o_table_row_expanded:hover *, .o_table_row_expanded:where(:has(+ .o_table_row_details:hover)) *) {
-					background: var(--o-table-details-bg-hover);
-				}
+	  	}
+  	
+	  	&.o_table_reduced {
+	  		table.table {
+	  			margin-top: 0;
+	  		}
+	  		thead, .o_table_footer {
+	  			display: none;
+	  		}
+	  		tbody>tr {
+	  			background-color: var(--o-bg);
+	  			display: flex;
+	  		}
+	  		tbody>tr>td {
+	  			display: inline-block;
+	  			border: none !important;
+	  			text-wrap: nowrap;
+	  		}
+	  	}
+  	
+	  	.table-hover {
+	  		> tbody > tr:not(.o_table_row_expanded):hover {
+	  			.o_col_sticky_right,
+	  			.o_col_sticky_left {		
+	    			background-color: var(--o-table-hover-bg);
+	  			}
 			}
 		}
-  	}
-  	
-  	&.o_table_reduced {
-  		table.table {
-  			margin-top: 0;
-  		}
-  		thead, .o_table_footer {
-  			display: none;
-  		}
-  		tbody>tr {
-  			background-color: var(--o-bg);
-  			display: flex;
-  		}
-  		tbody>tr>td {
-  			display: inline-block;
-  			border: none !important;
-  			text-wrap: nowrap;
-  		}
-  	}
-  	
-  	.table-hover {
-  		> tbody > tr:not(.o_table_row_expanded):hover {
-  			.o_col_sticky_right,
-  			.o_col_sticky_left {		
-    			background-color: var(--o-table-hover-bg);
-  			}
-		}
-	}
 	
-	.o_item_collection_cell {
-		display: inline-block;
-		.o_cell_items {
-			display: flex;
-			gap: 5px;
+		.o_item_collection_cell {
+			display: inline-block;
+			.o_cell_items {
+				display: flex;
+				gap: 5px;
+			}
 		}
-	}
 	
-	&.o_table_flexi.o_vertical_timeline {
-		> ol {
-			display: flex;
-        	flex-direction: column;
-        	gap: 10px;
-			padding: 0;
-			list-style-type: none;
+		&.o_table_flexi.o_vertical_timeline {
+			> ol {
+				display: flex;
+	        	flex-direction: column;
+	        	gap: 10px;
+				padding: 0;
+				list-style-type: none;
 			
-			>li.o_vertical_timeline_year {
-				> h3 {
-					width: 100%;
-					border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
-					border-radius: $o-table-details-container-border-radius;
-					margin: 0 0 10px 0;
-					padding: 10px;
-				}
+				>li.o_vertical_timeline_year {
+					> h3 {
+						width: 100%;
+						border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
+						border-radius: $o-table-details-container-border-radius;
+						margin: 0 0 10px 0;
+						padding: 10px;
+					}
 			
-				> ol {
-					padding: 0;
-					list-style-type: none;
-					display: flex;
-        			flex-direction: column;
-        			gap: $o-v-timeline-rows-gap;
+					> ol {
+						padding: 0;
+						list-style-type: none;
+						display: flex;
+	        			flex-direction: column;
+	        			gap: $o-v-timeline-rows-gap;
 
-				 	> li {
-						&.o_vertical_timeline_row {
-							background-color: var(--o-table-details-container-bg);
-							border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
-							border-radius: $o-table-details-container-border-radius;
-							box-shadow: none;
-							transition: none;
-							
-							display: grid;
-							grid-template-columns: 90px 1fr;
-						}
-	
-						.o_vertical_timeline_day {
-							align-self: flex-start;
-						}
-				
-						> ol {
-							padding: 0;
-							list-style-type: none;
-							width: 100%;
-		
-							.o_vertical_timeline_item {
-								display: flex;
-								flex-direction: row;
-								position: relative;
-								padding: 0 ;
-							}
-							
-							.o_vertical_timeline_item:first-child {
-								padding: 0;
-							}
-							
-							.o_vertical_timeline_item_path {
-								width: $o-lm-timeline-path-width;
-								min-width: $o-lm-timeline-path-width;
-								
-								display: flex;
-								flex-direction: column;
-								
-								.o_vertical_timeline_path_top,
-								.o_vertical_timeline_path_bottom {
-									border-left: $o-lm-timeline-path-stroke-width solid var(--o-lecture-timeline-path);
-									transform: translateX(1rem);
-								}
-								.o_vertical_timeline_path_top {
-									height: $o-lm-timeline-path-top-height;
-								}
-								.o_vertical_timeline_path_center 	{
-									border: $o-lm-timeline-path-stroke-width solid var(--o-lecture-timeline-path);
-									border-radius: 99999px; // circle
-									width: 2rem;
-									height: 2rem;
-									margin-left: math.div($o-lm-timeline-path-stroke-width, 2);
-								}
-								.o_vertical_timeline_path_bottom {
-									flex-grow: 2;
-								}
-							}
-						
-							> li:first-child > .o_vertical_timeline_item_content {
-								margin-top: 10px;
-							}
-							
-							.o_vertical_timeline_item_content {
-								flex-grow: 2;
+					 	> li {
+							&.o_vertical_timeline_row {
+								background-color: var(--o-table-details-container-bg);
 								border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
 								border-radius: $o-table-details-container-border-radius;
-								margin: 0 10px 20px 0;
-								padding: 0 10px 10px 10px;
-								
-								.btn.o_button_details {
-									position: absolute;
-									bottom: 10px;
-									left: 50%;
-									right: 50%;
-									height: 20px;
-									width: 32px;
-									padding: 0px 8px;
-									border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border);
-								}
-							}
+								box-shadow: none;
+								transition: none;
 							
-							.o_vertical_timeline_item_details {
-								border-top: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
-								margin: 0 -10px 0px -10px;
-								padding: 10px 10px 5px 10px;
+								display: grid;
+								grid-template-columns: 90px 1fr;
 							}
-						
-							.o_vertical_timeline_item_details_container {
-								margin: 0;
+	
+							.o_vertical_timeline_day {
+								align-self: flex-start;
+							}
+				
+							> ol {
+								padding: 0;
+								list-style-type: none;
+								width: 100%;
+		
+								.o_vertical_timeline_item {
+									display: flex;
+									flex-direction: row;
+									position: relative;
+									padding: 0 ;
+								}
+							
+								.o_vertical_timeline_item:first-child {
+									padding: 0;
+								}
+							
+								.o_vertical_timeline_item_path {
+									width: $o-lm-timeline-path-width;
+									min-width: $o-lm-timeline-path-width;
 								
+									display: flex;
+									flex-direction: column;
+								
+									.o_vertical_timeline_path_top,
+									.o_vertical_timeline_path_bottom {
+										border-left: $o-lm-timeline-path-stroke-width solid var(--o-lecture-timeline-path);
+										transform: translateX(1rem);
+									}
+									.o_vertical_timeline_path_top {
+										height: $o-lm-timeline-path-top-height;
+									}
+									.o_vertical_timeline_path_center 	{
+										border: $o-lm-timeline-path-stroke-width solid var(--o-lecture-timeline-path);
+										border-radius: 99999px; // circle
+										width: 2rem;
+										height: 2rem;
+										margin-left: math.div($o-lm-timeline-path-stroke-width, 2);
+									}
+									.o_vertical_timeline_path_bottom {
+										flex-grow: 2;
+									}
+								}
+						
+								> li:first-child > .o_vertical_timeline_item_content {
+									margin-top: 10px;
+								}
+							
+								.o_vertical_timeline_item_content {
+									flex-grow: 2;
+									border: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
+									border-radius: $o-table-details-container-border-radius;
+									margin: 0 10px 20px 0;
+									padding: 0 10px 10px 10px;
+								
+									.btn.o_button_details {
+										position: absolute;
+										bottom: 10px;
+										left: 50%;
+										right: 50%;
+										height: 20px;
+										width: 32px;
+										padding: 0px 8px;
+										border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border);
+									}
+								}
+							
+								.o_vertical_timeline_item_details {
+									border-top: $o-table-details-container-border-width $o-table-details-container-border-style var(--o-table-details-container-border);
+									margin: 0 -10px 0px -10px;
+									padding: 10px 10px 5px 10px;
+								}
+						
+								.o_vertical_timeline_item_details_container {
+									margin: 0;
+								
+								}
 							}
 						}
 					}
@@ -424,667 +425,666 @@
 			}
 		}
 	}
-}
 
-table.table.o_table_middle>tbody>tr>td {
-	vertical-align: middle;
-}
-table.table.o_table_nowrap>tbody>tr>td {
-	@extend %o_nowrap;
-	div {
+	table.table.o_table_middle>tbody>tr>td {
+		vertical-align: middle;
+	}
+	table.table.o_table_nowrap>tbody>tr>td {
 		@extend %o_nowrap;
+		div {
+			@extend %o_nowrap;
+		}
 	}
-}
-// Add this class to the cells of a column which should fill out the remaining space.
-.o_cell_stretch {
-	width: 100%;
-}
-.table > tbody > tr > td {
-	&:has(>.o_cell_stretch_full) {
-		padding: 0;
+	// Add this class to the cells of a column which should fill out the remaining space.
+	.o_cell_stretch {
+		width: 100%;
 	}
-	.o_cell_stretch_full {
-		display: grid;
-		align-items: center;
-		padding: $table-condensed-cell-padding;
+	.table > tbody > tr > td {
+		&:has(>.o_cell_stretch_full) {
+			padding: 0;
+		}
+		.o_cell_stretch_full {
+			display: grid;
+			align-items: center;
+			padding: $table-condensed-cell-padding;
+		}
 	}
-}
 
-.o_table_tabs {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-	
-	border-bottom: 1px solid var(--o-table-filter-collapse-border);
-
-	ul.o_segments.o_segments_tab {
-		padding: 0;
-		margin: 0;
-		flex: 1;
-		border-bottom: none;
-	}
-	
-	ul.o_segments.o_segments_tab.btn-group a span {
-		display: initial;
-	}
-	
-	ul>li {
-		display: inline-block;
-	}
-	
-	>a.o_table_remove_filters {
-		display: block;
-	}
-}
-
-.o_table_filters_wrapper {
-	z-index: 3;
-	position: relative;
-	text-align: center;
-
-	.o_table_filters_row {
-		padding: 10px 0 10px 0;
-		
+	.o_table_tabs {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		width: 100%;
+	
+		border-bottom: 1px solid var(--o-table-filter-collapse-border);
 
-		>ul.o_table_filters {
-			flex: 1;
-
-			>li {
-				margin: 0px 2px 2px 0px;
-			}
-			.o_table_filter, .o_table_add_filter {
-				width: 200px;
-				text-align: left;
-				position: relative;
-				span + i {
-					position: absolute;
-					right: 5px;
-					top: 10px;
-				}
-				padding-right: 15px;
-				white-space: nowrap;
-				
-			}
-			
-			a.o_table_filter, a.o_table_add_filter {
-				overflow-x: clip;
-				text-overflow: ellipsis;
-			}
-			
-			/* special colors for the filter buttons itself */
-			.o_table_filter {
-				@include button-variant(var(--o-table-filter-fg), var(--o-table-filter-bg), var(--o-table-filter-border),
-					var(--o-table-filter-fg-hover), var(--o-table-filter-fg-active));
-				&.o_filter_active {
-					@include button-variant(var(--o-table-filter-active-fg), var(--o-table-filter-active-bg), var(--o-table-filter-active-border),
-						var(--o-table-filter-active-fg-hover), var(--o-table-filter-active-fg-active));
-				}
-				&.o_filter_open {
-					@include button-variant(var(--o-table-filter-active-fg), var(--o-table-filter-active-bg), var(--o-table-filter-active-border),
-						var(--o-table-filter-active-fg-hover), var(--o-table-filter-active-fg-active));
-					i.o_icon {
-						transform: rotate(180deg);
-					}
-				}
-			}
-			
-			>li>fieldset.o_table_filter {
-				margin: 0px 1px 0 0;
-				padding-right: 0;
-				border: 1px solid transparent;
-				border-radius: $btn-border-radius-base;
-				@include button-variant(var(--o-table-filter-fg), var(--o-table-filter-bg), var(--o-table-filter-border),
-					var(--o-table-filter-fg-hover), var(--o-table-filter-fg-active));
-				
-				.checkbox {
-					width: 100%;
-					margin: 0px;
-					
-					> div > label {
-						width: 100%;
-						padding: 6px 12px 6px 32px;
-						overflow-x: clip;
-						text-overflow: ellipsis;
-					}
-				}
-			}
-		}
-		>ul.o_table_filters_config {
-			margin-left: 1em;
-			margin-top: 0;
-			margin-bottom: auto;
-		}
-		
-		a.btn {
-			padding: 6px 12px;
-			background-image: none;
-			filter: none;
-		}
-	}
-	
-	>.o_button_group {
-		border-top: 1px solid var(--o-table-filter-collapse-border);
-		margin: 0;
-	}
-	
-	&.o_collapsed>.o_button_group {
-		margin-top: -1px;
-	}
-	
-	&.always-on {
-		margin-bottom: 4px;
-		
-		.o_table_filters_row {
+		ul.o_segments.o_segments_tab {
 			padding: 0;
+			margin: 0;
+			flex: 1;
 			border-bottom: none;
 		}
-	}
 	
-	.o_button_details {
-		margin: -2px auto 0 auto;
-		
-		padding: 0px 8px;
-		border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border);
-	
-		>span {
-			display: none;
+		ul.o_segments.o_segments_tab.btn-group a span {
+			display: initial;
 		}
-	}
-	&.o_collapsed {
-		margin-bottom: 5px;
-		.o_button_details {
-			border-top: 0px;
-			border-top-left-radius: 0px;
-			border-top-right-radius: 0px;
+	
+		ul>li {
+			display: inline-block;
+		}
+	
+		>a.o_table_remove_filters {
+			display: block;
 		}
 	}
 
-	&.o_expanded .o_button_details {
+	.o_table_filters_wrapper {
+		z-index: 3;
 		position: relative;
-		top: -10px;
-	}
-}
+		text-align: center;
 
-.o_table_batch_buttons {
-	/* same height and margin as table search field / table tools to prevent shaky table */
-	min-height: $input-height-base; 
-	margin: 20px 0 -2px 0;
-	position: relative;
-	z-index: 2;
-	text-align: left;
+		.o_table_filters_row {
+			padding: 10px 0 10px 0;
+		
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			width: 100%;
+
+			>ul.o_table_filters {
+				flex: 1;
+
+				>li {
+					margin: 0px 2px 2px 0px;
+				}
+				.o_table_filter, .o_table_add_filter {
+					width: 200px;
+					text-align: left;
+					position: relative;
+					span + i {
+						position: absolute;
+						right: 5px;
+						top: 10px;
+					}
+					padding-right: 15px;
+					white-space: nowrap;
+				
+				}
+			
+				a.o_table_filter, a.o_table_add_filter {
+					overflow-x: clip;
+					text-overflow: ellipsis;
+				}
+			
+				/* special colors for the filter buttons itself */
+				.o_table_filter {
+					@include button-variant(var(--o-table-filter-fg), var(--o-table-filter-bg), var(--o-table-filter-border),
+						var(--o-table-filter-fg-hover), var(--o-table-filter-fg-active));
+					&.o_filter_active {
+						@include button-variant(var(--o-table-filter-active-fg), var(--o-table-filter-active-bg), var(--o-table-filter-active-border),
+							var(--o-table-filter-active-fg-hover), var(--o-table-filter-active-fg-active));
+					}
+					&.o_filter_open {
+						@include button-variant(var(--o-table-filter-active-fg), var(--o-table-filter-active-bg), var(--o-table-filter-active-border),
+							var(--o-table-filter-active-fg-hover), var(--o-table-filter-active-fg-active));
+						i.o_icon {
+							transform: rotate(180deg);
+						}
+					}
+				}
+			
+				>li>fieldset.o_table_filter {
+					margin: 0px 1px 0 0;
+					padding-right: 0;
+					border: 1px solid transparent;
+					border-radius: $btn-border-radius-base;
+					@include button-variant(var(--o-table-filter-fg), var(--o-table-filter-bg), var(--o-table-filter-border),
+						var(--o-table-filter-fg-hover), var(--o-table-filter-fg-active));
+				
+					.checkbox {
+						width: 100%;
+						margin: 0px;
+					
+						> div > label {
+							width: 100%;
+							padding: 6px 12px 6px 32px;
+							overflow-x: clip;
+							text-overflow: ellipsis;
+						}
+					}
+				}
+			}
+			>ul.o_table_filters_config {
+				margin-left: 1em;
+				margin-top: 0;
+				margin-bottom: auto;
+			}
+		
+			a.btn {
+				padding: 6px 12px;
+				background-image: none;
+				filter: none;
+			}
+		}
 	
-	&.o_table_batch_hide {
-		display: none;
-	}
-	> a {
-		margin-bottom: 5px; /* space between buttons on overflow line break */
-	}
-	> span {
-		position: absolute;
-		bottom: -1.5em;
-		vertical-align: middle;
-	}
-	.o_table_batch_label {
-		padding-right: 1em;
-		font-size: $font-size-small;
-		color: var(--o-text-muted);
-	}
-	.btn.btn-default {
-		@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
-		font-size: $font-size-small;
-		text-shadow: none;
-	}
-}
+		>.o_button_group {
+			border-top: 1px solid var(--o-table-filter-collapse-border);
+			margin: 0;
+		}
+	
+		&.o_collapsed>.o_button_group {
+			margin-top: -1px;
+		}
+	
+		&.always-on {
+			margin-bottom: 4px;
+		
+			.o_table_filters_row {
+				padding: 0;
+				border-bottom: none;
+			}
+		}
+	
+		.o_button_details {
+			margin: -2px auto 0 auto;
+		
+			padding: 0px 8px;
+			border: $o-cn-style-border-line-width $o-cn-style-border-line-style var(--o-course-style-border);
+	
+			>span {
+				display: none;
+			}
+		}
+		&.o_collapsed {
+			margin-bottom: 5px;
+			.o_button_details {
+				border-top: 0px;
+				border-top-left-radius: 0px;
+				border-top-right-radius: 0px;
+			}
+		}
 
-.o_table_batch_buttons.o_table_batch_buttons {
-	min-height: 0px;
-	margin: 0;
-	margin-top: -2px;
-}
-div:has(>.o_table_tabs):has(>.o_table_batch_buttons):not(:has(>.o_table_filters_wrapper)) {
-	>.o_table_batch_buttons {
-		margin-top: 18px;
-	}
-}
-
-.o_filter_search_list_values {
-	max-height: 300px;
-	overflow-y: scroll;
-	margin-right: -15px;
-	label.control-label {
-		color: var(--o-text-muted);
-		font-weight: normal;
-		margin-top: 10px;
-		margin-bottom: 0px;
-	}
-	.checkbox label {
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-}
-
-.o_table_filter_callout {
-	.o_table_filter_callout_header {
-		display: flex;
-		align-items: baseline;
-		gap: 10px;
-		>:first-child {
-			margin-right: auto;
+		&.o_expanded .o_button_details {
+			position: relative;
+			top: -10px;
 		}
 	}
-	.o_filter_update {
-		width: 100%;
-	}
-	.form-group {
-		margin-bottom: 0;
-	}
-	.o_filter_list_values {
-		// Because every chechbox has always margins
-		margin-top: -10px;
-		margin-bottom: -10px;
-	}
-}
 
-.input-group.o_autocompletion {
-	margin-bottom: 10px;
-	a {
-		color: var(--o-text-muted);
-		opacity: .65;
-	}
-	.o_indicate_search {
-		border-right: 0px;
-	}
-	.o_quick_search {
-		border-right: 0px;
-		border-left: 0px;
-	}
-	.o_reset_search {
-		border-left: 0px;
-	}
-}
-
-.o_breadcrumb.o_table_flexi_breadcrumb ol.breadcrumb {
-	margin: 5px 0 0 0;
-}
-.o_breadcrumb.o_table_flexi_breadcrumb + .o_table_batch_buttons.o_table_batch_show {
-	margin-top: 5px;
-}
-
-div.o_table_flexi div.o_table_flexi_leaf  {
-	margin-left: 1.3em;
-}
-
-@for $i from 0 through 11 {
-	div.o_table_flexi div.o_table_flexi_l#{$i}  {
-		padding-left: ($i * $o-tree-padding-steps-px); 
-	}
-}
-
-@media (max-width: $screen-xs-max) { 
-	.o_table_wrapper .o_table_rows_infos {
-		clear:both;
-	}
-}
-
-a.o_orderby, a.o_orderby:hover {
-	color: var(--o-table-header);
-	text-decoration: none;
-	white-space: nowrap;
-
-	&.o_orderby_asc:after, &.o_orderby_desc:after {
-		@include o-make-icon();
-		color: var(--o-primary-text);
-		margin-left: 5px;
-	}
+	.o_table_batch_buttons {
+		/* same height and margin as table search field / table tools to prevent shaky table */
+		min-height: $input-height-base; 
+		margin: 20px 0 -2px 0;
+		position: relative;
+		z-index: 2;
+		text-align: left;
 	
-	&.o_orderby_asc {
-		@include o-add-icon('arrow-up-short-wide', true, false);
-	}
-	
-	&.o_orderby_desc {
-		@include o-add-icon('arrow-down-short-wide', true, false);
-	}
-}
-
-.o_row_selected {
-	background: var(--o-table-row-selected-bg) !important;	
-}
-.o_table_row_count {
-	padding-top:6px;
-	padding-bottom:6px;
-	vertical-align:middle;
-}
-
-.o_table_config {
-	font-size: math.floor($font-size-base * 0.9);
-}
-
-.o_table_tools {
-	margin-left: 6px;
-}
-
-.o_table_tools_indications, .o_table_tools_indications_filter_only {
-	padding-top:3px;
-	font-size:80%;
-	
-	a {
-		color: var(--o-state-danger-text);
-	}
-}
-
-.o_table_toolbar_left .o_table_tools_indications {
-	text-align: right;
-}
-
-.o_table_count {
-	max-width:20em;
-	float:left;
-	padding: 0 $panel-body-padding;
-}
-
-.o_table_search, .o_table_large_search {
-	white-space: nowrap;
-	
-	input[type='text']:not(.o_search_input) {
-		max-width: 300px;
-		display: inline-block;
-		border-bottom-right-radius: 0;
-		border-top-right-radius: 0;
-		// vertical-align: middle !important;
-	}
-	
-	.twitter-typeahead input[type='text'] {
-		vertical-align: baseline !important;
-	}
-	
-	// the buttons of the field take the border of the focus, no glow (OO-10043)
-	input[type='text']:focus ~ a.btn	 {
-		outline: 0;
-		border-color: var(--o-focus);
-	}
-	
-	a.btn.o_reset_quick_search {
-		border-right: none;
-		border-radius: 0;
-		margin-right: 0 !important;
-	}
-	
-	a.btn.o_table_search_button, a.btn.o_sel_flexi_extendedsearch, a.btn.o_reset_quick_search {
-		display: inline-block;
-		color: var(--o-text-muted);
-		border-bottom-left-radius: 0;
-		border-top-left-radius: 0;
-		vertical-align: baseline;
-		@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent));
-	
-		>span {
+		&.o_table_batch_hide {
 			display: none;
 		}
-	}
-	a.btn.o_table_search_button, a.btn.o_sel_flexi_extendedsearch {
-		border-left: none;
-		margin: -1px 1em 0px -1px;
-	}
-	a.btn.o_reset_quick_search {
-		margin: -1px 1em 0px 0px;
-	}
-	
-	.o_table_rowcount {
-		color: var(--o-text-muted);
-	}
-}
-
-.o_table_search.o_table_search_extended a.btn.o_table_search_button {
-	margin-right: 0;
-	color: var(--o-btn-default-fg);
-	border-bottom-right-radius: 0;
-	border-top-right-radius: 0;
-	border-right: none;
-	
-	>span {
-		display: inline-block;
-	}
-}
-
-.o_table_search.o_table_search_extended a.btn.o_sel_flexi_extendedsearch {
-	color: var(--o-btn-default-fg);
-	
-	>span {
-		display: inline-block;
-	}
-}
-
-.o_table_filters_wrapper + .o_table_toolbar {
-	margin-top: 2px;
-}
-
-.o_table_tabs + .o_table_toolbar {
-	margin-top: 20px;
-}
-
-.o_table_toolbar {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-	
-	&.o_table_batch_show {
-		display: none;
-	}
-	
-	.o_table_search {
-		flex: 1;
-	}
-}
-
-.o_table_large_search {
-	text-align: center;
-	padding: 15px 20px;
-	
-	input[type='text']:not(.o_search_input) {
-		max-width: 400px;
-		width: 90%;
-	}
-}
-
-.o_table_filter, .o_table_add_filter {
-	.control-label {
-		margin-right: 0.5em;
-		&:after {
-			content: ':';
+		> a {
+			margin-bottom: 5px; /* space between buttons on overflow line break */
 		}
-	} 
-	
- 	> div {
-		display:inline-block;
-	
-		label {
+		> span {
+			position: absolute;
+			bottom: -1.5em;
+			vertical-align: middle;
+		}
+		.o_table_batch_label {
+			padding-right: 1em;
+			font-size: $font-size-small;
+			color: var(--o-text-muted);
+		}
+		.btn.btn-default {
+			@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
+			font-size: $font-size-small;
+			text-shadow: none;
+		}
+	}
+
+	.o_table_batch_buttons.o_table_batch_buttons {
+		min-height: 0px;
+		margin: 0;
+		margin-top: -2px;
+	}
+	div:has(>.o_table_tabs):has(>.o_table_batch_buttons):not(:has(>.o_table_filters_wrapper)) {
+		>.o_table_batch_buttons {
+			margin-top: 18px;
+		}
+	}
+
+	.o_filter_search_list_values {
+		max-height: 300px;
+		overflow-y: scroll;
+		margin-right: -15px;
+		label.control-label {
+			color: var(--o-text-muted);
 			font-weight: normal;
+			margin-top: 10px;
+			margin-bottom: 0px;
+		}
+		.checkbox label {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 	}
-}
 
- table tr.o_no_border td,
- table tr.o_no_border th {
- 	border-top: 0;
- }
-
-/* bootstrap extensions */
-.o_info, o_note, o_important, o_warning, o_error {
-	.table-bordered td,
-	.table-bordered th {
-		border-color: var(--o-message-table-border);
+	.o_table_filter_callout {
+		.o_table_filter_callout_header {
+			display: flex;
+			align-items: baseline;
+			gap: 10px;
+			>:first-child {
+				margin-right: auto;
+			}
+		}
+		.o_filter_update {
+			width: 100%;
+		}
+		.form-group {
+			margin-bottom: 0;
+		}
+		.o_filter_list_values {
+			// Because every chechbox has always margins
+			margin-top: -10px;
+			margin-bottom: -10px;
+		}
 	}
-}
 
-/* table embedded in panels */
-.panel {
-	.o_table_layout {
-		border-top: 1px solid var(--o-border);
-		padding-top: $padding-base-vertical;
+	.input-group.o_autocompletion {
+		margin-bottom: 10px;
+		a {
+			color: var(--o-text-muted);
+			opacity: .65;
+		}
+		.o_indicate_search {
+			border-right: 0px;
+		}
+		.o_quick_search {
+			border-right: 0px;
+			border-left: 0px;
+		}
+		.o_reset_search {
+			border-left: 0px;
+		}
 	}
+
+	.o_breadcrumb.o_table_flexi_breadcrumb ol.breadcrumb {
+		margin: 5px 0 0 0;
+	}
+	.o_breadcrumb.o_table_flexi_breadcrumb + .o_table_batch_buttons.o_table_batch_show {
+		margin-top: 5px;
+	}
+
+	div.o_table_flexi div.o_table_flexi_leaf  {
+		margin-left: 1.3em;
+	}
+
+	@for $i from 0 through 11 {
+		div.o_table_flexi div.o_table_flexi_l#{$i}  {
+			padding-left: ($i * $o-tree-padding-steps-px); 
+		}
+	}
+
+	@media (max-width: $screen-xs-max) { 
+		.o_table_wrapper .o_table_rows_infos {
+			clear:both;
+		}
+	}
+
+	a.o_orderby, a.o_orderby:hover {
+		color: var(--o-table-header);
+		text-decoration: none;
+		white-space: nowrap;
+
+		&.o_orderby_asc:after, &.o_orderby_desc:after {
+			@include o-make-icon();
+			color: var(--o-primary-text);
+			margin-left: 5px;
+		}
+	
+		&.o_orderby_asc {
+			@include o-add-icon('arrow-up-short-wide', true, false);
+		}
+	
+		&.o_orderby_desc {
+			@include o-add-icon('arrow-down-short-wide', true, false);
+		}
+	}
+
+	.o_row_selected {
+		background: var(--o-table-row-selected-bg) !important;	
+	}
+	.o_table_row_count {
+		padding-top:6px;
+		padding-bottom:6px;
+		vertical-align:middle;
+	}
+
+	.o_table_config {
+		font-size: math.floor($font-size-base * 0.9);
+	}
+
+	.o_table_tools {
+		margin-left: 6px;
+	}
+
+	.o_table_tools_indications, .o_table_tools_indications_filter_only {
+		padding-top:3px;
+		font-size:80%;
+	
+		a {
+			color: var(--o-state-danger-text);
+		}
+	}
+
+	.o_table_toolbar_left .o_table_tools_indications {
+		text-align: right;
+	}
+
 	.o_table_count {
+		max-width:20em;
+		float:left;
 		padding: 0 $panel-body-padding;
 	}
-}
 
-.o_table_header_fw {
-	width: 40px;
-}
-.o_thead_sr_only {
-	thead {
-		@extend %sr-only;
-	}
-}
-
-.o_table_filters_and_settings {
-	.o_button_group.o_reset {
-		margin-top: 0;
-	}
-
-	.o_table_render_types div.form-inline {
-		width: 100%;
-		padding-top: 10px;
-		display: table;
-		table-layout: fixed;
-		
-		label.btn {
-			float: none;
-			display: table-cell;
+	.o_table_search, .o_table_large_search {
+		white-space: nowrap;
+	
+		input[type='text']:not(.o_search_input) {
+			max-width: 300px;
+			display: inline-block;
+			border-bottom-right-radius: 0;
+			border-top-right-radius: 0;
+			// vertical-align: middle !important;
+		}
+	
+		.twitter-typeahead input[type='text'] {
+			vertical-align: baseline !important;
+		}
+	
+		// the buttons of the field take the border of the focus, no glow (OO-10043)
+		input[type='text']:focus ~ a.btn	 {
+			outline: 0;
+			border-color: var(--o-focus);
+		}
+	
+		a.btn.o_reset_quick_search {
+			border-right: none;
+			border-radius: 0;
+			margin-right: 0 !important;
+		}
+	
+		a.btn.o_table_search_button, a.btn.o_sel_flexi_extendedsearch, a.btn.o_reset_quick_search {
+			display: inline-block;
+			color: var(--o-text-muted);
+			border-bottom-left-radius: 0;
+			border-top-left-radius: 0;
+			vertical-align: baseline;
+			@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent));
+	
+			>span {
+				display: none;
+			}
+		}
+		a.btn.o_table_search_button, a.btn.o_sel_flexi_extendedsearch {
+			border-left: none;
+			margin: -1px 1em 0px -1px;
+		}
+		a.btn.o_reset_quick_search {
+			margin: -1px 1em 0px 0px;
+		}
+	
+		.o_table_rowcount {
+			color: var(--o-text-muted);
 		}
 	}
-}
 
-/* special styles for mobile view */
-.o_table_modal_settings {
-	ul a {
-		display: flex;
-		flex-wrap: nowrap;
-		align-content: stretch;
-		white-space: nowrap;
-		margin: 1em 0 1em 0;
+	.o_table_search.o_table_search_extended a.btn.o_table_search_button {
+		margin-right: 0;
+		color: var(--o-btn-default-fg);
+		border-bottom-right-radius: 0;
+		border-top-right-radius: 0;
+		border-right: none;
 	
-		span {
-			flex-grow: 1;
+		>span {
+			display: inline-block;
+		}
+	}
 
+	.o_table_search.o_table_search_extended a.btn.o_sel_flexi_extendedsearch {
+		color: var(--o-btn-default-fg);
+	
+		>span {
+			display: inline-block;
+		}
+	}
+
+	.o_table_filters_wrapper + .o_table_toolbar {
+		margin-top: 2px;
+	}
+
+	.o_table_tabs + .o_table_toolbar {
+		margin-top: 20px;
+	}
+
+	.o_table_toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+	
+		&.o_table_batch_show {
+			display: none;
+		}
+	
+		.o_table_search {
+			flex: 1;
+		}
+	}
+
+	.o_table_large_search {
+		text-align: center;
+		padding: 15px 20px;
+	
+		input[type='text']:not(.o_search_input) {
+			max-width: 400px;
+			width: 90%;
+		}
+	}
+
+	.o_table_filter, .o_table_add_filter {
+		.control-label {
+			margin-right: 0.5em;
+			&:after {
+				content: ':';
+			}
+		} 
+	
+	 	> div {
+			display:inline-block;
+	
+			label {
+				font-weight: normal;
+			}
+		}
+	}
+
+	 table tr.o_no_border td,
+	 table tr.o_no_border th {
+	 	border-top: 0;
+	 }
+
+	/* bootstrap extensions */
+	.o_info, o_note, o_important, o_warning, o_error {
+		.table-bordered td,
+		.table-bordered th {
+			border-color: var(--o-message-table-border);
+		}
+	}
+
+	/* table embedded in panels */
+	.panel {
+		.o_table_layout {
+			border-top: 1px solid var(--o-border);
+			padding-top: $padding-base-vertical;
+		}
+		.o_table_count {
+			padding: 0 $panel-body-padding;
+		}
+	}
+
+	.o_table_header_fw {
+		width: 40px;
+	}
+	.o_thead_sr_only {
+		thead {
+			@extend %sr-only;
+		}
+	}
+
+	.o_table_filters_and_settings {
+		.o_button_group.o_reset {
+			margin-top: 0;
+		}
+
+		.o_table_render_types div.form-inline {
+			width: 100%;
+			padding-top: 10px;
+			display: table;
+			table-layout: fixed;
+		
+			label.btn {
+				float: none;
+				display: table-cell;
+			}
+		}
+	}
+
+	/* special styles for mobile view */
+	.o_table_modal_settings {
+		ul a {
 			display: flex;
 			flex-wrap: nowrap;
 			align-content: stretch;
-
 			white-space: nowrap;
-			text-overflow: ellipsis;
-			overflow: hidden;
-			
-			small {
+			margin: 1em 0 1em 0;
+	
+			span {
 				flex-grow: 1;
-				text-align: right;
+
+				display: flex;
+				flex-wrap: nowrap;
+				align-content: stretch;
+
 				white-space: nowrap;
 				text-overflow: ellipsis;
-				overflow: hidden;				
-				padding: 0 1em 0 1em;
-				/* mysterious fix for vertical alignment with ellipsis */
-				position: relative;
-				bottom: -3px;
+				overflow: hidden;
+			
+				small {
+					flex-grow: 1;
+					text-align: right;
+					white-space: nowrap;
+					text-overflow: ellipsis;
+					overflow: hidden;				
+					padding: 0 1em 0 1em;
+					/* mysterious fix for vertical alignment with ellipsis */
+					position: relative;
+					bottom: -3px;
+				}
+			}
+			i {
+				flex-grow: 0;
 			}
 		}
-		i {
-			flex-grow: 0;
+		a+h4, ul+h4 {
+			margin-top: 2em;
+		}
+	
+	}
+
+
+	@media (max-width: 540px) {
+		.o_table_filters_wrapper.o_collapsed .o_button_group,
+		.o_table_filters_wrapper.o_expanded,
+		.o_table_filters_wrapper.o_table_filters_large_off .o_table_filters_row,
+		.o_table_filters_wrapper.o_table_filters_large_off .o_button_group,
+		.o_table_tools > .btn-group:not(.o_table_settings),
+		.o_table_search > span {
+			display: none;
+		}
+	
+		.o_table_filters_wrapper.o_collapsed,
+		.o_table_filters_wrapper.o_expanded {
+			margin-bottom: $line-height-computed;
+		}
+	
+		.o_table_toolbar .o_table_search input[type='text']:not(.o_search_input) {
+			max-width: 170px;// iPhone SE
+		}
+	
+		.o_table_large_search {
+			/* fix odd alignment on mobile */
+			padding-left: 0px;
+			margin-right: 20px;
 		}
 	}
-	a+h4, ul+h4 {
-		margin-top: 2em;
-	}
-	
-}
 
-
-@media (max-width: 540px) {
-	.o_table_filters_wrapper.o_collapsed .o_button_group,
-	.o_table_filters_wrapper.o_expanded,
-	.o_table_filters_wrapper.o_table_filters_large_off .o_table_filters_row,
-	.o_table_filters_wrapper.o_table_filters_large_off .o_button_group,
-	.o_table_tools > .btn-group:not(.o_table_settings),
-	.o_table_search > span {
-		display: none;
-	}
-	
-	.o_table_filters_wrapper.o_collapsed,
-	.o_table_filters_wrapper.o_expanded {
-		margin-bottom: $line-height-computed;
-	}
-	
-	.o_table_toolbar .o_table_search input[type='text']:not(.o_search_input) {
-		max-width: 170px;// iPhone SE
-	}
-	
-	.o_table_large_search {
-		/* fix odd alignment on mobile */
-		padding-left: 0px;
-		margin-right: 20px;
-	}
-}
-
-@media (min-width: 540px) {
-	.o_table_tools .o_table_settings {
-		display: none;
-	}
-}
-
-@media (max-width: $screen-sm-min) {
-	.o_table_search>span	  {
-		display: none;
-	}
-}
-
-// Optimization for the old table controller
-@media screen and (max-width: $screen-md-min) {
-	.o_classic_table_toolbar .tt-input {
-		width: 250px;
-	}
-}
-@media screen and (max-width: $screen-xs-min) {
-	.o_classic_table_toolbar .tt-input {
-		width: 200px;
-	}
-}
-
-/* ---- Transitions for modern behavior ---- */
-@media (prefers-reduced-motion: no-preference) {
-	.o_table_flexi .o_table_filter_area {
-		.o_filter {
-			transition: border-color 0.15s ease, background-color 0.15s ease;
+	@media (min-width: 540px) {
+		.o_table_tools .o_table_settings {
+			display: none;
 		}
 	}
-}
 
-
-
-
-.o_row_link {
-	display: flex;
-	width: 100%;
-	align-items: center;
-	// the link is the full row: the rows touch, a scrolling table body cuts
-	// the ring (OO-10043)
-	&:focus:focus-visible {
-		@include o-focus-ring-inset;
+	@media (max-width: $screen-sm-min) {
+		.o_table_search>span	  {
+			display: none;
+		}
 	}
-}
-.o_row_flex {
-	display: flex;
-	width: 100%;
-	align-items: center;
+
+	// Optimization for the old table controller
+	@media screen and (max-width: $screen-md-min) {
+		.o_classic_table_toolbar .tt-input {
+			width: 250px;
+		}
+	}
+	@media screen and (max-width: $screen-xs-min) {
+		.o_classic_table_toolbar .tt-input {
+			width: 200px;
+		}
+	}
+
+	/* ---- Transitions for modern behavior ---- */
+	@media (prefers-reduced-motion: no-preference) {
+		.o_table_flexi .o_table_filter_area {
+			.o_filter {
+				transition: border-color 0.15s ease, background-color 0.15s ease;
+			}
+		}
+	}
+
+
+
+
+	.o_row_link {
+		display: flex;
+		width: 100%;
+		align-items: center;
+		// the link is the full row: the rows touch, a scrolling table body cuts
+		// the ring (OO-10043)
+		&:focus:focus-visible {
+			@include o-focus-ring-inset;
+		}
+	}
+	.o_row_flex {
+		display: flex;
+		width: 100%;
+		align-items: center;
 	
-	.o_row_flex_1 {@include row-flex(1); }
-	.o_row_flex_2 {@include row-flex(2); }
-	.o_row_flex_3 {@include row-flex(3); }
+		.o_row_flex_1 {@include row-flex(1); }
+		.o_row_flex_2 {@include row-flex(2); }
+		.o_row_flex_3 {@include row-flex(3); }
 
 
-}
+	}
 }

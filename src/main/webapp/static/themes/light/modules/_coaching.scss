@@ -3,137 +3,137 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-coaching {
-.o_coaching div#o_main_toolbar.o_toolbar {
-	margin-top: 0px;
-}
-
-.o_coaching_search_header {
-	display: flex;
-	justify-content: center;
-}
-
-.o_coaching_status {
-	display: grid;
-	grid-template-columns: 100px auto;
-	column-gap: 0.5em;
-	
-	.o_coaching_numbers {
-		white-space: nowrap;
+	.o_coaching div#o_main_toolbar.o_toolbar {
+		margin-top: 0px;
 	}
-	
-	.progress {
-		max-width: 100px;
-	}
-}
 
-.o_coaching_completion {
-	white-space: nowrap;
-}
-
-.o_eff_statement_details .o_user_infos {
-	margin-top:20px;
-}
-
-.o_coaching_notifications {
-	float: left;
-	position: relative;
-	padding: 15px 3px;
-	
-	.badge {
-		&.o_notification_request {
-			@extend %o_state_danger_solid;
-		}
-		&.o_notification_unread {
-			@extend %o_state_warning_solid;
-		}
-	}
-}
-
-.o_coaching_activities {
-	h4 {
-		padding: 2px 14px 8px 14px;
-		margin: 0 -14px;
-		// same as modal-header
-		color: var(--o-dialog-header);
-	  	font-weight: $o-dialog-header-font-weight;
-		font-family: $headings-font-family;
-	  	line-height: $headings-line-height;
-		border-bottom: 1px solid var(--o-modal-header-border);
-	}
-}
-
-.o_coaching_curriculum_references.o_dropdown {
-	li {
+	.o_coaching_search_header {
 		display: flex;
-		flex-direction: column-reverse;
+		justify-content: center;
 	}
 
-	small {
-		padding: 0 15px;
+	.o_coaching_status {
+		display: grid;
+		grid-template-columns: 100px auto;
+		column-gap: 0.5em;
+	
+		.o_coaching_numbers {
+			white-space: nowrap;
+		}
+	
+		.progress {
+			max-width: 100px;
+		}
 	}
 
-}
-
-/* Dashboard */
-.o_coaching_success_status_callout {
-	margin: 0;
-	li {
-		padding: 3px 0;
-	}
-	.o_coaching_success_dot {
-		display: inline-block;
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
-		margin-right: 5px;
-		&.o_coaching_success_passed {
-			background-color: var(--o-course-state-passed);
-		}
-		&.o_coaching_success_failed {
-			background-color: var(--o-course-state-failed);
-		}
-		&.o_coaching_success_undefined {
-			background-color: var(--o-neutral-50);
-		}
-	}
-}
-.o_coaching_widget_course_row {
-	.o_dashboard_widget_row_link {
-		grid-template-columns: minmax(0, 1fr) 100px;
-		align-items: center;
-	}
-	.o_row_completion {
-		width: 100px;
-		margin-top: 5px;
-		line-height: 0;
-	}
-	.o_row_participants {
-		width: 60px;
+	.o_coaching_completion {
 		white-space: nowrap;
 	}
-	@container (max-width: 500px) {
+
+	.o_eff_statement_details .o_user_infos {
+		margin-top:20px;
+	}
+
+	.o_coaching_notifications {
+		float: left;
+		position: relative;
+		padding: 15px 3px;
+	
+		.badge {
+			&.o_notification_request {
+				@extend %o_state_danger_solid;
+			}
+			&.o_notification_unread {
+				@extend %o_state_warning_solid;
+			}
+		}
+	}
+
+	.o_coaching_activities {
+		h4 {
+			padding: 2px 14px 8px 14px;
+			margin: 0 -14px;
+			// same as modal-header
+			color: var(--o-dialog-header);
+		  	font-weight: $o-dialog-header-font-weight;
+			font-family: $headings-font-family;
+		  	line-height: $headings-line-height;
+			border-bottom: 1px solid var(--o-modal-header-border);
+		}
+	}
+
+	.o_coaching_curriculum_references.o_dropdown {
+		li {
+			display: flex;
+			flex-direction: column-reverse;
+		}
+
+		small {
+			padding: 0 15px;
+		}
+
+	}
+
+	/* Dashboard */
+	.o_coaching_success_status_callout {
+		margin: 0;
+		li {
+			padding: 3px 0;
+		}
+		.o_coaching_success_dot {
+			display: inline-block;
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			margin-right: 5px;
+			&.o_coaching_success_passed {
+				background-color: var(--o-course-state-passed);
+			}
+			&.o_coaching_success_failed {
+				background-color: var(--o-course-state-failed);
+			}
+			&.o_coaching_success_undefined {
+				background-color: var(--o-neutral-50);
+			}
+		}
+	}
+	.o_coaching_widget_course_row {
 		.o_dashboard_widget_row_link {
-			grid-template-columns: minmax(0, 1fr);
+			grid-template-columns: minmax(0, 1fr) 100px;
+			align-items: center;
 		}
-		.o_row_success_status,
+		.o_row_completion {
+			width: 100px;
+			margin-top: 5px;
+			line-height: 0;
+		}
 		.o_row_participants {
-			display: none;
+			width: 60px;
+			white-space: nowrap;
 		}
-		.o_title {
-			@include o-dashboard-widget-row-title-clamp();
+		@container (max-width: 500px) {
+			.o_dashboard_widget_row_link {
+				grid-template-columns: minmax(0, 1fr);
+			}
+			.o_row_success_status,
+			.o_row_participants {
+				display: none;
+			}
+			.o_title {
+				@include o-dashboard-widget-row-title-clamp();
+			}
 		}
 	}
-}
-.o_course_widget_icon {
-	// colour of the state of the course status (OO-10042)
-	&.o_icon_coach {
-		color: var(--o-state-success-text);
+	.o_course_widget_icon {
+		// colour of the state of the course status (OO-10042)
+		&.o_icon_coach {
+			color: var(--o-state-success-text);
+		}
+		&.o_icon_repo_status_published {
+			color: var(--o-state-success-text);
+		}
+		&.o_icon_repo_status_closed {
+			color: var(--o-state-finished-text);
+		}
 	}
-	&.o_icon_repo_status_published {
-		color: var(--o-state-success-text);
-	}
-	&.o_icon_repo_status_closed {
-		color: var(--o-state-finished-text);
-	}
-}
 }

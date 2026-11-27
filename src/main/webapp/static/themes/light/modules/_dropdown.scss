@@ -10,60 +10,60 @@
  * @date November 2026
  * =================================================
  */
-/* Dropdown menus: elevated with shadow */
 @use "../config" as *;
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-dropdown {
-.dropdown-menu {
- 	box-shadow: $o-dropdown-box-shadow; 
-}
-.dropdown-menu {
-	// Links within the dropdown menu
-	> li > a {
+	/* Dropdown menus: elevated with shadow */
+	.dropdown-menu {
+	 	box-shadow: $o-dropdown-box-shadow; 
+	}
+	.dropdown-menu {
+		// Links within the dropdown menu
+		> li > a {
+			padding: 3px 10px;
+		}
+	}
+
+	.dropdown-header {
 		padding: 3px 10px;
 	}
-}
 
-.dropdown-header {
-	padding: 3px 10px;
-}
+	.dropdown-menu > li > label {
+	  &:hover,
+	  &:focus {
+	    text-decoration: none;
+	    color: var(--o-dropdown-link-hover);
+	    background-color: var(--o-dropdown-link-hover-bg);
+	  }
+	}
 
-.dropdown-menu > li > label {
-  &:hover,
-  &:focus {
-    text-decoration: none;
-    color: var(--o-dropdown-link-hover);
-    background-color: var(--o-dropdown-link-hover-bg);
-  }
-}
+	// Active state
+	.dropdown-menu > .active > label {
+	  &,
+	  &:hover,
+	  &:focus {
+	    color: var(--o-dropdown-link-active);
+	    text-decoration: none;
+	    outline: 0;
+	    background-color: var(--o-dropdown-link-active-bg);
+	  }
+	}
 
-// Active state
-.dropdown-menu > .active > label {
-  &,
-  &:hover,
-  &:focus {
-    color: var(--o-dropdown-link-active);
-    text-decoration: none;
-    outline: 0;
-    background-color: var(--o-dropdown-link-active-bg);
-  }
-}
+	 .dropdown-menu > li > label {
+	    display: block;
+	    padding: 3px 10px;
+	    margin: 0;
+	    clear: both;
+	    font-weight: normal;
+	    line-height: $line-height-base;
+	    color: var(--o-dropdown-link);
+	    white-space: nowrap; // prevent links from randomly breaking onto new lines
+	  }
 
- .dropdown-menu > li > label {
-    display: block;
-    padding: 3px 10px;
-    margin: 0;
-    clear: both;
-    font-weight: normal;
-    line-height: $line-height-base;
-    color: var(--o-dropdown-link);
-    white-space: nowrap; // prevent links from randomly breaking onto new lines
-  }
-
-/* a11y: the focus ring for drop-down toggles: the Bootstrap rule
-   .dropdown-toggle:focus has outline 0 (OO-10043) */
-.dropdown-toggle:focus-visible {
-	@include o-focus-ring;
-}
+	/* a11y: the focus ring for drop-down toggles: the Bootstrap rule
+	   .dropdown-toggle:focus has outline 0 (OO-10043) */
+	.dropdown-toggle:focus-visible {
+		@include o-focus-ring;
+	}
 }

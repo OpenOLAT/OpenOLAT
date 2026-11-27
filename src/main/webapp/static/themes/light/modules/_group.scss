@@ -2,36 +2,36 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-group {
-.o_businessgroup_lifecycle {
-	text-align: center;
+	.o_businessgroup_lifecycle {
+		text-align: center;
 	
-	.btn-arrow-right {
-		height: 72px;
-		padding-left: 72px;
-		padding-right: 36px;
-		margin-bottom: 5px;
-	}
+		.btn-arrow-right {
+			height: 72px;
+			padding-left: 72px;
+			padding-right: 36px;
+			margin-bottom: 5px;
+		}
 	
-	.btn-arrow-right:before,
-	.btn-arrow-right:after {
-		width: 50px;
-		height: 50px;
-		top: 10px;
+		.btn-arrow-right:before,
+		.btn-arrow-right:after {
+			width: 50px;
+			height: 50px;
+			top: 10px;
+		}
+		.btn-arrow-right:before {
+			left: -25px;
+		}
+		.btn-arrow-right:after {
+			right: -24px;
+		}
 	}
-	.btn-arrow-right:before {
-		left: -25px;
-	}
-	.btn-arrow-right:after {
-		right: -24px;
-	}
-}
 
 
-.o_businessgroup_status_badge {
-	float: right;
-	display: inline-block;
-	padding: 1px 25px;
-	border-radius: $border-radius-small;
+	.o_businessgroup_status_badge {
+		float: right;
+		display: inline-block;
+		padding: 1px 25px;
+		border-radius: $border-radius-small;
 	
-}
+	}
 }

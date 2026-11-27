@@ -3,1825 +3,1824 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-form {
-
-form .o_form, form.o_form {
-	.o_desc {
-		@extend %o_info;
-	}
-	.o_warning {
-		margin-top: 1px;
-		padding: 10px;
-	}
-	.o_hint {
-	
-	}
-
-	/* as of 10.4 the mandatory icon is left from the label to make place for the help o_form_chelp */
-	.o_icon_mandatory {
-		margin-right: 0.25em;
-	}
-
-	/* context help for input element, right from label */
-	a:has(>.o_form_chelp),
-	:not(a) > .o_form_chelp {
-		padding-left: 0.25em;
-		margin-right: -1.25em;
-	}
-	
-	/* example, positioned below the input field */	
-	.o_form_example {
-		font-size: 90%;	
-	}
-	
-	.o_form_explained {
-		padding-bottom: 0;
-		margin-bottom: 0;
-	}
-
-	.o_form_explanation {
-		color: var(--o-state-warning-text);
-	}
-		
-	.o_error {
-		margin-top: 1px;
-		padding: 10px;
-		border-color: var(--o-form-error-border);
-	}
-	
-	.o_error.o_block {
-		margin: 20px 0;
-		padding: 20px;
-	}
-	
-	hr.o_spacer_noline {
-		border-top: 1px solid transparent;
-	}
-
-	hr.o_spacer,
-	hr.o_spacer_noline {
-		&.form {
-			/* there is already enough space in the form by the wrapper divs */
-			margin-top: 0px;
-			margin-bottom: 0px;
+	form .o_form, form.o_form {
+		.o_desc {
+			@extend %o_info;
 		}
-	}
-	
-	.form-group {
-		/* don't add margin for messages in form groups, margin is already on form-group */
-		&.o_omit_margin,
-		.o_error,
 		.o_warning {
+			margin-top: 1px;
+			padding: 10px;
+		}
+		.o_hint {
+	
+		}
+
+		/* as of 10.4 the mandatory icon is left from the label to make place for the help o_form_chelp */
+		.o_icon_mandatory {
+			margin-right: 0.25em;
+		}
+
+		/* context help for input element, right from label */
+		a:has(>.o_form_chelp),
+		:not(a) > .o_form_chelp {
+			padding-left: 0.25em;
+			margin-right: -1.25em;
+		}
+	
+		/* example, positioned below the input field */	
+		.o_form_example {
+			font-size: 90%;	
+		}
+	
+		.o_form_explained {
+			padding-bottom: 0;
 			margin-bottom: 0;
 		}
-	}
+
+		.o_form_explanation {
+			color: var(--o-state-warning-text);
+		}
+		
+		.o_error {
+			margin-top: 1px;
+			padding: 10px;
+			border-color: var(--o-form-error-border);
+		}
 	
-	/* date chooser */
-	.o_date  {
-		position: relative;
-		padding-right: $input-height-base;
-		display: flex;
-		align-items: center;
-		column-gap: 20px;
-		row-gap: 15px;
-		flex-wrap: wrap;
-	}
-	.o_date.o_no_padding {
-		padding-right: 0;
-	}
+		.o_error.o_block {
+			margin: 20px 0;
+			padding: 20px;
+		}
 	
-	.o_date.form-inline  {
+		hr.o_spacer_noline {
+			border-top: 1px solid transparent;
+		}
+
+		hr.o_spacer,
+		hr.o_spacer_noline {
+			&.form {
+				/* there is already enough space in the form by the wrapper divs */
+				margin-top: 0px;
+				margin-bottom: 0px;
+			}
+		}
+	
 		.form-group {
-			margin-left: 0;
+			/* don't add margin for messages in form groups, margin is already on form-group */
+			&.o_omit_margin,
+			.o_error,
+			.o_warning {
+				margin-bottom: 0;
+			}
+		}
+	
+		/* date chooser */
+		.o_date  {
+			position: relative;
+			padding-right: $input-height-base;
+			display: flex;
+			align-items: center;
+			column-gap: 20px;
+			row-gap: 15px;
+			flex-wrap: wrap;
+		}
+		.o_date.o_no_padding {
+			padding-right: 0;
+		}
+	
+		.o_date.form-inline  {
+			.form-group {
+				margin-left: 0;
+				display: inline-block;
+				vertical-align: middle;
+			}
+			.form-control {
+				display: inline-block;
+			}
+			.form-group.o_date_ms.o_time_only {
+				margin-left: 0;
+			}
+		}
+	
+		.btn-group .o_date {
 			display: inline-block;
+		}
+
+		input.o_date_ms {
+			width: 3em;
+		}
+	
+		// Prevent irregular focus ring
+		&.form-horizontal .form-group {
+			margin-left: 0;
+			margin-right: 0;
+		}
+	
+		.col-sm-9, .col-sm-10 {
+			padding-right: 0;
+		}
+	
+		.o_inline_cont.form-inline {
+			> * {
+				display: inline-block;
+			}
+		}
+
+		.o_inline_cont.o_inline_cont_gap.form-inline {
+			> * {
+				margin-right: 1em;
+			}
+		}
+
+		.has-feedback .o_date.form-inline .form-control.o_date_ms {
+			padding-right: 0;
+		}
+	
+		.o_form_element.form-inline .o_form_element.form-group {
+			margin-left: 25px;
+		}
+	
+		.input-group input.o_disabled {
+			border-top-left-radius: $input-border-radius;
+			border-bottom-left-radius: $input-border-radius;
+		}
+	
+		.input-group.o_date_picker {
+			width: 11em;
+		}
+	
+		.o_date_add_on {
+			display: inline-block;
+			padding-top: ($padding-base-vertical + 1);
+			padding-bottom: ($padding-base-vertical + 1);
+		}
+	
+		.o_date_bloc:has(.o_date_ms) {
+			white-space: nowrap;
+			.o_first_date {
+				padding-right: 1em;
+			}
+			.o_second_ms {
+				padding-left: 1em;
+			}
+		}
+		.o_date_scope_range .o_date_bloc {
+			.o_first_date {
+				padding-right: 0;
+			}
+		
+			.o_first_ms {
+				padding-left: 1em;
+			}
+		}
+		.o_table_filter_date_range {
+			.o_date {
+				padding-right: 0;
+				.o_date_bloc {
+					.o_first_date {
+						padding-right: 0;
+					}
+				}
+			}
+		}
+	
+		.has-feedback .o_date_picker .form-control {
+			padding-right: 0;
+		}
+	
+		.o_form_two_cols .o_date {
+			display: block;
+		}
+	
+		.o_form_two_cols .o_date ~ .o_error,
+		.o_form_two_cols .o_date ~ .o_warning {
+			grid-column: 1 / span 2;
+		}
+	
+		.o_form_two_cols .o_time .o_date_ms,
+		.o_form_two_cols .o_time .o_date_ms>input.o_date_ms {
+			display: inline-block;
+		}
+		.o_form_two_cols .o_time .o_date_separator {
+			display: inline-block;
+			padding-right: 0.75em;
+			padding-left: 0.75em;
+		}
+	
+		.form-control.textarea.o_fixed_font_with {
+			resize: vertical;
+			font-family: $font-family-monospace;
+		}
+	
+		.form-control.textarea.o_original_line_breaks {
+			white-space: pre;
+			word-wrap: normal;
+			overflow-x: auto;
+		}
+	
+		.form-control.textarea_disabled.o_fixed_font_with {
+			white-space: pre-wrap;
+			height: auto;
+			font-family: $font-family-monospace;
+			color: var(--o-input-fg) !important;
+			background: var(--o-input-disabled-bg);
+		}
+	
+		/* disabled text areas are rendered in div's for improved printing and layouting features */
+		.form-control.textarea_disabled {
+			resize: both;
+			overflow: auto;	
+			white-space: pre-wrap;
+			background: var(--o-input-disabled-bg);
+		}
+	
+		/*
+		currently not working in Safari and Firefox, therefore deactivated
+		.form-control.textarea.o_striped_background {
+			background-image: linear-gradient(#F1F1F1 50%, #F9F9F9 50%);
+	 		background-size: 100% #{2*$line-height-base}em;
+			background-attachment: local;
+		}*/
+	
+		.o_textarea_line_numbers_container {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+		}
+	
+		.o_textarea_line_numbers_input, .o_textarea_line_numbers_wrapper, .o_textarea_line_numbers_row {
+			box-sizing: border-box;
 			vertical-align: middle;
 		}
-		.form-control {
+	
+		.o_textarea_line_numbers_input {
 			display: inline-block;
+			padding: 0 0.3em;
+			width: 100%;
+			height: 100%;
+			overflow-x: scroll;
+			resize: none !important;
 		}
-		.form-group.o_date_ms.o_time_only {
-			margin-left: 0;
+	
+		.o_textarea_line_numbers_wrapper {
+			padding: 1px 0.3em 0 0;
+			height: 100%;
+			overflow: hidden;
+		}	
+	
+		.o_textarea_line_numbers_row {
+			width: 100%;
+			display: flex;		
+			align-items: center;
 		}
-	}
 	
-	.btn-group .o_date {
-		display: inline-block;
-	}
-
-	input.o_date_ms {
-		width: 3em;
-	}
-	
-	// Prevent irregular focus ring
-	&.form-horizontal .form-group {
-		margin-left: 0;
-		margin-right: 0;
-	}
-	
-	.col-sm-9, .col-sm-10 {
-		padding-right: 0;
-	}
-	
-	.o_inline_cont.form-inline {
-		> * {
-			display: inline-block;
+		.o_textarea_line_numbers_row span {
+			font-family: $font-family-monospace;
+			text-align: right;
+			margin-left: auto;
 		}
-	}
-
-	.o_inline_cont.o_inline_cont_gap.form-inline {
-		> * {
-			margin-right: 1em;
-		}
-	}
-
-	.has-feedback .o_date.form-inline .form-control.o_date_ms {
-		padding-right: 0;
-	}
 	
-	.o_form_element.form-inline .o_form_element.form-group {
-		margin-left: 25px;
-	}
-	
-	.input-group input.o_disabled {
-		border-top-left-radius: $input-border-radius;
-		border-bottom-left-radius: $input-border-radius;
-	}
-	
-	.input-group.o_date_picker {
-		width: 11em;
-	}
-	
-	.o_date_add_on {
-		display: inline-block;
-		padding-top: ($padding-base-vertical + 1);
-		padding-bottom: ($padding-base-vertical + 1);
-	}
-	
-	.o_date_bloc:has(.o_date_ms) {
-		white-space: nowrap;
-		.o_first_date {
-			padding-right: 1em;
+		.o_textarea_line_numbers_row i {
+			text-align: left;
+			margin-right: 0.2em;
 		}
-		.o_second_ms {
-			padding-left: 1em;
+	
+		.o_static_list {
+			padding-left: 15px;
 		}
-	}
-	.o_date_scope_range .o_date_bloc {
-		.o_first_date {
-			padding-right: 0;
-		}
-		
-		.o_first_ms {
-			padding-left: 1em;
-		}
-	}
-	.o_table_filter_date_range {
-		.o_date {
-			padding-right: 0;
-			.o_date_bloc {
-				.o_first_date {
-					padding-right: 0;
-				}
+	
+		.o_markdown_element {
+			.form-control.ProseMirror {
+				height: unset;
+				min-height: 10em;
 			}
 		}
-	}
 	
-	.has-feedback .o_date_picker .form-control {
-		padding-right: 0;
-	}
-	
-	.o_form_two_cols .o_date {
-		display: block;
-	}
-	
-	.o_form_two_cols .o_date ~ .o_error,
-	.o_form_two_cols .o_date ~ .o_warning {
-		grid-column: 1 / span 2;
-	}
-	
-	.o_form_two_cols .o_time .o_date_ms,
-	.o_form_two_cols .o_time .o_date_ms>input.o_date_ms {
-		display: inline-block;
-	}
-	.o_form_two_cols .o_time .o_date_separator {
-		display: inline-block;
-		padding-right: 0.75em;
-		padding-left: 0.75em;
-	}
-	
-	.form-control.textarea.o_fixed_font_with {
-		resize: vertical;
-		font-family: $font-family-monospace;
-	}
-	
-	.form-control.textarea.o_original_line_breaks {
-		white-space: pre;
-		word-wrap: normal;
-		overflow-x: auto;
-	}
-	
-	.form-control.textarea_disabled.o_fixed_font_with {
-		white-space: pre-wrap;
-		height: auto;
-		font-family: $font-family-monospace;
-		color: var(--o-input-fg) !important;
-		background: var(--o-input-disabled-bg);
-	}
-	
-	/* disabled text areas are rendered in div's for improved printing and layouting features */
-	.form-control.textarea_disabled {
-		resize: both;
-		overflow: auto;	
-		white-space: pre-wrap;
-		background: var(--o-input-disabled-bg);
-	}
-	
-	/*
-	currently not working in Safari and Firefox, therefore deactivated
-	.form-control.textarea.o_striped_background {
-		background-image: linear-gradient(#F1F1F1 50%, #F9F9F9 50%);
- 		background-size: 100% #{2*$line-height-base}em;
-		background-attachment: local;
-	}*/
-	
-	.o_textarea_line_numbers_container {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-	}
-	
-	.o_textarea_line_numbers_input, .o_textarea_line_numbers_wrapper, .o_textarea_line_numbers_row {
-		box-sizing: border-box;
-		vertical-align: middle;
-	}
-	
-	.o_textarea_line_numbers_input {
-		display: inline-block;
-		padding: 0 0.3em;
-		width: 100%;
-		height: 100%;
-		overflow-x: scroll;
-		resize: none !important;
-	}
-	
-	.o_textarea_line_numbers_wrapper {
-		padding: 1px 0.3em 0 0;
-		height: 100%;
-		overflow: hidden;
-	}	
-	
-	.o_textarea_line_numbers_row {
-		width: 100%;
-		display: flex;		
-		align-items: center;
-	}
-	
-	.o_textarea_line_numbers_row span {
-		font-family: $font-family-monospace;
-		text-align: right;
-		margin-left: auto;
-	}
-	
-	.o_textarea_line_numbers_row i {
-		text-align: left;
-		margin-right: 0.2em;
-	}
-	
-	.o_static_list {
-		padding-left: 15px;
-	}
-	
-	.o_markdown_element {
-		.form-control.ProseMirror {
-			height: unset;
-			min-height: 10em;
+		.o_form_two_cols, &.o_form_two_cols {
+			@media (min-width: $screen-sm-max) {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px;
+			}
 		}
-	}
-	
-	.o_form_two_cols, &.o_form_two_cols {
-		@media (min-width: $screen-sm-max) {
+		.o_form_button_right {
 			display: grid;
-			grid-template-columns: 1fr 1fr;
+			grid-template-columns: 100fr 1fr;
 			gap: 10px;
 		}
-	}
-	.o_form_button_right {
-		display: grid;
-		grid-template-columns: 100fr 1fr;
-		gap: 10px;
-	}
 	
-	input.o_show_hide_eye + i.o_icon {
-		cursor: pointer;
-		color: var(--o-text-muted) !important;
-		pointer-events: auto;
-	}
-
-	.o_input_with_icon_left {
-		position: relative;
-		display: block;
-		> i.o_icon {
-			position: absolute;
-			left: 8px;
-			top: 50%;
-			transform: translateY(-50%);
-			pointer-events: none;
-			z-index: 2;
+		input.o_show_hide_eye + i.o_icon {
+			cursor: pointer;
+			color: var(--o-text-muted) !important;
+			pointer-events: auto;
 		}
-		> input.form-control {
-			padding-left: 28px;
-		}
-	}
-	
-	.form-control-static  > .o_info_with_icon {
-		margin-top: 0;
-	}
-	
-	.form-control-static.o_code {
-  		font-family: $font-family-monospace;
-  		padding-left: 4px;
-  		padding-right: 4px;
-  		color: var(--o-code-block-fg);
-  		background-color: var(--o-code-block-bg);
-  		border-radius: $border-radius-base;
-  		border: 1px solid var(--o-code-block-border);
-	}
-	
-	.o_form_two_cols input.o_form_number {
-		width: auto;
-	}
 
-/* Card Radio Buttons */
-/* Markup:
-	<div class="form-inline o_radio_cards_wrapper">
-		<div class="o_radio_cards">
-			<label class="radio-inline">
-				<input type="radio" name="guidemo.form.card2" value="advanced_form.yes">
-				<span class="o_radio_card">
-					<span class="o_radio_text_wrapper">
-						<span class="o_radio_label">Ja </span> 
-						<span class="o_radio_desc">Yes means yes, really! </span>
+		.o_input_with_icon_left {
+			position: relative;
+			display: block;
+			> i.o_icon {
+				position: absolute;
+				left: 8px;
+				top: 50%;
+				transform: translateY(-50%);
+				pointer-events: none;
+				z-index: 2;
+			}
+			> input.form-control {
+				padding-left: 28px;
+			}
+		}
+	
+		.form-control-static  > .o_info_with_icon {
+			margin-top: 0;
+		}
+	
+		.form-control-static.o_code {
+	  		font-family: $font-family-monospace;
+	  		padding-left: 4px;
+	  		padding-right: 4px;
+	  		color: var(--o-code-block-fg);
+	  		background-color: var(--o-code-block-bg);
+	  		border-radius: $border-radius-base;
+	  		border: 1px solid var(--o-code-block-border);
+		}
+	
+		.o_form_two_cols input.o_form_number {
+			width: auto;
+		}
+
+	/* Card Radio Buttons */
+	/* Markup:
+		<div class="form-inline o_radio_cards_wrapper">
+			<div class="o_radio_cards">
+				<label class="radio-inline">
+					<input type="radio" name="guidemo.form.card2" value="advanced_form.yes">
+					<span class="o_radio_card">
+						<span class="o_radio_text_wrapper">
+							<span class="o_radio_label">Ja </span> 
+							<span class="o_radio_desc">Yes means yes, really! </span>
+						</span> 
+						<span class="o_radio_icon o_icon_yes"> </span>
 					</span> 
-					<span class="o_radio_icon o_icon_yes"> </span>
-				</span> 
-			</label>
-			<label .... >
+				</label>
+				<label .... >
+			</div>
 		</div>
-	</div>
-*/
-.o_radio_cards_wrapper {
-	.o_radio_cards {
-		display: flex;
-		flex-flow: column wrap;
-		align-items : stretch;
-		gap: $o-radio-cards-gap;
-	
-		&:is(.form-inline *) { /* for vertical alignment style */
-			flex-flow: row wrap;
-		}
-		.radio {
-			flex-grow: 0;
-			flex-shrink: 0;
+	*/
+	.o_radio_cards_wrapper {
+		.o_radio_cards {
 			display: flex;
-		}				
-		label {
-			flex-grow: 0;
-			flex-shrink: 0;
-			flex-basis: $o-radio-card-width;
-			margin: 0;
-			padding: 0;
-		 	position: relative;
-		 	display: inline-block;
+			flex-flow: column wrap;
+			align-items : stretch;
+			gap: $o-radio-cards-gap;
+	
+			&:is(.form-inline *) { /* for vertical alignment style */
+				flex-flow: row wrap;
+			}
+			.radio {
+				flex-grow: 0;
+				flex-shrink: 0;
+				display: flex;
+			}				
+			label {
+				flex-grow: 0;
+				flex-shrink: 0;
+				flex-basis: $o-radio-card-width;
+				margin: 0;
+				padding: 0;
+			 	position: relative;
+			 	display: inline-block;
 		 	
-		 	.o_radio_card {		 	
-		 		display: flex;
-				flex-flow: row no-wrap;
-				align-items: center;
-		 		width: 100%;
-		 		height: 100%;
-			 	padding: 10px 10px 10px 30px;
-			 	border-radius: $o-radio-card-border-radius;
-			 	border: 1px solid var(--o-radio-card-border);			  			 	
-				background-color: var(--o-radio-card-bg);			 	
-			  	&:hover {
-					background-color: var(--o-radio-card-hover-bg);
-				 	border: 1px solid var(--o-radio-card-hover-border);			  
-				 	.o_radio_label {
-				 		color: var(--o-radio-card-label-hover);
+			 	.o_radio_card {		 	
+			 		display: flex;
+					flex-flow: row no-wrap;
+					align-items: center;
+			 		width: 100%;
+			 		height: 100%;
+				 	padding: 10px 10px 10px 30px;
+				 	border-radius: $o-radio-card-border-radius;
+				 	border: 1px solid var(--o-radio-card-border);			  			 	
+					background-color: var(--o-radio-card-bg);			 	
+				  	&:hover {
+						background-color: var(--o-radio-card-hover-bg);
+					 	border: 1px solid var(--o-radio-card-hover-border);			  
+					 	.o_radio_label {
+					 		color: var(--o-radio-card-label-hover);
+						}
+				  	}
+				}		  	
+			  	input {
+					margin: auto;
+					left: 10px;
+					top: calc(50% - 6px);
+					// Focus ring (OO-10043): the card shows the ring, not the
+					// radio or checkbox inside it.
+					&:focus-visible {
+						outline: 0;
+						~ .o_radio_card {
+							@include o-focus-ring;
+						}
 					}
 			  	}
-			}		  	
-		  	input {
-				margin: auto;
-				left: 10px;
-				top: calc(50% - 6px);
-				// Focus ring (OO-10043): the card shows the ring, not the
-				// radio or checkbox inside it.
-				&:focus-visible {
-					outline: 0;
-					~ .o_radio_card {
-						@include o-focus-ring;
+			  	.o_radio_text_wrapper {		  	
+			  		flex-grow: 1;
+					flex-shrink: 1;
+			  	}
+			  	.o_radio_label {
+			  		font-weight: bold;
+			  		display: block;
+					word-wrap: anywhere;
+			  	}
+			  	.o_radio_desc {
+			  		font-size: 90%;
+			  		display: block;
+					word-wrap: anywhere;
+			  	}
+			  	.o_radio_icon {
+			  		display: inline-block;
+			  		flex-grow: 0;
+					flex-shrink: 0;
+					margin: auto 0 auto 10px;
+					height: (math.div(math.div($o-radio-card-width, 3), 3) * 2);
+					&:not(.o_icon) {
+						width: clamp(40px, math.div($o-radio-card-width, 3), 95%);
+						border: 1px solid var(--o-radio-card-image-border);
+						border-radius: $o-radio-card-image-border-radius;
+						background-position: 50% 50%;
+						background-size: contain;
 					}
-				}
-		  	}
-		  	.o_radio_text_wrapper {		  	
-		  		flex-grow: 1;
-				flex-shrink: 1;
-		  	}
-		  	.o_radio_label {
-		  		font-weight: bold;
-		  		display: block;
-				word-wrap: anywhere;
-		  	}
-		  	.o_radio_desc {
-		  		font-size: 90%;
-		  		display: block;
-				word-wrap: anywhere;
-		  	}
-		  	.o_radio_icon {
-		  		display: inline-block;
-		  		flex-grow: 0;
-				flex-shrink: 0;
-				margin: auto 0 auto 10px;
-				height: (math.div(math.div($o-radio-card-width, 3), 3) * 2);
-				&:not(.o_icon) {
-					width: clamp(40px, math.div($o-radio-card-width, 3), 95%);
-					border: 1px solid var(--o-radio-card-image-border);
-					border-radius: $o-radio-card-image-border-radius;
-					background-position: 50% 50%;
-					background-size: contain;
-				}
-				&.o_icon {
-					width: ($o-radio-card-width * 0.25);
-					text-align: center;
-					font-size: $o-radio-card-icon-font-size;
-					padding: (((math.div(math.div($o-radio-card-width, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
-				}
-		 }
-
-			/* Checked and disabled states */		  	
-		  	input:checked {
-		  		~ .o_radio_card {		  		
-					background-color: var(--o-radio-card-checked-bg);
-				 	border: 1px solid var(--o-radio-card-checked-border);	
-				 	.o_icon,
-					.o_radio_label {
-						color: var(--o-radio-card-checked-label);
-					}	  		  	
-				}
-		  	}
-		  	input:disabled {
-		  		~ .o_radio_card {		  		
-		  			cursor: not-allowed;
-					background-color: var(--o-input-disabled-bg);
-				 	border: 1px solid var(--o-radio-card-border);	
-					.o_radio_label, .o_radio_desc {
-						color: var(--o-text-muted);
-					}	  		  	
-				}
-		  	}
-		  	
-		}
-	}
-	
-	// Display show more button only if needed.
-	.o_show_more_radios {
-		display: none;
-	}
-	&.o_radio_card_top_to_bottom {
-		container-type: inline-size;
-		display: flex;
-		flex-direction: column; // Show more button below the cards
-		
-		.o_radio_cards {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-			
-			label {
-				display: flex;
-				flex-direction: column-reverse;
-				.o_radio_card {
-					padding: 10px 10px 30px 10px;
-					 flex-direction: column-reverse;
-					align-items: center;
-				}
-				.o_radio_text_wrapper {
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					.o_radio_label {
-						text-align: center;
-					}
-				}
-				.o_radio_icon {
-					margin: 0px auto 10px auto;
 					&.o_icon {
-						margin: -5px auto 5px auto;
-						font-size: 42px;
+						width: ($o-radio-card-width * 0.25);
+						text-align: center;
+						font-size: $o-radio-card-icon-font-size;
+						padding: (((math.div(math.div($o-radio-card-width, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
 					}
-				}
-				input {
-					top: initial;
-					bottom: 10px;
-					left: calc(50% - 6px);
-				}
-				&:is(.o_radios_invisible *) {
+			 }
+
+				/* Checked and disabled states */		  	
+			  	input:checked {
+			  		~ .o_radio_card {		  		
+						background-color: var(--o-radio-card-checked-bg);
+					 	border: 1px solid var(--o-radio-card-checked-border);	
+					 	.o_icon,
+						.o_radio_label {
+							color: var(--o-radio-card-checked-label);
+						}	  		  	
+					}
+			  	}
+			  	input:disabled {
+			  		~ .o_radio_card {		  		
+			  			cursor: not-allowed;
+						background-color: var(--o-input-disabled-bg);
+					 	border: 1px solid var(--o-radio-card-border);	
+						.o_radio_label, .o_radio_desc {
+							color: var(--o-text-muted);
+						}	  		  	
+					}
+			  	}
+		  	
+			}
+		}
+	
+		// Display show more button only if needed.
+		.o_show_more_radios {
+			display: none;
+		}
+		&.o_radio_card_top_to_bottom {
+			container-type: inline-size;
+			display: flex;
+			flex-direction: column; // Show more button below the cards
+		
+			.o_radio_cards {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+			
+				label {
+					display: flex;
+					flex-direction: column-reverse;
 					.o_radio_card {
-						padding: 10px 10px 10px 10px;
+						padding: 10px 10px 30px 10px;
+						 flex-direction: column-reverse;
+						align-items: center;
+					}
+					.o_radio_text_wrapper {
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						.o_radio_label {
+							text-align: center;
+						}
+					}
+					.o_radio_icon {
+						margin: 0px auto 10px auto;
+						&.o_icon {
+							margin: -5px auto 5px auto;
+							font-size: 42px;
+						}
 					}
 					input {
-						visibility: hidden;
+						top: initial;
+						bottom: 10px;
+						left: calc(50% - 6px);
+					}
+					&:is(.o_radios_invisible *) {
+						.o_radio_card {
+							padding: 10px 10px 10px 10px;
+						}
+						input {
+							visibility: hidden;
+						}
 					}
 				}
 			}
-		}
-		&.o_radio_cards_unwrapped {
-			// Show the more button only if not all cards are displayed.
-			.o_show_more_radios {
-				display: block;
-			}
+			&.o_radio_cards_unwrapped {
+				// Show the more button only if not all cards are displayed.
+				.o_show_more_radios {
+					display: block;
+				}
 			
-			.o_radio_cards {
-				label {
-					display: none;
-				}
-				label:nth-child(-n+1) {
-					display: flex;
-				}
+				.o_radio_cards {
+					label {
+						display: none;
+					}
+					label:nth-child(-n+1) {
+						display: flex;
+					}
 				
-				// Hide the "show more" button if all cards are visible
-				// use :has() num elements if firefox supports it: https://stackoverflow.com/a/31922865
-				&:is(.o_radio_card_num_0, .o_radio_card_num_1) + .o_show_more_radios {
-					display: none;
-				}
-				@container (width >= 340px) {
-					label:nth-child(-n+2) {
+					// Hide the "show more" button if all cards are visible
+					// use :has() num elements if firefox supports it: https://stackoverflow.com/a/31922865
+					&:is(.o_radio_card_num_0, .o_radio_card_num_1) + .o_show_more_radios {
+						display: none;
+					}
+					@container (width >= 340px) {
+						label:nth-child(-n+2) {
+							display: flex;
+						}
+						&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2) + .o_show_more_radios {
+							display: none;
+						}
+					}
+					@container (width >= 515px) {
+						label:nth-child(-n+3) {
+							display: flex;
+						}
+						&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3) + .o_show_more_radios {
+							display: none;
+						}
+					}
+					@container (width >= 690px) {
+						label:nth-child(-n+4) {
+							display: flex;
+						}
+						&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4) + .o_show_more_radios {
+							display: none;
+						}
+					}
+					@container (width >= 865px) {
+						label:nth-child(-n+5) {
+							display: flex;
+						}
+						&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5) + .o_show_more_radios {
+							display: none;
+						}
+					}
+					@container (width >= 1040px) {
+						label:nth-child(-n+6) {
+							display: flex;
+						}
+						&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6) + .o_show_more_radios {
+							display: none;
+						}
+					}
+					@container (width >= 1250px) {
+						label:nth-child(-n+7) {
+							display: flex;
+						}
+						&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6) + .o_show_more_radios {
+							display: none;
+						}
+					}
+					@container (width >= 1390px) {
+						label:nth-child(-n+8) {
+							display: flex;
+						}
+						&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6, .o_radio_card_num_7) + .o_show_more_radios {
+							display: none;
+						}
+					}
+					@container (width >= 1565px) {
+						label:nth-child(-n+9) {
+							display: flex;
+						}
+						&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6, .o_radio_card_num_7, .o_radio_card_num_8) + .o_show_more_radios {
+							display: none;
+						}
+					}
+					@container (width >= 1740px) {
 						display: flex;
-					}
-					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2) + .o_show_more_radios {
-						display: none;
-					}
-				}
-				@container (width >= 515px) {
-					label:nth-child(-n+3) {
-						display: flex;
-					}
-					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3) + .o_show_more_radios {
-						display: none;
-					}
-				}
-				@container (width >= 690px) {
-					label:nth-child(-n+4) {
-						display: flex;
-					}
-					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4) + .o_show_more_radios {
-						display: none;
-					}
-				}
-				@container (width >= 865px) {
-					label:nth-child(-n+5) {
-						display: flex;
-					}
-					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5) + .o_show_more_radios {
-						display: none;
-					}
-				}
-				@container (width >= 1040px) {
-					label:nth-child(-n+6) {
-						display: flex;
-					}
-					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6) + .o_show_more_radios {
-						display: none;
-					}
-				}
-				@container (width >= 1250px) {
-					label:nth-child(-n+7) {
-						display: flex;
-					}
-					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6) + .o_show_more_radios {
-						display: none;
-					}
-				}
-				@container (width >= 1390px) {
-					label:nth-child(-n+8) {
-						display: flex;
-					}
-					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6, .o_radio_card_num_7) + .o_show_more_radios {
-						display: none;
-					}
-				}
-				@container (width >= 1565px) {
-					label:nth-child(-n+9) {
-						display: flex;
-					}
-					&:is(.o_radio_card_num_0, .o_radio_card_num_1, .o_radio_card_num_2, .o_radio_card_num_3, .o_radio_card_num_4, .o_radio_card_num_5, .o_radio_card_num_6, .o_radio_card_num_7, .o_radio_card_num_8) + .o_show_more_radios {
-						display: none;
-					}
-				}
-				@container (width >= 1740px) {
-					display: flex;
-					+.o_show_more_radios {
-						display: none;
+						+.o_show_more_radios {
+							display: none;
+						}
 					}
 				}
 			}
 		}
 	}
-}
 
-	/* Small and large rendering styles */
-	.o_radio_cards_sm label {
-		flex-basis: $o-radio-card-width-sm;
-		.o_radio_icon {
-			height: (math.div(math.div($o-radio-card-width-sm, 3), 3) * 2);
-			&:not(.o_icon) {
-				width: math.div($o-radio-card-width-sm, 3);
-			}
-			&.o_icon {
-				width: ($o-radio-card-width-sm * 0.25);
-				padding: (((math.div(math.div($o-radio-card-width-sm, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
-			}
-		}
-	}
-	.o_radio_cards_lg label {
-		flex-basis: $o-radio-card-width-lg;
-		.o_radio_icon {
-			height: (math.div(math.div($o-radio-card-width-lg, 3), 3) * 2);
-			&:not(.o_icon) {
-				width: math.div($o-radio-card-width-lg, 3);
-			}
-			&.o_icon {
-				width: ($o-radio-card-width-lg * 0.25);
-				padding: (((math.div(math.div($o-radio-card-width-lg, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
+		/* Small and large rendering styles */
+		.o_radio_cards_sm label {
+			flex-basis: $o-radio-card-width-sm;
+			.o_radio_icon {
+				height: (math.div(math.div($o-radio-card-width-sm, 3), 3) * 2);
+				&:not(.o_icon) {
+					width: math.div($o-radio-card-width-sm, 3);
+				}
+				&.o_icon {
+					width: ($o-radio-card-width-sm * 0.25);
+					padding: (((math.div(math.div($o-radio-card-width-sm, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
+				}
 			}
 		}
-	}
+		.o_radio_cards_lg label {
+			flex-basis: $o-radio-card-width-lg;
+			.o_radio_icon {
+				height: (math.div(math.div($o-radio-card-width-lg, 3), 3) * 2);
+				&:not(.o_icon) {
+					width: math.div($o-radio-card-width-lg, 3);
+				}
+				&.o_icon {
+					width: ($o-radio-card-width-lg * 0.25);
+					padding: (((math.div(math.div($o-radio-card-width-lg, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
+				}
+			}
+		}
 	
-	.o_radio_cards_vcenter label .o_radio_card {
-		align-items: center;
-	}
+		.o_radio_cards_vcenter label .o_radio_card {
+			align-items: center;
+		}
 
-	/* Example Image for GUI demo */
-	.o_icon_yes { 
-		background-image:url('#{$o-images-path}no_preview.png');
+		/* Example Image for GUI demo */
+		.o_icon_yes { 
+			background-image:url('#{$o-images-path}no_preview.png');
+		}
+		.o_icon_no { 
+			background-image:url('#{$o-images-path}no_preview_bg.png');
+		}
 	}
-	.o_icon_no { 
-		background-image:url('#{$o-images-path}no_preview_bg.png');
-	}
-}
 	
 
 
-/* file chooser */
-.o_filepreview {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 5px;
-	
-	img {
-		@extend .img-thumbnail;
-	}
-}
-/* uploaded file with delete button */
-.o_filemeta {
-  	padding-top: ($padding-base-vertical + 1);
-  	padding-bottom: ($padding-base-vertical + 1);
-	
-	>div {
+	/* file chooser */
+	.o_filepreview {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 5px;
-		line-height: 1.25em;
+	
+		img {
+			@extend .img-thumbnail;
+		}
 	}
+	/* uploaded file with delete button */
+	.o_filemeta {
+	  	padding-top: ($padding-base-vertical + 1);
+	  	padding-bottom: ($padding-base-vertical + 1);
+	
+		>div {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 5px;
+			line-height: 1.25em;
+		}
 
-	.o_filesize {
-		margin-left: 0.5em;
-		margin-right: 2em;
+		.o_filesize {
+			margin-left: 0.5em;
+			margin-right: 2em;
+		}
+		.o_fileinput {
+			display: inline-block;
+			margin-right: 1em;
+		}
+	
+		.o_filemeta_row {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 5px;
+			align-items: center;
+		}
 	}
 	.o_fileinput {
-		display: inline-block;
-		margin-right: 1em;
-	}
-	
-	.o_filemeta_row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 5px;
-		align-items: center;
-	}
-}
-.o_fileinput {
-	position: relative;
-	/* the fake chooser is what the user sees. this is on layer 1, only for display */
-	.o_fakechooser {
 		position: relative;
-		z-index: 1; 		
-	}
-	/* real file chooser is transparent but on layer 2, click events trigger realchooser, not fakechooser */
-	.o_realchooser { 
-		cursor: pointer;
-		position: absolute; 
-		height: 100%;
-		width: 100%;
-		top: 0; right: 0;
-		z-index: 2; 
-		@include opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
+		/* the fake chooser is what the user sees. this is on layer 1, only for display */
+		.o_fakechooser {
+			position: relative;
+			z-index: 1; 		
+		}
+		/* real file chooser is transparent but on layer 2, click events trigger realchooser, not fakechooser */
+		.o_realchooser { 
+			cursor: pointer;
+			position: absolute; 
+			height: 100%;
+			width: 100%;
+			top: 0; right: 0;
+			z-index: 2; 
+			@include opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
 		
-		/* the focus of the invisible chooser on the visible field: border of
-		   the field and the focus ring (mixin form-control-focus, OO-10043) */
-		&:focus +.o_fakechooser {	
-			input {
-				border-color: var(--o-focus);
-			}
-		}	
-		&:focus-visible +.o_fakechooser {
-			@include o-focus-ring;
-		}
-
-	}
-	/* the fake drag&drop area */	
-	&.o_area {
-		padding: 5px 20px ;
-		border-style: dashed;
-		margin-bottom: 3px;
-		
-		.o_dnd {
-			text-align: center;
-		}
-		.o_dnd_icon {
-			font-size: 1.5em;
-			color: var(--o-panel-placeholder-fg);
-		}
-		.o_dnd_info {
-			color: var(--o-panel-placeholder-fg);
-			font-size: 0.9em;
-		}
-		.o_dnd_select {
-			margin: 0.5em;
-		}			
-		&.o_dnd_over {
-			border-color: var(--o-panel-placeholder-border-active);
-			background: var(--o-panel-placeholder-bg-active);
-			.o_dnd_icon {
-				color: var(--o-panel-placeholder-border-active);
-			}
-		}	
-		
-		&.o_preview {
-			background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='100%' width='90px'><text transform='translate(20, 80) rotate(-45)' fill='rgb(230,230,230)' font-size='22'>Preview</text></svg>");
-		}
-	}
-	
-	&.o_replace,
-	&.o_area {
-		/* button hover not triggered because realchooser catches the hover event, manually apply btn hover style */
-		.o_realchooser {
-			&:hover,
-			&:focus {
-					&+script+.o_dnd .btn,
-					&+.o_dnd .btn {
-					color: var(--o-btn-default-fg);
-				    background-color: var(--o-file-upload-btn-bg-hover);
+			/* the focus of the invisible chooser on the visible field: border of
+			   the field and the focus ring (mixin form-control-focus, OO-10043) */
+			&:focus +.o_fakechooser {	
+				input {
+					border-color: var(--o-focus);
 				}
-			}
-			/* the focus of the invisible chooser on the button: border and
-			   the focus ring (mixin form-control-focus, OO-10043) */
-			&:focus+script+.o_dnd .btn,
-			&:focus+.o_dnd .btn  {
-				border-color: var(--o-focus);
-			}
-			&:focus-visible+script+.o_dnd .btn,
-			&:focus-visible+.o_dnd .btn  {
+			}	
+			&:focus-visible +.o_fakechooser {
 				@include o-focus-ring;
 			}
+
+		}
+		/* the fake drag&drop area */	
+		&.o_area {
+			padding: 5px 20px ;
+			border-style: dashed;
+			margin-bottom: 3px;
+		
+			.o_dnd {
+				text-align: center;
+			}
+			.o_dnd_icon {
+				font-size: 1.5em;
+				color: var(--o-panel-placeholder-fg);
+			}
+			.o_dnd_info {
+				color: var(--o-panel-placeholder-fg);
+				font-size: 0.9em;
+			}
+			.o_dnd_select {
+				margin: 0.5em;
+			}			
+			&.o_dnd_over {
+				border-color: var(--o-panel-placeholder-border-active);
+				background: var(--o-panel-placeholder-bg-active);
+				.o_dnd_icon {
+					color: var(--o-panel-placeholder-border-active);
+				}
+			}	
+		
+			&.o_preview {
+				background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='100%' width='90px'><text transform='translate(20, 80) rotate(-45)' fill='rgb(230,230,230)' font-size='22'>Preview</text></svg>");
+			}
+		}
+	
+		&.o_replace,
+		&.o_area {
+			/* button hover not triggered because realchooser catches the hover event, manually apply btn hover style */
+			.o_realchooser {
+				&:hover,
+				&:focus {
+						&+script+.o_dnd .btn,
+						&+.o_dnd .btn {
+						color: var(--o-btn-default-fg);
+					    background-color: var(--o-file-upload-btn-bg-hover);
+					}
+				}
+				/* the focus of the invisible chooser on the button: border and
+				   the focus ring (mixin form-control-focus, OO-10043) */
+				&:focus+script+.o_dnd .btn,
+				&:focus+.o_dnd .btn  {
+					border-color: var(--o-focus);
+				}
+				&:focus-visible+script+.o_dnd .btn,
+				&:focus-visible+.o_dnd .btn  {
+					@include o-focus-ring;
+				}
+			}
+		}
+		&.panel-placeholder:hover {
+			border-color: var(--o-panel-placeholder-border-hover);
+			// the hover of the area: the border of the focus, no glow (OO-10043)
+			.o_dnd .btn {
+				border-color: var(--o-focus);
+			}
 		}
 	}
-	&.panel-placeholder:hover {
-		border-color: var(--o-panel-placeholder-border-hover);
-		// the hover of the area: the border of the focus, no glow (OO-10043)
-		.o_dnd .btn {
-			border-color: var(--o-focus);
+	/* hide error icon for file element - clash with file element controls */
+	.o_fileElement.has-error .o_icon_error.form-control-feedback {
+		display: none;
+	}
+
+	form.o_dnd_over {
+		border: 2px dashed var(--o-panel-placeholder-border-active);
+		border-radius: $o-panel-placeholder-border-radius;
+		background: var(--o-panel-placeholder-bg-active);
+		margin: -2px;
+	}
+
+	.o_form_inline_mandatory_compact {
+		i {
+			width: 20px;
+		}
+		select.form-control {
+			width: calc(100% - 25px);
 		}
 	}
-}
-/* hide error icon for file element - clash with file element controls */
-.o_fileElement.has-error .o_icon_error.form-control-feedback {
-	display: none;
-}
 
-form.o_dnd_over {
-	border: 2px dashed var(--o-panel-placeholder-border-active);
-	border-radius: $o-panel-placeholder-border-radius;
-	background: var(--o-panel-placeholder-bg-active);
-	margin: -2px;
-}
-
-.o_form_inline_mandatory_compact {
-	i {
-		width: 20px;
+	.o_muted_labels {
+		label,
+		.o_form_label {
+			color: var(--o-text-muted);
+			font-weight: 400;
+		}
 	}
-	select.form-control {
-		width: calc(100% - 25px);
-	}
-}
-
-.o_muted_labels {
-	label,
-	.o_form_label {
+	.o_muted_label {
 		color: var(--o-text-muted);
 		font-weight: 400;
 	}
-}
-.o_muted_label {
-	color: var(--o-text-muted);
-	font-weight: 400;
-}
-.o_form_label {
-	display: inline-block;
-	margin-bottom: 5px;
-	font-weight: 700;
-}
-.o_form_section {
-	margin-top: 20px;
-	.o_section_toggle {
-		cursor: pointer;
+	.o_form_label {
+		display: inline-block;
+		margin-bottom: 5px;
+		font-weight: 700;
 	}
-	.o_section_sub_title {
-		display: flex;
-		align-items: center;
-		min-height: $input-height-base;
-		margin-bottom: $line-height-computed;
-		font-size: $o-font-size-section-title;
-		&::after {
-			content: "";
-			flex: 1 1 auto;
-			height: 1px;
-			margin-left: 1em;
-			background-color: var(--o-border-subtle);
+	.o_form_section {
+		margin-top: 20px;
+		.o_section_toggle {
+			cursor: pointer;
 		}
-		@media (max-width: $screen-xs-max) {
-			flex-direction: column;
-			align-items: flex-start;
+		.o_section_sub_title {
+			display: flex;
+			align-items: center;
+			min-height: $input-height-base;
+			margin-bottom: $line-height-computed;
+			font-size: $o-font-size-section-title;
 			&::after {
-				width: 100%;
-				margin-left: 0;
-				margin-top: 0.5em;
+				content: "";
+				flex: 1 1 auto;
+				height: 1px;
+				margin-left: 1em;
+				background-color: var(--o-border-subtle);
 			}
-		}
-	}
-}
-
-/* day chooser with previous next */
-.o_day_chooser {
-	.o_day_previous {
-		display: inline-block;
-		a {
-			border-bottom-right-radius: 0;
-			border-top-right-radius: 0;
-			border-right: 0;
-		}
-	}
-	.o_day_date {
-		display: inline-block;
-		border-radius: 0;
-		input, .input-group-addon {
-			border-radius: 0;
-		}
-	}
-	.o_day_next {
-		display: inline-block;
-		a {
-			border-bottom-left-radius: 0;
-			border-top-left-radius: 0;
-			border-left: 0;
-		}
-	}
-}
-
-/* Relative date picker */
-.o_relative_date {
-	~.form-control-feedback::before {
-		display: none;
-	}
-	&.input-group {
-		.input-group-addon {
-			background-color: var(--o-input-disabled-bg);
-			padding: 6px 8px;
-			+ input.form-control {
-				border-left-color: transparent;
-				&:focus {
-					border-left-color: var(--o-focus);
+			@media (max-width: $screen-xs-max) {
+				flex-direction: column;
+				align-items: flex-start;
+				&::after {
+					width: 100%;
+					margin-left: 0;
+					margin-top: 0.5em;
 				}
 			}
-			&:hover {
-				background-color: var(--o-btn-default-bg-hover);
-				border-color: var(--o-btn-default-border-hover);
+		}
+	}
+
+	/* day chooser with previous next */
+	.o_day_chooser {
+		.o_day_previous {
+			display: inline-block;
+			a {
+				border-bottom-right-radius: 0;
+				border-top-right-radius: 0;
+				border-right: 0;
 			}
 		}
-	}
-}
-.form-inline.o_relative_date_offset_row {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-
-	> span:first-of-type {
-		flex: 1;
-		> input {
-			width: 100%;
-		}
-	}
-	~.form-control-feedback {
-		display: none;
-	}
-}
-.o_relative_date_unit_row {
-	.btn-group {
-		display: flex;
-		width: 100%;
-
-		> label {
-			flex: 1;
-			text-align: center;
-		}
-	}
-}
-
-/* centered form labels are still left aligned */
-.o_centered_form {
-	text-align: center;
-	fieldset.o_form {
-		display: inline-block;
-		text-align: left;
-	}
-}
-
-/* checkbox */
-.checkbox label.o_checkbox_error {
-	color: var(--o-state-danger-text);
-}
-
-.checkbox label.o_checkbox_warning {
-	color: var(--o-state-warning-text);
-}
-.o_checkbox_h_aligned {
-	display: flex;
-	align-items: center;
-	input[type="checkbox"] {
-		margin-top: 0;
-	}
-}
-.o_checkbox_button_group {
-	display: inline-flex;
-	vertical-align: middle;
-
-	> div {
-		position: relative;
-		border: 1px solid var(--o-btn-default-border);
-		margin: 0;
-		background-color: var(--o-btn-default-bg);
-		color: var(--o-btn-default-fg);
-		white-space: nowrap;
-		cursor: pointer;
-
-		&:not(:first-of-type):not(:last-of-type) {
+		.o_day_date {
+			display: inline-block;
 			border-radius: 0;
+			input, .input-group-addon {
+				border-radius: 0;
+			}
 		}
-		&:first-of-type {
-			border-radius: $btn-border-radius-base 0 0 $btn-border-radius-base;
-		}
-		&:last-of-type {
-			border-radius: 0 $btn-border-radius-base $btn-border-radius-base 0;
-		}
-		&:first-of-type:last-of-type {
-			border-radius: $btn-border-radius-base;
-		}
-		&:not(:first-child) {
-			margin-left: -1px;
-		}
-
-		&:hover {
-			z-index: 2;
-			background-color: var(--o-btn-default-bg-hover);
-			border-color: var(--o-btn-default-border-hover);
-		}
-
-		&:has(input:checked) {
-			z-index: 2;
-			background-color: var(--o-radio-card-checked-bg);
-			border-color: var(--o-radio-card-checked-border);
-			color: var(--o-radio-card-checked-label);
-		}
-
-		// the radio of the item is invisible: the item shows the focus ring,
-		// inset, the items touch (OO-10043)
-		&:has(input:focus-visible) {
-			z-index: 3;
-			@include o-focus-ring(-2px);
-		}
-
-		label {
-			display: block;
-			padding: $padding-base-vertical $padding-base-horizontal;
-			margin-bottom: 0;
-			cursor: pointer;
-			font-weight: normal;
-
-			input[type="radio"] {
-				position: absolute;
-				opacity: 0;
-				width: 0;
-				height: 0;
+		.o_day_next {
+			display: inline-block;
+			a {
+				border-bottom-left-radius: 0;
+				border-top-left-radius: 0;
+				border-left: 0;
 			}
 		}
 	}
 
-	&.o_button_group_vertical {
+	/* Relative date picker */
+	.o_relative_date {
+		~.form-control-feedback::before {
+			display: none;
+		}
+		&.input-group {
+			.input-group-addon {
+				background-color: var(--o-input-disabled-bg);
+				padding: 6px 8px;
+				+ input.form-control {
+					border-left-color: transparent;
+					&:focus {
+						border-left-color: var(--o-focus);
+					}
+				}
+				&:hover {
+					background-color: var(--o-btn-default-bg-hover);
+					border-color: var(--o-btn-default-border-hover);
+				}
+			}
+		}
+	}
+	.form-inline.o_relative_date_offset_row {
 		display: flex;
-		flex-direction: column;
-		width: fit-content;
+		align-items: center;
+		gap: 4px;
+
+		> span:first-of-type {
+			flex: 1;
+			> input {
+				width: 100%;
+			}
+		}
+		~.form-control-feedback {
+			display: none;
+		}
+	}
+	.o_relative_date_unit_row {
+		.btn-group {
+			display: flex;
+			width: 100%;
+
+			> label {
+				flex: 1;
+				text-align: center;
+			}
+		}
+	}
+
+	/* centered form labels are still left aligned */
+	.o_centered_form {
+		text-align: center;
+		fieldset.o_form {
+			display: inline-block;
+			text-align: left;
+		}
+	}
+
+	/* checkbox */
+	.checkbox label.o_checkbox_error {
+		color: var(--o-state-danger-text);
+	}
+
+	.checkbox label.o_checkbox_warning {
+		color: var(--o-state-warning-text);
+	}
+	.o_checkbox_h_aligned {
+		display: flex;
+		align-items: center;
+		input[type="checkbox"] {
+			margin-top: 0;
+		}
+	}
+	.o_checkbox_button_group {
+		display: inline-flex;
+		vertical-align: middle;
 
 		> div {
+			position: relative;
+			border: 1px solid var(--o-btn-default-border);
+			margin: 0;
+			background-color: var(--o-btn-default-bg);
+			color: var(--o-btn-default-fg);
+			white-space: nowrap;
+			cursor: pointer;
+
 			&:not(:first-of-type):not(:last-of-type) {
 				border-radius: 0;
 			}
 			&:first-of-type {
-				border-radius: $btn-border-radius-base $btn-border-radius-base 0 0;
+				border-radius: $btn-border-radius-base 0 0 $btn-border-radius-base;
 			}
 			&:last-of-type {
-				border-radius: 0 0 $btn-border-radius-base $btn-border-radius-base;
+				border-radius: 0 $btn-border-radius-base $btn-border-radius-base 0;
 			}
 			&:first-of-type:last-of-type {
 				border-radius: $btn-border-radius-base;
 			}
-			&:not(:first-of-type) {
-				margin-left: 0;
-				margin-top: -1px;
+			&:not(:first-child) {
+				margin-left: -1px;
+			}
+
+			&:hover {
+				z-index: 2;
+				background-color: var(--o-btn-default-bg-hover);
+				border-color: var(--o-btn-default-border-hover);
+			}
+
+			&:has(input:checked) {
+				z-index: 2;
+				background-color: var(--o-radio-card-checked-bg);
+				border-color: var(--o-radio-card-checked-border);
+				color: var(--o-radio-card-checked-label);
+			}
+
+			// the radio of the item is invisible: the item shows the focus ring,
+			// inset, the items touch (OO-10043)
+			&:has(input:focus-visible) {
+				z-index: 3;
+				@include o-focus-ring(-2px);
+			}
+
+			label {
+				display: block;
+				padding: $padding-base-vertical $padding-base-horizontal;
+				margin-bottom: 0;
+				cursor: pointer;
+				font-weight: normal;
+
+				input[type="radio"] {
+					position: absolute;
+					opacity: 0;
+					width: 0;
+					height: 0;
+				}
+			}
+		}
+
+		&.o_button_group_vertical {
+			display: flex;
+			flex-direction: column;
+			width: fit-content;
+
+			> div {
+				&:not(:first-of-type):not(:last-of-type) {
+					border-radius: 0;
+				}
+				&:first-of-type {
+					border-radius: $btn-border-radius-base $btn-border-radius-base 0 0;
+				}
+				&:last-of-type {
+					border-radius: 0 0 $btn-border-radius-base $btn-border-radius-base;
+				}
+				&:first-of-type:last-of-type {
+					border-radius: $btn-border-radius-base;
+				}
+				&:not(:first-of-type) {
+					margin-left: 0;
+					margin-top: -1px;
+				}
 			}
 		}
 	}
-}
 
-legend.control-label {
-	display: inline-block;
-	margin-bottom: 5px;
-	font-size: $font-size-base;
-	font-weight: 700;
-	line-height: inherit;
-	color: var(--o-legend);
-	border: none;
-}
-
-/* choice element */
-.o_choice_checkrow,
-.o_choice_textrow {
-	vertical-align: text-top;
-	padding-bottom: 2px;
-}
-.o_choice_textrow {
-	padding-left: 1em;
-}
-.o_togglecheck a {
-	white-space: nowrap;
-}
-
-.o_catalog {
-	.o_catalog_delete_img {
-		position: relative; 
-		top: -0.5em;
+	legend.control-label {
+		display: inline-block;
+		margin-bottom: 5px;
+		font-size: $font-size-base;
+		font-weight: 700;
+		line-height: inherit;
+		color: var(--o-legend);
+		border: none;
 	}
-}
 
-.o_button_dirty {
-	@include button-variant(var(--o-btn-dirty-fg), var(--o-btn-dirty-bg), var(--o-btn-dirty-border));
-}
+	/* choice element */
+	.o_choice_checkrow,
+	.o_choice_textrow {
+		vertical-align: text-top;
+		padding-bottom: 2px;
+	}
+	.o_choice_textrow {
+		padding-left: 1em;
+	}
+	.o_togglecheck a {
+		white-space: nowrap;
+	}
 
-/* TOGGLE SWITCH */
-.o_button_toggle {
-	border: 1px solid var(--o-toggle-border);
-	@include border-top-radius($o-toggle-size*0.5 + 2px);
-	@include border-bottom-radius($o-toggle-size*0.5 + 2px);
-	background: var(--o-toggle-bg);
-	display: inline-block;
-	&.o_toggle_block {
-		display: block;
+	.o_catalog {
+		.o_catalog_delete_img {
+			position: relative; 
+			top: -0.5em;
+		}
 	}
-	&.o_toggle_disabled {
-		opacity: 0.5;
+
+	.o_button_dirty {
+		@include button-variant(var(--o-btn-dirty-fg), var(--o-btn-dirty-bg), var(--o-btn-dirty-border));
 	}
-	height: $o-toggle-size + 4px;
-	line-height: $o-toggle-size - 1px;
-	font-size: $o-toggle-size;
-	text-align: left;
-	margin: 0;
-	@extend %o_undecorated;
-	white-space: nowrap;
+
+	/* TOGGLE SWITCH */
+	.o_button_toggle {
+		border: 1px solid var(--o-toggle-border);
+		@include border-top-radius($o-toggle-size*0.5 + 2px);
+		@include border-bottom-radius($o-toggle-size*0.5 + 2px);
+		background: var(--o-toggle-bg);
+		display: inline-block;
+		&.o_toggle_block {
+			display: block;
+		}
+		&.o_toggle_disabled {
+			opacity: 0.5;
+		}
+		height: $o-toggle-size + 4px;
+		line-height: $o-toggle-size - 1px;
+		font-size: $o-toggle-size;
+		text-align: left;
+		margin: 0;
+		@extend %o_undecorated;
+		white-space: nowrap;
 	
-	i {
-		color: var(--o-toggle-handle);
-		text-shadow: 1px 0 2px color-mix(in srgb, var(--o-shadow-color) 25%, transparent);		
-	}	
-	span {
-		line-height: $o-toggle-size;
-		vertical-align: top;		
-		font-size: 60%;
-		color: var(--o-toggle-text);
-		text-transform: uppercase;
-	}
-	&[aria-checked="true"] {
-		text-align: right;
-		padding: 0 1px 0 0.5em;
-		background: var(--o-toggle-on-bg);
-		border-color: var(--o-toggle-on-border);
 		i {
-			color: var(--o-toggle-on-handle);
-			text-shadow: -1px 0 2px color-mix(in srgb, var(--o-shadow-color) 25%, transparent);
-		}
+			color: var(--o-toggle-handle);
+			text-shadow: 1px 0 2px color-mix(in srgb, var(--o-shadow-color) 25%, transparent);		
+		}	
 		span {
-			color: var(--o-toggle-on-text);
+			line-height: $o-toggle-size;
+			vertical-align: top;		
+			font-size: 60%;
+			color: var(--o-toggle-text);
+			text-transform: uppercase;
 		}
-	}
-	&[aria-checked="false"] {
-		padding: 0 0.5em 0 1px;
-	}
-	
-	&[aria-checked="true"]>span.o_off {
-		display: none;
-	}
-	
-	&[aria-checked="false"]>span.o_on {
-		display: none;
-	}
-}
-
-.o_form_cell .o_button_toggle {
-	margin-top: 8px;
-}
-
-.o_feedback_right {
-	margin-left: -25px;
-	padding-right: 12px;
-}
-
-/* TOGGLE CHECK */
-.o_toggle_check {
-	padding: 0;
-	display: block;
-	
-	// font-size of the icon
-	font-size: 18px;
-	// size of the button => 1.5x as big as the icon
-	height: 1.5em;
-	width: 1.5em;
-	border-radius: 1.5em;
-	
-	&:hover {
-		.o_icon_toggle_check_off { @include o-add-icon('check');}
-	}
-	
-	&.o_toggle_off {
-		border-color: var(--o-primary);
-		color: var(--o-primary-text);
-	}
-
-	&:is(.o_table_flexi *) {
-		height: 20px;
-		width: 20px;
-		border-radius: 20px;
-		font-size: 13px;
-	}
-}
-
-/* TOGGLE BUTTON */
-.o_toggle_button {
-	display: flex;
-	align-items: center;
-	
-	padding-top: 4px;
-	padding-bottom: 4px;
-	>.o_toggle_button_text {
-		display: grid;
-		span {
-			grid-area: 1/1;
-			&[aria-hidden="true"] {
-				visibility: hidden;
+		&[aria-checked="true"] {
+			text-align: right;
+			padding: 0 1px 0 0.5em;
+			background: var(--o-toggle-on-bg);
+			border-color: var(--o-toggle-on-border);
+			i {
+				color: var(--o-toggle-on-handle);
+				text-shadow: -1px 0 2px color-mix(in srgb, var(--o-shadow-color) 25%, transparent);
+			}
+			span {
+				color: var(--o-toggle-on-text);
 			}
 		}
-	}
-	>.o_icon {
-		margin-right: 6px;
-	}
-	>i {
-		font-size: 20px;
-	}
-	&.btn-lg {
-		>i {
-			font-size: 24px;
+		&[aria-checked="false"] {
+			padding: 0 0.5em 0 1px;
 		}
-	}
-	&.btn-sm,
-	&.btn-xs {
-		>i {
-			font-size: 18px;
-		}
-		>.o_toggle_button_text {
-			margin-left: 3px;
-		}
-	}
 	
-	&:hover {
-		.o_icon_toggle_button_off { @include o-add-icon('circle-check', false);}
-	}
+		&[aria-checked="true"]>span.o_off {
+			display: none;
+		}
 	
-	&.o_toggle_link {
-		color: var(--o-link);
-		background-color: transparent;
-	}
-}
-
-/* STATIC TEXTELEMENT */
-.o_static_textelement_bold {
-	font-weight: bold;
-}
-
-/* input indentation */
-.checkbox .o_checkbox_indented {
-	padding-left: 3em;
-	
-	&.level_2 {
-		padding-left: 5em;
-	}
-}
-
-/* Color Picker, Icon Selector */
-
-.o_color_picker_icon, .o_icon_selector_caret {
-	position: absolute;
-	right: 5px;
-	top: 10px;
-}
-
-.o_color_picker_button, .o_icon_selector_button {
-	width: 100%;
-	text-align: left;
-	position: relative;
-	padding-right: 26px;
-	padding-left: 32px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	min-height: 34px;
-	border-color: var(--o-border-strong);
-}
-
-.o_color_picker_colored_area {
-	display: inline-block;
-	position: absolute;
-	top: 6px;
-	left: 6px;
-	width: 20px;
-	height: 20px;
-	border-width: 1px;
-	border-style: solid;
-	border-radius: 4px;
-	color: var(--o-white);
-	line-height: 18px;
-	text-align: center;
-}
-
-.o_icon_selector_icon {
-	display: inline-block;
-	position: absolute;
-	top: 6px;
-	left: 6px;
-	width: 20px;
-	height: 20px;
-	line-height: 20px;
-	text-align: center;
-}
-
-ul.o_icon_selector_dropdown {
-	width: 100%;
-	height: auto;
-	top: unset;
-	overflow-x: hidden;
-	margin-left: 0;
-	margin-right: 0;
-
-	&.o_drop_up {
-		bottom: 34px;
-	}
-
-	li {
-		cursor: pointer;
-
-		a.o_icon_selector_link {
-			width: 100%;
-			text-align: left;
-			position: relative;
-			padding: 6px 15px 6px 32px;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
-
-		&.o_selected {
-			a, a:hover {
-				background-color: var(--o-primary);
-				color: var(--o-color-picker-selected-fg);
-			}
-		}
-
-		&.o_compact {
-			display: inline-block;
-
-			a {
-				padding: 0;
-				width: 32px;
-				height: 32px;
-			}
+		&[aria-checked="false"]>span.o_on {
+			display: none;
 		}
 	}
-}
 
-// The colours of the colour picker open in a callout at window level
-// (ColorPickerPopupRenderer), the list or the grid, placed like a dropdown
-// menu (CalloutSettings.CalloutAlignment): no arrow, 2px from the button.
-// The callout has no padding: the entries of the list are as wide as the
-// callout.
-dialog.popover .popover-content:has(.o_color_picker_popup) {
-	padding: 0;
-	margin-top: 2px;
-}
-dialog.popover.top .popover-content:has(.o_color_picker_popup) {
-	margin-top: 0;
-	margin-bottom: 2px;
-}
-// the grid is as wide as its columns, up to the width of the window
-dialog.popover:has(.o_color_picker_popup_grid) {
-	max-width: calc(100vw - 32px);
-}
-
-// The list: one entry per line, the colour square and the name. A group of
-// colours, e.g. the theme colours after the hues: a gap, the heading and a
-// nested list.
-.o_color_picker_popup_list {
-	// The height cuts an entry in half (5px padding and 13.5 entries of 12px
-	// padding and one line): the cut entry shows that more entries follow.
-	.o_color_picker_list {
-		max-height: min(#{5px + 13.5 * (12px + $line-height-computed)}, 70vh);
-		overflow-y: auto;
-		margin: 0;
-		padding: 5px 0;
-		list-style: none;
+	.o_form_cell .o_button_toggle {
+		margin-top: 8px;
 	}
 
-	.o_color_picker_group_list {
-		list-style: none;
-		margin: 0;
+	.o_feedback_right {
+		margin-left: -25px;
+		padding-right: 12px;
+	}
+
+	/* TOGGLE CHECK */
+	.o_toggle_check {
 		padding: 0;
-	}
-
-	li.o_color_picker_group {
-		margin-top: 6px;
-		padding-top: 3px;
-		border-top: 1px solid var(--o-dropdown-divider);
-	}
-
-	a.o_color_picker_link {
 		display: block;
+	
+		// font-size of the icon
+		font-size: 18px;
+		// size of the button => 1.5x as big as the icon
+		height: 1.5em;
+		width: 1.5em;
+		border-radius: 1.5em;
+	
+		&:hover {
+			.o_icon_toggle_check_off { @include o-add-icon('check');}
+		}
+	
+		&.o_toggle_off {
+			border-color: var(--o-primary);
+			color: var(--o-primary-text);
+		}
+
+		&:is(.o_table_flexi *) {
+			height: 20px;
+			width: 20px;
+			border-radius: 20px;
+			font-size: 13px;
+		}
+	}
+
+	/* TOGGLE BUTTON */
+	.o_toggle_button {
+		display: flex;
+		align-items: center;
+	
+		padding-top: 4px;
+		padding-bottom: 4px;
+		>.o_toggle_button_text {
+			display: grid;
+			span {
+				grid-area: 1/1;
+				&[aria-hidden="true"] {
+					visibility: hidden;
+				}
+			}
+		}
+		>.o_icon {
+			margin-right: 6px;
+		}
+		>i {
+			font-size: 20px;
+		}
+		&.btn-lg {
+			>i {
+				font-size: 24px;
+			}
+		}
+		&.btn-sm,
+		&.btn-xs {
+			>i {
+				font-size: 18px;
+			}
+			>.o_toggle_button_text {
+				margin-left: 3px;
+			}
+		}
+	
+		&:hover {
+			.o_icon_toggle_button_off { @include o-add-icon('circle-check', false);}
+		}
+	
+		&.o_toggle_link {
+			color: var(--o-link);
+			background-color: transparent;
+		}
+	}
+
+	/* STATIC TEXTELEMENT */
+	.o_static_textelement_bold {
+		font-weight: bold;
+	}
+
+	/* input indentation */
+	.checkbox .o_checkbox_indented {
+		padding-left: 3em;
+	
+		&.level_2 {
+			padding-left: 5em;
+		}
+	}
+
+	/* Color Picker, Icon Selector */
+
+	.o_color_picker_icon, .o_icon_selector_caret {
+		position: absolute;
+		right: 5px;
+		top: 10px;
+	}
+
+	.o_color_picker_button, .o_icon_selector_button {
+		width: 100%;
+		text-align: left;
 		position: relative;
-		padding: 6px 15px 6px 32px;
-		font-weight: normal;
-		line-height: $line-height-base;
+		padding-right: 26px;
+		padding-left: 32px;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		color: var(--o-dropdown-link);
-		cursor: pointer;
-
-		&:hover, &:focus {
-			color: var(--o-dropdown-link-hover);
-			text-decoration: none;
-			background-color: var(--o-dropdown-link-hover-bg);
-		}
-		&:focus:focus-visible {
-			@include o-focus-ring-inset;
-		}
+		min-height: 34px;
+		border-color: var(--o-border-strong);
 	}
 
-	li.o_selected > a.o_color_picker_link {
-		&, &:hover, &:focus {
-			background-color: var(--o-primary);
-			color: var(--o-color-picker-selected-fg);
-		}
-		&:focus:focus-visible {
-			@include o-focus-ring-on-fill;
-		}
-	}
-}
-
-// The grid (ColorPickerGridRenderer): one column per colour, one row per
-// variant, the theme colours after a gap with their heading, the button
-// "no colour" below. A cell shows the letter "a" in the roles of its swatch
-// (.o_swatch_*). The selected cell has a ring in the primary colour outside
-// the cell, the focused cell the focus ring on the fill (the text colour of
-// the swatch), so both show at the same time. A grid wider than the
-// callout scrolls.
-// $o-picker-grid-cell-size: in light/_config_modules.scss
-// $o-picker-grid-gap: in light/_config_modules.scss
-// $o-picker-grid-group-gap: in light/_config_modules.scss
-
-.o_color_picker_popup_grid {
-	padding: 10px;
-
-	.o_color_picker_grid_scroll {
-		overflow-x: auto;
-		// room for the ring of the selected cell
-		padding: 4px;
-	}
-
-	.o_color_picker_grid_groups, .o_color_picker_grid_row {
-		display: flex;
-		gap: $o-picker-grid-gap;
-	}
-	.o_color_picker_grid {
-		display: flex;
-		flex-direction: column;
-		gap: $o-picker-grid-gap;
-	}
-
-	.o_color_picker_grid_group {
-		flex: 0 0 $o-picker-grid-cell-size;
-		width: $o-picker-grid-cell-size;
-		margin-bottom: 2px;
-		font-size: $font-size-small;
-		line-height: $line-height-base;
-		color: var(--o-text-muted);
-		white-space: nowrap;
-		overflow: visible;
-	}
-
-	.o_color_picker_grid_gap {
-		margin-left: $o-picker-grid-group-gap;
-	}
-
-	.o_color_picker_cell {
-		flex: 0 0 $o-picker-grid-cell-size;
-		width: $o-picker-grid-cell-size;
-		height: $o-picker-grid-cell-size;
-		border: 1px solid var(--o-sw-border);
-		border-radius: $border-radius-base;
-		background-color: var(--o-sw-bg);
-		color: var(--o-sw-fg);
-		font-size: 15px;
-		line-height: $o-picker-grid-cell-size - 2px;
+	.o_color_picker_colored_area {
+		display: inline-block;
+		position: absolute;
+		top: 6px;
+		left: 6px;
+		width: 20px;
+		height: 20px;
+		border-width: 1px;
+		border-style: solid;
+		border-radius: 4px;
+		color: var(--o-white);
+		line-height: 18px;
 		text-align: center;
-		cursor: pointer;
-		user-select: none;
-
-		&:hover {
-			box-shadow: 0 0 0 2px var(--o-bg-raised), 0 0 0 4px var(--o-border-strong);
-		}
-		&.o_selected {
-			box-shadow: 0 0 0 2px var(--o-bg-raised), 0 0 0 4px var(--o-primary);
-		}
-		&:focus {
-			outline: 0;
-		}
-		&:focus-visible {
-			@include o-focus-ring-on-fill;
-		}
 	}
 
-	.o_color_picker_cell_empty {
-		border-color: transparent;
-		background-color: transparent;
-		cursor: default;
-
-		&:hover {
-			box-shadow: none;
-		}
+	.o_icon_selector_icon {
+		display: inline-block;
+		position: absolute;
+		top: 6px;
+		left: 6px;
+		width: 20px;
+		height: 20px;
+		line-height: 20px;
+		text-align: center;
 	}
 
-	.o_color_picker_grid_unselect {
-		margin-top: 8px;
+	ul.o_icon_selector_dropdown {
+		width: 100%;
+		height: auto;
+		top: unset;
+		overflow-x: hidden;
+		margin-left: 0;
+		margin-right: 0;
 
-		&.o_selected {
-			box-shadow: 0 0 0 1px var(--o-primary);
-			border-color: var(--o-primary);
-		}
-	}
-}
-
-/* Search field in selection elements */
-// Overlay of the search field and the reset button
-.o_search_field {
-	display: grid;
-	>* {
-		grid-area: 1/1;
-		z-index: 3;
-		justify-self: end;
-	}
-	.o_search_term {
-		border-radius: 0;
-		// Space for the reset button
-		padding-right: 30px;
-	}
-	.o_reset_search {
-		margin-left: -1px;
-		border: unset;
-		background-color: unset;
-	}
-	>span:has(.o_reset_search) {
-		align-self: center;
-	}
-}
-.o_search_field:not(:has(+ * .o_open_browser)) {
-	.o_search_term {
-		border-top-right-radius: $input-border-radius;
-		border-bottom-right-radius: $input-border-radius;
-	}
-}
-
-/* Object Selection Element */
-dialog {
-	&.popover {
-		.popover-content:has(.o_object_selection) {
-			margin-top: 0;
-		}
-	}
-}
-.o_object_selection {
-	.o_object_selection_actions {
-		display: flex;
-		gap: 20px;
-	}
-
-	.o_object_selection_main {
-		display: flex;
-		flex-direction: column;
-		overflow-y: auto;
-		min-height: 140px;
-		max-height: 340px;
-		>:last-child {
-			flex-grow: 2;
-		}
-		
-		// As wide as the callout
-		margin: 0px -15px;
-		>div {
-			padding: 0px 16px;
-		}
-	
-		&::before,
-		&::after {
-			content: "";
-			position: sticky;
-			min-height: 10px;
-			pointer-events: none;
+		&.o_drop_up {
+			bottom: 34px;
 		}
 
-		&::before {
-			top: 0;
-			background: linear-gradient(color-mix(in srgb, var(--o-shadow-color) 10%, transparent), transparent);
-		}
+		li {
+			cursor: pointer;
 
-		&::after {
-			bottom: 0;
-			background: linear-gradient(transparent, color-mix(in srgb, var(--o-shadow-color) 10%, transparent));
+			a.o_icon_selector_link {
+				width: 100%;
+				text-align: left;
+				position: relative;
+				padding: 6px 15px 6px 32px;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			&.o_selected {
+				a, a:hover {
+					background-color: var(--o-primary);
+					color: var(--o-color-picker-selected-fg);
+				}
+			}
+
+			&.o_compact {
+				display: inline-block;
+
+				a {
+					padding: 0;
+					width: 32px;
+					height: 32px;
+				}
+			}
 		}
 	}
-	
-	.o_object_selection_divider {
-		// The horizontal line
-		display: flex;
-		&::before,
-		&::after {
-			content: "";
-			flex-grow: 2;
-			border-top: 1px solid var(--o-border-strong);
-			transform: translateY(50%);
-		}
-		
-		.o_object_selection_divider_text,
-		button {
-			color: var(--o-text);
-		}
-		
-		.o_object_selection_divider_text {
-			padding: 0px $padding-base-horizontal;
-		}
+
+	// The colours of the colour picker open in a callout at window level
+	// (ColorPickerPopupRenderer), the list or the grid, placed like a dropdown
+	// menu (CalloutSettings.CalloutAlignment): no arrow, 2px from the button.
+	// The callout has no padding: the entries of the list are as wide as the
+	// callout.
+	dialog.popover .popover-content:has(.o_color_picker_popup) {
+		padding: 0;
+		margin-top: 2px;
 	}
-	
-	.checkbox,
-	.radio {
-		label {
-			display: grid;
-			column-gap: 10px;
-			align-items: center;
-			padding-left: 0;
-		}
-		input[type="checkbox"],
-		input[type="radio"] {
-			position: initial;
+	dialog.popover.top .popover-content:has(.o_color_picker_popup) {
+		margin-top: 0;
+		margin-bottom: 2px;
+	}
+	// the grid is as wide as its columns, up to the width of the window
+	dialog.popover:has(.o_color_picker_popup_grid) {
+		max-width: calc(100vw - 32px);
+	}
+
+	// The list: one entry per line, the colour square and the name. A group of
+	// colours, e.g. the theme colours after the hues: a gap, the heading and a
+	// nested list.
+	.o_color_picker_popup_list {
+		// The height cuts an entry in half (5px padding and 13.5 entries of 12px
+		// padding and one line): the cut entry shows that more entries follow.
+		.o_color_picker_list {
+			max-height: min(#{5px + 13.5 * (12px + $line-height-computed)}, 70vh);
+			overflow-y: auto;
 			margin: 0;
-			grid-area: checkbox;
+			padding: 5px 0;
+			list-style: none;
 		}
-		.o_object_selection_option {
-			display: contents;
+
+		.o_color_picker_group_list {
+			list-style: none;
+			margin: 0;
+			padding: 0;
 		}
-		.o_object_selection_title {
-			grid-area: title;
-			min-width: 0;
+
+		li.o_color_picker_group {
+			margin-top: 6px;
+			padding-top: 3px;
+			border-top: 1px solid var(--o-dropdown-divider);
 		}
-		.o_object_selection_subtitle {
-			grid-area: subtitle;
-			min-width: 0;
-			small {
-				line-height: 1em;
+
+		a.o_color_picker_link {
+			display: block;
+			position: relative;
+			padding: 6px 15px 6px 32px;
+			font-weight: normal;
+			line-height: $line-height-base;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			color: var(--o-dropdown-link);
+			cursor: pointer;
+
+			&:hover, &:focus {
+				color: var(--o-dropdown-link-hover);
+				text-decoration: none;
+				background-color: var(--o-dropdown-link-hover-bg);
+			}
+			&:focus:focus-visible {
+				@include o-focus-ring-inset;
 			}
 		}
-		&:not(:has(.o_object_selection_image)) {
-			label {
-				grid-template-columns: auto 1fr;
-				grid-template-areas: "checkbox title";
+
+		li.o_selected > a.o_color_picker_link {
+			&, &:hover, &:focus {
+				background-color: var(--o-primary);
+				color: var(--o-color-picker-selected-fg);
 			}
-			&:has(.o_object_selection_subtitle) {
-				label {
-					// DOM order: title → subtitle (screen reader reads title first); grid places subtitle visually on top
-					grid-template-areas:
-						"subtitle subtitle"
-						"checkbox title";
-					row-gap: 2px;
-				}
-			}
-		}
-		&:has(.o_object_selection_image) {
-			label {
-				grid-template-columns: auto auto 1fr;
-				grid-template-areas: "checkbox image title";
-			}
-			.o_object_selection_image {
-				grid-area: image;
-			}
-			&:has(.o_object_selection_subtitle) {
-				label {
-					grid-template-areas:
-						"checkbox image subtitle"
-						"checkbox image title";
-				}
+			&:focus:focus-visible {
+				@include o-focus-ring-on-fill;
 			}
 		}
 	}
 
-	.o_object_selection_main {
+	// The grid (ColorPickerGridRenderer): one column per colour, one row per
+	// variant, the theme colours after a gap with their heading, the button
+	// "no colour" below. A cell shows the letter "a" in the roles of its swatch
+	// (.o_swatch_*). The selected cell has a ring in the primary colour outside
+	// the cell, the focused cell the focus ring on the fill (the text colour of
+	// the swatch), so both show at the same time. A grid wider than the
+	// callout scrolls.
+	// $o-picker-grid-cell-size: in light/_config_modules.scss
+	// $o-picker-grid-gap: in light/_config_modules.scss
+	// $o-picker-grid-group-gap: in light/_config_modules.scss
+
+	.o_color_picker_popup_grid {
+		padding: 10px;
+
+		.o_color_picker_grid_scroll {
+			overflow-x: auto;
+			// room for the ring of the selected cell
+			padding: 4px;
+		}
+
+		.o_color_picker_grid_groups, .o_color_picker_grid_row {
+			display: flex;
+			gap: $o-picker-grid-gap;
+		}
+		.o_color_picker_grid {
+			display: flex;
+			flex-direction: column;
+			gap: $o-picker-grid-gap;
+		}
+
+		.o_color_picker_grid_group {
+			flex: 0 0 $o-picker-grid-cell-size;
+			width: $o-picker-grid-cell-size;
+			margin-bottom: 2px;
+			font-size: $font-size-small;
+			line-height: $line-height-base;
+			color: var(--o-text-muted);
+			white-space: nowrap;
+			overflow: visible;
+		}
+
+		.o_color_picker_grid_gap {
+			margin-left: $o-picker-grid-group-gap;
+		}
+
+		.o_color_picker_cell {
+			flex: 0 0 $o-picker-grid-cell-size;
+			width: $o-picker-grid-cell-size;
+			height: $o-picker-grid-cell-size;
+			border: 1px solid var(--o-sw-border);
+			border-radius: $border-radius-base;
+			background-color: var(--o-sw-bg);
+			color: var(--o-sw-fg);
+			font-size: 15px;
+			line-height: $o-picker-grid-cell-size - 2px;
+			text-align: center;
+			cursor: pointer;
+			user-select: none;
+
+			&:hover {
+				box-shadow: 0 0 0 2px var(--o-bg-raised), 0 0 0 4px var(--o-border-strong);
+			}
+			&.o_selected {
+				box-shadow: 0 0 0 2px var(--o-bg-raised), 0 0 0 4px var(--o-primary);
+			}
+			&:focus {
+				outline: 0;
+			}
+			&:focus-visible {
+				@include o-focus-ring-on-fill;
+			}
+		}
+
+		.o_color_picker_cell_empty {
+			border-color: transparent;
+			background-color: transparent;
+			cursor: default;
+
+			&:hover {
+				box-shadow: none;
+			}
+		}
+
+		.o_color_picker_grid_unselect {
+			margin-top: 8px;
+
+			&.o_selected {
+				box-shadow: 0 0 0 1px var(--o-primary);
+				border-color: var(--o-primary);
+			}
+		}
+	}
+
+	/* Search field in selection elements */
+	// Overlay of the search field and the reset button
+	.o_search_field {
+		display: grid;
+		>* {
+			grid-area: 1/1;
+			z-index: 3;
+			justify-self: end;
+		}
+		.o_search_term {
+			border-radius: 0;
+			// Space for the reset button
+			padding-right: 30px;
+		}
+		.o_reset_search {
+			margin-left: -1px;
+			border: unset;
+			background-color: unset;
+		}
+		>span:has(.o_reset_search) {
+			align-self: center;
+		}
+	}
+	.o_search_field:not(:has(+ * .o_open_browser)) {
+		.o_search_term {
+			border-top-right-radius: $input-border-radius;
+			border-bottom-right-radius: $input-border-radius;
+		}
+	}
+
+	/* Object Selection Element */
+	dialog {
+		&.popover {
+			.popover-content:has(.o_object_selection) {
+				margin-top: 0;
+			}
+		}
+	}
+	.o_object_selection {
+		.o_object_selection_actions {
+			display: flex;
+			gap: 20px;
+		}
+
+		.o_object_selection_main {
+			display: flex;
+			flex-direction: column;
+			overflow-y: auto;
+			min-height: 140px;
+			max-height: 340px;
+			>:last-child {
+				flex-grow: 2;
+			}
+		
+			// As wide as the callout
+			margin: 0px -15px;
+			>div {
+				padding: 0px 16px;
+			}
+	
+			&::before,
+			&::after {
+				content: "";
+				position: sticky;
+				min-height: 10px;
+				pointer-events: none;
+			}
+
+			&::before {
+				top: 0;
+				background: linear-gradient(color-mix(in srgb, var(--o-shadow-color) 10%, transparent), transparent);
+			}
+
+			&::after {
+				bottom: 0;
+				background: linear-gradient(transparent, color-mix(in srgb, var(--o-shadow-color) 10%, transparent));
+			}
+		}
+	
+		.o_object_selection_divider {
+			// The horizontal line
+			display: flex;
+			&::before,
+			&::after {
+				content: "";
+				flex-grow: 2;
+				border-top: 1px solid var(--o-border-strong);
+				transform: translateY(50%);
+			}
+		
+			.o_object_selection_divider_text,
+			button {
+				color: var(--o-text);
+			}
+		
+			.o_object_selection_divider_text {
+				padding: 0px $padding-base-horizontal;
+			}
+		}
+	
 		.checkbox,
 		.radio {
-			&:hover,
-			&:focus-within {
-				background-color: var(--o-dropdown-link-hover-bg);
-				color: var(--o-dropdown-link-hover);
-				border-radius: $input-border-radius;
-				margin-left: -8px;
-				margin-right: -8px;
-				padding-left: 8px;
-				padding-right: 8px;
-				cursor: pointer;
+			label {
+				display: grid;
+				column-gap: 10px;
+				align-items: center;
+				padding-left: 0;
+			}
+			input[type="checkbox"],
+			input[type="radio"] {
+				position: initial;
+				margin: 0;
+				grid-area: checkbox;
+			}
+			.o_object_selection_option {
+				display: contents;
+			}
+			.o_object_selection_title {
+				grid-area: title;
+				min-width: 0;
+			}
+			.o_object_selection_subtitle {
+				grid-area: subtitle;
+				min-width: 0;
+				small {
+					line-height: 1em;
+				}
+			}
+			&:not(:has(.o_object_selection_image)) {
+				label {
+					grid-template-columns: auto 1fr;
+					grid-template-areas: "checkbox title";
+				}
+				&:has(.o_object_selection_subtitle) {
+					label {
+						// DOM order: title → subtitle (screen reader reads title first); grid places subtitle visually on top
+						grid-template-areas:
+							"subtitle subtitle"
+							"checkbox title";
+						row-gap: 2px;
+					}
+				}
+			}
+			&:has(.o_object_selection_image) {
+				label {
+					grid-template-columns: auto auto 1fr;
+					grid-template-areas: "checkbox image title";
+				}
+				.o_object_selection_image {
+					grid-area: image;
+				}
+				&:has(.o_object_selection_subtitle) {
+					label {
+						grid-template-areas:
+							"checkbox image subtitle"
+							"checkbox image title";
+					}
+				}
+			}
+		}
+
+		.o_object_selection_main {
+			.checkbox,
+			.radio {
+				&:hover,
+				&:focus-within {
+					background-color: var(--o-dropdown-link-hover-bg);
+					color: var(--o-dropdown-link-hover);
+					border-radius: $input-border-radius;
+					margin-left: -8px;
+					margin-right: -8px;
+					padding-left: 8px;
+					padding-right: 8px;
+					cursor: pointer;
+				}
+			}
+		}
+
+		.o_object_selection_image {
+			width: 40px;
+			max-width: 40px;
+			height: 40px;
+			max-height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+	}
+
+	/* Selection Display Element */
+	.o_expand_button {
+		&.o_selection_display {
+			display: flex;
+			gap: 5px;
+			/* The element is a .btn-default but has to read as a form field, so it
+			   takes both the border and the background from the input palette. Without
+			   the background it falls back to $btn-default-bg, which is #fff in the
+			   light theme but darker in a theme with coloured buttons, and the field
+			   then looks disabled. */
+			border-color: var(--o-border-strong);
+			background-color: var(--o-input-bg);
+			.o_icon {
+				margin: auto 0 auto auto;
+			}
+			&:is(.form-group *) {
+				width: 100%;
+				max-width: 100%;
+				min-height: $input-height-base;
+			}
+			&.btn-default {
+				&.disabled {
+					&:hover {
+						border-color: var(--o-border-strong);
+					}
+				}
 			}
 		}
 	}
 
-	.o_object_selection_image {
-		width: 40px;
-		max-width: 40px;
-		height: 40px;
-		max-height: 40px;
+	.o_object_selection_display {
 		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-}
 
-/* Selection Display Element */
-.o_expand_button {
-	&.o_selection_display {
-		display: flex;
-		gap: 5px;
-		/* The element is a .btn-default but has to read as a form field, so it
-		   takes both the border and the background from the input palette. Without
-		   the background it falls back to $btn-default-bg, which is #fff in the
-		   light theme but darker in a theme with coloured buttons, and the field
-		   then looks disabled. */
-		border-color: var(--o-border-strong);
-		background-color: var(--o-input-bg);
-		.o_icon {
-			margin: auto 0 auto auto;
-		}
 		&:is(.form-group *) {
 			width: 100%;
 			max-width: 100%;
-			min-height: $input-height-base;
 		}
-		&.btn-default {
-			&.disabled {
-				&:hover {
-					border-color: var(--o-border-strong);
+
+		> .o_expand_button.o_selection_display {
+			flex: 1 1 auto;
+			min-width: 0;
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+
+			&:is(.form-group *) {
+				width: auto;
+				max-width: none;
+			}
+		}
+
+		> .o_selection_browse_button {
+			flex: 0 0 auto;
+			min-height: $input-height-base;
+			margin-left: -1px;
+			border-top-left-radius: 0;
+			border-bottom-left-radius: 0;
+		}
+	
+		+.form-control-feedback {
+			display: none;
+		}
+	}
+
+	/* Restore border-radius on .form-control elements inside a non-addon span
+	   within an .input-group (e.g. disabled TextElement renders as
+	   <span id="X_wp"><input class="form-control"></span>) */
+	.input-group > span:not(.input-group-addon) > .form-control {
+		border-radius: 0;
+	}
+	.input-group > span:not(.input-group-addon):first-child > .form-control {
+		border-top-left-radius: $input-border-radius;
+		border-bottom-left-radius: $input-border-radius;
+	}
+	.input-group > span:not(.input-group-addon):last-child > .form-control {
+		border-top-right-radius: $input-border-radius;
+		border-bottom-right-radius: $input-border-radius;
+	}
+
+	/* When a button-group dropdown (rendered by MultipleSelectionElement with
+	   Layout.dropdown) is the first item of an .input-group, square the right
+	   corners of its inner .btn so it merges with the .input-group-addon.
+	   The renderer always wraps the .button-group in an outer <div>, so we
+	   step through that wrapper. */
+	.input-group > div:first-child > .button-group.dropdown > .btn.dropdown-toggle {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.o_url_component {
+		.o_url_input[readonly] {
+			background-color: var(--o-input-bg);
+			cursor: text;
+		}
+		.o_url_qr.active {
+			background-color: var(--o-primary);
+			border-color: var(--o-primary);
+			color: var(--o-white);
+		}
+		.o_url_qr_panel {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: $padding-base-vertical * 2;
+			width: fit-content;
+			margin: $padding-base-vertical 0 0 auto;
+			padding: $padding-base-horizontal;
+			background-color: var(--o-bg);
+			border: 1px solid var(--o-border-strong);
+			border-radius: $border-radius-base;
+			&[hidden] {
+				display: none;
+			}
+			.o_qrcode {
+				width: 200px;
+				height: 200px;
+				img, canvas {
+					width: 100%;
+					height: auto;
 				}
 			}
 		}
 	}
-}
-
-.o_object_selection_display {
-	display: flex;
-
-	&:is(.form-group *) {
-		width: 100%;
-		max-width: 100%;
-	}
-
-	> .o_expand_button.o_selection_display {
-		flex: 1 1 auto;
-		min-width: 0;
-		border-top-right-radius: 0;
-		border-bottom-right-radius: 0;
-
-		&:is(.form-group *) {
-			width: auto;
-			max-width: none;
-		}
-	}
-
-	> .o_selection_browse_button {
-		flex: 0 0 auto;
-		min-height: $input-height-base;
-		margin-left: -1px;
-		border-top-left-radius: 0;
-		border-bottom-left-radius: 0;
-	}
-	
-	+.form-control-feedback {
-		display: none;
-	}
-}
-
-/* Restore border-radius on .form-control elements inside a non-addon span
-   within an .input-group (e.g. disabled TextElement renders as
-   <span id="X_wp"><input class="form-control"></span>) */
-.input-group > span:not(.input-group-addon) > .form-control {
-	border-radius: 0;
-}
-.input-group > span:not(.input-group-addon):first-child > .form-control {
-	border-top-left-radius: $input-border-radius;
-	border-bottom-left-radius: $input-border-radius;
-}
-.input-group > span:not(.input-group-addon):last-child > .form-control {
-	border-top-right-radius: $input-border-radius;
-	border-bottom-right-radius: $input-border-radius;
-}
-
-/* When a button-group dropdown (rendered by MultipleSelectionElement with
-   Layout.dropdown) is the first item of an .input-group, square the right
-   corners of its inner .btn so it merges with the .input-group-addon.
-   The renderer always wraps the .button-group in an outer <div>, so we
-   step through that wrapper. */
-.input-group > div:first-child > .button-group.dropdown > .btn.dropdown-toggle {
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
-}
-
-.o_url_component {
-	.o_url_input[readonly] {
-		background-color: var(--o-input-bg);
-		cursor: text;
-	}
-	.o_url_qr.active {
-		background-color: var(--o-primary);
-		border-color: var(--o-primary);
-		color: var(--o-white);
-	}
-	.o_url_qr_panel {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: $padding-base-vertical * 2;
-		width: fit-content;
-		margin: $padding-base-vertical 0 0 auto;
-		padding: $padding-base-horizontal;
-		background-color: var(--o-bg);
-		border: 1px solid var(--o-border-strong);
-		border-radius: $border-radius-base;
-		&[hidden] {
-			display: none;
-		}
-		.o_qrcode {
-			width: 200px;
-			height: 200px;
-			img, canvas {
-				width: 100%;
-				height: auto;
-			}
-		}
-	}
-}
 }

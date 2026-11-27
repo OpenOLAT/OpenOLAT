@@ -2,305 +2,305 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-edusharing {
-.o_edusharing_selection{
-	iFrame {
-		width: 100%;
-		height: 900px;
-	}
-}
-
-.o_edusharing_container {
-	// In iFrame the popover does not work (sliced at bottom) if position is absolute.
-	// This is only a hack. We did not find a nice solution.
-	&.o_in_iframe {
-		.edusharing_metadata_wrapper {
-			margin-top: 5px;
+	.o_edusharing_selection{
+		iFrame {
+			width: 100%;
+			height: 900px;
 		}
-		.edusharing_metadata {
-			&.open {
-				position: unset;
-				margin: 0;
-				padding: 0;
-				
-				&:before {
-					content: unset;
-					border: unset;
-					top: unset;
+	}
+
+	.o_edusharing_container {
+		// In iFrame the popover does not work (sliced at bottom) if position is absolute.
+		// This is only a hack. We did not find a nice solution.
+		&.o_in_iframe {
+			.edusharing_metadata_wrapper {
+				margin-top: 5px;
+			}
+			.edusharing_metadata {
+				&.open {
 					position: unset;
-					left: unset;
-					width: unset;
-					height: unset;
+					margin: 0;
+					padding: 0;
+				
+					&:before {
+						content: unset;
+						border: unset;
+						top: unset;
+						position: unset;
+						left: unset;
+						width: unset;
+						height: unset;
+					}
 				}
 			}
 		}
-	}
 	
-	&.o_hide_license {
-		.license {
+		&.o_hide_license {
+			.license {
+				display: none;
+			}
+		}
+	
+		&.o_hide_infos {
+			.edusharing_metadata_wrapper {
+				display: none;
+			}
+		}
+	
+		// Look of the edu-sharing snippet. The edu-sharing styles are removed by the sanitizer (OO-10079).
+		.edusharing_rendering_content_footer {
+			position: relative;
+		}
+		.edusharing_rendering_content_footer_top {
+			display: flex;
+			align-items: flex-start;
+			gap: 10px;
+			font-size: 90%;
+		}
+		.license_icon {
+			height: 16px;
+			width: auto;
+		}
+		.edusharing_rendering_content_video_wrapper {
+			position: relative;
+			display: inline-block;
+			max-width: 100%;
+		}
+		.edusharing_rendering_content_video_error {
 			display: none;
 		}
-	}
-	
-	&.o_hide_infos {
-		.edusharing_metadata_wrapper {
-			display: none;
+		.edusharing_rendering_content_video_options_container {
+			position: absolute;
+			top: 5px;
+			right: 5px;
 		}
-	}
-	
-	// Look of the edu-sharing snippet. The edu-sharing styles are removed by the sanitizer (OO-10079).
-	.edusharing_rendering_content_footer {
-		position: relative;
-	}
-	.edusharing_rendering_content_footer_top {
-		display: flex;
-		align-items: flex-start;
-		gap: 10px;
-		font-size: 90%;
-	}
-	.license_icon {
-		height: 16px;
-		width: auto;
-	}
-	.edusharing_rendering_content_video_wrapper {
-		position: relative;
-		display: inline-block;
-		max-width: 100%;
-	}
-	.edusharing_rendering_content_video_error {
-		display: none;
-	}
-	.edusharing_rendering_content_video_options_container {
-		position: absolute;
-		top: 5px;
-		right: 5px;
-	}
-	.edusharing_rendering_content_video_options_content {
-		display: none;
-		position: absolute;
-		right: 0;
-		z-index: 10;
-		background: var(--o-popover-bg, var(--o-bg-raised));
-		border: 1px solid var(--o-popover-border, var(--o-border));
-		border-radius: 4px;
-	}
-	.edusharing_rendering_content_video_options_resolutions {
-		list-style: none;
-		margin: 0;
-		padding: 5px 0;
+		.edusharing_rendering_content_video_options_content {
+			display: none;
+			position: absolute;
+			right: 0;
+			z-index: 10;
+			background: var(--o-popover-bg, var(--o-bg-raised));
+			border: 1px solid var(--o-popover-border, var(--o-border));
+			border-radius: 4px;
+		}
+		.edusharing_rendering_content_video_options_resolutions {
+			list-style: none;
+			margin: 0;
+			padding: 5px 0;
 		
-		li {
-			padding: 3px 15px;
-			cursor: pointer;
-			white-space: nowrap;
+			li {
+				padding: 3px 15px;
+				cursor: pointer;
+				white-space: nowrap;
 			
-			&:hover, &:focus {
-				background: var(--o-bg-hover);
+				&:hover, &:focus {
+					background: var(--o-bg-hover);
+				}
+			}
+		}
+		.o_edusharing_frame {
+			max-width: 100%;
+			border: 0;
+		}
+		iframe[src*="pdfJS"] {
+			width: 100%;
+			height: 600px;
+		}
+		.edusharing_metadata_wrapper {
+			margin-left: auto;
+		}
+		.edusharing_metadata_toggle_button {
+			cursor: pointer;
+		}
+		.edusharing_metadata {
+			display: none;
+			position: absolute;
+			top: 100%;
+			left: 0;
+			z-index: 10;
+			width: 400px;
+			max-width: 90vw;
+			max-height: 60vh;
+			overflow-y: auto;
+			padding: 10px 15px;
+			background: var(--o-popover-bg, var(--o-bg-raised));
+			border: 1px solid var(--o-popover-border, var(--o-border));
+			border-radius: 4px;
+			box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); // o-color-keep(vendor-copy)
+		}
+		.edusharing_rendering_metadata_body {
+			.mdsCaption {
+				font-size: 110%;
+				margin: 15px 0 5px;
+				padding-bottom: 3px;
+				border-bottom: 1px solid var(--o-border-subtle);
+			}
+			.mdsWidgetCaption, .mdsContributorTitle {
+				font-size: 100%;
+				font-style: italic;
+				color: var(--o-text-muted);
+				margin: 8px 0 2px;
+			}
+			.mdsWidgetMultivalue {
+				list-style: none;
+				padding-left: 0;
+				margin: 0;
+			}
+			.mdsValue {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+				word-break: break-word;
+			}
+			.mds_license img {
+				height: 30px;
+				width: auto;
+			}
+			.licenseName {
+				font-weight: bold;
+			}
+			.licenseDescription {
+				color: var(--o-text-muted);
+				font-size: 90%;
 			}
 		}
 	}
-	.o_edusharing_frame {
-		max-width: 100%;
-		border: 0;
+
+	.o_edusharing_left {
+		display: block;
+		float: left;
+		margin: 5px 5px 5px 0;
 	}
-	iframe[src*="pdfJS"] {
-		width: 100%;
-		height: 600px;
+	.o_edusharing_right {
+		display: block;
+		float: right;
+		margin: 5px 0 5px 5px;
 	}
-	.edusharing_metadata_wrapper {
-		margin-left: auto;
+	.o_edusharing_inline {
+		display: inline-block;
+		margin: 0 5px;
 	}
-	.edusharing_metadata_toggle_button {
-		cursor: pointer;
+	.o_edusharing_none {
+		display: block;
+		float: none;
+		margin: 5px 0;
 	}
-	.edusharing_metadata {
-		display: none;
-		position: absolute;
-		top: 100%;
-		left: 0;
-		z-index: 10;
-		width: 400px;
-		max-width: 90vw;
-		max-height: 60vh;
-		overflow-y: auto;
-		padding: 10px 15px;
-		background: var(--o-popover-bg, var(--o-bg-raised));
-		border: 1px solid var(--o-popover-border, var(--o-border));
-		border-radius: 4px;
-		box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); // o-color-keep(vendor-copy)
+
+	/**
+	* see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/styles.css
+	*/
+
+	.eduContainer {
+		width: 180px;
+		color: rgba(0, 0, 0, 0.0); /*do not change*/ // o-color-keep(vendor-copy)
 	}
-	.edusharing_rendering_metadata_body {
-		.mdsCaption {
-			font-size: 110%;
-			margin: 15px 0 5px;
-			padding-bottom: 3px;
-			border-bottom: 1px solid var(--o-border-subtle);
+
+	.edusharing_spinner_inner {
+		width: 30px;
+		height: 50px;
+		display: inline-block;
+	}
+	.edusharing_spinner1 {
+		background: url($o-images-path + "edusharing/hex1.svg" );
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: 50px;
+		width: 50px;
+		height: 50px;
+		-webkit-animation: spin 2s infinite ease-in;
+		-moz-animation: spin 2s infinite ease-in;
+		-o-animation: spin 2s infinite ease-in;
+		animation: spin 2s infinite ease-in;
+		-webkit-animation-delay: 0.1s;
+		-moz-animation-delay: 0.1s;
+		animation-delay: 0.1s;
+	}
+
+	.edusharing_spinner2 {
+		background: url($o-images-path + "edusharing/hex2.svg" );
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: 50px;
+		width: 50px;
+		height: 50px;
+		-webkit-animation: spin 2s infinite ease-in;
+		-moz-animation: spin 2s infinite ease-in;
+		-o-animation: spin 2s infinite ease-in;
+		animation: spin 2s infinite ease-in;
+		-webkit-animation-delay: 0.25s;
+		-moz-animation-delay: 0.25s;
+		animation-delay: 0.25s;
+	}
+
+	.edusharing_spinner3 {
+		background: url($o-images-path + "edusharing/hex3.svg" );
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: 50px;
+		width: 50px;
+		height: 50px;
+		-webkit-animation: spin 2s infinite ease-in;
+		-moz-animation: spin 2s infinite ease-in;
+		-o-animation: spin 2s infinite ease-in;
+		animation: spin 2s infinite ease-in;
+		-webkit-animation-delay: 0.5s;
+		-moz-animation-delay: 0.5s;
+		animation-delay: 0.5s;
+	}
+
+	@-webkit-keyframes spin {
+		0% {
+			transform: scale(1);
 		}
-		.mdsWidgetCaption, .mdsContributorTitle {
-			font-size: 100%;
-			font-style: italic;
-			color: var(--o-text-muted);
-			margin: 8px 0 2px;
+
+		50% {
+			transform: scale(0.5);
 		}
-		.mdsWidgetMultivalue {
-			list-style: none;
-			padding-left: 0;
-			margin: 0;
-		}
-		.mdsValue {
-			display: flex;
-			align-items: center;
-			gap: 5px;
-			word-break: break-word;
-		}
-		.mds_license img {
-			height: 30px;
-			width: auto;
-		}
-		.licenseName {
-			font-weight: bold;
-		}
-		.licenseDescription {
-			color: var(--o-text-muted);
-			font-size: 90%;
+
+		100% {
+			transform: scale(1);
 		}
 	}
-}
 
-.o_edusharing_left {
-	display: block;
-	float: left;
-	margin: 5px 5px 5px 0;
-}
-.o_edusharing_right {
-	display: block;
-	float: right;
-	margin: 5px 0 5px 5px;
-}
-.o_edusharing_inline {
-	display: inline-block;
-	margin: 0 5px;
-}
-.o_edusharing_none {
-	display: block;
-	float: none;
-	margin: 5px 0;
-}
+	@-moz-keyframes spin {
+		0% {
+			transform: scale(1);
+		}
 
-/**
-* see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/styles.css
-*/
+		50% {
+			transform: scale(0.5);
+		}
 
-.eduContainer {
-	width: 180px;
-	color: rgba(0, 0, 0, 0.0); /*do not change*/ // o-color-keep(vendor-copy)
-}
-
-.edusharing_spinner_inner {
-	width: 30px;
-	height: 50px;
-	display: inline-block;
-}
-.edusharing_spinner1 {
-	background: url($o-images-path + "edusharing/hex1.svg" );
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 50px;
-	width: 50px;
-	height: 50px;
-	-webkit-animation: spin 2s infinite ease-in;
-	-moz-animation: spin 2s infinite ease-in;
-	-o-animation: spin 2s infinite ease-in;
-	animation: spin 2s infinite ease-in;
-	-webkit-animation-delay: 0.1s;
-	-moz-animation-delay: 0.1s;
-	animation-delay: 0.1s;
-}
-
-.edusharing_spinner2 {
-	background: url($o-images-path + "edusharing/hex2.svg" );
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 50px;
-	width: 50px;
-	height: 50px;
-	-webkit-animation: spin 2s infinite ease-in;
-	-moz-animation: spin 2s infinite ease-in;
-	-o-animation: spin 2s infinite ease-in;
-	animation: spin 2s infinite ease-in;
-	-webkit-animation-delay: 0.25s;
-	-moz-animation-delay: 0.25s;
-	animation-delay: 0.25s;
-}
-
-.edusharing_spinner3 {
-	background: url($o-images-path + "edusharing/hex3.svg" );
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 50px;
-	width: 50px;
-	height: 50px;
-	-webkit-animation: spin 2s infinite ease-in;
-	-moz-animation: spin 2s infinite ease-in;
-	-o-animation: spin 2s infinite ease-in;
-	animation: spin 2s infinite ease-in;
-	-webkit-animation-delay: 0.5s;
-	-moz-animation-delay: 0.5s;
-	animation-delay: 0.5s;
-}
-
-@-webkit-keyframes spin {
-	0% {
-		transform: scale(1);
+		100% {
+			transform: scale(1);
+		}
 	}
 
-	50% {
-		transform: scale(0.5);
+	@-o-keyframes spin {
+		0% {
+			transform: scale(1);
+		}
+
+		50% {
+			transform: scale(0.5);
+		}
+
+		100% {
+			transform: scale(1);
+		}
 	}
 
-	100% {
-		transform: scale(1);
-	}
-}
+	@keyframes spin {
+		0% {
+			transform: scale(1);
+		}
 
-@-moz-keyframes spin {
-	0% {
-		transform: scale(1);
-	}
+		50% {
+			transform: scale(0.5) rotate(90deg);
+		}
 
-	50% {
-		transform: scale(0.5);
+		100% {
+			transform: scale(1);
+		}
 	}
-
-	100% {
-		transform: scale(1);
-	}
-}
-
-@-o-keyframes spin {
-	0% {
-		transform: scale(1);
-	}
-
-	50% {
-		transform: scale(0.5);
-	}
-
-	100% {
-		transform: scale(1);
-	}
-}
-
-@keyframes spin {
-	0% {
-		transform: scale(1);
-	}
-
-	50% {
-		transform: scale(0.5) rotate(90deg);
-	}
-
-	100% {
-		transform: scale(1);
-	}
-}
 }

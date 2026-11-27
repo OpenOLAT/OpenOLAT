@@ -1,23 +1,22 @@
 // sizing icons
 // -------------------------
-
-// literal magnification scale
 @use "functions" as *;
 @use "variables" as *;
 @use "mixins" as *;
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin fa-rules-sizing {
-@for $i from 1 through 10 {
-  .#{$fa-css-prefix}-#{$i}x {
-    font-size: $i * 1em;
+  // literal magnification scale
+  @for $i from 1 through 10 {
+    .#{$fa-css-prefix}-#{$i}x {
+      font-size: $i * 1em;
+    }
   }
-}
 
-// step-based scale (with alignment)
-@each $size, $value in $fa-sizes {
-  .#{$fa-css-prefix}-#{$size} {
-     @include fa-size($value);
+  // step-based scale (with alignment)
+  @each $size, $value in $fa-sizes {
+    .#{$fa-css-prefix}-#{$size} {
+       @include fa-size($value);
+    }
   }
-}
 }

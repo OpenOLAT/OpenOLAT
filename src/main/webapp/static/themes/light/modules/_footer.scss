@@ -2,175 +2,175 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-footer {
-#o_footer_wrapper {
-	@if $o-footer-position-absolute == true {
-		position: absolute; bottom: 0;
-	}
-	@else {
-		margin-top: $o-footer-margin-top;
-	}
-	width: 100%;
-	height: $o-footer-height;
-	overflow: hidden;
-	background-color: var(--o-footer-bg);
-	// top border: width $o-footer-border-width (default 0: no border), colour footer-border
-	border-top: $o-footer-border-width solid var(--o-footer-border);
-	color: var(--o-footer-text);
-	line-height: $o-footer-line-height;
-		font-size: $o-footer-font-size;
+	#o_footer_wrapper {
+		@if $o-footer-position-absolute == true {
+			position: absolute; bottom: 0;
+		}
+		@else {
+			margin-top: $o-footer-margin-top;
+		}
+		width: 100%;
+		height: $o-footer-height;
+		overflow: hidden;
+		background-color: var(--o-footer-bg);
+		// top border: width $o-footer-border-width (default 0: no border), colour footer-border
+		border-top: $o-footer-border-width solid var(--o-footer-border);
+		color: var(--o-footer-text);
+		line-height: $o-footer-line-height;
+			font-size: $o-footer-font-size;
 	
-	a { 
-		color: var(--o-footer-link);
-		&:hover { color: var(--o-footer-link-hover);}
-	}
-	// the focus ring reads footer-focus: 3:1 on the footer, also on a dark or
-	// coloured footer (OO-10043)
-	a, button {
-		&:focus:focus-visible {
-			outline-color: var(--o-footer-focus);
+		a { 
+			color: var(--o-footer-link);
+			&:hover { color: var(--o-footer-link-hover);}
+		}
+		// the focus ring reads footer-focus: 3:1 on the footer, also on a dark or
+		// coloured footer (OO-10043)
+		a, button {
+			&:focus:focus-visible {
+				outline-color: var(--o-footer-focus);
+			}
 		}
 	}
-}
-#o_footer_container {
-	position: relative;
-	padding-top: $o-footer-padding-top;
-	min-height: $o-footer-height;		
-	background: var(--o-footer-inner-bg);
-	z-index: 1;
-}
-
-#o_footer_user { 
-	position: absolute;
-	left: ($grid-gutter-width * 0.5);
-	top: $o-footer-padding-top;
-	z-index: 1;
-	#o_counter { 
-		white-space:nowrap; 
-	}
- 	#o_username { 
- 		white-space:nowrap; 
- 		margin-right: 1em;
- 	}
-}
-
-#o_footer_version { 
-	position: absolute; 
-	right: ($grid-gutter-width * 0.5);
-	top: $o-footer-padding-top;
-	text-align: right;
-	z-index: 1;
-	/* align left on mobile, stacked view */
-	@media (max-width: $screen-xs-max) { 
-		padding-top: 10px;
-		text-align: left;
-	}
-}
-
-#o_footer_powered { 
-	position: absolute; 
-	top: ($line-height-computed + $o-footer-padding-top);
-	right: ($grid-gutter-width * 0.5);
-	z-index: 1;
-	/* make powerd-by buttons a bit less colorful to not distract user from learning */
-	img {	
-		@include opacity(.6);
-		&:hover { @include opacity(1); }	
-		width: 120px;
-	}		
-	a {
-		@extend %o_undecorated; 
-	}
-}
-
-#o_footer_impressum {
-	position: absolute; 
-	top: $o-footer-padding-top;
-	width: 100%;
-	text-align: center;
-	z-index: -1;
-	i {
-		display: none;
-	}
-}
-#o_footer_textline {
-	position: absolute; 
-	top: ($line-height-computed + $o-footer-padding-top);
-	width: 100%;
-	text-align: center;
-	z-index: -1;
-}
-		
-/*  share links (copy link, QR code, social networks) from SocialModule.java */
-#o_footer_user #o_share {
-	margin-top: 10px;
-	a {
-		@include opacity(.6);
-	}
-	a:hover {
-		@include opacity(1);
-	}
-}
-
-#o_footer_user #o_share, #o_footer_user .o_share_links {
-	a {
-		color: var(--o-footer-link);
-		margin: 0 0.25em 0 0;
-		@extend %o_undecorated;
-	}
-	a:hover {
-		color: var(--o-footer-link-hover);
-	}
-	a:focus {
-		outline-offset: 2px;
-	}
-}
-
-.o_share_links {
-	display: flex;
-	align-items: center;
-	gap: 0.5em;
-}
-
-.o_lightbox_modal_form.o_share_qrcode {
-	text-align: center;
-	width: auto;
-	max-width: 90vw;
-
-	.o_qrcode {
-		margin: 0 auto;
+	#o_footer_container {
+		position: relative;
+		padding-top: $o-footer-padding-top;
+		min-height: $o-footer-height;		
+		background: var(--o-footer-inner-bg);
+		z-index: 1;
 	}
 
-	.o_share_qrcode_url {
-		margin-top: 0.5em;
-		font-size: $font-size-small;
-		word-break: break-all;
+	#o_footer_user { 
+		position: absolute;
+		left: ($grid-gutter-width * 0.5);
+		top: $o-footer-padding-top;
+		z-index: 1;
+		#o_counter { 
+			white-space:nowrap; 
+		}
+	 	#o_username { 
+	 		white-space:nowrap; 
+	 		margin-right: 1em;
+	 	}
 	}
-}
 
-/* hide images and stuff on mobile */
-@media (max-width: $screen-xs-max) {
-	#o_counter, #o_footer_version {
-		display: none;
+	#o_footer_version { 
+		position: absolute; 
+		right: ($grid-gutter-width * 0.5);
+		top: $o-footer-padding-top;
+		text-align: right;
+		z-index: 1;
+		/* align left on mobile, stacked view */
+		@media (max-width: $screen-xs-max) { 
+			padding-top: 10px;
+			text-align: left;
+		}
 	}
-	#o_footer_impressum {
+
+	#o_footer_powered { 
+		position: absolute; 
 		top: ($line-height-computed + $o-footer-padding-top);
-		text-align: left;
+		right: ($grid-gutter-width * 0.5);
+		z-index: 1;
+		/* make powerd-by buttons a bit less colorful to not distract user from learning */
+		img {	
+			@include opacity(.6);
+			&:hover { @include opacity(1); }	
+			width: 120px;
+		}		
+		a {
+			@extend %o_undecorated; 
+		}
+	}
+
+	#o_footer_impressum {
+		position: absolute; 
+		top: $o-footer-padding-top;
+		width: 100%;
+		text-align: center;
+		z-index: -1;
+		i {
+			display: none;
+		}
 	}
 	#o_footer_textline {
-		top: ($line-height-computed *2 + $o-footer-padding-top);
-		text-align: left;
+		position: absolute; 
+		top: ($line-height-computed + $o-footer-padding-top);
+		width: 100%;
+		text-align: center;
+		z-index: -1;
 	}
-	#o_footer_powered {
-		top: $o-footer-padding-top;
-		a:after { 
-			content:"\221E"; 
-			font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; 
-			font-weight: bold; 
-			font-size: $o-footer-share-font-size;
+		
+	/*  share links (copy link, QR code, social networks) from SocialModule.java */
+	#o_footer_user #o_share {
+		margin-top: 10px;
+		a {
+			@include opacity(.6);
 		}
-		img { 
-			display: none
+		a:hover {
+			@include opacity(1);
 		}
 	}
-}
+
+	#o_footer_user #o_share, #o_footer_user .o_share_links {
+		a {
+			color: var(--o-footer-link);
+			margin: 0 0.25em 0 0;
+			@extend %o_undecorated;
+		}
+		a:hover {
+			color: var(--o-footer-link-hover);
+		}
+		a:focus {
+			outline-offset: 2px;
+		}
+	}
+
+	.o_share_links {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+	}
+
+	.o_lightbox_modal_form.o_share_qrcode {
+		text-align: center;
+		width: auto;
+		max-width: 90vw;
+
+		.o_qrcode {
+			margin: 0 auto;
+		}
+
+		.o_share_qrcode_url {
+			margin-top: 0.5em;
+			font-size: $font-size-small;
+			word-break: break-all;
+		}
+	}
+
+	/* hide images and stuff on mobile */
+	@media (max-width: $screen-xs-max) {
+		#o_counter, #o_footer_version {
+			display: none;
+		}
+		#o_footer_impressum {
+			top: ($line-height-computed + $o-footer-padding-top);
+			text-align: left;
+		}
+		#o_footer_textline {
+			top: ($line-height-computed *2 + $o-footer-padding-top);
+			text-align: left;
+		}
+		#o_footer_powered {
+			top: $o-footer-padding-top;
+			a:after { 
+				content:"\221E"; 
+				font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; 
+				font-weight: bold; 
+				font-size: $o-footer-share-font-size;
+			}
+			img { 
+				display: none
+			}
+		}
+	}
 }

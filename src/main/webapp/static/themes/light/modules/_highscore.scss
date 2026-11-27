@@ -3,213 +3,212 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-highscore {
-
-.o_highscore {
-	.o_position {
-		text-align: center;
-		h2 {
-			@if o-hs-position-title-gradient() {
-				/* apply only for webkit capable browsers (Safari, Edge, Chrome) */
-				@media screen and (-webkit-min-device-pixel-ratio:0) {
-					background: linear-gradient(330deg, var(--o-red-500) 0%, var(--o-lime-300) 25%, var(--o-teal-300) 50%, var(--o-violet-500) 75%, var(--o-red-500) 100%);
-					-webkit-background-clip: text;
-					-webkit-text-fill-color: transparent;
-					display: inline;
-					&:after { 
-					     content: "\A";
-					     white-space: pre; 
+	.o_highscore {
+		.o_position {
+			text-align: center;
+			h2 {
+				@if o-hs-position-title-gradient() {
+					/* apply only for webkit capable browsers (Safari, Edge, Chrome) */
+					@media screen and (-webkit-min-device-pixel-ratio:0) {
+						background: linear-gradient(330deg, var(--o-red-500) 0%, var(--o-lime-300) 25%, var(--o-teal-300) 50%, var(--o-violet-500) 75%, var(--o-red-500) 100%);
+						-webkit-background-clip: text;
+						-webkit-text-fill-color: transparent;
+						display: inline;
+						&:after { 
+						     content: "\A";
+						     white-space: pre; 
+						}
 					}
+
+				} @else {
+					color: var(--o-highscore-position-title);
 				}
-
-			} @else {
-				color: var(--o-highscore-position-title);
+				font-size: $o-hs-position-title-size;
+				font-weight: $o-hs-position-title-weight;
+				line-height: 1.2em;
 			}
-			font-size: $o-hs-position-title-size;
-			font-weight: $o-hs-position-title-weight;
-			line-height: 1.2em;
+			font-size: $o-hs-position-size;
+			font-weight: $o-hs-position-weight;
 		}
-		font-size: $o-hs-position-size;
-		font-weight: $o-hs-position-weight;
-	}
-	.o_position_relative {
-		font-size: $o-hs-position-relative-size;
-		font-weight: $o-hs-position-relative-weight;
-	}
+		.o_position_relative {
+			font-size: $o-hs-position-relative-size;
+			font-weight: $o-hs-position-relative-weight;
+		}
 
-	.o_podium {
-		position: relative;
-		vertical-align: bottom;
-		height: $o-hs-podium-height;
-		margin-bottom: $o-hs-podium-margin-bottom;
-	}
+		.o_podium {
+			position: relative;
+			vertical-align: bottom;
+			height: $o-hs-podium-height;
+			margin-bottom: $o-hs-podium-margin-bottom;
+		}
 
-	.o_rank {
-		width: 30%;
-		position: absolute;
-		bottom: 0;
-		text-shadow: color-mix(in srgb, var(--o-shadow-color) 50%, transparent) 0 -1px 0, color-mix(in srgb, var(--o-scrim) 60%, transparent) 0 2px 1px;  
-		
-		&:before {
+		.o_rank {
+			width: 30%;
 			position: absolute;
 			bottom: 0;
-			left: 0;
-			width: 100%;
-			text-align: center;	
-		}
-		.o_name {
-			position: absolute;
-			top: 100%;
-			width: 100%;
-			text-align: center;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			padding-top: 1em;
-			text-shadow: none;
-		}
-		.o_score {
-			color: var(--o-highscore-score);
-			font-size: $o-hs-score-size;
-			width: 100%;
-			text-align: center;
-			position: absolute;
-			top: -20px;
-			text-shadow: none;
-		}
-		.o_singleportrait {
-			position: absolute;
-			width: 100%;
-			text-align: center;
-			top: $o-hs-singleportrait-vertical-align;
-		}
-		.o_rank_portraits {
-			position: relative; 
-			left: 0; 
-			top: -210px; 
-			height: 180px; 
-			width: 200px; 
-			text-align: center; 
-			vertical-align: bottom;
-			display: table-cell;
-			ul {
-				display: inline-block;
-			}
-			.o_portrait {
-				margin: 5px;
-			}
-		}
-
-	}
-
-
-	.o_first {
-		height: $o-hs-podium-first-height;
-		left: 30%;
-		border: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
-		border-top-left-radius: $o-hs-podium-border-radius;
-		border-top-right-radius: $o-hs-podium-border-radius;
-		@if $o-hs-podium-bg-gradientstyle == true {
-			@include o-make-glossy-bg("highscore-podium-first-bg");
-		} @else {
-			background: var(--o-highscore-podium-first-bg);
-		}
+			text-shadow: color-mix(in srgb, var(--o-shadow-color) 50%, transparent) 0 -1px 0, color-mix(in srgb, var(--o-scrim) 60%, transparent) 0 2px 1px;  
 		
-		&:before {
-			content: "1";
-			font-size: 700%;
-			line-height: $o-hs-podium-first-height;
-			color: var(--o-highscore-rank-first)	;
-		}
-	}
-
-	.o_second {
-		height: $o-hs-podium-second-height;
-		left: 0;
-		@if $o-hs-podium-bg-gradientstyle == true {
-			@include o-make-glossy-bg("highscore-podium-second-bg");
-		} @else {
-			background: var(--o-highscore-podium-second-bg);
-		}		
-		border-left: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
-		border-top: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
-		border-bottom: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
-		border-top-left-radius: $o-hs-podium-border-radius;
-		&:before {
-			content: "2";
-			font-size: 500%;
-			line-height: $o-hs-podium-second-height;
-			color: var(--o-highscore-rank-second);
-		}
-	}
-
-	.o_third {
-		height: $o-hs-podium-third-height;
-		left: 60%;
-		@if $o-hs-podium-bg-gradientstyle == true {
-			@include o-make-glossy-bg("highscore-podium-third-bg");
-		} @else {
-			background: var(--o-highscore-podium-third-bg);
-		}		
-		border-right: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
-		border-top: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
-		border-bottom: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
-		border-top-right-radius: $o-hs-podium-border-radius;
-		&:before {
-			content: "3";
-			font-size: 300%;
-			line-height: $o-hs-podium-third-height;
-			color: var(--o-highscore-rank-third);
-		}
-	}
-
-
-	.o_histogram {
-		position: relative;
-		bottom: $o-hs-histogram-bottom;
-		margin-bottom: $o-hs-histogram-margin-bottom;
-		.d3chart {
-			width: 100%;
-			padding-top: 50px;
-			height: $o-hs-histogram-height;
-			text {
-				fill: var(--o-highscore-histogram-text);
+			&:before {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				width: 100%;
+				text-align: center;	
 			}
-			.axis {
-				path, line {
-					stroke: var(--o-highscore-histogram-axis);
+			.o_name {
+				position: absolute;
+				top: 100%;
+				width: 100%;
+				text-align: center;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				padding-top: 1em;
+				text-shadow: none;
+			}
+			.o_score {
+				color: var(--o-highscore-score);
+				font-size: $o-hs-score-size;
+				width: 100%;
+				text-align: center;
+				position: absolute;
+				top: -20px;
+				text-shadow: none;
+			}
+			.o_singleportrait {
+				position: absolute;
+				width: 100%;
+				text-align: center;
+				top: $o-hs-singleportrait-vertical-align;
+			}
+			.o_rank_portraits {
+				position: relative; 
+				left: 0; 
+				top: -210px; 
+				height: 180px; 
+				width: 200px; 
+				text-align: center; 
+				vertical-align: bottom;
+				display: table-cell;
+				ul {
+					display: inline-block;
+				}
+				.o_portrait {
+					margin: 5px;
 				}
 			}
-			.o_myself {
-				fill: var(--o-highscore-bar-myself);
-				&:hover {
-					fill: var(--o-highscore-bar-myself-hover);
-				}
-			}
-			.o_other {
-				fill: var(--o-highscore-bar-other);
-				&:hover {
-					fill: var(--o-highscore-bar-other-hover);
-				}
-			}
-			.o_empty {
-				fill: var(--o-highscore-bar-empty);	
-			}
-		}	
-	}
-}
+
+		}
 
 
-/* Align both tables the same way */
-.o_listing {
-	.o_table_wrapper.o_table_flexi .table {
-		margin-top: 0;
+		.o_first {
+			height: $o-hs-podium-first-height;
+			left: 30%;
+			border: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+			border-top-left-radius: $o-hs-podium-border-radius;
+			border-top-right-radius: $o-hs-podium-border-radius;
+			@if $o-hs-podium-bg-gradientstyle == true {
+				@include o-make-glossy-bg("highscore-podium-first-bg");
+			} @else {
+				background: var(--o-highscore-podium-first-bg);
+			}
+		
+			&:before {
+				content: "1";
+				font-size: 700%;
+				line-height: $o-hs-podium-first-height;
+				color: var(--o-highscore-rank-first)	;
+			}
+		}
+
+		.o_second {
+			height: $o-hs-podium-second-height;
+			left: 0;
+			@if $o-hs-podium-bg-gradientstyle == true {
+				@include o-make-glossy-bg("highscore-podium-second-bg");
+			} @else {
+				background: var(--o-highscore-podium-second-bg);
+			}		
+			border-left: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+			border-top: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+			border-bottom: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+			border-top-left-radius: $o-hs-podium-border-radius;
+			&:before {
+				content: "2";
+				font-size: 500%;
+				line-height: $o-hs-podium-second-height;
+				color: var(--o-highscore-rank-second);
+			}
+		}
+
+		.o_third {
+			height: $o-hs-podium-third-height;
+			left: 60%;
+			@if $o-hs-podium-bg-gradientstyle == true {
+				@include o-make-glossy-bg("highscore-podium-third-bg");
+			} @else {
+				background: var(--o-highscore-podium-third-bg);
+			}		
+			border-right: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+			border-top: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+			border-bottom: $o-hs-podium-border-width $o-hs-podium-border-style var(--o-highscore-podium-border);		
+			border-top-right-radius: $o-hs-podium-border-radius;
+			&:before {
+				content: "3";
+				font-size: 300%;
+				line-height: $o-hs-podium-third-height;
+				color: var(--o-highscore-rank-third);
+			}
+		}
+
+
+		.o_histogram {
+			position: relative;
+			bottom: $o-hs-histogram-bottom;
+			margin-bottom: $o-hs-histogram-margin-bottom;
+			.d3chart {
+				width: 100%;
+				padding-top: 50px;
+				height: $o-hs-histogram-height;
+				text {
+					fill: var(--o-highscore-histogram-text);
+				}
+				.axis {
+					path, line {
+						stroke: var(--o-highscore-histogram-axis);
+					}
+				}
+				.o_myself {
+					fill: var(--o-highscore-bar-myself);
+					&:hover {
+						fill: var(--o-highscore-bar-myself-hover);
+					}
+				}
+				.o_other {
+					fill: var(--o-highscore-bar-other);
+					&:hover {
+						fill: var(--o-highscore-bar-other-hover);
+					}
+				}
+				.o_empty {
+					fill: var(--o-highscore-bar-empty);	
+				}
+			}	
+		}
 	}
-	table {
-		th {
-			&:nth-of-type(1),:nth-of-type(2) {
-				width: 5em;
+
+
+	/* Align both tables the same way */
+	.o_listing {
+		.o_table_wrapper.o_table_flexi .table {
+			margin-top: 0;
+		}
+		table {
+			th {
+				&:nth-of-type(1),:nth-of-type(2) {
+					width: 5em;
+				}
 			}
 		}
 	}
-}
 }

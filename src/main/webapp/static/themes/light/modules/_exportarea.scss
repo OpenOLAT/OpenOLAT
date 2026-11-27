@@ -2,90 +2,90 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-exportarea {
-.o_export_card {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-end;
-	justify-content: space-between;
-	padding: $o-export-area-rowelem-space-md;
-	border-bottom: 1px solid var(--o-border);
+	.o_export_card {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		padding: $o-export-area-rowelem-space-md;
+		border-bottom: 1px solid var(--o-border);
 	
-	.o_export_type {
-		font-size: 60px;
-		line-height: 70px;
-		text-align: center;
-		min-height: 70px;
-		flex: 0 0 70px;
-		box-sizing: content-box;
-	}
-	
-	.o_export_meta {
-		flex: 1 1 180px;
-		position: relative;
-		padding: 0 10px;
-		
-		>span {
-			font-size: 90%;
-			color: var(--o-export-area-meta);
+		.o_export_type {
+			font-size: 60px;
+			line-height: 70px;
+			text-align: center;
+			min-height: 70px;
+			flex: 0 0 70px;
+			box-sizing: content-box;
 		}
+	
+		.o_export_meta {
+			flex: 1 1 180px;
+			position: relative;
+			padding: 0 10px;
 		
-		h5 {
-			margin: 3px 0 3px 0;
+			>span {
+				font-size: 90%;
+				color: var(--o-export-area-meta);
+			}
+		
+			h5 {
+				margin: 3px 0 3px 0;
 			
-			>i.o_icon_locked {
-				margin-left: 1em;
+				>i.o_icon_locked {
+					margin-left: 1em;
+				}
 			}
 		}
-	}
 	
-	.o_export_wait {
-		font-style: italic;
-		padding-left: 2em;
-		color: var(--o-state-warning-text);
-	}
+		.o_export_wait {
+			font-style: italic;
+			padding-left: 2em;
+			color: var(--o-state-warning-text);
+		}
 	
-	.o_export_expiration.o_labeled {
-		// colour: semantic state in _states.scss (OO-10042)
-		text-transform: none;
-		font-weight: normal;
-		display: inline-block;
-	}
+		.o_export_expiration.o_labeled {
+			// colour: semantic state in _states.scss (OO-10042)
+			text-transform: none;
+			font-weight: normal;
+			display: inline-block;
+		}
 	
-	.o_export_actions {
-		flex: 0 0 auto;
-		overflow: hidden;
-		margin-bottom: -5px;
-		margin-left: 20px;
-		text-align: right;
+		.o_export_actions {
+			flex: 0 0 auto;
+			overflow: hidden;
+			margin-bottom: -5px;
+			margin-left: 20px;
+			text-align: right;
 		
-		.o_actions {
-			white-space: nowrap;
+			.o_actions {
+				white-space: nowrap;
 			
-			a {
-				margin-right: 2em;
+				a {
+					margin-right: 2em;
+				}
+				a:last-child {
+					margin-right: 0;
+				}
 			}
-			a:last-child {
-				margin-right: 0;
+
+			&.small {
+				font-size: 100%;
 			}
 		}
+	}
 
-		&.small {
-			font-size: 100%;
+	@media (max-width: $screen-sm-max) {
+		.o_export_card .o_export_actions {
+			margin-left: 80px;
+			text-align: right;
 		}
 	}
-}
 
-@media (max-width: $screen-sm-max) {
-	.o_export_card .o_export_actions {
-		margin-left: 80px;
-		text-align: right;
+	@media (max-width: $screen-xs-max) {
+		.o_export_card .o_export_actions {
+			margin-left: 0;
+			text-align: right;
+		}
 	}
-}
-
-@media (max-width: $screen-xs-max) {
-	.o_export_card .o_export_actions {
-		margin-left: 0;
-		text-align: right;
-	}
-}
 }

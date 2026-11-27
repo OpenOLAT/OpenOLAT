@@ -5,52 +5,50 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin bootstrap-rules-pager {
+  .pager {
+    padding-left: 0;
+    margin: $line-height-computed 0;
+    text-align: center;
+    list-style: none;
+    @include clearfix;
+    li {
+      display: inline;
+      > a,
+      > span {
+        display: inline-block;
+        padding: 5px 14px;
+        border-radius: $pager-border-radius;
+      }
 
-
-.pager {
-  padding-left: 0;
-  margin: $line-height-computed 0;
-  text-align: center;
-  list-style: none;
-  @include clearfix;
-  li {
-    display: inline;
-    > a,
-    > span {
-      display: inline-block;
-      padding: 5px 14px;
-      border-radius: $pager-border-radius;
+      > a:hover,
+      > a:focus {
+        text-decoration: none;
+        background-color: $pager-hover-bg;
+      }
     }
 
-    > a:hover,
-    > a:focus {
-      text-decoration: none;
-      background-color: $pager-hover-bg;
+    .next {
+      > a,
+      > span {
+        float: right;
+      }
+    }
+
+    .previous {
+      > a,
+      > span {
+        float: left;
+      }
+    }
+
+    .disabled {
+      > a,
+      > a:hover,
+      > a:focus,
+      > span {
+        color: $pager-disabled-color;
+        cursor: $cursor-disabled;
+      }
     }
   }
-
-  .next {
-    > a,
-    > span {
-      float: right;
-    }
-  }
-
-  .previous {
-    > a,
-    > span {
-      float: left;
-    }
-  }
-
-  .disabled {
-    > a,
-    > a:hover,
-    > a:focus,
-    > span {
-      color: $pager-disabled-color;
-      cursor: $cursor-disabled;
-    }
-  }
-}
 }

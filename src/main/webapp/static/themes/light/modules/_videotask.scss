@@ -2,308 +2,308 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-videotask {
-.o_videotask_box {
-	padding: 1em 2em;
-	border: 1px solid var(--o-video-startbox-main-border);
-	border-radius: $o-video-startbox-border-radius;
-	background-color: var(--o-video-startbox-main-bg);
+	.o_videotask_box {
+		padding: 1em 2em;
+		border: 1px solid var(--o-video-startbox-main-border);
+		border-radius: $o-video-startbox-border-radius;
+		background-color: var(--o-video-startbox-main-bg);
 	
-	.o_videotask_marker {
-		position: relative;
-		display: inline-block;
-	}
-}
-
-.o_video_me_colored_area.o_video_marker_gray {
-	border-left-color: var(--o-video-practice);
-	background: var(--o-video-practice);
-}
-
-.o_videotask_box .o_videotask_marker,
-.o_videotask_categories .btn,
-.o_videotask_categories .btn.btn-default.o_disabled:hover,
-.o_videotask_marker,
-.o_videotask_segment {
-	color: var(--o-neutral-0);
-	border-color: var(--o-video-border);
-
-	// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases,
-	// a key of the colour set M renders with its swatch class, e.g. o_swatch_blue
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		background-color: var(--o-sw-bg);
-		color: var(--o-sw-fg);
-	}
-}
-
-.o_videotask_categories .btn.btn-default.o_disabled,
-.o_videotask_categories .btn.btn-default:active {
-	color: var(--o-video-bright) !important;
-}
-
-.o_videotask_categories .btn.btn-default:hover {
-	border-color: var(--o-video-bright-edge);
-
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		background-color: var(--o-sw-border);
-	}
-}
-
-.o_videotask_tooltip {
-	.tooltip-inner {
-		min-width: unset;
-		border: 1px solid var(--o-video-bright-edge);
-	}
-	
-	&.tooltip.top .tooltip-arrow {
-		border-top-color: var(--o-video-bright-edge);
+		.o_videotask_marker {
+			position: relative;
+			display: inline-block;
+		}
 	}
 
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		.tooltip-inner {
+	.o_video_me_colored_area.o_video_marker_gray {
+		border-left-color: var(--o-video-practice);
+		background: var(--o-video-practice);
+	}
+
+	.o_videotask_box .o_videotask_marker,
+	.o_videotask_categories .btn,
+	.o_videotask_categories .btn.btn-default.o_disabled:hover,
+	.o_videotask_marker,
+	.o_videotask_segment {
+		color: var(--o-neutral-0);
+		border-color: var(--o-video-border);
+
+		// o_video_marker_<key> sets the swatch tokens --o-sw-* through $o-swatch-aliases,
+		// a key of the colour set M renders with its swatch class, e.g. o_swatch_blue
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
 			background-color: var(--o-sw-bg);
 			color: var(--o-sw-fg);
 		}
 	}
-}
 
-.o_videotask_tooltip {
-	&.tooltip.in {
-		opacity: 1;
+	.o_videotask_categories .btn.btn-default.o_disabled,
+	.o_videotask_categories .btn.btn-default:active {
+		color: var(--o-video-bright) !important;
 	}
-}
 
-.o_videotask_marker {
-	@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
-		&:before,
-		> span {
-			background-color: var(--o-sw-bg);
+	.o_videotask_categories .btn.btn-default:hover {
+		border-color: var(--o-video-bright-edge);
+
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			background-color: var(--o-sw-border);
 		}
 	}
-}
 
-.o_videotask_marker.o_video_marker_assign { 
-	background-color: var(--o-videotask-marker-assign-bg);
-}
-
-.o_videotask_correct_segments {
-	color: var(--o-video-correct-segments);
-}
-
-.o_videotask_notcorrect_segments {
-	color: var(--o-video-notcorrect-segments);
-}
-
-.o_videotask_practice_end {
-	padding: 0 3em;
-}
-
-.o_videotask_practice_result {
-	display: flex;
-	align-items: center;
-	min-height: 3em;
+	.o_videotask_tooltip {
+		.tooltip-inner {
+			min-width: unset;
+			border: 1px solid var(--o-video-bright-edge);
+		}
 	
-	.o_icon_trophy {
-		font-size: 300%;
+		&.tooltip.top .tooltip-arrow {
+			border-top-color: var(--o-video-bright-edge);
+		}
+
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			.tooltip-inner {
+				background-color: var(--o-sw-bg);
+				color: var(--o-sw-fg);
+			}
+		}
 	}
+
+	.o_videotask_tooltip {
+		&.tooltip.in {
+			opacity: 1;
+		}
+	}
+
+	.o_videotask_marker {
+		@at-root #{o-swatch-alias-selector("o_video_marker_", &)}, #{o-swatch-selector(&)} {
+			&:before,
+			> span {
+				background-color: var(--o-sw-bg);
+			}
+		}
+	}
+
+	.o_videotask_marker.o_video_marker_assign { 
+		background-color: var(--o-videotask-marker-assign-bg);
+	}
+
+	.o_videotask_correct_segments {
+		color: var(--o-video-correct-segments);
+	}
+
+	.o_videotask_notcorrect_segments {
+		color: var(--o-video-notcorrect-segments);
+	}
+
+	.o_videotask_practice_end {
+		padding: 0 3em;
+	}
+
+	.o_videotask_practice_result {
+		display: flex;
+		align-items: center;
+		min-height: 3em;
 	
-	>span {
-		display: block;
-		padding-left: 1em;
-		font-size: 120%;
-	}
-}
-
-.o_videotask_layer {
-	position: absolute;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-end;
+		.o_icon_trophy {
+			font-size: 300%;
+		}
 	
-	left: 10px;
-	right: 10px;
-	bottom: 65px;
-	height: 160px;
-	margin: 0 10px;
-}
-
-
-.o_videotask_segments {
-	width: 100%;
-	background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
-	position: relative;
-	height: 20px;
-}
-
-.o_videotask_segments.o_videotask_segments_with_markers {
-	margin-top: 25px;
-	margin-bottom: 5px;
-}
-
-.o_videotask_categories {
-	width: 100%;
-	background-color: transparent;
-	text-align: center;
-	padding: 0 0 10px 0;
-}
-
-.o_videotask_categories>button.btn {
-	margin-top: 10px;
-}
-
-.o_videotask_box .o_videotask_categories {
-	text-align: left;
-}
-
-.o_videotask_messages {
-	width: 100%;
-	text-align: center;
-	
-	>span {
-		padding: 5px 30px;
-	}
-}
-
-.o_videotask_messages.hide {
-	display:none;
-}
-
-.o_videotask_messages, .o_videotask_start_message {
-	>span {
-		border-radius: $o-content-border-box-radius;
+		>span {
+			display: block;
+			padding-left: 1em;
+			font-size: 120%;
+		}
 	}
 
-	>.o_note {
-		background-color: var(--o-box-note-bg);
-		color: var(--o-box-note-text);
-		border: 1px solid var(--o-box-note-border);
-	}
-	
-	>.o_warning {
-		background-color: var(--o-box-warning-bg);
-		color: var(--o-box-warning-text);
-		border: 1px solid var(--o-box-warning-border);
-	}
-	
-	>.o_correct {
-		background-color: var(--o-box-success-bg);
-		color: var(--o-box-success-text);
-		border: 1px solid var(--o-box-success-border);
-	}
-}
-
-.o_videotask_marker {
-	display: inline-block;
-	position: absolute;
-	height: 1em;
-	width: 6em;
-	margin-left: -3em;
-	top: -25px;
-	text-align: center;
-	
-	>span {
-		border: 1px solid var(--o-video-border);
-		border-radius: 4px;
-		padding: 3px 6px 1px 5px;
-	}
-}
-
-.o_videotask_segments .o_videotask_marker {
-	background-color: transparent !important;
-}
-
-.o_videotask_marker:before {
-	content: '\0020';
-	position: absolute;
-	height: 28px;
-	right: 0;
-	top: 19px;
-	margin-right: 41px;
-	width: 2px;
-}
-
-.o_videotask_marker.o_segment_marker_correct {
-	@include o-add-icon('check-circle');
-	@include o-add-icon-font(true);
-	&:after{
-		font-size: 20px;
-		line-height: 16px;
-		color: var(--o-state-success-text);
-		background-color: var(--o-bg);
-		width: 16px;
-		height: 16px;
-		
-		border-radius: 8px;
+	.o_videotask_layer {
 		position: absolute;
-		top: 28px;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+	
+		left: 10px;
+		right: 10px;
+		bottom: 65px;
+		height: 160px;
+		margin: 0 10px;
+	}
+
+
+	.o_videotask_segments {
+		width: 100%;
+		background-color: color-mix(in srgb, var(--o-scrim) 50%, transparent);
+		position: relative;
+		height: 20px;
+	}
+
+	.o_videotask_segments.o_videotask_segments_with_markers {
+		margin-top: 25px;
+		margin-bottom: 5px;
+	}
+
+	.o_videotask_categories {
+		width: 100%;
+		background-color: transparent;
+		text-align: center;
+		padding: 0 0 10px 0;
+	}
+
+	.o_videotask_categories>button.btn {
+		margin-top: 10px;
+	}
+
+	.o_videotask_box .o_videotask_categories {
+		text-align: left;
+	}
+
+	.o_videotask_messages {
+		width: 100%;
+		text-align: center;
+	
+		>span {
+			padding: 5px 30px;
+		}
+	}
+
+	.o_videotask_messages.hide {
+		display:none;
+	}
+
+	.o_videotask_messages, .o_videotask_start_message {
+		>span {
+			border-radius: $o-content-border-box-radius;
+		}
+
+		>.o_note {
+			background-color: var(--o-box-note-bg);
+			color: var(--o-box-note-text);
+			border: 1px solid var(--o-box-note-border);
+		}
+	
+		>.o_warning {
+			background-color: var(--o-box-warning-bg);
+			color: var(--o-box-warning-text);
+			border: 1px solid var(--o-box-warning-border);
+		}
+	
+		>.o_correct {
+			background-color: var(--o-box-success-bg);
+			color: var(--o-box-success-text);
+			border: 1px solid var(--o-box-success-border);
+		}
+	}
+
+	.o_videotask_marker {
+		display: inline-block;
+		position: absolute;
+		height: 1em;
+		width: 6em;
+		margin-left: -3em;
+		top: -25px;
+		text-align: center;
+	
+		>span {
+			border: 1px solid var(--o-video-border);
+			border-radius: 4px;
+			padding: 3px 6px 1px 5px;
+		}
+	}
+
+	.o_videotask_segments .o_videotask_marker {
+		background-color: transparent !important;
+	}
+
+	.o_videotask_marker:before {
+		content: '\0020';
+		position: absolute;
+		height: 28px;
 		right: 0;
-		margin-right: 35px;
-		z-index: 4;
+		top: 19px;
+		margin-right: 41px;
+		width: 2px;
 	}
-}
 
-.o_videotask_marker.o_segment_marker_correct:before {
-	background-color: var(--o-state-success-border) !important;
-}
-
-.o_videotask_marker.o_segment_marker_not_correct {
-	@include o-add-icon('times-circle');
-	@include o-add-icon-font(true);
-	&:after{
-		font-size: 20px;
-		line-height: 16px;
-		color: var(--o-state-danger-text);
-		background-color: var(--o-bg);
-		width: 16px;
-		height: 16px;
+	.o_videotask_marker.o_segment_marker_correct {
+		@include o-add-icon('check-circle');
+		@include o-add-icon-font(true);
+		&:after{
+			font-size: 20px;
+			line-height: 16px;
+			color: var(--o-state-success-text);
+			background-color: var(--o-bg);
+			width: 16px;
+			height: 16px;
 		
-		border-radius: 8px;
-		position: absolute;
-		top: 28px;
-		right: 0;
-		margin-right: 35px;
-		z-index: 4;
+			border-radius: 8px;
+			position: absolute;
+			top: 28px;
+			right: 0;
+			margin-right: 35px;
+			z-index: 4;
+		}
 	}
-}
 
-.o_videotask_marker.o_segment_marker_not_correct:before {
-	background-color: var(--o-state-danger-border) !important;
-}
+	.o_videotask_marker.o_segment_marker_correct:before {
+		background-color: var(--o-state-success-border) !important;
+	}
 
-.o_videotask_segment {
-	display: inline-block;
-	position: absolute;
-	height: 20px;
-	line-height: 22px;
-	font-size: 11px;
-	text-align: center;
-}
+	.o_videotask_marker.o_segment_marker_not_correct {
+		@include o-add-icon('times-circle');
+		@include o-add-icon-font(true);
+		&:after{
+			font-size: 20px;
+			line-height: 16px;
+			color: var(--o-state-danger-text);
+			background-color: var(--o-bg);
+			width: 16px;
+			height: 16px;
+		
+			border-radius: 8px;
+			position: absolute;
+			top: 28px;
+			right: 0;
+			margin-right: 35px;
+			z-index: 4;
+		}
+	}
 
-.o_videotask_segments .o_video_me_segment {
-	font-size: 11px;
-}
+	.o_videotask_marker.o_segment_marker_not_correct:before {
+		background-color: var(--o-state-danger-border) !important;
+	}
 
-.o_videotask_segment.o_segment_correct:after {
-	@include o-add-icon('check-circle');
-	@include o-add-icon-font(false);
-	&:after{
-		font-size: 14px;
-		line-height: 12px;
-		color: var(--o-state-success-text);
-		background-color: var(--o-bg);
-		width: 12px;
-		height: 12px;
-		border-radius: 6px;
+	.o_videotask_segment {
+		display: inline-block;
+		position: absolute;
+		height: 20px;
+		line-height: 22px;
+		font-size: 11px;
+		text-align: center;
+	}
+
+	.o_videotask_segments .o_video_me_segment {
+		font-size: 11px;
+	}
+
+	.o_videotask_segment.o_segment_correct:after {
+		@include o-add-icon('check-circle');
+		@include o-add-icon-font(false);
+		&:after{
+			font-size: 14px;
+			line-height: 12px;
+			color: var(--o-state-success-text);
+			background-color: var(--o-bg);
+			width: 12px;
+			height: 12px;
+			border-radius: 6px;
 	
-		position: absolute;
-		top: -6px;
-		right: -6px;
-		z-index: 4;
+			position: absolute;
+			top: -6px;
+			right: -6px;
+			z-index: 4;
+		}
 	}
-}
 
-.o_videotask_details .o_test_session_cancelled i:before,
-.o_videotask_category_incorrect,
-.o_videotask_category_incorrect:hover {
-	text-decoration: line-through;
-}
+	.o_videotask_details .o_test_session_cancelled i:before,
+	.o_videotask_category_incorrect,
+	.o_videotask_category_incorrect:hover {
+		text-decoration: line-through;
+	}
 }

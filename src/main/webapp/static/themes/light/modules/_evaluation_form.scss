@@ -2,790 +2,790 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-evaluation-form {
-.o_evaluation_form {
-	.o_evaluation_block {
-		margin-top: $o-evaluation-block-margin-top;
-		margin-bottom: $o-evaluation-block-margin-bottom;
-	}
+	.o_evaluation_form {
+		.o_evaluation_block {
+			margin-top: $o-evaluation-block-margin-top;
+			margin-bottom: $o-evaluation-block-margin-bottom;
+		}
 	
-	.o_rubric_name {
-		font-weight: bold;
-		margin-bottom: 1em;
-	}
+		.o_rubric_name {
+			font-weight: bold;
+			margin-bottom: 1em;
+		}
  
-	.o_slider_wrapper {
-		height: 33px;
-		overflow: hidden;
-	}
+		.o_slider_wrapper {
+			height: 33px;
+			overflow: hidden;
+		}
 	
-	.o_slider {
-		margin-bottom: $o-evaluation-slider-margin-bottom;
+		.o_slider {
+			margin-bottom: $o-evaluation-slider-margin-bottom;
 			
-		label {
-			padding: 0;
-		}
-		
-		input {
-			padding: 0;
-			margin: 0;
-		}
-		.radio {
 			label {
-				input {
-					&:not(:is(.o_radio_cards *)) {
-						position: relative;
-					}
-				}
+				padding: 0;
 			}
-		}
-	}
-	
-	.o_evaluation_continous {
-		.o_evaluation_no_response {
-			div.radio {
+		
+			input {
 				padding: 0;
 				margin: 0;
 			}
-		}
-	}
-	
-	.o_evaluation_discrete_radio {
-		.o_slider {
-			.o_evaluation_steps {
-				label {
-					padding: 0;
-					margin: 0;
-					text-align: center;
-				}
-				
-				.radio {
-					background-color: var(--o-evaluation-step-bg);
-					padding: 0px;
-					margin-top: 0px;
-					text-align: center;
-					&:hover {
-						background-color: var(--o-evaluation-slider-hover-bg);
-					}
-				}
-			}
-			
-			.o_evaluation_no_response {
-				div.radio {
-					margin-top: 0;
-				}
-			}
-		}
-	}
-	
-	.o_evaluation_discrete_card.o_form {
-		.o_slider_elements {
-			grid-template-columns: 1fr min-content;
-			align-items: center;
-			gap: 10px;
-		}
-		.o_radio_cards_wrapper {
-			.o_radio_cards {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-				@media (max-width: $screen-sm-min) {
-					grid-template-columns: 1fr;
-				}
-				
-				.o_rubric_sufficient { .o_radio_desc { color: var(--o-evaluation-sufficient-text); } }
-				.o_rubric_neutral { .o_radio_desc { color: var(--o-evaluation-neutral-text); } }
-				.o_rubric_insufficient { .o_radio_desc { color: var(--o-evaluation-insufficient-text); } }
-			}
-		}
-		.o_evaluation_no_response {
-			label {
-				display: flex;
-				white-space: nowrap;
-			}
-			.o_evaluation_no_resp_value {
-				display: initial;
-			}
-		}
-	}
-	
-	.o_slider .ui-slider.ui-slider-horizontal.ui-widget-content {
-		margin: 0.3em 10px 10px 10px;
-	}
-
-	.o_evaluation_left_label {
-		text-align: right;
-		font-weight: $o-evaluation-side-labels-font-weight;
-	}
-	
-	.o_evaluation_left_label.o_evaluation_left_label_la {
-		text-align: left;
-		padding-left: 0px;
-		font-weight: $o-evaluation-side-labels-font-weight;
-	}
-	
-	.o_evaluation_right_label {
-		text-align: left;
-		font-weight: $o-evaluation-side-labels-font-weight;
-	}
-	
-	.o_evaluation_label_top {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 10px;
-		align-items: end;
-		.o_evaluation_label_top_left {
-			text-align: left;
-			&.o_evaluation_label_top_both {
-				grid-column: span 2;
-			}
-		}
-		.o_evaluation_label_top_right {
-			text-align: right;
-		}
-	}
-	.o_evaluation_label_top_small {
-		display: none;
-	}
-	
-	.o_evaluation_distributed {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-		gap: 10px;
-		align-items: start;
-		text-align: center;
-	}
-	
-	.o_evaluation_step_labels {
-		align-items: end;
-		margin-bottom: $o-evaluation-step-labels-margin-bottom;
-		font-weight: $o-evaluation-step-labels-font-weight;
-		
-		div, span {
-			hyphens: auto;
-		}
-		
-		&.o_evaluation_no_no_response {
-			grid-column: span 2;
-		}
-	}
-	
-	.o_slider_elements {
-		display: grid;
-		grid-template-columns: 1fr 60px;
-		.o_evaluation_no_response {
-			text-align: center;
-		}
-		&.o_evaluation_no_no_response {
-			grid-column: span 2;
-		}
-	}
-	
-	.o_evaluation_no_no_response {
-		.o_slider_elements {
-			>div {
-				grid-column: span 2;
-			}
-		}
-	}
-	
-	.o_slider_comments {
-		label {
-			font-weight: normal;
-		}
-		span {
-			width: 100%;
-		}
-		textarea {
-			margin-bottom: 10px;
-		}
-		.form-control.textarea_disabled {
-			resize: none;
-			height: auto !important;
-			min-height: 4.35em;
-		}
-	}
-	
-	.o_evaluation_text_legend {
-		margin-bottom: 1em;
-	}
-	
-	.o_evaluation_legend {
-		padding-left: 0.5em;
-		margin-bottom: 0.5em;
-	}
-	
-	.o_evaluation_textinput {
-		.o_evaluation_text {
-		}
-	}
-	
-	.o_evaluation_fileupload {
-		margin-bottom: 2em;
-		
-		.o_evaluation_thumb {
-		}
-		
-		.o_evaluation_filename {
-		}
-	}
-	
-	.o_evaluation_mc_horizontal,
-	.o_evaluation_mc_dropdown {
-		&+.o_evaluation_mc_other {
-			margin-top: 10px;
-		}
-	}
-	
-	.o_evaluation_rubric_diagrams {
-		.o_slider {
-			margin-left: 15px;
-			margin-right: 15px;
-		}
-		.o_end_label {
-			text-align: right;
-			padding-right: 20px;
-		}
-		.o_continous {
-			.x {
-				.tick {
-					visibility: hidden;
-				}
-			}
-		}
-	}
-	
-	.o_ed_rubrictablehandler {
-		.table {
-			margin-top: 5px;
-		}
-	}
-	
-	.o_report_block {
-		clear: both;
-	}
-		
-	.svg-container {
-		display: inline-block;
-		position: relative;
-		width: 100%;
-		padding-bottom: 50%;
-		vertical-align: top;
-		overflow: hidden;
-	}
-	.svg-content-responsive {
-		display: inline-block;
-		position: absolute;
-		top: 10px;
-		left: 0;
-	}
-}
-
-.d3chart {
-	.o_eva_bar { fill: $o-d3chart-default; }
-	.o_rubric_sufficient { fill: var(--o-evaluation-sufficient); }
-	.o_rubric_neutral { fill: var(--o-evaluation-neutral); }
-	.o_rubric_insufficient { fill: var(--o-evaluation-insufficient); }
-	.o_rubric_unrated { fill: $o-d3chart-default; }
-}
-
-.o_qual_hm_legend {
-	padding: 5px;
-	
-	li {
-		font-size: 90%;
-	}
-	.ident {
-		font-weight: bold;
-	}
-}
-
-.o_evaluation_discrete_slider {
-	.o_evaluation_step_labels {
-		margin-left: 8px;
-		margin-right: 8px;
-		&>div:not(:first-child):not(:last-child) {
-			grid-column: span 2;
-		}
-		&>div:first-child {
-			text-align: left;
-		}
-		&>div:last-child {
-			text-align: right;
-		}
-	}
-}
-
-.o_slider_overview {
-	width: 100%;
-	height: 20px;
-	position: relative;
-	
-	.o_slider_overview_line {
-		top: 5px;
-		left: 0px;
-		position: absolute;
-		width: 100%;
-		height: 11px;
-		border: 1px solid var(--o-border-strong);
-		border-radius: 4px;
-	}
-	
-	.o_slider_overview_point {
-		position: absolute;
-		width: 10px;
-		height: 10px;
-		background-color: var(--o-slider-handler-bg);
-	}
-}
-
-.o_slider_star.o_rating {
-	height: 20px;
-	margin-bottom: 5px;
-	&.o_slider_star_distributed {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		.o_rating_items {
-			display: flex;
-			justify-content: space-around;
-			width: 100%;
-		}
-	}
-	@media (max-width: $screen-sm-min) {
-		height: 30px;
-	}
-	// In late 2023 firefox does not support :has(). Please remove if firefox is ready as well.
-	@supports selector(:has(*)) {
-		.o_rating_items.o_enabled {
-			// Color all stars until the hovered star
-			a:hover,
-			a:has(~ a:hover) {
-				@include o-add-icon('star');
-				color: var(--o-primary-text);
-				-webkit-text-stroke-width: 0;
-			}
-		}
-	}
-}
-
-.o_evaluation_discrete_star {
-	.o_evaluation_step_labels {
-		display: flex;
-		justify-content: space-around;
-		>div {
-			flex: 1 1 0px;
-			overflow: hidden;
-		}
-	}
-	&:not(.o_slider_star_distributed) {
-		.o_evaluation_steps {
-			text-align: left;
-		}
-	}
-	.o_evaluation_no_response {
-		text-align: left;
-		.radio {
-			margin-top: 1px;
-		}
-	}
-	&.o_eva_star_undistributed {
-		.o_slider_elements {
-			grid-template-columns: min-content 1fr;
-		}
-		.o_evaluation_steps {
-			display: block;
-			margin-right: 20px;
-		}
-		.o_evaluation_no_response {
-			text-align: left;
 			.radio {
 				label {
-					font-weight: bold;
-					span {
-						display: initial;
+					input {
+						&:not(:is(.o_radio_cards *)) {
+							position: relative;
+						}
 					}
 				}
 			}
 		}
-		.o_slider_comments {
-			grid-column: span 2;
-		}
-	}
-}
-
-.o_evaluation_editor_form {
-	margin: 10px 10px 0 10px;
 	
-	.o_slider_editor {
-		margin-top: 10px;
-		
-		@media (max-width: $screen-md-min) {
-			margin-bottom: 20px;
+		.o_evaluation_continous {
+			.o_evaluation_no_response {
+				div.radio {
+					padding: 0;
+					margin: 0;
+				}
+			}
 		}
-	}
 	
-	.o_evaluation_step_label {
-		@media (max-width: $screen-md-min) {
-			text-align: unset;
-			margin-bottom: 5px;
-			padding-top: unset;
-		}
-	}
-	
-	.o_evaluation_step_labels {
-		display:inline-block;
-		
-		input {
-			width: 100%;
-		}
-	}
-	
-	.o_slider_descrete_radio {
-		display: flex;
-		justify-content: space-between;
+		.o_evaluation_discrete_radio {
+			.o_slider {
+				.o_evaluation_steps {
+					label {
+						padding: 0;
+						margin: 0;
+						text-align: center;
+					}
 				
-		.radio {
-			background-color: var(--o-evaluation-step-bg);
-			padding: 0px;
-			margin-top: 0px;
-			text-align: center;
-			&:hover {
-				background-color: var(--o-evaluation-slider-hover-bg);
-			}
-		}
-	}
-	
-	input[type="text"] {
-		@media (max-width: $screen-md-min) {
-			margin-bottom: 5px;
-		}
-	}
-	
-	.o_slider_star.o_rating {
-		height: 30px;
-	}
-	
-	.o_slider_continous {
-		padding-top: 10px;
-		padding-bottom: -10px;
-	}
-	
-	.o_slider_descrete {
-		padding-top: 5px;
-		padding-bottom: -5px;
-	}
-	
-	.o_slider_step_labels {
-		display: flex;
-		gap: 5px;
-		>div {
-			@extend %o_nowrap;
-			flex: 1 1 0px;
-			>p {
-				@extend %o_nowrap;
-			}
-		}
-		.o_rubric_sufficient { color: var(--o-evaluation-sufficient-text); }
-		.o_rubric_neutral { color: var(--o-evaluation-neutral-text); }
-		.o_rubric_insufficient { color: var(--o-evaluation-insufficient-text); }
-	}
-	
-	.o_evaluation_example {
-		font-size: 90%;
-	}
-	
-	.o_slider_top {
-		margin-top: 23px;
-	}
-	
-	.o_slider_buttons {
-		.pull-right {
-			div:not(:first-child) {
-				display: inline-block;
-			}
-			.btn {
-				margin-top: -3px;
-			}
-		}
-	}
-	
-	.o_slider_weight {
-		max-width: 40px;
-	}
-}
-
-.o_slider_step_labels_edit {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	align-items: center;
-	
-	.o_slider_step_labels_edit_nav {
-		display: flex;
-		select {
-			border-radius: 0;
+					.radio {
+						background-color: var(--o-evaluation-step-bg);
+						padding: 0px;
+						margin-top: 0px;
+						text-align: center;
+						&:hover {
+							background-color: var(--o-evaluation-slider-hover-bg);
+						}
+					}
+				}
 			
-		}
-		>.o_previous {
-			a {
-				border-top-right-radius: 0;
-				border-bottom-right-radius: 0;
-				border-right-width: 0;
+				.o_evaluation_no_response {
+					div.radio {
+						margin-top: 0;
+					}
+				}
 			}
 		}
-		>.o_next {
-			a {
-				border-top-left-radius: 0;
-				border-bottom-left-radius: 0;
-				border-left-width: 0;
-			}
-		}
-	}
 	
-}
-
-.o_container_block_3_cols .o_evaluation_editor_form .o_slider_editor,
-.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="1"] .o_evaluation_editor_form .o_slider_editor,
-.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="2"] .o_evaluation_editor_form .o_slider_editor,
-.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="3"] .o_evaluation_editor_form .o_slider_editor {
-	.col-md-5, .col-md-2 {
-		 width: 100%;
-	}
-}
-
-@media (max-width: $screen-sm-min) {
-	.o_evaluation_form {
-		.o_evaluation_label_top_small {
-			display: grid;
-		}
-		.o_evaluation_left_label,
-		.o_evaluation_right_label {
-			display: none;
-		}
-		
-		.o_evaluation_no_response {
-			text-align: left;
-			.o_evaluation_no_resp_value {
-				font-weight: bold;
+		.o_evaluation_discrete_card.o_form {
+			.o_slider_elements {
+				grid-template-columns: 1fr min-content;
+				align-items: center;
+				gap: 10px;
 			}
-		}
-		
-		.o_slider_elements {
-			>div {
-				grid-column: span 2;
+			.o_radio_cards_wrapper {
+				.o_radio_cards {
+					display: grid;
+					grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+					@media (max-width: $screen-sm-min) {
+						grid-template-columns: 1fr;
+					}
+				
+					.o_rubric_sufficient { .o_radio_desc { color: var(--o-evaluation-sufficient-text); } }
+					.o_rubric_neutral { .o_radio_desc { color: var(--o-evaluation-neutral-text); } }
+					.o_rubric_insufficient { .o_radio_desc { color: var(--o-evaluation-insufficient-text); } }
+				}
 			}
 			.o_evaluation_no_response {
-				text-align: left;
+				label {
+					display: flex;
+					white-space: nowrap;
+				}
+				.o_evaluation_no_resp_value {
+					display: initial;
+				}
 			}
 		}
-		
-		.o_slider {
-			margin-bottom: 2em;
-			
-			div {
-				padding-left: 0;
-			}
-		}
-		
-		.o_evaluation_continous {
-			.o_evaluation_no_response ~ .o_slider_comments {
-				padding-top: 10px;
-			}
-		}
-	}
-}
-
-@media (min-width: $screen-sm-min) {
-	.o_evaluation_form {
-		.o_evaluation_no_resp_value {
-			display:none;
-		}
-	}
-}
-
-/* Print styles */
-@media print {
-	.o_evaluation_discrete_radio .o_slider .o_evaluation_steps div.radio {
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-		background-color: var(--o-evaluation-step-bg) !important;
-	}
-	.o_icon_rubric_insufficient::before {
-		color: var(--o-evaluation-insufficient-text) !important;
-	}
-	.o_icon_rubric_neutral::before {
-		color: var(--o-evaluation-neutral-text) !important;
-	}
-	.o_icon_rubric_sufficient::before {
-		color: var(--o-evaluation-sufficient-text) !important;
-	}
-}
-
-.o_eva_report_print {
-	.o_eva_overview {
-		.panel {
-			table {
-				margin: 0px 0px 1px 0px;
-			}
-		}
-	}
 	
-	.o_evaluation_duration,
-	.o_participated_users {
-		display:none;
-	}
-}
-
-.o_surv_run.withCmds {
-	.o_eva_report {
-		margin-top: -44px;
-		.o_eva_report_cmds {
-			margin-right: 34px;
+		.o_slider .ui-slider.ui-slider-horizontal.ui-widget-content {
+			margin: 0.3em 10px 10px 10px;
 		}
-	}
-}
 
-.o_eva_report {
-	.o_eva_overview {
-		.o_eva_rubric {
+		.o_evaluation_left_label {
+			text-align: right;
+			font-weight: $o-evaluation-side-labels-font-weight;
+		}
+	
+		.o_evaluation_left_label.o_evaluation_left_label_la {
+			text-align: left;
+			padding-left: 0px;
+			font-weight: $o-evaluation-side-labels-font-weight;
+		}
+	
+		.o_evaluation_right_label {
+			text-align: left;
+			font-weight: $o-evaluation-side-labels-font-weight;
+		}
+	
+		.o_evaluation_label_top {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 10px;
+			align-items: end;
+			.o_evaluation_label_top_left {
+				text-align: left;
+				&.o_evaluation_label_top_both {
+					grid-column: span 2;
+				}
+			}
+			.o_evaluation_label_top_right {
+				text-align: right;
+			}
+		}
+		.o_evaluation_label_top_small {
+			display: none;
+		}
+	
+		.o_evaluation_distributed {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+			gap: 10px;
+			align-items: start;
+			text-align: center;
+		}
+	
+		.o_evaluation_step_labels {
+			align-items: end;
+			margin-bottom: $o-evaluation-step-labels-margin-bottom;
+			font-weight: $o-evaluation-step-labels-font-weight;
+		
+			div, span {
+				hyphens: auto;
+			}
+		
+			&.o_evaluation_no_no_response {
+				grid-column: span 2;
+			}
+		}
+	
+		.o_slider_elements {
+			display: grid;
+			grid-template-columns: 1fr 60px;
+			.o_evaluation_no_response {
+				text-align: center;
+			}
+			&.o_evaluation_no_no_response {
+				grid-column: span 2;
+			}
+		}
+	
+		.o_evaluation_no_no_response {
+			.o_slider_elements {
+				>div {
+					grid-column: span 2;
+				}
+			}
+		}
+	
+		.o_slider_comments {
+			label {
+				font-weight: normal;
+			}
+			span {
+				width: 100%;
+			}
+			textarea {
+				margin-bottom: 10px;
+			}
+			.form-control.textarea_disabled {
+				resize: none;
+				height: auto !important;
+				min-height: 4.35em;
+			}
+		}
+	
+		.o_evaluation_text_legend {
+			margin-bottom: 1em;
+		}
+	
+		.o_evaluation_legend {
+			padding-left: 0.5em;
+			margin-bottom: 0.5em;
+		}
+	
+		.o_evaluation_textinput {
+			.o_evaluation_text {
+			}
+		}
+	
+		.o_evaluation_fileupload {
+			margin-bottom: 2em;
+		
+			.o_evaluation_thumb {
+			}
+		
+			.o_evaluation_filename {
+			}
+		}
+	
+		.o_evaluation_mc_horizontal,
+		.o_evaluation_mc_dropdown {
+			&+.o_evaluation_mc_other {
+				margin-top: 10px;
+			}
+		}
+	
+		.o_evaluation_rubric_diagrams {
+			.o_slider {
+				margin-left: 15px;
+				margin-right: 15px;
+			}
+			.o_end_label {
+				text-align: right;
+				padding-right: 20px;
+			}
+			.o_continous {
+				.x {
+					.tick {
+						visibility: hidden;
+					}
+				}
+			}
+		}
+	
+		.o_ed_rubrictablehandler {
 			.table {
 				margin-top: 5px;
 			}
 		}
-	}
 	
-	.o_ed_rubrictablehandler {
-		.o_table_footer {
-			font-weight: bold;
+		.o_report_block {
+			clear: both;
 		}
-	}
-	
-	.o_rubric_avg {
-		font-weight: bold;
-		white-space: nowrap;
-	}
-	
-	.o_rubric_table {
-		.o_table_wrapper {
-			margin-bottom: 10px;
-		}
-	}
-	
-	.o_rubric_table_legend {
-		display: block;
 		
+		.svg-container {
+			display: inline-block;
+			position: relative;
+			width: 100%;
+			padding-bottom: 50%;
+			vertical-align: top;
+			overflow: hidden;
+		}
+		.svg-content-responsive {
+			display: inline-block;
+			position: absolute;
+			top: 10px;
+			left: 0;
+		}
+	}
+
+	.d3chart {
+		.o_eva_bar { fill: $o-d3chart-default; }
+		.o_rubric_sufficient { fill: var(--o-evaluation-sufficient); }
+		.o_rubric_neutral { fill: var(--o-evaluation-neutral); }
+		.o_rubric_insufficient { fill: var(--o-evaluation-insufficient); }
+		.o_rubric_unrated { fill: $o-d3chart-default; }
+	}
+
+	.o_qual_hm_legend {
+		padding: 5px;
+	
+		li {
+			font-size: 90%;
+		}
 		.ident {
 			font-weight: bold;
 		}
-		
-		.list-inline {
-			margin-bottom: 0px;
+	}
+
+	.o_evaluation_discrete_slider {
+		.o_evaluation_step_labels {
+			margin-left: 8px;
+			margin-right: 8px;
+			&>div:not(:first-child):not(:last-child) {
+				grid-column: span 2;
+			}
+			&>div:first-child {
+				text-align: left;
+			}
+			&>div:last-child {
+				text-align: right;
+			}
 		}
 	}
-	
-	.o_rubric_table_legend.o_last {
-		margin-bottom: 15px;
-	}
-	
-	.o_rubric_table_comments {
+
+	.o_slider_overview {
 		width: 100%;
-		.textarea_disabled {
+		height: 20px;
+		position: relative;
+	
+		.o_slider_overview_line {
+			top: 5px;
+			left: 0px;
+			position: absolute;
 			width: 100%;
+			height: 11px;
+			border: 1px solid var(--o-border-strong);
+			border-radius: 4px;
+		}
+	
+		.o_slider_overview_point {
+			position: absolute;
+			width: 10px;
+			height: 10px;
+			background-color: var(--o-slider-handler-bg);
 		}
 	}
-}
 
-.o_evaluation_execution {
-	.o_evaluation_anonymous_info {
-		display: $o-evaluation-anonymous-info-display;
-	}
-}
-
-.o_eva_rules {
-	.o_button_group {
-		margin-top: 0px;
-	}
-	.o_rule {
-		display: flex;
-		
-		.o_condition, .o_action {
-			width: 50%;
-			
-			.o_elements {
+	.o_slider_star.o_rating {
+		height: 20px;
+		margin-bottom: 5px;
+		&.o_slider_star_distributed {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			.o_rating_items {
 				display: flex;
-				align-items: flex-end;
-				
-				.o_delete {
-					margin-left: auto;
+				justify-content: space-around;
+				width: 100%;
+			}
+		}
+		@media (max-width: $screen-sm-min) {
+			height: 30px;
+		}
+		// In late 2023 firefox does not support :has(). Please remove if firefox is ready as well.
+		@supports selector(:has(*)) {
+			.o_rating_items.o_enabled {
+				// Color all stars until the hovered star
+				a:hover,
+				a:has(~ a:hover) {
+					@include o-add-icon('star');
+					color: var(--o-primary-text);
+					-webkit-text-stroke-width: 0;
 				}
 			}
 		}
-		
-		.o_label_inside {
-			display: none;
+	}
+
+	.o_evaluation_discrete_star {
+		.o_evaluation_step_labels {
+			display: flex;
+			justify-content: space-around;
+			>div {
+				flex: 1 1 0px;
+				overflow: hidden;
+			}
+		}
+		&:not(.o_slider_star_distributed) {
+			.o_evaluation_steps {
+				text-align: left;
+			}
+		}
+		.o_evaluation_no_response {
+			text-align: left;
+			.radio {
+				margin-top: 1px;
+			}
+		}
+		&.o_eva_star_undistributed {
+			.o_slider_elements {
+				grid-template-columns: min-content 1fr;
+			}
+			.o_evaluation_steps {
+				display: block;
+				margin-right: 20px;
+			}
+			.o_evaluation_no_response {
+				text-align: left;
+				.radio {
+					label {
+						font-weight: bold;
+						span {
+							display: initial;
+						}
+					}
+				}
+			}
+			.o_slider_comments {
+				grid-column: span 2;
+			}
 		}
 	}
-}
 
-@media (max-width: $screen-md-min) {
-	.o_eva_rules {
-		.o_rule.o_label_top {
-			display: none;
+	.o_evaluation_editor_form {
+		margin: 10px 10px 0 10px;
+	
+		.o_slider_editor {
+			margin-top: 10px;
+		
+			@media (max-width: $screen-md-min) {
+				margin-bottom: 20px;
+			}
 		}
+	
+		.o_evaluation_step_label {
+			@media (max-width: $screen-md-min) {
+				text-align: unset;
+				margin-bottom: 5px;
+				padding-top: unset;
+			}
+		}
+	
+		.o_evaluation_step_labels {
+			display:inline-block;
 		
-		.o_rule {
-			display: block;
-		
-			.o_condition, .o_action {
+			input {
 				width: 100%;
 			}
+		}
+	
+		.o_slider_descrete_radio {
+			display: flex;
+			justify-content: space-between;
+				
+			.radio {
+				background-color: var(--o-evaluation-step-bg);
+				padding: 0px;
+				margin-top: 0px;
+				text-align: center;
+				&:hover {
+					background-color: var(--o-evaluation-slider-hover-bg);
+				}
+			}
+		}
+	
+		input[type="text"] {
+			@media (max-width: $screen-md-min) {
+				margin-bottom: 5px;
+			}
+		}
+	
+		.o_slider_star.o_rating {
+			height: 30px;
+		}
+	
+		.o_slider_continous {
+			padding-top: 10px;
+			padding-bottom: -10px;
+		}
+	
+		.o_slider_descrete {
+			padding-top: 5px;
+			padding-bottom: -5px;
+		}
+	
+		.o_slider_step_labels {
+			display: flex;
+			gap: 5px;
+			>div {
+				@extend %o_nowrap;
+				flex: 1 1 0px;
+				>p {
+					@extend %o_nowrap;
+				}
+			}
+			.o_rubric_sufficient { color: var(--o-evaluation-sufficient-text); }
+			.o_rubric_neutral { color: var(--o-evaluation-neutral-text); }
+			.o_rubric_insufficient { color: var(--o-evaluation-insufficient-text); }
+		}
+	
+		.o_evaluation_example {
+			font-size: 90%;
+		}
+	
+		.o_slider_top {
+			margin-top: 23px;
+		}
+	
+		.o_slider_buttons {
+			.pull-right {
+				div:not(:first-child) {
+					display: inline-block;
+				}
+				.btn {
+					margin-top: -3px;
+				}
+			}
+		}
+	
+		.o_slider_weight {
+			max-width: 40px;
+		}
+	}
+
+	.o_slider_step_labels_edit {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		align-items: center;
+	
+		.o_slider_step_labels_edit_nav {
+			display: flex;
+			select {
+				border-radius: 0;
 			
-			.o_action {
-				margin-top: $line-height-computed;
+			}
+			>.o_previous {
+				a {
+					border-top-right-radius: 0;
+					border-bottom-right-radius: 0;
+					border-right-width: 0;
+				}
+			}
+			>.o_next {
+				a {
+					border-top-left-radius: 0;
+					border-bottom-left-radius: 0;
+					border-left-width: 0;
+				}
+			}
+		}
+	
+	}
+
+	.o_container_block_3_cols .o_evaluation_editor_form .o_slider_editor,
+	.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="1"] .o_evaluation_editor_form .o_slider_editor,
+	.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="2"] .o_evaluation_editor_form .o_slider_editor,
+	.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="3"] .o_evaluation_editor_form .o_slider_editor {
+		.col-md-5, .col-md-2 {
+			 width: 100%;
+		}
+	}
+
+	@media (max-width: $screen-sm-min) {
+		.o_evaluation_form {
+			.o_evaluation_label_top_small {
+				display: grid;
+			}
+			.o_evaluation_left_label,
+			.o_evaluation_right_label {
+				display: none;
+			}
+		
+			.o_evaluation_no_response {
+				text-align: left;
+				.o_evaluation_no_resp_value {
+					font-weight: bold;
+				}
+			}
+		
+			.o_slider_elements {
+				>div {
+					grid-column: span 2;
+				}
+				.o_evaluation_no_response {
+					text-align: left;
+				}
+			}
+		
+			.o_slider {
+				margin-bottom: 2em;
+			
+				div {
+					padding-left: 0;
+				}
+			}
+		
+			.o_evaluation_continous {
+				.o_evaluation_no_response ~ .o_slider_comments {
+					padding-top: 10px;
+				}
+			}
+		}
+	}
+
+	@media (min-width: $screen-sm-min) {
+		.o_evaluation_form {
+			.o_evaluation_no_resp_value {
+				display:none;
+			}
+		}
+	}
+
+	/* Print styles */
+	@media print {
+		.o_evaluation_discrete_radio .o_slider .o_evaluation_steps div.radio {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background-color: var(--o-evaluation-step-bg) !important;
+		}
+		.o_icon_rubric_insufficient::before {
+			color: var(--o-evaluation-insufficient-text) !important;
+		}
+		.o_icon_rubric_neutral::before {
+			color: var(--o-evaluation-neutral-text) !important;
+		}
+		.o_icon_rubric_sufficient::before {
+			color: var(--o-evaluation-sufficient-text) !important;
+		}
+	}
+
+	.o_eva_report_print {
+		.o_eva_overview {
+			.panel {
+				table {
+					margin: 0px 0px 1px 0px;
+				}
+			}
+		}
+	
+		.o_evaluation_duration,
+		.o_participated_users {
+			display:none;
+		}
+	}
+
+	.o_surv_run.withCmds {
+		.o_eva_report {
+			margin-top: -44px;
+			.o_eva_report_cmds {
+				margin-right: 34px;
+			}
+		}
+	}
+
+	.o_eva_report {
+		.o_eva_overview {
+			.o_eva_rubric {
+				.table {
+					margin-top: 5px;
+				}
+			}
+		}
+	
+		.o_ed_rubrictablehandler {
+			.o_table_footer {
+				font-weight: bold;
+			}
+		}
+	
+		.o_rubric_avg {
+			font-weight: bold;
+			white-space: nowrap;
+		}
+	
+		.o_rubric_table {
+			.o_table_wrapper {
+				margin-bottom: 10px;
+			}
+		}
+	
+		.o_rubric_table_legend {
+			display: block;
+		
+			.ident {
+				font-weight: bold;
+			}
+		
+			.list-inline {
+				margin-bottom: 0px;
+			}
+		}
+	
+		.o_rubric_table_legend.o_last {
+			margin-bottom: 15px;
+		}
+	
+		.o_rubric_table_comments {
+			width: 100%;
+			.textarea_disabled {
+				width: 100%;
+			}
+		}
+	}
+
+	.o_evaluation_execution {
+		.o_evaluation_anonymous_info {
+			display: $o-evaluation-anonymous-info-display;
+		}
+	}
+
+	.o_eva_rules {
+		.o_button_group {
+			margin-top: 0px;
+		}
+		.o_rule {
+			display: flex;
+		
+			.o_condition, .o_action {
+				width: 50%;
+			
+				.o_elements {
+					display: flex;
+					align-items: flex-end;
+				
+					.o_delete {
+						margin-left: auto;
+					}
+				}
 			}
 		
 			.o_label_inside {
-				display: initial;
-			}
-			
-			.form-control {
-				display: inline-block;
-				width: auto;
+				display: none;
 			}
 		}
 	}
-}
 
-@media (max-width: $screen-xs-min) {
-	.o_eva_rules {
-		.o_rule {
-			.form-control {
+	@media (max-width: $screen-md-min) {
+		.o_eva_rules {
+			.o_rule.o_label_top {
+				display: none;
+			}
+		
+			.o_rule {
 				display: block;
-				width: 100%;
+		
+				.o_condition, .o_action {
+					width: 100%;
+				}
+			
+				.o_action {
+					margin-top: $line-height-computed;
+				}
+		
+				.o_label_inside {
+					display: initial;
+				}
+			
+				.form-control {
+					display: inline-block;
+					width: auto;
+				}
 			}
 		}
 	}
-}
 
-.o_evaluation_wrapper {
-	.o_button_group:first-child {
-		margin-top: 0;
+	@media (max-width: $screen-xs-min) {
+		.o_eva_rules {
+			.o_rule {
+				.form-control {
+					display: block;
+					width: 100%;
+				}
+			}
+		}
 	}
+
+	.o_evaluation_wrapper {
+		.o_button_group:first-child {
+			margin-top: 0;
+		}
 	
-	.o_button_group:last-child {
-		margin-bottom: 0;
+		.o_button_group:last-child {
+			margin-bottom: 0;
+		}
 	}
-}
 
-.o_rubric_slider_answers_list {
+	.o_rubric_slider_answers_list {
 
-	td div.radio {
-		margin: 0;
-	}
+		td div.radio {
+			margin: 0;
+		}
 	
-	.o_slider_wrapper {
-		padding: 5px 0 0 0;
-		margin-bottom: -12px;
-	}
+		.o_slider_wrapper {
+			padding: 5px 0 0 0;
+			margin-bottom: -12px;
+		}
 
-}
+	}
 }

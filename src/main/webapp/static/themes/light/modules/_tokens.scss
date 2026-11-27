@@ -3143,73 +3143,71 @@ $o-token-removed-shorthands-renamed: (
 	@return o-token-literal($color);
 }
 
-// The rules of this file: the token custom properties, included where the
-// file was imported before (OO-9995). The variables and functions above are
-// computed when the module is loaded.
+// The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-tokens {
-:root {
-	// palette layer: white and the base colours of the theme
-	--o-white: #{o-hex(o-neutral(0))};
-	// a base colour reads the scale step of its colour,
-	// the colour of a client theme stays a literal value
-	@each $name, $value in $o-token-base {
-		--o-base-#{$name}: #{o-token-ref($value, map.get($o-token-base-scales, $name), $neutral: true)};
-	}
-
-	// semantic tokens
-	@each $name, $value in $o-token-base {
-		@if map.has-key($o-token-references, $name) {
-			--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
-		} @else if map.has-key($o-token-overrides, $name) {
-			--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name), $neutral: true)};
-		} @else {
-			--o-#{$name}: var(--o-base-#{$name});
+	:root {
+		// palette layer: white and the base colours of the theme
+		--o-white: #{o-hex(o-neutral(0))};
+		// a base colour reads the scale step of its colour,
+		// the colour of a client theme stays a literal value
+		@each $name, $value in $o-token-base {
+			--o-base-#{$name}: #{o-token-ref($value, map.get($o-token-base-scales, $name), $neutral: true)};
 		}
-	}
 
-	// state tokens: the swatch roles of the hue in $o-states
-	@each $state, $hue in $o-states {
-		@each $role in $o-token-state-roles {
-			$name: "state-#{$state}-#{$role}";
+		// semantic tokens
+		@each $name, $value in $o-token-base {
 			@if map.has-key($o-token-references, $name) {
 				--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
+			} @else if map.has-key($o-token-overrides, $name) {
+				--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name), $neutral: true)};
 			} @else {
-				--o-#{$name}: #{o-token-ref(map.get($o-token-values, $name), $hue, map.has-key($o-token-overrides, $name))};
+				--o-#{$name}: var(--o-base-#{$name});
+			}
+		}
+
+		// state tokens: the swatch roles of the hue in $o-states
+		@each $state, $hue in $o-states {
+			@each $role in $o-token-state-roles {
+				$name: "state-#{$state}-#{$role}";
+				@if map.has-key($o-token-references, $name) {
+					--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
+				} @else {
+					--o-#{$name}: #{o-token-ref(map.get($o-token-values, $name), $hue, map.has-key($o-token-overrides, $name))};
+				}
+			}
+		}
+
+		// element tokens of the base, framework and component layers: the
+		// reference of $o-tokens, the token it follows, the scale step (palette,
+		// brand ramp, neutral scale), else the base colour --o-base-{name}
+		@each $name, $def in $o-token-elements {
+			$value: map.get($o-token-values, $name);
+			$ref: null;
+			@if map.has-key($o-token-references, $name) {
+				$ref: var(--o-#{map.get($o-token-references, $name)});
+			} @else if map.has-key($o-token-follows, $name) {
+				$ref: var(--o-#{map.get($o-token-follows, $name)});
+			} @else {
+				$ref: o-token-ref($value, $neutral: true);
+				@if "#{$ref}" == "#{o-token-literal($value)}" {
+					--o-base-#{$name}: #{$ref};
+					$ref: var(--o-base-#{$name});
+				}
+			}
+			--o-#{$name}: #{$ref};
+		}
+
+		// shade tokens: the reference or the colour of $o-tokens, else the
+		// darker or lighter colour of its token: the scale step
+		// (o-token-shade-scale()) or the colour computed at compile time
+		@each $name, $def in $o-token-shades {
+			@if map.has-key($o-token-references, $name) {
+				--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
+			} @else if map.has-key($o-token-overrides, $name) {
+				--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name), $neutral: true)};
+			} @else {
+				--o-#{$name}: #{o-token-ref(map.get($o-token-values, $name), $neutral: true)};
 			}
 		}
 	}
-
-	// element tokens of the base, framework and component layers: the
-	// reference of $o-tokens, the token it follows, the scale step (palette,
-	// brand ramp, neutral scale), else the base colour --o-base-{name}
-	@each $name, $def in $o-token-elements {
-		$value: map.get($o-token-values, $name);
-		$ref: null;
-		@if map.has-key($o-token-references, $name) {
-			$ref: var(--o-#{map.get($o-token-references, $name)});
-		} @else if map.has-key($o-token-follows, $name) {
-			$ref: var(--o-#{map.get($o-token-follows, $name)});
-		} @else {
-			$ref: o-token-ref($value, $neutral: true);
-			@if "#{$ref}" == "#{o-token-literal($value)}" {
-				--o-base-#{$name}: #{$ref};
-				$ref: var(--o-base-#{$name});
-			}
-		}
-		--o-#{$name}: #{$ref};
-	}
-
-	// shade tokens: the reference or the colour of $o-tokens, else the
-	// darker or lighter colour of its token: the scale step
-	// (o-token-shade-scale()) or the colour computed at compile time
-	@each $name, $def in $o-token-shades {
-		@if map.has-key($o-token-references, $name) {
-			--o-#{$name}: var(--o-#{map.get($o-token-references, $name)});
-		} @else if map.has-key($o-token-overrides, $name) {
-			--o-#{$name}: #{o-token-ref(map.get($o-token-overrides, $name), $neutral: true)};
-		} @else {
-			--o-#{$name}: #{o-token-ref(map.get($o-token-values, $name), $neutral: true)};
-		}
-	}
-}
 }

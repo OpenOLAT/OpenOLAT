@@ -15,73 +15,72 @@
  * learning content. 
  *  =================================================
  */
-
-/* 1) Override some styles from scaffolding */
 @use "../config" as *;
 @use "content_embedded" as *;
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-content {
+	/* 1) Override some styles from scaffolding */
 
-body {
-  font-family: $o-content-font-family-base;
-  font-size: $o-content-font-size-base;
-  line-height: $o-content-line-height-base;
-  color: var(--o-content-text);
-  background-color: var(--o-content-bg);
-}
-
-a {
-  color: var(--o-content-link);
-  text-decoration: none;
-
-  &:hover,
-  &:focus {
-    color: var(--o-content-link-hover);
-    text-decoration: $o-content-link-decoration;
-  }
-
-  &:focus {
-    @include tab-focus();
-  }
-}
-/* ---- Transitions for modern behavior ---- */
-@media (prefers-reduced-motion: no-preference) {
-	a {
-		transition: color 0.15s ease;
+	body {
+	  font-family: $o-content-font-family-base;
+	  font-size: $o-content-font-size-base;
+	  line-height: $o-content-line-height-base;
+	  color: var(--o-content-text);
+	  background-color: var(--o-content-bg);
 	}
-}
+
+	a {
+	  color: var(--o-content-link);
+	  text-decoration: none;
+
+	  &:hover,
+	  &:focus {
+	    color: var(--o-content-link-hover);
+	    text-decoration: $o-content-link-decoration;
+	  }
+
+	  &:focus {
+	    @include tab-focus();
+	  }
+	}
+	/* ---- Transitions for modern behavior ---- */
+	@media (prefers-reduced-motion: no-preference) {
+		a {
+			transition: color 0.15s ease;
+		}
+	}
 
 
-h1 { 
-	color: var(--o-content-h1);
-}
-body > h1:first-child { 
-	margin-top: 0;
-}
+	h1 { 
+		color: var(--o-content-h1);
+	}
+	body > h1:first-child { 
+		margin-top: 0;
+	}
 
-h2 { 
-	color: var(--o-content-h2);
-}
-h3 { 
-	color: var(--o-content-h3);
-}
-h4 { 
-	color: var(--o-content-h4);
-}
-h5 { 
-	color: var(--o-content-h5);
-}
-h5 { 
-	color: var(--o-content-h5);
-}
-hr {
-	border-top: $o-content-hr-size solid var(--o-content-hr);
-}
+	h2 { 
+		color: var(--o-content-h2);
+	}
+	h3 { 
+		color: var(--o-content-h3);
+	}
+	h4 { 
+		color: var(--o-content-h4);
+	}
+	h5 { 
+		color: var(--o-content-h5);
+	}
+	h5 { 
+		color: var(--o-content-h5);
+	}
+	hr {
+		border-top: $o-content-hr-size solid var(--o-content-hr);
+	}
 
-/* 2) OpenOLAT specific styles /* 
+	/* 2) OpenOLAT specific styles /* 
 
-/* add all styles that are created by html editor but can also be rendered in 
-   main window, not in iframe (e.g. forum post, blog entry) */
-@include o-rules-content-embedded;
+	/* add all styles that are created by html editor but can also be rendered in 
+	   main window, not in iframe (e.g. forum post, blog entry) */
+	@include o-rules-content-embedded;
 }

@@ -3,344 +3,343 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-print {
+	/*
+	*  =================================================
+	*  
+	*   Rules for OpenOLAT print layout. Mostly to hide things in print view. 
+	*   
+	*   @author gnaegi,  www.frentix.com
+	*   @date April 2014
+	*
+	*  =================================================
+	*/
 
-/*
-*  =================================================
-*  
-*   Rules for OpenOLAT print layout. Mostly to hide things in print view. 
-*   
-*   @author gnaegi,  www.frentix.com
-*   @date April 2014
-*
-*  =================================================
-*/
+	@media print {
 
-@media print {
+		/* don't print URL's on href, ugly bootstrap default */
+		a[href]:after {
+	    	content: "";
+	  	}
 
-	/* don't print URL's on href, ugly bootstrap default */
-	a[href]:after {
-    	content: "";
-  	}
-
-	/* Hide general elements */
-	#o_header_wrapper,
-	#o_offcanvas_right,
-	#o_navbar_wrapper,
-	#o_footer_wrapper,
-	#o_toplink,
-	#o_main_left, 
-	#o_main_right,
-	#o_main_toolbar,
-	#jsMath_PrintWarning,
-	.o_button_group,
-	.o_segments,
-	.o_table_toolbar,
-	.o_breadcrumb,
-	.o_bookmark,
-	.o_noti,
-	.o_opener,
-	.o_hide,
-	.o_noprint { 
-		display: none !important;
-	} 
-	
-	/* Collapsible sections: no open/close carets */
-	.o_section_toggle .o_icon_open_togglebox,
-	.o_section_toggle .o_icon_close_togglebox {
-		display: none;
-	}
-
-	/* Do not use bootstrap size width. It is too small for landscape layout */
-	.o_container_offcanvas {
-		max-width: 100%;
-		margin-left: 5px;
-		margin-right: 5px;
-	}
-
-	/* Page breaks */	
-	.o_print_break_avoid {
-		break-inside: avoid-page;		
-	}
-	.o_print_break_before {
-		break-before: page;
-	}
-	.o_print_break_after {
-		clear:both;
-		break-after: page;
-	}
-	
-	
-	/* Hide buttons in forms and print text area with full content */
-	.btn:not(.o_button_printed) {
-		display: none;
-	}
-	.o_form {
-		/* textarea: can not blow up for now, browsers ignore the height */
-		textarea,
-		.form-control.textarea_disabled {
-			-webkit-print-color-adjust: exact;
-			color-adjust: exact;
-			background: #fff !important; // o-color-keep(print)
-			height: auto !important;
-			color: #000 !important; // o-color-keep(print)
-			resize: none;
-		}
-	}
-	
-	/* Hide comments form */
-	#o_comment_form_link,
-	.o_comments form {
+		/* Hide general elements */
+		#o_header_wrapper,
+		#o_offcanvas_right,
+		#o_navbar_wrapper,
+		#o_footer_wrapper,
+		#o_toplink,
+		#o_main_left, 
+		#o_main_right,
+		#o_main_toolbar,
+		#jsMath_PrintWarning,
+		.o_button_group,
+		.o_segments,
+		.o_table_toolbar,
+		.o_breadcrumb,
+		.o_bookmark,
+		.o_noti,
+		.o_opener,
+		.o_hide,
+		.o_noprint { 
 			display: none !important;
-	}
+		} 
 	
-	/* Hide avatar - can not print background css images */
-	.o_avatar {
-		display: none;
-	}
-
-	/* Hide backgrounds */	
-	body.o_dmz {
-		background: white !important; // o-color-keep(print)
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-	}
-	
-	/* When printing dialogs, hide everything below */
-	/* Findings for dialog and basicLighbox:
-	 -  Chrome needs fit-content for hight and min-height 
-	 - FF needs width/min-width to 100% 
-	 - Override positioning to be fixed and display to block
-	 */
-	dialog.dialog {
-		margin: 0 0 0 0;
-		padding: 0 0 0 0;
-		height: fit-content;
-		max-height: fit-content;
-		width: 100%; 
-		max-width: 100%;
-		
-		.modal-dialog .modal-content {
-			height: fit-content;
-			max-height: fit-content;
-		}
-	}
-	.modal {
-		position: absolute;
-	}
-	.modal-content {
-		border: 0;
-	}
-	.modal-header {
-		display: none;
-	}
-	.modal-body{
-		padding: 0;
-	}
-	.modal-dialog {
-		margin: 0 !important;
-		width: 100% !important;
-		height: fit-content !important;	
-		background: #fff !important; // o-color-keep(print)
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-	}
-	/* When printing lightboxes, hide everything below */
-	.basicLightbox {
-		position: absolute;
-		left: 0;
-		top:0;
-		justify-content: unset;
-  		align-items: unset;
-  		margin: 0;
-		display: block;
-	    background: white !important; // o-color-keep(print)
-	    opacity: 1;
-	    transition: none;
-		height: 100%;	
-		max-height: 100%;
-	    &:before {
-			/* hide dialog close icon */
-	    	display: none;
-	    }
-		.o_lightbox_modal_form {
-			border: none;
-			width: 100% !important;
-			max-height: 100%;
-		    /* overflow-x: hidden; */
-		    /* overflow-y: auto; */
- 		}
-		
-		&.o_lightbox_close_border .basicLightbox__placeholder {
-    		max-width: 100%;
-    		max-height: 100%;
-		}
-	}
-	
-	
-	/* Print background colors in progress bar */
-	.progress {
-		break-inside : avoid-page;
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-	  	background-color: color-mix(in srgb, var(--o-backdrop) 10%, transparent) !important;
-	  	border: 1px solid color-mix(in srgb, var(--o-backdrop) 50%, transparent);
-	}
-	.progress-bar {
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-		background-color: #000 !important; // o-color-keep(print)
-		
-		&.progress-bar-success {
-			background-color: var(--o-state-success-bg) !important;
-		}
-		&.progress-bar-info {
-			background-color: var(--o-state-neutral-bg) !important;
-		}
-		&.progress-bar-warning {
-			background-color: var(--o-state-warning-bg) !important;
-		}
-		&.progress-bar-danger {
-			background-color: var(--o-state-danger-bg) !important;
-		}
-	}
-	
-	/* Print backgrounds on sliders */
-	.ui-slider.ui-slider-horizontal.ui-widget-content {
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-		background: var(--o-slider-bg) !important;
-		.ui-slider-handle {
-			-webkit-print-color-adjust: exact;
-			color-adjust: exact;
-		}
-	}
-	.o_has_value.ui-slider.ui-slider-horizontal.ui-widget-content {
-		.ui-slider-handle {
-			background-color: var(--o-slider-handler-bg) !important;
-		}
-	}
-	.o_no_value.ui-slider.ui-slider-horizontal.ui-widget-content {
-		.ui-slider-handle {
-			border: none !important
-		}
-	}
-	
-	
-	/* Print background colors in radial progress bar */
-	.radial-progress {
-		break-inside : avoid-page;
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-		
-		.o_progress_failed & .percentage:before {
-			color: var(--o-radial-progress-failed-glyph) !important;
-		}
-		.o_progress_passed & .percentage:before {
-			color: var(--o-radial-progress-passed-glyph) !important;
-		}
-		&[data-progress="0"] .percentage:before {
+		/* Collapsible sections: no open/close carets */
+		.o_section_toggle .o_icon_open_togglebox,
+		.o_section_toggle .o_icon_close_togglebox {
 			display: none;
 		}
-	}
+
+		/* Do not use bootstrap size width. It is too small for landscape layout */
+		.o_container_offcanvas {
+			max-width: 100%;
+			margin-left: 5px;
+			margin-right: 5px;
+		}
+
+		/* Page breaks */	
+		.o_print_break_avoid {
+			break-inside: avoid-page;		
+		}
+		.o_print_break_before {
+			break-before: page;
+		}
+		.o_print_break_after {
+			clear:both;
+			break-after: page;
+		}
 	
-	/* Set size to an A4 aspect ratio */
-	body {
+	
+		/* Hide buttons in forms and print text area with full content */
+		.btn:not(.o_button_printed) {
+			display: none;
+		}
+		.o_form {
+			/* textarea: can not blow up for now, browsers ignore the height */
+			textarea,
+			.form-control.textarea_disabled {
+				-webkit-print-color-adjust: exact;
+				color-adjust: exact;
+				background: #fff !important; // o-color-keep(print)
+				height: auto !important;
+				color: #000 !important; // o-color-keep(print)
+				resize: none;
+			}
+		}
+	
+		/* Hide comments form */
+		#o_comment_form_link,
+		.o_comments form {
+				display: none !important;
+		}
+	
+		/* Hide avatar - can not print background css images */
+		.o_avatar {
+			display: none;
+		}
+
+		/* Hide backgrounds */	
+		body.o_dmz {
+			background: white !important; // o-color-keep(print)
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+		}
+	
+		/* When printing dialogs, hide everything below */
+		/* Findings for dialog and basicLighbox:
+		 -  Chrome needs fit-content for hight and min-height 
+		 - FF needs width/min-width to 100% 
+		 - Override positioning to be fixed and display to block
+		 */
+		dialog.dialog {
+			margin: 0 0 0 0;
+			padding: 0 0 0 0;
+			height: fit-content;
+			max-height: fit-content;
+			width: 100%; 
+			max-width: 100%;
+		
+			.modal-dialog .modal-content {
+				height: fit-content;
+				max-height: fit-content;
+			}
+		}
+		.modal {
+			position: absolute;
+		}
+		.modal-content {
+			border: 0;
+		}
+		.modal-header {
+			display: none;
+		}
+		.modal-body{
+			padding: 0;
+		}
+		.modal-dialog {
+			margin: 0 !important;
+			width: 100% !important;
+			height: fit-content !important;	
+			background: #fff !important; // o-color-keep(print)
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+		}
+		/* When printing lightboxes, hide everything below */
+		.basicLightbox {
+			position: absolute;
+			left: 0;
+			top:0;
+			justify-content: unset;
+	  		align-items: unset;
+	  		margin: 0;
+			display: block;
+		    background: white !important; // o-color-keep(print)
+		    opacity: 1;
+		    transition: none;
+			height: 100%;	
+			max-height: 100%;
+		    &:before {
+				/* hide dialog close icon */
+		    	display: none;
+		    }
+			.o_lightbox_modal_form {
+				border: none;
+				width: 100% !important;
+				max-height: 100%;
+			    /* overflow-x: hidden; */
+			    /* overflow-y: auto; */
+	 		}
+		
+			&.o_lightbox_close_border .basicLightbox__placeholder {
+	    		max-width: 100%;
+	    		max-height: 100%;
+			}
+		}
+	
+	
+		/* Print background colors in progress bar */
+		.progress {
+			break-inside : avoid-page;
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+		  	background-color: color-mix(in srgb, var(--o-backdrop) 10%, transparent) !important;
+		  	border: 1px solid color-mix(in srgb, var(--o-backdrop) 50%, transparent);
+		}
+		.progress-bar {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background-color: #000 !important; // o-color-keep(print)
+		
+			&.progress-bar-success {
+				background-color: var(--o-state-success-bg) !important;
+			}
+			&.progress-bar-info {
+				background-color: var(--o-state-neutral-bg) !important;
+			}
+			&.progress-bar-warning {
+				background-color: var(--o-state-warning-bg) !important;
+			}
+			&.progress-bar-danger {
+				background-color: var(--o-state-danger-bg) !important;
+			}
+		}
+	
+		/* Print backgrounds on sliders */
+		.ui-slider.ui-slider-horizontal.ui-widget-content {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background: var(--o-slider-bg) !important;
+			.ui-slider-handle {
+				-webkit-print-color-adjust: exact;
+				color-adjust: exact;
+			}
+		}
+		.o_has_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+			.ui-slider-handle {
+				background-color: var(--o-slider-handler-bg) !important;
+			}
+		}
+		.o_no_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+			.ui-slider-handle {
+				border: none !important
+			}
+		}
+	
+	
+		/* Print background colors in radial progress bar */
+		.radial-progress {
+			break-inside : avoid-page;
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+		
+			.o_progress_failed & .percentage:before {
+				color: var(--o-radial-progress-failed-glyph) !important;
+			}
+			.o_progress_passed & .percentage:before {
+				color: var(--o-radial-progress-passed-glyph) !important;
+			}
+			&[data-progress="0"] .percentage:before {
+				display: none;
+			}
+		}
+	
+		/* Set size to an A4 aspect ratio */
+		body {
+			size: 1240px 1754px;
+			margin: 0;
+			padding: 0;
+			zoom: 1;
+			width: 1240px;
+			min-width: 1240px;
+			max-width: 1240px;
+			background-color:white; // o-color-keep(print)
+			/* 	Limit the inner content to certainly fit to the page. 
+			 	Smaller than page to take the unknown print borders into account. 
+			 */
+			.o_page_content {
+				min-width: 1100px;
+				max-width: 1100px;
+			}
+		}
+	
+		body.o_pdf_output_one_cm .o_page_content {
+			min-width: 900px;
+		}
+	
+		/* prevent oversize tables to break layout, limit size to visible space on Sheet */
+		.o_scrollable {
+				max-width: 1100px;
+		}
+	
+		table, figure, figure,
+		panel, fieldset,
+		.o_block, .o_block_large
+		 {
+	 	  break-inside: avoid-page;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+		  break-after: avoid-page;
+		}
+	
+		/* disclaimer formatting */
+		.o_disclaimer .o_disclaimer_content {
+			max-height: none;
+		}
+	
+	}
+
+	body.o_print_a4_144 {
 		size: 1240px 1754px;
 		margin: 0;
 		padding: 0;
-		zoom: 1;
+		zoom: 1.0;
 		width: 1240px;
 		min-width: 1240px;
-		max-width: 1240px;
 		background-color:white; // o-color-keep(print)
-		/* 	Limit the inner content to certainly fit to the page. 
-		 	Smaller than page to take the unknown print borders into account. 
-		 */
+	
 		.o_page_content {
-			min-width: 1100px;
-			max-width: 1100px;
+			min-width: 1240px;
 		}
-	}
 	
-	body.o_pdf_output_one_cm .o_page_content {
-		min-width: 900px;
-	}
-	
-	/* prevent oversize tables to break layout, limit size to visible space on Sheet */
-	.o_scrollable {
-			max-width: 1100px;
-	}
-	
-	table, figure, figure,
-	panel, fieldset,
-	.o_block, .o_block_large
-	 {
- 	  break-inside: avoid-page;
-	}
-
-	h1, h2, h3, h4, h5, h6 {
-	  break-after: avoid-page;
-	}
-	
-	/* disclaimer formatting */
-	.o_disclaimer .o_disclaimer_content {
-		max-height: none;
-	}
-	
-}
-
-body.o_print_a4_144 {
-	size: 1240px 1754px;
-	margin: 0;
-	padding: 0;
-	zoom: 1.0;
-	width: 1240px;
-	min-width: 1240px;
-	background-color:white; // o-color-keep(print)
-	
-	.o_page_content {
-		min-width: 1240px;
-	}
-	
-	.o_page_lead.o_page_reduced, #o_navbar_wrapper, #o_toplink, .hidden-print {
-		display: none;
-	}
-	
-	#o_main_wrapper #o_main_container {
-		padding: 0;
-		margin: 0;
-	}
-}
-
-.o_print_header {
-	@extend %o_flex_first_grow;
-	#o_print_brand {
-		height: $o-print-header-logo-height;
-		width: $o-print-header-logo-width;
-		min-width: $o-print-header-logo-width;
-		max-width: $o-print-header-logo-width;
-		margin-left: 10px;
-		position: relative;
-		img {
-			position: absolute;
-			top: 0;
-			right: 0;
-			max-height: $o-print-header-logo-height;
+		.o_page_lead.o_page_reduced, #o_navbar_wrapper, #o_toplink, .hidden-print {
+			display: none;
 		}
-	}
 	
-	h1, h2, h3 {
-		margin-top: 0;
-	}
-}
-
-body.o_pdf_output_one_cm {
-	#o_main_wrapper {
-		width: calc(100vw);
-		
-		#o_main_container.container-fluid {
+		#o_main_wrapper #o_main_container {
 			padding: 0;
+			margin: 0;
 		}
 	}
-}
+
+	.o_print_header {
+		@extend %o_flex_first_grow;
+		#o_print_brand {
+			height: $o-print-header-logo-height;
+			width: $o-print-header-logo-width;
+			min-width: $o-print-header-logo-width;
+			max-width: $o-print-header-logo-width;
+			margin-left: 10px;
+			position: relative;
+			img {
+				position: absolute;
+				top: 0;
+				right: 0;
+				max-height: $o-print-header-logo-height;
+			}
+		}
+	
+		h1, h2, h3 {
+			margin-top: 0;
+		}
+	}
+
+	body.o_pdf_output_one_cm {
+		#o_main_wrapper {
+			width: calc(100vw);
+		
+			#o_main_container.container-fluid {
+				padding: 0;
+			}
+		}
+	}
 }

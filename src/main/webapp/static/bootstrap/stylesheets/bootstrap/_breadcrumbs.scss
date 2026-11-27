@@ -5,29 +5,27 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin bootstrap-rules-breadcrumbs {
+  .breadcrumb {
+    padding: $breadcrumb-padding-vertical $breadcrumb-padding-horizontal;
+    margin-bottom: $line-height-computed;
+    list-style: none;
+    background-color: $breadcrumb-bg;
+    border-radius: $border-radius-base;
 
+    > li {
+      display: inline-block;
 
-.breadcrumb {
-  padding: $breadcrumb-padding-vertical $breadcrumb-padding-horizontal;
-  margin-bottom: $line-height-computed;
-  list-style: none;
-  background-color: $breadcrumb-bg;
-  border-radius: $border-radius-base;
+      + li:before {
+        padding: 0 5px;
+        color: $breadcrumb-color;
+        // [converter] Workaround for https://github.com/sass/libsass/issues/1115
+        $nbsp: "\00a0";
+        content: "#{$breadcrumb-separator}#{$nbsp}"; // Unicode space added since inline-block means non-collapsing white-space
+      }
+    }
 
-  > li {
-    display: inline-block;
-
-    + li:before {
-      padding: 0 5px;
-      color: $breadcrumb-color;
-      // [converter] Workaround for https://github.com/sass/libsass/issues/1115
-      $nbsp: "\00a0";
-      content: "#{$breadcrumb-separator}#{$nbsp}"; // Unicode space added since inline-block means non-collapsing white-space
+    > .active {
+      color: $breadcrumb-active-color;
     }
   }
-
-  > .active {
-    color: $breadcrumb-active-color;
-  }
-}
 }

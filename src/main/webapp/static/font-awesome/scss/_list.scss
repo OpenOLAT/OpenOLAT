@@ -6,20 +6,19 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin fa-rules-list {
+  .#{$fa-css-prefix}-ul {
+    list-style-type: none;
+    margin-left: var(--#{$fa-css-prefix}-li-margin, #{$fa-li-margin});
+    padding-left: 0;
 
-.#{$fa-css-prefix}-ul {
-  list-style-type: none;
-  margin-left: var(--#{$fa-css-prefix}-li-margin, #{$fa-li-margin});
-  padding-left: 0;
+    > li { position: relative; }
+  }
 
-  > li { position: relative; }
-}
-
-.#{$fa-css-prefix}-li {
-  left: calc(-1 * var(--#{$fa-css-prefix}-li-width, #{$fa-li-width}));
-  position: absolute;
-  text-align: center;
-  width: var(--#{$fa-css-prefix}-li-width, #{$fa-li-width});
-  line-height: inherit;
-}
+  .#{$fa-css-prefix}-li {
+    left: calc(-1 * var(--#{$fa-css-prefix}-li-width, #{$fa-li-width}));
+    position: absolute;
+    text-align: center;
+    width: var(--#{$fa-css-prefix}-li-width, #{$fa-li-width});
+    line-height: inherit;
+  }
 }

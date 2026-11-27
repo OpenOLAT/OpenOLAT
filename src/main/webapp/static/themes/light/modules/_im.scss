@@ -3,343 +3,343 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-im {
-/* Instant Messaging components in navbar */
-#o_navbar_imclient {
-	.o_im_messages {
-		float: left;
+	/* Instant Messaging components in navbar */
+	#o_navbar_imclient {
+		.o_im_messages {
+			float: left;
+		}
+		#o_im_message, 	
+		#o_im_status,
+		#o_im_summary {
+			float: left;
+			position: relative;
+			/* Align with the navbar links at any base font size. The widgets are as high
+			   as a navbar link ($navbar-height, which the link padding is derived from)
+			   and centre their content. The former vertical padding of
+			   floor($grid-gutter-width * 0.5) was a constant 15px, and the badge inside
+			   sits on vertical-align: middle, which aligns to the baseline plus half the
+			   x-height rather than to the middle of the line box. Both only lined up at
+			   the default $font-size-base; with a larger base size the status dot and the
+			   message badge drifted below the site tabs. */
+			padding: 0 math.floor($grid-gutter-width * 0.125);
+			height: $navbar-height;
+			display: flex;
+			align-items: center;
+		}
+		#o_im_status, #o_im_message {
+			padding-left: math.floor($grid-gutter-width * 0.5);
+		}
+		#o_im_summary {
+			.badge {
+				color: var(--o-im-summary-fg);
+				background-color: var(--o-im-summary-bg);
+			}
+		}
+		#o_im_status {
+			li > a > span {
+				display: inline;
+			}
+			div.o_chelp_wrapper {
+				right: 0.5em;
+			}
+		}
+		#o_im_message {
+			a:hover,
+			a:focus {
+				text-decoration: none;
+			}
+			.o_icon_message {
+				color: var(--o-im-newmessage);
+				&:hover {
+					color: var(--o-im-newmessage-hover);
+				}
+			}		
+		}
 	}
-	#o_im_message, 	
-	#o_im_status,
-	#o_im_summary {
-		float: left;
+
+	.ui-dialog .ui-widget-content.o_im_chat_dialog {
+		padding: 4px;
 		position: relative;
-		/* Align with the navbar links at any base font size. The widgets are as high
-		   as a navbar link ($navbar-height, which the link padding is derived from)
-		   and centre their content. The former vertical padding of
-		   floor($grid-gutter-width * 0.5) was a constant 15px, and the badge inside
-		   sits on vertical-align: middle, which aligns to the baseline plus half the
-		   x-height rather than to the middle of the line box. Both only lined up at
-		   the default $font-size-base; with a larger base size the status dot and the
-		   message badge drifted below the site tabs. */
-		padding: 0 math.floor($grid-gutter-width * 0.125);
-		height: $navbar-height;
-		display: flex;
-		align-items: center;
 	}
-	#o_im_status, #o_im_message {
-		padding-left: math.floor($grid-gutter-width * 0.5);
-	}
-	#o_im_summary {
-		.badge {
-			color: var(--o-im-summary-fg);
-			background-color: var(--o-im-summary-bg);
-		}
-	}
-	#o_im_status {
-		li > a > span {
-			display: inline;
-		}
-		div.o_chelp_wrapper {
-			right: 0.5em;
-		}
-	}
-	#o_im_message {
-		a:hover,
-		a:focus {
-			text-decoration: none;
-		}
-		.o_icon_message {
-			color: var(--o-im-newmessage);
-			&:hover {
-				color: var(--o-im-newmessage-hover);
-			}
-		}		
-	}
-}
 
-.ui-dialog .ui-widget-content.o_im_chat_dialog {
-	padding: 4px;
-	position: relative;
-}
-
-.o_im {
-	display: grid;
-	grid-template-columns: 2fr;
-	grid-template-rows: 2fr;
-	column-gap: 0;
-	row-gap: 0;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	
-	&.o_im_with_header, &.o_im_roster_top {
-		grid-template-rows: auto 2fr;
-	}
-	
-	&.o_im_roster_left {
-		grid-template-columns: 1fr 2fr;
-	}
-	
-	.o_im_resource_infos, .o_im_entries, .o_im_roster, .o_im_chat {
-		padding: 5px;
-	}
-	
-	.o_im_resource_infos {
-		border-right: 1px solid var(--o-im-chat-border);
-		background-color: var(--o-im-chat-roster-bg);
-		align-self: center;
-	}
-	
-	.o_im_entries {
-		align-self: center;
-		display: flex;
-		
-		.o_im_entries_non_vip {
-			flex: 1 1 70px;
-		}
-	
-		.o_im_entries_number {
-			flex: 0 0 auto;
-			padding-right: 5px;
-		}
-	}
-	
-	.o_im_roster {
-		border-right: 1px solid var(--o-im-chat-border);
-		border-top: 1px solid var(--o-im-chat-border);
-		background-color: var(--o-im-chat-roster-bg);
-	}
-	
-	.o_im_chat {
-		border-top: 1px solid var(--o-im-chat-border);
-		display: flex;
-		flex-direction: column;
-		
-		.o_im_load_history {
-			margin-bottom: $padding-base-vertical;
-			flex: 0 0 auto;
-		
-		}
-		
-		.o_im_chat_history {
-			flex: 1 1 160px;
-			border: 1px solid var(--o-im-chat-history-border); 
-			
-			/* scrollbar */
-			margin: 0 0 1em 0; 
-			overflow-y: scroll; 
-			overflow-x:auto;
-		}
-		
-		.o_im_chat_form {
-			flex: 0 0 auto;
-		}
-	}
-}
-
-.o_im_welcome_image {
-	width: $o-portrait-small-size;
-	height: $o-portrait-small-size;
-	border-radius: 50%;
-	border: none;
-	background-color: var(--o-bg-subtle);
-	background-position: 50% 50%;
-	background-repeat: no-repeat;
-	background-size: cover;
-}
-
-.o_supervisor_chat_roster a.active {
-	font-weight: bold;
-}
-
-.o_im_load_history .o_label {
-	font-size: $o-im-chat-load-font-size; 
-	padding-right: 0.5em;
-	line-height: 1.5em;
-	color: var(--o-text-muted);
-}
-
-/* message group for all following messages of a single user. a new message group starts 
-   when someone else replies */
-.o_im_message_group {
-	margin: 3px 3px;
-	padding: 3px 3px 3px 40px;
-	min-height: 40px;		
-	position: relative;
-	border-radius: $o-im-chat-message-border-radius;
-	background: var(--o-im-chat-message-bg);
-	
-	&.o_im_message_end {
-		display: none;
-	}
-	
-	&.o_im_message_join, &.o_im_message_accept, &.o_im_message_close, &.o_im_message_reactivate {
-		padding: 0 7px;
-		min-height: 12px;
-		margin: 3px 3px;
-		border-radius: $o-im-chat-message-border-radius;
-		background-color: var(--o-im-chat-message-status-bg);
-	}
-	
-	&.o_im_message_error {
-		padding: 0 7px;
-		min-height: 12px;
-		margin: 3px 3px;
-		border-radius: $o-im-chat-message-border-radius;
-		background-color: var(--o-im-chat-message-error-bg);
-	}
-	
-	&.o_im_message_me {
-		padding: 0 7px;
-		margin: 3px 3px 3px 70px;
-		border-radius: $o-im-chat-message-border-radius;
-		background-color: var(--o-im-chat-message-me-bg);
-	}
-	
-	.o_portrait {
+	.o_im {
+		display: grid;
+		grid-template-columns: 2fr;
+		grid-template-rows: 2fr;
+		column-gap: 0;
+		row-gap: 0;
 		position: absolute;
-		top: 3px;
-		left: 3px;
-	}
-			
-	.o_im_from { 
-		color: var(--o-im-chat-from); 
-		font-size: $o-im-chat-from-font-size; 
-		font-weight: bold;
-		@extend %o_undecorated;
-		&:hover {
-			color: var(--o-im-chat-from-hover); 		
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+	
+		&.o_im_with_header, &.o_im_roster_top {
+			grid-template-rows: auto 2fr;
 		}
-	}
 	
-	div.o_im_body {
-		padding: 3px 0 3px 0;
-		font-size: $o-im-chat-body-font-size;
-		.o_date { 
-			float: right;
-			color: var(--o-im-chat-date); 
-			font-size: $o-im-chat-date-font-size;
+		&.o_im_roster_left {
+			grid-template-columns: 1fr 2fr;
 		}
-	}
-}
-
-.o_im_chat_form .o_error {
-	margin: 2px 0;
-	padding: 2px 5px;
-	font-size: 75%;
-}
-
-.o_im_input_send {
-	display: flex;
-	column-gap: 10px;
 	
-	input {
-		flex: 1 1 auto;
-	}
+		.o_im_resource_infos, .o_im_entries, .o_im_roster, .o_im_chat {
+			padding: 5px;
+		}
 	
-	.o_im_send_button {
-		flex: 0 0 auto;
-		border-radius: 50%;
-		padding: 6px 8px 6px 6px;
-		margin: 1px;
-		@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
-	}
-}
-
-.o_groupchat_roster {
-	font-size: $o-im-groupchat-font-size;
-	li {
-		@include text-overflow();
-		color: var(--o-im-groupchat-user);
+		.o_im_resource_infos {
+			border-right: 1px solid var(--o-im-chat-border);
+			background-color: var(--o-im-chat-roster-bg);
+			align-self: center;
+		}
+	
+		.o_im_entries {
+			align-self: center;
+			display: flex;
 		
-		&.o_vip {
-			color: var(--o-im-groupchat-vip) ;
-		}	
-		&.o_anonymous {
-			color: var(--o-im-groupchat-anonymous);
-		}	
-	}
-
-}
-
-.o_supervised_chat_roster {
-	display: inline-flex;
-	flex-wrap: wrap;
-	column-gap: 5px;
-}
-.o_supervised_chat_roster>ul {
-	display: inline-flex;
-	flex-wrap: wrap;
-	column-gap: 10px;
-}
-
-.o_supervised_chat_roster>ul>li {
-	display: inline-flex;
-}
-
-.o_supervisor_chat_rosters {
-	margin-left: 25px;
-}
-
-.o_supervised_chat_roster .o_portrait,
-.o_im_entries .o_portrait,
-.o_supervisor_chat_rosters .o_portrait {
-	transform: translateY(2px);
-}
-
-.o_im_buddieslist {
-	.o_im_buddieslist_toggler {
-		.btn {
-			@include text-overflow();
-		}
-	}
-	ul {
-		font-size: 	$o-im-buddies-font-size;
-		ul {
-			padding-left: 1em;		
-		}
-		a {
-			color: var(--o-im-buddies-link);
-			&:hover {
-				color: var(--o-im-buddies-link-hover);
+			.o_im_entries_non_vip {
+				flex: 1 1 70px;
+			}
+	
+			.o_im_entries_number {
+				flex: 0 0 auto;
+				padding-right: 5px;
 			}
 		}
-	}	
-}
+	
+		.o_im_roster {
+			border-right: 1px solid var(--o-im-chat-border);
+			border-top: 1px solid var(--o-im-chat-border);
+			background-color: var(--o-im-chat-roster-bg);
+		}
+	
+		.o_im_chat {
+			border-top: 1px solid var(--o-im-chat-border);
+			display: flex;
+			flex-direction: column;
+		
+			.o_im_load_history {
+				margin-bottom: $padding-base-vertical;
+				flex: 0 0 auto;
+		
+			}
+		
+			.o_im_chat_history {
+				flex: 1 1 160px;
+				border: 1px solid var(--o-im-chat-history-border); 
+			
+				/* scrollbar */
+				margin: 0 0 1em 0; 
+				overflow-y: scroll; 
+				overflow-x:auto;
+			}
+		
+			.o_im_chat_form {
+				flex: 0 0 auto;
+			}
+		}
+	}
 
-.o_im_status_active.o_labeled {
-	text-transform: none;
-	font-weight: normal;
-	display: inline-block;
-}
+	.o_im_welcome_image {
+		width: $o-portrait-small-size;
+		height: $o-portrait-small-size;
+		border-radius: 50%;
+		border: none;
+		background-color: var(--o-bg-subtle);
+		background-position: 50% 50%;
+		background-repeat: no-repeat;
+		background-size: cover;
+	}
 
-.o_im_status_completed.o_labeled {
-	text-transform: none;
-	font-weight: normal;
-	display: inline-block;
-}
+	.o_supervisor_chat_roster a.active {
+		font-weight: bold;
+	}
 
-.o_im_status_requested.o_labeled {
-	text-transform: none;
-	font-weight: normal;
-	display: inline-block;
-}
+	.o_im_load_history .o_label {
+		font-size: $o-im-chat-load-font-size; 
+		padding-right: 0.5em;
+		line-height: 1.5em;
+		color: var(--o-text-muted);
+	}
 
-.o_im_supervised_list table>tbody>tr.o_im_request,
-.o_im_supervised_list table>tbody>tr.o_im_request>td.o_col_sticky_left,
-.o_im_supervised_list table>tbody>tr.o_im_request>td.o_col_sticky_right {
-	background-color: var(--o-state-warning-soft-bg) !important;
-}
-.o_im_supervised_list table>tbody>tr.o_im_unread,
-.o_im_supervised_list table>tbody>tr.o_im_unread>td.o_col_sticky_left,
-.o_im_supervised_list table>tbody>tr.o_im_unread>td.o_col_sticky_right {
-	background-color: var(--o-state-neutral-soft-bg) !important;
-}
-.o_im_supervised_list table>tbody>tr.o_im_danger,
-.o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_left,
-.o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_right {
-	background-color: var(--o-state-danger-soft-bg) !important;
-}
+	/* message group for all following messages of a single user. a new message group starts 
+	   when someone else replies */
+	.o_im_message_group {
+		margin: 3px 3px;
+		padding: 3px 3px 3px 40px;
+		min-height: 40px;		
+		position: relative;
+		border-radius: $o-im-chat-message-border-radius;
+		background: var(--o-im-chat-message-bg);
+	
+		&.o_im_message_end {
+			display: none;
+		}
+	
+		&.o_im_message_join, &.o_im_message_accept, &.o_im_message_close, &.o_im_message_reactivate {
+			padding: 0 7px;
+			min-height: 12px;
+			margin: 3px 3px;
+			border-radius: $o-im-chat-message-border-radius;
+			background-color: var(--o-im-chat-message-status-bg);
+		}
+	
+		&.o_im_message_error {
+			padding: 0 7px;
+			min-height: 12px;
+			margin: 3px 3px;
+			border-radius: $o-im-chat-message-border-radius;
+			background-color: var(--o-im-chat-message-error-bg);
+		}
+	
+		&.o_im_message_me {
+			padding: 0 7px;
+			margin: 3px 3px 3px 70px;
+			border-radius: $o-im-chat-message-border-radius;
+			background-color: var(--o-im-chat-message-me-bg);
+		}
+	
+		.o_portrait {
+			position: absolute;
+			top: 3px;
+			left: 3px;
+		}
+			
+		.o_im_from { 
+			color: var(--o-im-chat-from); 
+			font-size: $o-im-chat-from-font-size; 
+			font-weight: bold;
+			@extend %o_undecorated;
+			&:hover {
+				color: var(--o-im-chat-from-hover); 		
+			}
+		}
+	
+		div.o_im_body {
+			padding: 3px 0 3px 0;
+			font-size: $o-im-chat-body-font-size;
+			.o_date { 
+				float: right;
+				color: var(--o-im-chat-date); 
+				font-size: $o-im-chat-date-font-size;
+			}
+		}
+	}
+
+	.o_im_chat_form .o_error {
+		margin: 2px 0;
+		padding: 2px 5px;
+		font-size: 75%;
+	}
+
+	.o_im_input_send {
+		display: flex;
+		column-gap: 10px;
+	
+		input {
+			flex: 1 1 auto;
+		}
+	
+		.o_im_send_button {
+			flex: 0 0 auto;
+			border-radius: 50%;
+			padding: 6px 8px 6px 6px;
+			margin: 1px;
+			@include button-variant(var(--o-btn-primary-fg), var(--o-btn-primary-bg), var(--o-btn-primary-border));
+		}
+	}
+
+	.o_groupchat_roster {
+		font-size: $o-im-groupchat-font-size;
+		li {
+			@include text-overflow();
+			color: var(--o-im-groupchat-user);
+		
+			&.o_vip {
+				color: var(--o-im-groupchat-vip) ;
+			}	
+			&.o_anonymous {
+				color: var(--o-im-groupchat-anonymous);
+			}	
+		}
+
+	}
+
+	.o_supervised_chat_roster {
+		display: inline-flex;
+		flex-wrap: wrap;
+		column-gap: 5px;
+	}
+	.o_supervised_chat_roster>ul {
+		display: inline-flex;
+		flex-wrap: wrap;
+		column-gap: 10px;
+	}
+
+	.o_supervised_chat_roster>ul>li {
+		display: inline-flex;
+	}
+
+	.o_supervisor_chat_rosters {
+		margin-left: 25px;
+	}
+
+	.o_supervised_chat_roster .o_portrait,
+	.o_im_entries .o_portrait,
+	.o_supervisor_chat_rosters .o_portrait {
+		transform: translateY(2px);
+	}
+
+	.o_im_buddieslist {
+		.o_im_buddieslist_toggler {
+			.btn {
+				@include text-overflow();
+			}
+		}
+		ul {
+			font-size: 	$o-im-buddies-font-size;
+			ul {
+				padding-left: 1em;		
+			}
+			a {
+				color: var(--o-im-buddies-link);
+				&:hover {
+					color: var(--o-im-buddies-link-hover);
+				}
+			}
+		}	
+	}
+
+	.o_im_status_active.o_labeled {
+		text-transform: none;
+		font-weight: normal;
+		display: inline-block;
+	}
+
+	.o_im_status_completed.o_labeled {
+		text-transform: none;
+		font-weight: normal;
+		display: inline-block;
+	}
+
+	.o_im_status_requested.o_labeled {
+		text-transform: none;
+		font-weight: normal;
+		display: inline-block;
+	}
+
+	.o_im_supervised_list table>tbody>tr.o_im_request,
+	.o_im_supervised_list table>tbody>tr.o_im_request>td.o_col_sticky_left,
+	.o_im_supervised_list table>tbody>tr.o_im_request>td.o_col_sticky_right {
+		background-color: var(--o-state-warning-soft-bg) !important;
+	}
+	.o_im_supervised_list table>tbody>tr.o_im_unread,
+	.o_im_supervised_list table>tbody>tr.o_im_unread>td.o_col_sticky_left,
+	.o_im_supervised_list table>tbody>tr.o_im_unread>td.o_col_sticky_right {
+		background-color: var(--o-state-neutral-soft-bg) !important;
+	}
+	.o_im_supervised_list table>tbody>tr.o_im_danger,
+	.o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_left,
+	.o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_right {
+		background-color: var(--o-state-danger-soft-bg) !important;
+	}
 }

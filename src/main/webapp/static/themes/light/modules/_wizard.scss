@@ -5,148 +5,147 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-wizard {
+	.o_wizard {
+		.o_steps {
+			margin-bottom: $modal-inner-padding;
 
-.o_wizard {
-	.o_steps {
-		margin-bottom: $modal-inner-padding;
+			.o_steps_main,
+			.o_steps_sub {
+				overflow-x: auto;
+				overflow-y: hidden;
+				scroll-behavior: smooth;
+				// hidden scrollbar — steps are navigated with the wizard buttons,
+				// the active step is scrolled into the center via inline JS
+				scrollbar-width: none;          // Firefox
+				&::-webkit-scrollbar { display: none; }
+			}
 
-		.o_steps_main,
-		.o_steps_sub {
-			overflow-x: auto;
-			overflow-y: hidden;
-			scroll-behavior: smooth;
-			// hidden scrollbar — steps are navigated with the wizard buttons,
-			// the active step is scrolled into the center via inline JS
-			scrollbar-width: none;          // Firefox
-			&::-webkit-scrollbar { display: none; }
-		}
-
-		ul {
-			list-style: none outside none;
-			padding: 0;
-			margin: 0;
-			display: flex;
-			width: max-content;
-
-			li {
-				position: relative;
-				float: none;
-				flex: 0 0 auto;
-				cursor: default;
+			ul {
+				list-style: none outside none;
+				padding: 0;
 				margin: 0;
-				height: 46px;
-				line-height: 46px;
+				display: flex;
+				width: max-content;
+
+				li {
+					position: relative;
+					float: none;
+					flex: 0 0 auto;
+					cursor: default;
+					margin: 0;
+					height: 46px;
+					line-height: 46px;
 				
-				.chevron {
-					border: 24px solid transparent;
-					border-left: 14px solid var(--o-wizard-steps-border);
-					border-right: 0;
-					display: block;
-					position: absolute;
-					right: -14px;
-					top: 0;
-					z-index: 1;
-				}
-				.chevron:before {
-					border: 24px solid transparent;
-					border-left: 14px solid var(--o-wizard-step-bg);
-					border-right: 0;
-					content: "";
-					display: block;
-					position: absolute;
-					right: 1px;
-					top: -24px;
+					.chevron {
+						border: 24px solid transparent;
+						border-left: 14px solid var(--o-wizard-steps-border);
+						border-right: 0;
+						display: block;
+						position: absolute;
+						right: -14px;
+						top: 0;
+						z-index: 1;
+					}
+					.chevron:before {
+						border: 24px solid transparent;
+						border-left: 14px solid var(--o-wizard-step-bg);
+						border-right: 0;
+						content: "";
+						display: block;
+						position: absolute;
+						right: 1px;
+						top: -24px;
+					}
 				}
 			}
-		}
-		.o_steps_main {
-			border: 1px solid var(--o-wizard-steps-border);
-			border-radius: 2px;
-			background-color: var(--o-wizard-steps-bg);
-			position: relative;
+			.o_steps_main {
+				border: 1px solid var(--o-wizard-steps-border);
+				border-radius: 2px;
+				background-color: var(--o-wizard-steps-bg);
+				position: relative;
 
-			ul {
-				li {
-					background: var(--o-wizard-step-bg);
-					font-size: 16px;
-					padding: 0 15px 0 30px;
+				ul {
+					li {
+						background: var(--o-wizard-step-bg);
+						font-size: 16px;
+						padding: 0 15px 0 30px;
 					
-					&.active {
-						background: var(--o-wizard-step-main-active-bg);
-						a {
-							span {
-								color: var(--o-wizard-step-main-active-fg);
+						&.active {
+							background: var(--o-wizard-step-main-active-bg);
+							a {
+								span {
+									color: var(--o-wizard-step-main-active-fg);
+								}
 							}
-						}
 						
-						.chevron:before {
-							border-left: 14px solid var(--o-wizard-step-main-active-bg);
-						}
-					}
-					.badge {
-						margin-right: 8px;
-					}
-				}
-				li:first-child {
-					border-radius: 4px 0 0 4px;
-					padding-left: 20px;
-				}
-			}
-		}
-		.o_steps_sub {
-			counter-reset: sub-step-counter;
-			ul {
-				li {
-					font-size: 14px;
-					padding: 0 15px 0 15px;
-					border-bottom: 1px solid var(--o-wizard-steps-border);
-				
-					&.active {
-						border-bottom: 2px solid var(--o-wizard-step-sub-active-border);
-						a {
-							span {
-								color: var(--o-wizard-step-sub-active);
+							.chevron:before {
+								border-left: 14px solid var(--o-wizard-step-main-active-bg);
 							}
 						}
+						.badge {
+							margin-right: 8px;
+						}
 					}
-					span::before {
-						content: counter(sub-step-counter) ". ";
-						counter-increment: sub-step-counter;
+					li:first-child {
+						border-radius: 4px 0 0 4px;
+						padding-left: 20px;
 					}
-					span.sr-only::before {
-						counter-increment: none !important;
+				}
+			}
+			.o_steps_sub {
+				counter-reset: sub-step-counter;
+				ul {
+					li {
+						font-size: 14px;
+						padding: 0 15px 0 15px;
+						border-bottom: 1px solid var(--o-wizard-steps-border);
+				
+						&.active {
+							border-bottom: 2px solid var(--o-wizard-step-sub-active-border);
+							a {
+								span {
+									color: var(--o-wizard-step-sub-active);
+								}
+							}
+						}
+						span::before {
+							content: counter(sub-step-counter) ". ";
+							counter-increment: sub-step-counter;
+						}
+						span.sr-only::before {
+							counter-increment: none !important;
+						}
 					}
 				}
 			}
 		}
-	}
-	.o_wizard_steps {
-		border-radius: $border-radius-base;
-	}
-}
-
-.o_wizard.o_wizard_embedded {
-	max-width: 100%;
-	
-	.o_wizard_body {
-		position: relative;
-		
-	}
-}
-
-@media (max-width: $screen-xs-max) {
-	.o_wizard_button_prev,
-	.o_wizard_button_next {
-		> span {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			padding: 0;
-			margin: -1px;
-			overflow: hidden;
-			clip: rect(0, 0, 0, 0);
-			border: 0;
+		.o_wizard_steps {
+			border-radius: $border-radius-base;
 		}
 	}
-}
+
+	.o_wizard.o_wizard_embedded {
+		max-width: 100%;
+	
+		.o_wizard_body {
+			position: relative;
+		
+		}
+	}
+
+	@media (max-width: $screen-xs-max) {
+		.o_wizard_button_prev,
+		.o_wizard_button_next {
+			> span {
+				position: absolute;
+				width: 1px;
+				height: 1px;
+				padding: 0;
+				margin: -1px;
+				overflow: hidden;
+				clip: rect(0, 0, 0, 0);
+				border: 0;
+			}
+		}
+	}
 }

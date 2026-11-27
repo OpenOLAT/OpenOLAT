@@ -2,167 +2,167 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-courseeditor {
-@if not $o-course-show-icon-editor-menu {
-	// hide icons in menu
-	.o_tree.o_editor_menu .o_tree_link > i,
-	.o_tree.o_editor_configuration_menu .o_tree_link > i, {
-		display: none;
-	}
-}
-
-.o_course_editor, .o_assessment_test_editor_and_composer {
-	.o_titled_wrapper {
-		display: flex;
-		.o_title {
-			margin-right: auto;
+	@if not $o-course-show-icon-editor-menu {
+		// hide icons in menu
+		.o_tree.o_editor_menu .o_tree_link > i,
+		.o_tree.o_editor_configuration_menu .o_tree_link > i, {
+			display: none;
 		}
-		.o_title_cmds {
+	}
+
+	.o_course_editor, .o_assessment_test_editor_and_composer {
+		.o_titled_wrapper {
 			display: flex;
-			>div {
-				margin-left: 5px;
+			.o_title {
+				margin-right: auto;
 			}
-		}
-		
-	}
-}
-
-.o_editor_configuration_menu {
-	margin-bottom: 10px;
-}
-
-/* Course node rights */
-.o_node_right {
-	.o_toggle {
-		color: var(--o-text-muted);
-		padding-top: 11px;
-	}
-	.o_table_toolbar {
-		display: none;
-	}
-	.o_table_wrapper.o_table_flexi {
-		.table {
-			margin-top: 0px;
-			td {
-				vertical-align: middle;
-			}
-		}
-	}
-}
-
-.o_node_right.o_regular {
-	display: flex;
-	flex-direction: row-reverse;
-	justify-content: space-between;
-}
-
-.o_node_right.o_advanced {
-	display: flex;
-	flex-direction: column;
-	
-	.o_toggle {
-		display: flex;
-		flex-direction: row-reverse;
-	}
-}
-
-.o_messages {
-	padding: 10px;
-	&+ .o_messages {
-		margin-top: -20px;
-	}
-	a {
-		font-size: 80%;
-		vertical-align: text-top;
-		margin-left: 10px;
-	}
-}
-
-/* learning path */
-.o_lp_config_edit {
-	.o_lp_obligation_config {
-		display: flex;
-		flex-direction: row-reverse;
-		justify-content: space-between;
-		
-		&.o_exceptional {
-			flex-direction: column;
-			
-			.o_toggle {
+			.o_title_cmds {
 				display: flex;
-				flex-direction: row-reverse;
+				>div {
+					margin-left: 5px;
+				}
 			}
-		}
 		
+		}
+	}
+
+	.o_editor_configuration_menu {
+		margin-bottom: 10px;
+	}
+
+	/* Course node rights */
+	.o_node_right {
 		.o_toggle {
 			color: var(--o-text-muted);
 			padding-top: 11px;
 		}
-		.o_button_group {
-			margin-bottom: 0;
+		.o_table_toolbar {
+			display: none;
 		}
-	}	
-	
-	.o_lp_exobli_table {
-		.table {
-			.radio-inline {
-				padding-top: 0px;
+		.o_table_wrapper.o_table_flexi {
+			.table {
+				margin-top: 0px;
+				td {
+					vertical-align: middle;
+				}
 			}
 		}
 	}
-}
-.o_lp_edit {
-	.o_midlock {
-		display: none;
-	}
-}
-.o_lp_exobli_courserun_config {
-	display: flex;
-	align-items: center;
-	gap: 5px;
-}
 
-/* Copy */
-.o_import_course_nodes {
-	.o_error {
-		padding: 0;
-		margin: 0;
-		border: 0;
-		background-color: inherit;
-		color: var(--o-state-danger-text);	
+	.o_node_right.o_regular {
+		display: flex;
+		flex-direction: row-reverse;
+		justify-content: space-between;
 	}
-	
-	.o_warning {
-		padding: 0;
-		margin: 0;
-		border: 0;
-		background-color: inherit;
-		color: var(--o-state-warning-text);	
-	}
-	
-	.o_info {
-		padding: 0;
-		margin: 0;
-		border: 0;
-		background-color: inherit;
-	}
-	
-	td>p {
-		padding: 0;
-		margin: 0;
-	}
-}
 
-/* Quick-add input field only on medium+ screen */
-@media (max-width: $screen-xs-max) {
-	.o_quick_add {
-		display: none !important;	
+	.o_node_right.o_advanced {
+		display: flex;
+		flex-direction: column;
+	
+		.o_toggle {
+			display: flex;
+			flex-direction: row-reverse;
+		}
 	}
-}
 
-/* */
-.o_st_config_toggle {
-	text-align: right;
-	margin-top: -5px;
-	margin-bottom: -15px;
-}
+	.o_messages {
+		padding: 10px;
+		&+ .o_messages {
+			margin-top: -20px;
+		}
+		a {
+			font-size: 80%;
+			vertical-align: text-top;
+			margin-left: 10px;
+		}
+	}
+
+	/* learning path */
+	.o_lp_config_edit {
+		.o_lp_obligation_config {
+			display: flex;
+			flex-direction: row-reverse;
+			justify-content: space-between;
+		
+			&.o_exceptional {
+				flex-direction: column;
+			
+				.o_toggle {
+					display: flex;
+					flex-direction: row-reverse;
+				}
+			}
+		
+			.o_toggle {
+				color: var(--o-text-muted);
+				padding-top: 11px;
+			}
+			.o_button_group {
+				margin-bottom: 0;
+			}
+		}	
+	
+		.o_lp_exobli_table {
+			.table {
+				.radio-inline {
+					padding-top: 0px;
+				}
+			}
+		}
+	}
+	.o_lp_edit {
+		.o_midlock {
+			display: none;
+		}
+	}
+	.o_lp_exobli_courserun_config {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+
+	/* Copy */
+	.o_import_course_nodes {
+		.o_error {
+			padding: 0;
+			margin: 0;
+			border: 0;
+			background-color: inherit;
+			color: var(--o-state-danger-text);	
+		}
+	
+		.o_warning {
+			padding: 0;
+			margin: 0;
+			border: 0;
+			background-color: inherit;
+			color: var(--o-state-warning-text);	
+		}
+	
+		.o_info {
+			padding: 0;
+			margin: 0;
+			border: 0;
+			background-color: inherit;
+		}
+	
+		td>p {
+			padding: 0;
+			margin: 0;
+		}
+	}
+
+	/* Quick-add input field only on medium+ screen */
+	@media (max-width: $screen-xs-max) {
+		.o_quick_add {
+			display: none !important;	
+		}
+	}
+
+	/* */
+	.o_st_config_toggle {
+		text-align: right;
+		margin-top: -5px;
+		margin-bottom: -15px;
+	}
 }

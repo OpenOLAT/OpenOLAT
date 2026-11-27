@@ -3,297 +3,297 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-appointments {
-.o_appointment_header {
-	.o_organizer {
-		white-space: nowrap;
-	}
-	.o_description {
-		margin-top: 0.5em;
-		margin-bottom: 0.5em;
-	}
-}
-
-.o_appointments {
-	.o_organizer,
-	.o_participant {
-		white-space: nowrap;
-	}
-	
-	// Colours of the appointment statuses: semantic states in _states.scss (OO-10042)
-	
-	a.o_mail {
-		display: none;
-	}
-		
-	.o_organizers:hover a.o_mail {
-		display: inline;
-	}
-}
-
-.o_appointments.o_peek {
-	.o_main_cont {
-		margin-top: 26px;
-		display: flex;
-		.o_main {
-			margin-top: -3px;
+	.o_appointment_header {
+		.o_organizer {
+			white-space: nowrap;
 		}
-	}
-	
-	.o_date,
-	.o_time {
-		font-weight: bold;
-	}
-}
-
-.o_appointments.o_topics_run {
-	.o_main_cont {
-		margin-top: 26px;
-		display: flex;
-		.o_main {
-			margin-top: -3px;
+		.o_description {
+			margin-top: 0.5em;
+			margin-bottom: 0.5em;
 		}
-	}
-	
-	.o_date,
-	.o_time {
-		font-weight: bold;
-	}
-	
-	.o_warning {
-		margin-top: 5px;
-		margin-bottom: 0px;
-		&.o_bbb_warning {
-			margin-top: 15px;
-		}
-	}
-	.o_selected_msg {
-		margin-top: 5px;
-	}
-	.o_button_group {
-		margin-bottom: 0px;
-	}
-}
-
-.o_appointments.o_topics_coach_run {
-	.panel-title {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-	
-	@media all and (min-width: $screen-sm-min) {
-		.o_topic {
-			.o_row {
-				display: flex;
-				.o_c2 {
-					flex: 50%;
-					padding-left: 15px;
-					padding-right: 15px;
-					
-				}
-				.o_c2:last-child {
-					display: flex;
-					justify-content: stretch;
-					flex-direction: column;
-					.o_grow_10 {
-						flex-grow: 10;
-					}
-					.o_button_group.o_open {
-						flex-grow: 1;
-						align-self: flex-end;
-					}
-				}
-			}
-		}
-	}
-	.o_warning {
-		margin-top: 10px;
-		margin-bottom: 10px;
-	}
-	
-	.o_main_cont {
-		margin-top: 26px;
-		display: flex;
-		.o_main {
-			margin-top: -3px;
-		}
-	}
-}
-
-.o_appointments.o_list {
-	margin-top: 20px;
-	
-	.panel {
-		margin-bottom: 10px;
 	}
 
-	.o_datecomp {
-		margin-top: 4px;
-	}
-	
-	.o_main_header {
-		display: block;
-		
-		.o_enrollment_deadline {
-			display: inline-block;
-			margin-left: 0.2em;
-			margin-bottom: 0.2em;
-			line-height: $line-height-base;
-			// colours of o_past_deadline, o_today, o_after_today: semantic states in _states.scss (OO-10042)
+	.o_appointments {
+		.o_organizer,
+		.o_participant {
+			white-space: nowrap;
 		}
-	}
-		
-	.o_date,
-	.o_time {
-		display: inline-block;
-		font-weight: bold;
-		font-size: 110%;
-		margin-bottom: 0.2em;
-	}
-	.o_time_normal {
-		.o_time {
-			font-weight: normal;
-		}
-	}
 	
-	.o_no_participants {
-		font-weight: bold;
-		font-size: 110%;
-		margin-top: 0.5em;
-	}
+		// Colours of the appointment statuses: semantic states in _states.scss (OO-10042)
 	
-	@media all and (min-width: 700px) {
-		.o_date.o_short {
+		a.o_mail {
 			display: none;
 		}
-	}
-	@media all and (max-width: 700px) {
-		.o_date.o_long {
-			display: none;
-		}
-	}
-	
-	.o_status_wrapper {
-		position: relative;
-		.o_status {
-			position: absolute;
-			top: 0px;
-			right: 0px;
-			margin-top: -16px;
-			margin-right: -16px;
-			
-			.o_labeled {
-				padding: 5px 10px;
-				font-size: 80%;
-			}
-		}
-	}
-	
-	.o_main_cont {
-		display: flex;
-		flex-flow: row no-wrap;
-	}
-	
-	.o_buttons {
-		display: flex;
-		flex-flow: column-reverse;
-		margin-left: auto;
 		
-		a:first-child {
-			margin-right: -1px;
+		.o_organizers:hover a.o_mail {
+			display: inline;
 		}
-		
-		.btn-group {
+	}
+
+	.o_appointments.o_peek {
+		.o_main_cont {
+			margin-top: 26px;
 			display: flex;
-			margin-left: auto;
+			.o_main {
+				margin-top: -3px;
+			}
 		}
-		
-		.o_button_confirm {
-			background-color: 	var(--o-appointment-planned);
-			border-color: 		var(--o-appointment-planned);
-			color: 				var(--o-appointment-select-icon);
+	
+		.o_date,
+		.o_time {
+			font-weight: bold;
 		}
-		
-		.o_free_places {
-			margin-bottom: 2px;
-			margin-right: 3px;
-			margin-left: auto;
-			span {
-				font-size: 110%;
+	}
+
+	.o_appointments.o_topics_run {
+		.o_main_cont {
+			margin-top: 26px;
+			display: flex;
+			.o_main {
+				margin-top: -3px;
+			}
+		}
+	
+		.o_date,
+		.o_time {
+			font-weight: bold;
+		}
+	
+		.o_warning {
+			margin-top: 5px;
+			margin-bottom: 0px;
+			&.o_bbb_warning {
+				margin-top: 15px;
+			}
+		}
+		.o_selected_msg {
+			margin-top: 5px;
+		}
+		.o_button_group {
+			margin-bottom: 0px;
+		}
+	}
+
+	.o_appointments.o_topics_coach_run {
+		.panel-title {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+	
+		@media all and (min-width: $screen-sm-min) {
+			.o_topic {
+				.o_row {
+					display: flex;
+					.o_c2 {
+						flex: 50%;
+						padding-left: 15px;
+						padding-right: 15px;
+					
+					}
+					.o_c2:last-child {
+						display: flex;
+						justify-content: stretch;
+						flex-direction: column;
+						.o_grow_10 {
+							flex-grow: 10;
+						}
+						.o_button_group.o_open {
+							flex-grow: 1;
+							align-self: flex-end;
+						}
+					}
+				}
+			}
+		}
+		.o_warning {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	
+		.o_main_cont {
+			margin-top: 26px;
+			display: flex;
+			.o_main {
+				margin-top: -3px;
 			}
 		}
 	}
-	
-	.o_ap_planned {
-		border-color: var(--o-appointment-planned);
-		border-width: 2px;
-		box-shadow: 0px 0px 20px 5px color-mix(in srgb, var(--o-shadow-color) 20%, transparent); 
-	}
-	
-	.o_ap_confirmed {
-		border-color: var(--o-appointment-confirmed);
-		border-width: 2px;
-		box-shadow: 0px 0px 20px 5px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
-		
-		.o_free_places {
-			margin-top: 8px;
-		}
-	}
-	
-	.o_table_body, .table {
-		margin-bottom: 135px;
-	}
-}
 
-.o_appointments_create {
-	.o_appointment {
-		display: flex;
-		flex-flow: row wrap;
+	.o_appointments.o_list {
+		margin-top: 20px;
+	
+		.panel {
+			margin-bottom: 10px;
+		}
+
+		.o_datecomp {
+			margin-top: 4px;
+		}
+	
+		.o_main_header {
+			display: block;
 		
-		.o_duration {
-			:first-child {
+			.o_enrollment_deadline {
 				display: inline-block;
-			}
-			.o_min {
-				margin-right: 20px;
+				margin-left: 0.2em;
+				margin-bottom: 0.2em;
+				line-height: $line-height-base;
+				// colours of o_past_deadline, o_today, o_after_today: semantic states in _states.scss (OO-10042)
 			}
 		}
 		
-		// Space in every screen size
-		margin-top: 8px;
-		&:first-child {
-			margin-top: -8px;
+		.o_date,
+		.o_time {
+			display: inline-block;
+			font-weight: bold;
+			font-size: 110%;
+			margin-bottom: 0.2em;
 		}
-		> div {
-			margin-top: 7px;
-		}
-		@media all and (max-width: $screen-sm-min) {
-			.form-group {
-				margin-bottom: 0px;
+		.o_time_normal {
+			.o_time {
+				font-weight: normal;
 			}
 		}
-	}
 	
-	.o_icon_error {
-		display: none;
-	}
-}
-
-.o_appointments_duplicate {
-	.o_warning {
-		margin: 0px;
-	}
-}
-
-fieldset.o_form.o_enrollment_layout {
-
-	input {
-		max-width: 11em;
-	}
+		.o_no_participants {
+			font-weight: bold;
+			font-size: 110%;
+			margin-top: 0.5em;
+		}
 	
-	div.form-group.clearfix.o_enrollment_static_text {
-		vertical-align: top;
-		margin-left: 4px;
+		@media all and (min-width: 700px) {
+			.o_date.o_short {
+				display: none;
+			}
+		}
+		@media all and (max-width: 700px) {
+			.o_date.o_long {
+				display: none;
+			}
+		}
+	
+		.o_status_wrapper {
+			position: relative;
+			.o_status {
+				position: absolute;
+				top: 0px;
+				right: 0px;
+				margin-top: -16px;
+				margin-right: -16px;
+			
+				.o_labeled {
+					padding: 5px 10px;
+					font-size: 80%;
+				}
+			}
+		}
+	
+		.o_main_cont {
+			display: flex;
+			flex-flow: row no-wrap;
+		}
+	
+		.o_buttons {
+			display: flex;
+			flex-flow: column-reverse;
+			margin-left: auto;
+		
+			a:first-child {
+				margin-right: -1px;
+			}
+		
+			.btn-group {
+				display: flex;
+				margin-left: auto;
+			}
+		
+			.o_button_confirm {
+				background-color: 	var(--o-appointment-planned);
+				border-color: 		var(--o-appointment-planned);
+				color: 				var(--o-appointment-select-icon);
+			}
+		
+			.o_free_places {
+				margin-bottom: 2px;
+				margin-right: 3px;
+				margin-left: auto;
+				span {
+					font-size: 110%;
+				}
+			}
+		}
+	
+		.o_ap_planned {
+			border-color: var(--o-appointment-planned);
+			border-width: 2px;
+			box-shadow: 0px 0px 20px 5px color-mix(in srgb, var(--o-shadow-color) 20%, transparent); 
+		}
+	
+		.o_ap_confirmed {
+			border-color: var(--o-appointment-confirmed);
+			border-width: 2px;
+			box-shadow: 0px 0px 20px 5px color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
+		
+			.o_free_places {
+				margin-top: 8px;
+			}
+		}
+	
+		.o_table_body, .table {
+			margin-bottom: 135px;
+		}
 	}
-}
+
+	.o_appointments_create {
+		.o_appointment {
+			display: flex;
+			flex-flow: row wrap;
+		
+			.o_duration {
+				:first-child {
+					display: inline-block;
+				}
+				.o_min {
+					margin-right: 20px;
+				}
+			}
+		
+			// Space in every screen size
+			margin-top: 8px;
+			&:first-child {
+				margin-top: -8px;
+			}
+			> div {
+				margin-top: 7px;
+			}
+			@media all and (max-width: $screen-sm-min) {
+				.form-group {
+					margin-bottom: 0px;
+				}
+			}
+		}
+	
+		.o_icon_error {
+			display: none;
+		}
+	}
+
+	.o_appointments_duplicate {
+		.o_warning {
+			margin: 0px;
+		}
+	}
+
+	fieldset.o_form.o_enrollment_layout {
+
+		input {
+			max-width: 11em;
+		}
+	
+		div.form-group.clearfix.o_enrollment_static_text {
+			vertical-align: top;
+			margin-left: 4px;
+		}
+	}
 }

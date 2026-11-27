@@ -2,27 +2,27 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-addremove {
-.o_addremove_add_active {
-	background-color: var(--o-addremove-add-bg) !important;
+	.o_addremove_add_active {
+		background-color: var(--o-addremove-add-bg) !important;
 
-	&:hover {
-		background-color: var(--o-addremove-add-bg-hover);
+		&:hover {
+			background-color: var(--o-addremove-add-bg-hover);
+		}
 	}
-}
 
-.o_addremove_remove_active {	
-	background-color: var(--o-addremove-remove-bg) !important;
+	.o_addremove_remove_active {	
+		background-color: var(--o-addremove-remove-bg) !important;
 
-	&:hover {
-		background-color: var(--o-addremove-remove-bg-hover);
+		&:hover {
+			background-color: var(--o-addremove-remove-bg-hover);
+		}
 	}
-}
 
-.o_badge_added {
-	@extend %o_state_success_solid;
-}
+	.o_badge_added {
+		@extend %o_state_success_solid;
+	}
 
-.o_badge_removed {
-	@extend %o_state_danger_solid;
-}
+	.o_badge_removed {
+		@extend %o_state_danger_solid;
+	}
 }

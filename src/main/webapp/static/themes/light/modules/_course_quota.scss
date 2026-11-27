@@ -2,128 +2,128 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-course-quota {
-div.panel.o_course_quota_overview {
-  display: flex;
-  gap: 3rem;
-  flex-direction: row;
-  padding: 20px;
-  border: 1px solid var(--o-course-file-box-border);
+	div.panel.o_course_quota_overview {
+	  display: flex;
+	  gap: 3rem;
+	  flex-direction: row;
+	  padding: 20px;
+	  border: 1px solid var(--o-course-file-box-border);
 
-  .o_course_quota_visual {
-    order: -1;
-    display: flex;
-    align-items: center;
+	  .o_course_quota_visual {
+	    order: -1;
+	    display: flex;
+	    align-items: center;
 
-    .o_course_quota_visual_info {
-      display: flex;
-      flex-direction: column;
-      word-wrap: anywhere;
-      margin: 0.5em 2em;
+	    .o_course_quota_visual_info {
+	      display: flex;
+	      flex-direction: column;
+	      word-wrap: anywhere;
+	      margin: 0.5em 2em;
 
-      span {
-        padding-bottom: 3px;
+	      span {
+	        padding-bottom: 3px;
 
-        i {
-          margin-right: 5px;
-        }
-      }
+	        i {
+	          margin-right: 5px;
+	        }
+	      }
 
-      .o_course_quota_intern_quota {
-        color: var(--o-course-quota-intern-quota);
-      }
-      .o_course_quota_intern {
-        color: var(--o-course-quota-intern);
-      }
-      .o_course_quota_extern {
-        color: var(--o-course-quota-extern);
-      }
-    }
-  }
+	      .o_course_quota_intern_quota {
+	        color: var(--o-course-quota-intern-quota);
+	      }
+	      .o_course_quota_intern {
+	        color: var(--o-course-quota-intern);
+	      }
+	      .o_course_quota_extern {
+	        color: var(--o-course-quota-extern);
+	      }
+	    }
+	  }
 
-  @media (max-width: 700px) {
-    flex-direction: column;
-  }
+	  @media (max-width: 700px) {
+	    flex-direction: column;
+	  }
 
-  .o_course_quota_overview_metadata {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    align-items: flex-end;
+	  .o_course_quota_overview_metadata {
+	    display: flex;
+	    flex-direction: column;
+	    flex-grow: 1;
+	    align-items: flex-end;
 
-    .o_course_quota_metadata_info {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      width: 100%;
-      margin-top: auto;
-      margin-bottom: auto;
+	    .o_course_quota_metadata_info {
+	      display: grid;
+	      grid-template-columns: 1fr 1fr;
+	      width: 100%;
+	      margin-top: auto;
+	      margin-bottom: auto;
 
-      .o_course_quota_meta_info_cell {
-        display: inline-flex;
-        gap: 15px;
+	      .o_course_quota_meta_info_cell {
+	        display: inline-flex;
+	        gap: 15px;
 
-        .o_course_quota_info_label {
-          text-align: right;
-          min-width: 30%;
-        }
-      }
-    }
+	        .o_course_quota_info_label {
+	          text-align: right;
+	          min-width: 30%;
+	        }
+	      }
+	    }
 
-    @media (max-width: 1100px) {
-      .o_dialog_metadata_info {
-        grid-template-columns: 1fr;
-        padding-top: 0;
+	    @media (max-width: 1100px) {
+	      .o_dialog_metadata_info {
+	        grid-template-columns: 1fr;
+	        padding-top: 0;
 
-        .o_dialog_file_cell_authored_by {
-          order: 2;
-        }
+	        .o_dialog_file_cell_authored_by {
+	          order: 2;
+	        }
 
-        .o_dialog_file_cell_last_activity {
-          order: 3;
-        }
-      }
-      align-items: center;
-    }
-  }
-}
+	        .o_dialog_file_cell_last_activity {
+	          order: 3;
+	        }
+	      }
+	      align-items: center;
+	    }
+	  }
+	}
 
-.o_course_quota_overview:before {
-  content: "";
-  border: 1px solid var(--o-course-file-box-border);
-  align-self: stretch;
-}
+	.o_course_quota_overview:before {
+	  content: "";
+	  border: 1px solid var(--o-course-file-box-border);
+	  align-self: stretch;
+	}
 
-.o_course_quota_recalculate_btn {
-  padding-bottom: 10px;
-}
+	.o_course_quota_recalculate_btn {
+	  padding-bottom: 10px;
+	}
 
-.o_course_quota_piechart {
-  max-width: 200px;
-  min-width: 150px;
-  max-height: 200px;
-  min-height: 120px;
+	.o_course_quota_piechart {
+	  max-width: 200px;
+	  min-width: 150px;
+	  max-height: 200px;
+	  min-height: 120px;
 
-  .o_piechart_title {
-    font-weight: bold;
-    font-size: 14px;
-  }
-}
+	  .o_piechart_title {
+	    font-weight: bold;
+	    font-size: 14px;
+	  }
+	}
 
-svg {
-  .o_course_quota_intern_quota {
-    fill: var(--o-course-quota-intern-quota-bg);
-    stroke: var(--o-course-quota-intern-quota-bg);
-  }
-  .o_course_quota_intern {
-    fill: var(--o-course-quota-intern-bg);
-    stroke: var(--o-course-quota-intern-bg);
-  }
-  .o_course_quota_extern {
-    fill: var(--o-course-quota-extern-bg);
-    stroke: var(--o-course-quota-extern-bg);
-  }
-}
+	svg {
+	  .o_course_quota_intern_quota {
+	    fill: var(--o-course-quota-intern-quota-bg);
+	    stroke: var(--o-course-quota-intern-quota-bg);
+	  }
+	  .o_course_quota_intern {
+	    fill: var(--o-course-quota-intern-bg);
+	    stroke: var(--o-course-quota-intern-bg);
+	  }
+	  .o_course_quota_extern {
+	    fill: var(--o-course-quota-extern-bg);
+	    stroke: var(--o-course-quota-extern-bg);
+	  }
+	}
 
-.o_button_reset_quota {
-  float: right;
-}
+	.o_button_reset_quota {
+	  float: right;
+	}
 }

@@ -3,220 +3,219 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-process {
-
-.o_process {
-	position: relative;
-	padding-left: 25px;
-	overflow-y: hidden;
-	
-	.o_step {
+	.o_process {
 		position: relative;
-		height: auto;
-		padding-top: $o-step-padding-top;
-		padding-left: $o-step-padding-left;
+		padding-left: 25px;
+		overflow-y: hidden;
+	
+		.o_step {
+			position: relative;
+			height: auto;
+			padding-top: $o-step-padding-top;
+			padding-left: $o-step-padding-left;
 		
-		.o_step_block {
-			border: $o-step-border-line-width $o-step-border-line-style var(--o-step-border);
-			border-radius: $o-cn-style-border-radius;
-		}
+			.o_step_block {
+				border: $o-step-border-line-width $o-step-border-line-style var(--o-step-border);
+				border-radius: $o-cn-style-border-radius;
+			}
 		
-		.o_header {
-			padding: $o-step-border-header-padding;
-			background-color: var(--o-step-border-header-bg);
-		}
+			.o_header {
+				padding: $o-step-border-header-padding;
+				background-color: var(--o-step-border-header-bg);
+			}
 		
-		.o_content {
-			border-top: $o-step-border-line-width $o-step-border-line-style var(--o-step-border);
-			padding: $o-step-border-content-padding;
+			.o_content {
+				border-top: $o-step-border-line-width $o-step-border-line-style var(--o-step-border);
+				padding: $o-step-border-content-padding;
 			
-			.o_button_group {
-				margin-top: 1em;
+				.o_button_group {
+					margin-top: 1em;
+				}
+			}
+		
+			>.o_button_group {
+				margin-bottom: 0;
 			}
 		}
-		
-		>.o_button_group {
-			margin-bottom: 0;
-		}
-	}
 
-	.o_bar {
-		position: absolute;
-		top: $o-step-padding-top;
-		left: math.floor($o-step-milestone-size * 0.5);
-		height: 100%;
-		
-		&:after {
+		.o_bar {
 			position: absolute;
-			top: 9px;
-			left: math.floor(math.div($o-step-milestone-size, -2) - $o-step-border-width);
-			height: $o-step-milestone-size;
-			width: $o-step-milestone-size;
-			font-size: $o-step-bubble-font-size;
-			@include o-make-icon();
-		}
+			top: $o-step-padding-top;
+			left: math.floor($o-step-milestone-size * 0.5);
+			height: 100%;
 		
-		&:before {
-			content: ' ';
-			position: absolute;
-			top: 10px + $o-step-bubble-font-size - 2;
-			left: math.floor(math.div($o-step-milestone-size, -2) + 3);
-			height: calc(100% - 17px);
-			width: 2px;
-			border: 2px solid var(--o-step-marker);
-			font-size: $o-step-bubble-font-size;
-			margin-bottom: 16px;
-		}
-	}
-	
-	.o_step:last-child .o_bar:before {
-		display: none;
-	}
-	
-	.o_step.o_active {
-		.o_bar {
-			@include o-add-icon('dot-circle', false, false); 		
-			color: var(--o-step-active) !important;
-			border: unset;
-			background-color: unset;
-		}
+			&:after {
+				position: absolute;
+				top: 9px;
+				left: math.floor(math.div($o-step-milestone-size, -2) - $o-step-border-width);
+				height: $o-step-milestone-size;
+				width: $o-step-milestone-size;
+				font-size: $o-step-bubble-font-size;
+				@include o-make-icon();
+			}
 		
-		.o_bar:before {
-			border-color: var(--o-step-active-marker) !important;
-			border-style: dashed;
+			&:before {
+				content: ' ';
+				position: absolute;
+				top: 10px + $o-step-bubble-font-size - 2;
+				left: math.floor(math.div($o-step-milestone-size, -2) + 3);
+				height: calc(100% - 17px);
+				width: 2px;
+				border: 2px solid var(--o-step-marker);
+				font-size: $o-step-bubble-font-size;
+				margin-bottom: 16px;
+			}
 		}
-	}
 	
-	.o_step.o_notavailable {
-		.o_bar {
-			@include o-add-icon('circle', false, false); 		
-			color: var(--o-step-notavailable) !important;
-			border: unset;
-			background-color: unset;
+		.o_step:last-child .o_bar:before {
+			display: none;
 		}
+	
+		.o_step.o_active {
+			.o_bar {
+				@include o-add-icon('dot-circle', false, false); 		
+				color: var(--o-step-active) !important;
+				border: unset;
+				background-color: unset;
+			}
 		
-		.o_bar:before {
-			border-color: var(--o-step-notavailable-marker) !important;
-			border-style: dashed;
+			.o_bar:before {
+				border-color: var(--o-step-active-marker) !important;
+				border-style: dashed;
+			}
 		}
-	}
 	
-	.o_step.o_expired  {
-		.o_bar {
-			@include o-add-icon('dot-circle', false, false); 		
-			color: var(--o-step-expired) !important;
-			border: unset;
-			background-color: unset;
-		}
+		.o_step.o_notavailable {
+			.o_bar {
+				@include o-add-icon('circle', false, false); 		
+				color: var(--o-step-notavailable) !important;
+				border: unset;
+				background-color: unset;
+			}
 		
-		.o_bar:before {
-			left: math.floor(math.div($o-step-milestone-size, -2) + 3);
-			height: calc(100% - 16px);
-			border: none;
-			outline-color: var(--o-step-expired-marker) !important;
-			outline-style: dashed;
-			outline-width: 2px;
-			outline-offset: 0px;
+			.o_bar:before {
+				border-color: var(--o-step-notavailable-marker) !important;
+				border-style: dashed;
+			}
+		}
+	
+		.o_step.o_expired  {
+			.o_bar {
+				@include o-add-icon('dot-circle', false, false); 		
+				color: var(--o-step-expired) !important;
+				border: unset;
+				background-color: unset;
+			}
+		
+			.o_bar:before {
+				left: math.floor(math.div($o-step-milestone-size, -2) + 3);
+				height: calc(100% - 16px);
+				border: none;
+				outline-color: var(--o-step-expired-marker) !important;
+				outline-style: dashed;
+				outline-width: 2px;
+				outline-offset: 0px;
+			}
+		}
+	
+		.o_step.o_expired ~ .o_step.o_notavailable  {
+			.o_bar:before {
+				left: math.floor(math.div($o-step-milestone-size, -2) + 3);
+				height: calc(100% - 16px);
+				border: none;
+				outline-color: var(--o-step-expired-marker) !important;
+				outline-style: dashed;
+				outline-width: 2px;
+				outline-offset: 0px;
+			}
+		}
+	
+		.o_step.o_done {
+			.o_bar {
+				border-color: var(--o-step-done) !important;
+				@include o-add-icon('check-circle', false, false); 		
+			}
+			.o_bar:before {
+				border-color: var(--o-step-done-marker) !important;
+			}
+			.o_bar:after {
+				color: var(--o-step-done) !important;
+			}
+		}
+	
+		.o_step_grading.o_step.o_active {
+			.o_bar {
+				@include o-add-icon('circle', false, false); 		
+			}
+		}
+	
+		h4.o_title {
+			margin: 0 0 1px 0;	
+		}
+
+		.o_meta {
+			margin-top: 10px;
+		}
+	
+		.o_meta + .o_meta {
+			margin-top: 0;
+		}
+	
+		.o_expired_warning {
+			color: var(--o-step-status-expired);
 		}
 	}
+
+	.o_process_status_badge {
+		float: right;
+		display: inline-block;
+		padding: 1px 25px;
+		border-radius: $border-radius-small;
 	
-	.o_step.o_expired ~ .o_step.o_notavailable  {
-		.o_bar:before {
-			left: math.floor(math.div($o-step-milestone-size, -2) + 3);
-			height: calc(100% - 16px);
-			border: none;
-			outline-color: var(--o-step-expired-marker) !important;
-			outline-style: dashed;
-			outline-width: 2px;
-			outline-offset: 0px;
+	}
+
+	.o_process_status_late {
+		color: var(--o-step-status-late);
+	}
+
+	.o_process_status_extended {
+		color: var(--o-step-status-extended);
+	}
+
+	.o_labeled_light {
+		&.o_process_status_done {
+			font-weight: normal;
+		}
+		&.o_process_status_waiting {
+			font-weight: normal;
+		}
+		&.o_process_status_review {
+			font-weight: normal;
+		}
+		&.o_process_status_notavailable {
+			font-weight: normal;
+		}
+		&.o_process_status_extended {
+			font-weight: normal;
+		}
+		&.o_process_status_auto_collect {
+			font-weight: normal;
+		}
+		&.o_process_status_active {
+			font-weight: normal;
+		}
+		&.o_process_status_expired {
+			font-weight: normal;
+		}
+		&.o_process_status_late {
+			font-weight: normal;
+		}
+		&.o_process_status_need_revision {
+			font-weight: normal;
 		}
 	}
-	
-	.o_step.o_done {
-		.o_bar {
-			border-color: var(--o-step-done) !important;
-			@include o-add-icon('check-circle', false, false); 		
-		}
-		.o_bar:before {
-			border-color: var(--o-step-done-marker) !important;
-		}
-		.o_bar:after {
-			color: var(--o-step-done) !important;
-		}
-	}
-	
-	.o_step_grading.o_step.o_active {
-		.o_bar {
-			@include o-add-icon('circle', false, false); 		
-		}
-	}
-	
-	h4.o_title {
-		margin: 0 0 1px 0;	
-	}
 
-	.o_meta {
-		margin-top: 10px;
+	.o_process_assignment {
+		padding-left: 2em;
 	}
-	
-	.o_meta + .o_meta {
-		margin-top: 0;
-	}
-	
-	.o_expired_warning {
-		color: var(--o-step-status-expired);
-	}
-}
-
-.o_process_status_badge {
-	float: right;
-	display: inline-block;
-	padding: 1px 25px;
-	border-radius: $border-radius-small;
-	
-}
-
-.o_process_status_late {
-	color: var(--o-step-status-late);
-}
-
-.o_process_status_extended {
-	color: var(--o-step-status-extended);
-}
-
-.o_labeled_light {
-	&.o_process_status_done {
-		font-weight: normal;
-	}
-	&.o_process_status_waiting {
-		font-weight: normal;
-	}
-	&.o_process_status_review {
-		font-weight: normal;
-	}
-	&.o_process_status_notavailable {
-		font-weight: normal;
-	}
-	&.o_process_status_extended {
-		font-weight: normal;
-	}
-	&.o_process_status_auto_collect {
-		font-weight: normal;
-	}
-	&.o_process_status_active {
-		font-weight: normal;
-	}
-	&.o_process_status_expired {
-		font-weight: normal;
-	}
-	&.o_process_status_late {
-		font-weight: normal;
-	}
-	&.o_process_status_need_revision {
-		font-weight: normal;
-	}
-}
-
-.o_process_assignment {
-	padding-left: 2em;
-}
 }

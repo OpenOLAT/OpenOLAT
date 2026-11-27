@@ -3,27 +3,27 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-qti21content {
-.textEntryInteraction {
-	input, span.o_input_value {
-		margin: -1px 2px;
-		line-height: 90%;		
-		vertical-align: middle;
-		font-size: ($font-size-base * 0.98);
-		line-height: 1.5; /* smaller than #itemBody */
-		border: 1px solid var(--o-qti-text-entry-border);
-		background: var(--o-qti-text-entry-bg);
-		padding: 1px 1px;
-		color: var(--o-qti-text-entry-fg);
-		max-width: 100%;
-		/* format fields with values in it in separate style */
-		&:valid,
-		&:disabled,
-		&.o_input_value_wrapper {
-			color: var(--o-qti-text-entry-filled-fg);
-			-webkit-text-fill-color: var(--o-qti-text-entry-filled-fg);
-			background: var(--o-qti-text-entry-filled-bg);				
-			border: 1px solid var(--o-qti-text-entry-filled-border);
+	.textEntryInteraction {
+		input, span.o_input_value {
+			margin: -1px 2px;
+			line-height: 90%;		
+			vertical-align: middle;
+			font-size: ($font-size-base * 0.98);
+			line-height: 1.5; /* smaller than #itemBody */
+			border: 1px solid var(--o-qti-text-entry-border);
+			background: var(--o-qti-text-entry-bg);
+			padding: 1px 1px;
+			color: var(--o-qti-text-entry-fg);
+			max-width: 100%;
+			/* format fields with values in it in separate style */
+			&:valid,
+			&:disabled,
+			&.o_input_value_wrapper {
+				color: var(--o-qti-text-entry-filled-fg);
+				-webkit-text-fill-color: var(--o-qti-text-entry-filled-fg);
+				background: var(--o-qti-text-entry-filled-bg);				
+				border: 1px solid var(--o-qti-text-entry-filled-border);
+			}
 		}
 	}
-}
 }

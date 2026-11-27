@@ -10,14 +10,14 @@
  * @date November 2026
  * =================================================
  */
-/* fix wrong margin for navbar (e.g. folder-comp) */
 @use "../config" as *;
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-navbar-bootstrap {
-@media (min-width: 768px){
-	.navbar-right {
-		margin-right: 0;
+	/* fix wrong margin for navbar (e.g. folder-comp) */
+	@media (min-width: 768px){
+		.navbar-right {
+			margin-right: 0;
+		}
 	}
-}
 }

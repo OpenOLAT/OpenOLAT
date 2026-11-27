@@ -38,180 +38,180 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-bootstrap {
-// The Bootstrap mixins are part of light/config, with the button variant and
-// the state mixins that read the colour tokens and the focus ring (tab-focus,
-// form-control-focus) that replace the Bootstrap mixins (OO-10043)
+	// The Bootstrap mixins are part of light/config, with the button variant and
+	// the state mixins that read the colour tokens and the focus ring (tab-focus,
+	// form-control-focus) that replace the Bootstrap mixins (OO-10043)
 
-// Reset
-@include bootstrap-rules-normalize;
-@include bootstrap-rules-print;
-/* we use font-awesome instead
-@import "../../../bootstrap/stylesheets/bootstrap/glyphicons"; 
-*/
+	// Reset
+	@include bootstrap-rules-normalize;
+	@include bootstrap-rules-print;
+	/* we use font-awesome instead
+	@import "../../../bootstrap/stylesheets/bootstrap/glyphicons"; 
+	*/
 
-// The Bootstrap rules read the colour tokens (OO-10043): this file sets the
-// Bootstrap colour variables to a token var(--o-*) before the import of the
-// component. The variables that _tokens.scss reads for the token defaults
-// (links, table hover, default and primary button, disabled link, progress
-// bar) get their Sass value back after the import. The state variables
-// ($state-*, $btn-success|info|warning|danger-*, $label-*, $alert-*,
-// $progress-bar-{state}-bg, $panel-{state}-*) keep the token: no rule after
-// this file reads them.
+	// The Bootstrap rules read the colour tokens (OO-10043): this file sets the
+	// Bootstrap colour variables to a token var(--o-*) before the import of the
+	// component. The variables that _tokens.scss reads for the token defaults
+	// (links, table hover, default and primary button, disabled link, progress
+	// bar) get their Sass value back after the import. The state variables
+	// ($state-*, $btn-success|info|warning|danger-*, $label-*, $alert-*,
+	// $progress-bar-{state}-bg, $panel-{state}-*) keep the token: no rule after
+	// this file reads them.
 
-// The Bootstrap rules of the links (a, .btn-link, pagination hover, the
-// border of .nav .open > a and a.thumbnail) read the link tokens: the Sass
-// variables hold the token during the import only
-$o-bootstrap-link-color: $link-color;
-$o-bootstrap-link-hover-color: $link-hover-color;
-$o-bootstrap-pagination-hover-color: $pagination-hover-color;
-$link-color: var(--o-link) !global;
-$link-hover-color: var(--o-link-hover) !global;
-$pagination-hover-color: var(--o-link-hover) !global;
+	// The Bootstrap rules of the links (a, .btn-link, pagination hover, the
+	// border of .nav .open > a and a.thumbnail) read the link tokens: the Sass
+	// variables hold the token during the import only
+	$o-bootstrap-link-color: $link-color;
+	$o-bootstrap-link-hover-color: $link-hover-color;
+	$o-bootstrap-pagination-hover-color: $pagination-hover-color;
+	$link-color: var(--o-link) !global;
+	$link-hover-color: var(--o-link-hover) !global;
+	$pagination-hover-color: var(--o-link-hover) !global;
 
-// The Bootstrap rules of .text-*, .bg-*, mark, the contextual table rows, the
-// form validation states and the list group items read the state tokens
-// (OO-10043): text = text, background = soft-bg; info is the state neutral.
-$state-success-text: var(--o-state-success-text) !global;
-$state-success-bg: var(--o-state-success-soft-bg) !global;
-$state-info-text: var(--o-state-neutral-text) !global;
-$state-info-bg: var(--o-state-neutral-soft-bg) !global;
-$state-warning-text: var(--o-state-warning-text) !global;
-$state-warning-bg: var(--o-state-warning-soft-bg) !global;
-$state-danger-text: var(--o-state-danger-text) !global;
-$state-danger-bg: var(--o-state-danger-soft-bg) !global;
+	// The Bootstrap rules of .text-*, .bg-*, mark, the contextual table rows, the
+	// form validation states and the list group items read the state tokens
+	// (OO-10043): text = text, background = soft-bg; info is the state neutral.
+	$state-success-text: var(--o-state-success-text) !global;
+	$state-success-bg: var(--o-state-success-soft-bg) !global;
+	$state-info-text: var(--o-state-neutral-text) !global;
+	$state-info-bg: var(--o-state-neutral-soft-bg) !global;
+	$state-warning-text: var(--o-state-warning-text) !global;
+	$state-warning-bg: var(--o-state-warning-soft-bg) !global;
+	$state-danger-text: var(--o-state-danger-text) !global;
+	$state-danger-bg: var(--o-state-danger-soft-bg) !global;
 
-// Core CSS
-@include bootstrap-rules-scaffolding;
-@include bootstrap-rules-type;
-@include bootstrap-rules-code;
-@include bootstrap-rules-grid;
-// The Bootstrap rule of a row under the pointer (.table-hover) reads the
-// token table-hover-bg: the Sass variable holds the token during the import
-// only
-$o-bootstrap-table-bg-hover: $table-bg-hover;
-$table-bg-hover: var(--o-table-hover-bg) !global;
-@include bootstrap-rules-tables;
-$table-bg-hover: $o-bootstrap-table-bg-hover !global;
-@include bootstrap-rules-forms;
-// The Bootstrap rules of .btn, .btn-default, .btn-primary and .btn-danger read
-// the button tokens, .btn-success, .btn-info and .btn-warning the state tokens
-// (fill bg, text fg, border border). The variables of the default and the
-// primary button and of the disabled link hold the token during the import
-// only (OO-10043)
-$o-bootstrap-btn-default-color: $btn-default-color;
-$o-bootstrap-btn-default-bg: $btn-default-bg;
-$o-bootstrap-btn-default-border: $btn-default-border;
-$o-bootstrap-btn-primary-color: $btn-primary-color;
-$o-bootstrap-btn-primary-bg: $btn-primary-bg;
-$o-bootstrap-btn-primary-border: $btn-primary-border;
-// the text of a disabled .btn-link is the semantic token text-disabled (its
-// base colour is $btn-link-disabled-color)
-$o-bootstrap-btn-link-disabled-color: $btn-link-disabled-color;
-$btn-link-disabled-color: var(--o-text-disabled) !global;
-$btn-default-color: var(--o-btn-default-fg) !global;
-$btn-default-bg: var(--o-btn-default-bg) !global;
-$btn-default-border: var(--o-btn-default-border) !global;
-$btn-primary-color: var(--o-btn-primary-fg) !global;
-$btn-primary-bg: var(--o-btn-primary-bg) !global;
-$btn-primary-border: var(--o-btn-primary-border) !global;
-$btn-danger-color: var(--o-btn-danger-fg) !global;
-$btn-danger-bg: var(--o-btn-danger-bg) !global;
-$btn-danger-border: var(--o-btn-danger-border) !global;
-$btn-success-color: var(--o-state-success-fg) !global;
-$btn-success-bg: var(--o-state-success-bg) !global;
-$btn-success-border: var(--o-state-success-border) !global;
-$btn-info-color: var(--o-state-neutral-fg) !global;
-$btn-info-bg: var(--o-state-neutral-bg) !global;
-$btn-info-border: var(--o-state-neutral-border) !global;
-$btn-warning-color: var(--o-state-warning-fg) !global;
-$btn-warning-bg: var(--o-state-warning-bg) !global;
-$btn-warning-border: var(--o-state-warning-border) !global;
-@include bootstrap-rules-buttons;
-$btn-default-color: $o-bootstrap-btn-default-color !global;
-$btn-default-bg: $o-bootstrap-btn-default-bg !global;
-$btn-default-border: $o-bootstrap-btn-default-border !global;
-$btn-primary-color: $o-bootstrap-btn-primary-color !global;
-$btn-primary-bg: $o-bootstrap-btn-primary-bg !global;
-$btn-primary-border: $o-bootstrap-btn-primary-border !global;
-$btn-link-disabled-color: $o-bootstrap-btn-link-disabled-color !global;
+	// Core CSS
+	@include bootstrap-rules-scaffolding;
+	@include bootstrap-rules-type;
+	@include bootstrap-rules-code;
+	@include bootstrap-rules-grid;
+	// The Bootstrap rule of a row under the pointer (.table-hover) reads the
+	// token table-hover-bg: the Sass variable holds the token during the import
+	// only
+	$o-bootstrap-table-bg-hover: $table-bg-hover;
+	$table-bg-hover: var(--o-table-hover-bg) !global;
+	@include bootstrap-rules-tables;
+	$table-bg-hover: $o-bootstrap-table-bg-hover !global;
+	@include bootstrap-rules-forms;
+	// The Bootstrap rules of .btn, .btn-default, .btn-primary and .btn-danger read
+	// the button tokens, .btn-success, .btn-info and .btn-warning the state tokens
+	// (fill bg, text fg, border border). The variables of the default and the
+	// primary button and of the disabled link hold the token during the import
+	// only (OO-10043)
+	$o-bootstrap-btn-default-color: $btn-default-color;
+	$o-bootstrap-btn-default-bg: $btn-default-bg;
+	$o-bootstrap-btn-default-border: $btn-default-border;
+	$o-bootstrap-btn-primary-color: $btn-primary-color;
+	$o-bootstrap-btn-primary-bg: $btn-primary-bg;
+	$o-bootstrap-btn-primary-border: $btn-primary-border;
+	// the text of a disabled .btn-link is the semantic token text-disabled (its
+	// base colour is $btn-link-disabled-color)
+	$o-bootstrap-btn-link-disabled-color: $btn-link-disabled-color;
+	$btn-link-disabled-color: var(--o-text-disabled) !global;
+	$btn-default-color: var(--o-btn-default-fg) !global;
+	$btn-default-bg: var(--o-btn-default-bg) !global;
+	$btn-default-border: var(--o-btn-default-border) !global;
+	$btn-primary-color: var(--o-btn-primary-fg) !global;
+	$btn-primary-bg: var(--o-btn-primary-bg) !global;
+	$btn-primary-border: var(--o-btn-primary-border) !global;
+	$btn-danger-color: var(--o-btn-danger-fg) !global;
+	$btn-danger-bg: var(--o-btn-danger-bg) !global;
+	$btn-danger-border: var(--o-btn-danger-border) !global;
+	$btn-success-color: var(--o-state-success-fg) !global;
+	$btn-success-bg: var(--o-state-success-bg) !global;
+	$btn-success-border: var(--o-state-success-border) !global;
+	$btn-info-color: var(--o-state-neutral-fg) !global;
+	$btn-info-bg: var(--o-state-neutral-bg) !global;
+	$btn-info-border: var(--o-state-neutral-border) !global;
+	$btn-warning-color: var(--o-state-warning-fg) !global;
+	$btn-warning-bg: var(--o-state-warning-bg) !global;
+	$btn-warning-border: var(--o-state-warning-border) !global;
+	@include bootstrap-rules-buttons;
+	$btn-default-color: $o-bootstrap-btn-default-color !global;
+	$btn-default-bg: $o-bootstrap-btn-default-bg !global;
+	$btn-default-border: $o-bootstrap-btn-default-border !global;
+	$btn-primary-color: $o-bootstrap-btn-primary-color !global;
+	$btn-primary-bg: $o-bootstrap-btn-primary-bg !global;
+	$btn-primary-border: $o-bootstrap-btn-primary-border !global;
+	$btn-link-disabled-color: $o-bootstrap-btn-link-disabled-color !global;
 
-// Components
-@include bootstrap-rules-component-animations;
-@include bootstrap-rules-dropdowns;
-@include bootstrap-rules-button-groups;
-@include bootstrap-rules-input-groups;
-@include bootstrap-rules-navs;
-@include bootstrap-rules-navbar;
-@include bootstrap-rules-breadcrumbs;
-@include bootstrap-rules-pagination;
-@include bootstrap-rules-pager;
-// Labels: the fill of the state (text fg, hover bg-hover: _state_variant.scss)
-$label-success-bg: var(--o-state-success-bg) !global;
-$label-info-bg: var(--o-state-neutral-bg) !global;
-$label-warning-bg: var(--o-state-warning-bg) !global;
-$label-danger-bg: var(--o-state-danger-bg) !global;
-@include bootstrap-rules-labels;
-@include bootstrap-rules-badges;
-@include bootstrap-rules-jumbotron;
-@include bootstrap-rules-thumbnails;
-// Alerts: the soft roles of the state (fill soft-bg, border soft-border,
-// text soft-fg)
-$alert-success-bg: var(--o-state-success-soft-bg) !global;
-$alert-success-border: var(--o-state-success-soft-border) !global;
-$alert-success-text: var(--o-state-success-soft-fg) !global;
-$alert-info-bg: var(--o-state-neutral-soft-bg) !global;
-$alert-info-border: var(--o-state-neutral-soft-border) !global;
-$alert-info-text: var(--o-state-neutral-soft-fg) !global;
-$alert-warning-bg: var(--o-state-warning-soft-bg) !global;
-$alert-warning-border: var(--o-state-warning-soft-border) !global;
-$alert-warning-text: var(--o-state-warning-soft-fg) !global;
-$alert-danger-bg: var(--o-state-danger-soft-bg) !global;
-$alert-danger-border: var(--o-state-danger-soft-border) !global;
-$alert-danger-text: var(--o-state-danger-soft-fg) !global;
-@include bootstrap-rules-alerts;
-// Progress bars: the fill of the state (text fg: _state_variant.scss). The
-// variables of the progress bar hold the token during the import only
-$o-bootstrap-progress-bar-bg: $progress-bar-bg;
-$o-bootstrap-progress-bar-color: $progress-bar-color;
-$progress-bar-bg: var(--o-progress-bar-bg) !global;
-$progress-bar-color: var(--o-progress-bar-fg) !global;
-$progress-bar-success-bg: var(--o-state-success-bg) !global;
-$progress-bar-info-bg: var(--o-state-neutral-bg) !global;
-$progress-bar-warning-bg: var(--o-state-warning-bg) !global;
-$progress-bar-danger-bg: var(--o-state-danger-bg) !global;
-@include bootstrap-rules-progress-bars;
-$progress-bar-bg: $o-bootstrap-progress-bar-bg !global;
-$progress-bar-color: $o-bootstrap-progress-bar-color !global;
-@include bootstrap-rules-media;
-@include bootstrap-rules-list-group;
-// Panels: heading text text, heading fill soft-bg, borders soft-border
-$panel-success-text: var(--o-state-success-text) !global;
-$panel-success-border: var(--o-state-success-soft-border) !global;
-$panel-success-heading-bg: var(--o-state-success-soft-bg) !global;
-$panel-info-text: var(--o-state-neutral-text) !global;
-$panel-info-border: var(--o-state-neutral-soft-border) !global;
-$panel-info-heading-bg: var(--o-state-neutral-soft-bg) !global;
-$panel-warning-text: var(--o-state-warning-text) !global;
-$panel-warning-border: var(--o-state-warning-soft-border) !global;
-$panel-warning-heading-bg: var(--o-state-warning-soft-bg) !global;
-$panel-danger-text: var(--o-state-danger-text) !global;
-$panel-danger-border: var(--o-state-danger-soft-border) !global;
-$panel-danger-heading-bg: var(--o-state-danger-soft-bg) !global;
-@include bootstrap-rules-panels;
-@include bootstrap-rules-responsive-embed;
-@include bootstrap-rules-wells;
-@include bootstrap-rules-close;
+	// Components
+	@include bootstrap-rules-component-animations;
+	@include bootstrap-rules-dropdowns;
+	@include bootstrap-rules-button-groups;
+	@include bootstrap-rules-input-groups;
+	@include bootstrap-rules-navs;
+	@include bootstrap-rules-navbar;
+	@include bootstrap-rules-breadcrumbs;
+	@include bootstrap-rules-pagination;
+	@include bootstrap-rules-pager;
+	// Labels: the fill of the state (text fg, hover bg-hover: _state_variant.scss)
+	$label-success-bg: var(--o-state-success-bg) !global;
+	$label-info-bg: var(--o-state-neutral-bg) !global;
+	$label-warning-bg: var(--o-state-warning-bg) !global;
+	$label-danger-bg: var(--o-state-danger-bg) !global;
+	@include bootstrap-rules-labels;
+	@include bootstrap-rules-badges;
+	@include bootstrap-rules-jumbotron;
+	@include bootstrap-rules-thumbnails;
+	// Alerts: the soft roles of the state (fill soft-bg, border soft-border,
+	// text soft-fg)
+	$alert-success-bg: var(--o-state-success-soft-bg) !global;
+	$alert-success-border: var(--o-state-success-soft-border) !global;
+	$alert-success-text: var(--o-state-success-soft-fg) !global;
+	$alert-info-bg: var(--o-state-neutral-soft-bg) !global;
+	$alert-info-border: var(--o-state-neutral-soft-border) !global;
+	$alert-info-text: var(--o-state-neutral-soft-fg) !global;
+	$alert-warning-bg: var(--o-state-warning-soft-bg) !global;
+	$alert-warning-border: var(--o-state-warning-soft-border) !global;
+	$alert-warning-text: var(--o-state-warning-soft-fg) !global;
+	$alert-danger-bg: var(--o-state-danger-soft-bg) !global;
+	$alert-danger-border: var(--o-state-danger-soft-border) !global;
+	$alert-danger-text: var(--o-state-danger-soft-fg) !global;
+	@include bootstrap-rules-alerts;
+	// Progress bars: the fill of the state (text fg: _state_variant.scss). The
+	// variables of the progress bar hold the token during the import only
+	$o-bootstrap-progress-bar-bg: $progress-bar-bg;
+	$o-bootstrap-progress-bar-color: $progress-bar-color;
+	$progress-bar-bg: var(--o-progress-bar-bg) !global;
+	$progress-bar-color: var(--o-progress-bar-fg) !global;
+	$progress-bar-success-bg: var(--o-state-success-bg) !global;
+	$progress-bar-info-bg: var(--o-state-neutral-bg) !global;
+	$progress-bar-warning-bg: var(--o-state-warning-bg) !global;
+	$progress-bar-danger-bg: var(--o-state-danger-bg) !global;
+	@include bootstrap-rules-progress-bars;
+	$progress-bar-bg: $o-bootstrap-progress-bar-bg !global;
+	$progress-bar-color: $o-bootstrap-progress-bar-color !global;
+	@include bootstrap-rules-media;
+	@include bootstrap-rules-list-group;
+	// Panels: heading text text, heading fill soft-bg, borders soft-border
+	$panel-success-text: var(--o-state-success-text) !global;
+	$panel-success-border: var(--o-state-success-soft-border) !global;
+	$panel-success-heading-bg: var(--o-state-success-soft-bg) !global;
+	$panel-info-text: var(--o-state-neutral-text) !global;
+	$panel-info-border: var(--o-state-neutral-soft-border) !global;
+	$panel-info-heading-bg: var(--o-state-neutral-soft-bg) !global;
+	$panel-warning-text: var(--o-state-warning-text) !global;
+	$panel-warning-border: var(--o-state-warning-soft-border) !global;
+	$panel-warning-heading-bg: var(--o-state-warning-soft-bg) !global;
+	$panel-danger-text: var(--o-state-danger-text) !global;
+	$panel-danger-border: var(--o-state-danger-soft-border) !global;
+	$panel-danger-heading-bg: var(--o-state-danger-soft-bg) !global;
+	@include bootstrap-rules-panels;
+	@include bootstrap-rules-responsive-embed;
+	@include bootstrap-rules-wells;
+	@include bootstrap-rules-close;
 
-// Components w/ JavaScript
-@include bootstrap-rules-modals;
-@include bootstrap-rules-tooltip;
-@include bootstrap-rules-popovers;
-//@import "../../../bootstrap/stylesheets/bootstrap/carousel";
+	// Components w/ JavaScript
+	@include bootstrap-rules-modals;
+	@include bootstrap-rules-tooltip;
+	@include bootstrap-rules-popovers;
+	//@import "../../../bootstrap/stylesheets/bootstrap/carousel";
 
-// Utility classes
-@include bootstrap-rules-utilities;
-@include bootstrap-rules-responsive-utilities;
-$link-color: $o-bootstrap-link-color !global;
-$link-hover-color: $o-bootstrap-link-hover-color !global;
-$pagination-hover-color: $o-bootstrap-pagination-hover-color !global;
+	// Utility classes
+	@include bootstrap-rules-utilities;
+	@include bootstrap-rules-responsive-utilities;
+	$link-color: $o-bootstrap-link-color !global;
+	$link-hover-color: $o-bootstrap-link-hover-color !global;
+	$pagination-hover-color: $o-bootstrap-pagination-hover-color !global;
 }

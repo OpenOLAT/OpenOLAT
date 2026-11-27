@@ -2,43 +2,43 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-autocomplete {
-.tt-input {
-	width: $o-autocomplete-width;
-}
+	.tt-input {
+		width: $o-autocomplete-width;
+	}
 
-.tt-menu {
-  	width: $o-autocomplete-width;
-  	margin-top: $padding-base-vertical;
-  	padding: 0 0 0;
-  	color: var(--o-autocomplete-fg);
-  	background-color: var(--o-autocomplete-bg);
-  	/* border of the focused field, no glow (OO-10043) */
-  	border: 1px solid var(--o-focus);
-  	@include border-top-radius($o-autocomplete-border-radius);
-  	@include border-bottom-radius($o-autocomplete-border-radius);
-}
+	.tt-menu {
+	  	width: $o-autocomplete-width;
+	  	margin-top: $padding-base-vertical;
+	  	padding: 0 0 0;
+	  	color: var(--o-autocomplete-fg);
+	  	background-color: var(--o-autocomplete-bg);
+	  	/* border of the focused field, no glow (OO-10043) */
+	  	border: 1px solid var(--o-focus);
+	  	@include border-top-radius($o-autocomplete-border-radius);
+	  	@include border-bottom-radius($o-autocomplete-border-radius);
+	}
 
-.tt-suggestion {
-  	padding: $padding-base-vertical $padding-base-horizontal;
-  	font-size: $o-autocomplete-font-size;
-  	line-height: $o-autocomplete-line-height;
-}
+	.tt-suggestion {
+	  	padding: $padding-base-vertical $padding-base-horizontal;
+	  	font-size: $o-autocomplete-font-size;
+	  	line-height: $o-autocomplete-line-height;
+	}
 
-.tt-suggestion.tt-cursor, .tt-suggestion:hover  {
-  	color: var(--o-autocomplete-suggestion-fg);
-  	background-color: var(--o-autocomplete-suggestion-bg);
-}
+	.tt-suggestion.tt-cursor, .tt-suggestion:hover  {
+	  	color: var(--o-autocomplete-suggestion-fg);
+	  	background-color: var(--o-autocomplete-suggestion-bg);
+	}
 
-.tt-suggestion p {
-  	margin: 0;
-}
+	.tt-suggestion p {
+	  	margin: 0;
+	}
 
-.tt-menu div.o_icon_error:before {
-	content:'';
-}
+	.tt-menu div.o_icon_error:before {
+		content:'';
+	}
 
-.o_form:not(.form-inline) .tt-input {
-	width: 100%;
-	display: block !important;
-}
+	.o_form:not(.form-inline) .tt-input {
+		width: 100%;
+		display: block !important;
+	}
 }

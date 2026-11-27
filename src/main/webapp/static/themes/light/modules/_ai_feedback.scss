@@ -6,165 +6,164 @@
  * spans, per-paragraph feedback asides, and the blockquote container all
  * live here so they stay separate from the pulse-icon animation rules.
  * ========================================================================== */
-
-/* --------------------------------------------------------------------------
- * View toggle toolbar — relies on default Bootstrap .btn sizing.
- * ---------------------------------------------------------------------- */
 @use "../config" as *;
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-ai-feedback {
-.o_ai_feedback_view_toggle {
-	display: flex;
-	gap: 0.25rem;
-	margin-bottom: 0.75rem;
-}
-
-/* --------------------------------------------------------------------------
- * Blockquote container — one blockquote per paragraph; the per-paragraph
- * feedback aside renders BETWEEN consecutive blockquotes (outside).
- * ---------------------------------------------------------------------- */
-.o_ai_essay_direct {
-	border-left: 3px solid color-mix(in srgb, var(--o-primary) 35%, transparent);
-	padding: 0.75rem 1rem;
-	margin: 0 0 0.5rem;
-	background: transparent;
-	font-style: normal;     /* override Bootstrap blockquote italic */
-	font-size: inherit;
-	color: inherit;
-
-	p.o_ai_para {
-		margin-bottom: 0;
-	}
-}
-
-/* --------------------------------------------------------------------------
- * Per-paragraph feedback — sits OUTSIDE the blockquote between paragraphs.
- * Uses the standard body font size so it reads as a peer comment, not a
- * footnote.
- * ---------------------------------------------------------------------- */
-.o_ai_paragraph_feedback {
-	color: var(--o-text-muted);
-	background: color-mix(in srgb, var(--o-backdrop) 4%, transparent);
-	border-radius: 3px;
-	padding: 0.5rem 0.75rem;
-	margin: 0 0 0.75rem 0.5rem;
-	border-left: 2px solid color-mix(in srgb, var(--o-primary) 25%, transparent);
-
-	p {
-		margin: 0;
-	}
-}
-
-/* --------------------------------------------------------------------------
- * Inline mark spans
- * ---------------------------------------------------------------------- */
-.o_ai_mark_correct {
-	background: color-mix(in srgb, var(--o-ai-mark-correct) 18%, transparent);
-	border-radius: 2px;
-	padding: 0 1px;
-	cursor: default;
-
-	&[title]:hover {
-		background: color-mix(in srgb, var(--o-ai-mark-correct) 32%, transparent);
-	}
-}
-
-.o_ai_mark_ambiguous {
-	background: color-mix(in srgb, var(--o-ai-mark-ambiguous) 22%, transparent);
-	border-radius: 2px;
-	padding: 0 1px;
-	cursor: default;
-
-	&[title]:hover {
-		background: color-mix(in srgb, var(--o-ai-mark-ambiguous) 38%, transparent);
-	}
-}
-
-.o_ai_mark_wrong {
-	background: color-mix(in srgb, var(--o-ai-mark-wrong) 18%, transparent);
-	border-radius: 2px;
-	padding: 0 1px;
-	cursor: default;
-	text-decoration-line: underline;
-	text-decoration-style: wavy;
-	text-decoration-color: color-mix(in srgb, var(--o-ai-mark-wrong) 55%, transparent);
-	text-underline-offset: 2px;
-
-	&[title]:hover {
-		background: color-mix(in srgb, var(--o-ai-mark-wrong) 30%, transparent);
-	}
-}
-
-/* --------------------------------------------------------------------------
- * Reduced motion — remove wavy underline animation artefacts
- * ---------------------------------------------------------------------- */
-@media (prefers-reduced-motion: reduce) {
-	.o_ai_mark_wrong {
-		text-decoration-style: solid;
-	}
-}
-
-/* --------------------------------------------------------------------------
- * Assessment score box — radial progress (coloured by success) plus a
- * readable label. Rendered ABOVE both feedback views so it is always
- * visible. Replaces the old squeezed .label pills.
- * ---------------------------------------------------------------------- */
-.o_essay_ai_correction_assessment {
-	display: flex;
-	align-items: flex-start;
-	gap: 1rem;
-	padding: 0.75rem 1rem;
-	margin-bottom: 1rem;
-	background: color-mix(in srgb, var(--o-primary) 5%, transparent);
-	border: 1px solid color-mix(in srgb, var(--o-primary) 15%, transparent);
-	border-radius: 6px;
-
-	/* small radial variant (.radial-progress-sm) controls the size */
-	.radial-progress {
-		flex: 0 0 auto;
-		margin: 0;
-	}
-
-	.o_essay_ai_correction_assessment_text {
-		flex: 1 1 auto;
-		min-width: 0;
-	}
-
-	.o_essay_ai_correction_assessment_label {
-		font-size: 1.1rem;
-		font-weight: 600;
-		line-height: 1.3;
-	}
-
-	.o_essay_ai_correction_overall_text {
-		margin: 0.25rem 0 0;
-	}
-
-	.o_essay_ai_correction_assessment_meta {
-		margin-top: 0.4rem;
+	/* --------------------------------------------------------------------------
+	 * View toggle toolbar — relies on default Bootstrap .btn sizing.
+	 * ---------------------------------------------------------------------- */
+	.o_ai_feedback_view_toggle {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.25rem;
+		margin-bottom: 0.75rem;
+	}
 
-		.label {
-			/* roomier than Bootstrap's default .2em .6em .3em so the pills aren't squeezed */
-			display: inline-block;
-			padding: 0.35em 0.7em;
-			font-size: 85%;
-			line-height: 1.4;
-			border-radius: 0.3em;
+	/* --------------------------------------------------------------------------
+	 * Blockquote container — one blockquote per paragraph; the per-paragraph
+	 * feedback aside renders BETWEEN consecutive blockquotes (outside).
+	 * ---------------------------------------------------------------------- */
+	.o_ai_essay_direct {
+		border-left: 3px solid color-mix(in srgb, var(--o-primary) 35%, transparent);
+		padding: 0.75rem 1rem;
+		margin: 0 0 0.5rem;
+		background: transparent;
+		font-style: normal;     /* override Bootstrap blockquote italic */
+		font-size: inherit;
+		color: inherit;
+
+		p.o_ai_para {
+			margin-bottom: 0;
 		}
 	}
-}
 
-/* Direct (annotated) feedback now renders inline, no view toggle. */
-.o_ai_feedback_view_direct {
-	margin: 0.5rem 0 1rem;
-}
+	/* --------------------------------------------------------------------------
+	 * Per-paragraph feedback — sits OUTSIDE the blockquote between paragraphs.
+	 * Uses the standard body font size so it reads as a peer comment, not a
+	 * footnote.
+	 * ---------------------------------------------------------------------- */
+	.o_ai_paragraph_feedback {
+		color: var(--o-text-muted);
+		background: color-mix(in srgb, var(--o-backdrop) 4%, transparent);
+		border-radius: 3px;
+		padding: 0.5rem 0.75rem;
+		margin: 0 0 0.75rem 0.5rem;
+		border-left: 2px solid color-mix(in srgb, var(--o-primary) 25%, transparent);
 
-/* Detailed feedback accordion below the direct view. */
-.o_essay_ai_correction_detailed {
-	margin-top: 0.5rem;
-}
+		p {
+			margin: 0;
+		}
+	}
+
+	/* --------------------------------------------------------------------------
+	 * Inline mark spans
+	 * ---------------------------------------------------------------------- */
+	.o_ai_mark_correct {
+		background: color-mix(in srgb, var(--o-ai-mark-correct) 18%, transparent);
+		border-radius: 2px;
+		padding: 0 1px;
+		cursor: default;
+
+		&[title]:hover {
+			background: color-mix(in srgb, var(--o-ai-mark-correct) 32%, transparent);
+		}
+	}
+
+	.o_ai_mark_ambiguous {
+		background: color-mix(in srgb, var(--o-ai-mark-ambiguous) 22%, transparent);
+		border-radius: 2px;
+		padding: 0 1px;
+		cursor: default;
+
+		&[title]:hover {
+			background: color-mix(in srgb, var(--o-ai-mark-ambiguous) 38%, transparent);
+		}
+	}
+
+	.o_ai_mark_wrong {
+		background: color-mix(in srgb, var(--o-ai-mark-wrong) 18%, transparent);
+		border-radius: 2px;
+		padding: 0 1px;
+		cursor: default;
+		text-decoration-line: underline;
+		text-decoration-style: wavy;
+		text-decoration-color: color-mix(in srgb, var(--o-ai-mark-wrong) 55%, transparent);
+		text-underline-offset: 2px;
+
+		&[title]:hover {
+			background: color-mix(in srgb, var(--o-ai-mark-wrong) 30%, transparent);
+		}
+	}
+
+	/* --------------------------------------------------------------------------
+	 * Reduced motion — remove wavy underline animation artefacts
+	 * ---------------------------------------------------------------------- */
+	@media (prefers-reduced-motion: reduce) {
+		.o_ai_mark_wrong {
+			text-decoration-style: solid;
+		}
+	}
+
+	/* --------------------------------------------------------------------------
+	 * Assessment score box — radial progress (coloured by success) plus a
+	 * readable label. Rendered ABOVE both feedback views so it is always
+	 * visible. Replaces the old squeezed .label pills.
+	 * ---------------------------------------------------------------------- */
+	.o_essay_ai_correction_assessment {
+		display: flex;
+		align-items: flex-start;
+		gap: 1rem;
+		padding: 0.75rem 1rem;
+		margin-bottom: 1rem;
+		background: color-mix(in srgb, var(--o-primary) 5%, transparent);
+		border: 1px solid color-mix(in srgb, var(--o-primary) 15%, transparent);
+		border-radius: 6px;
+
+		/* small radial variant (.radial-progress-sm) controls the size */
+		.radial-progress {
+			flex: 0 0 auto;
+			margin: 0;
+		}
+
+		.o_essay_ai_correction_assessment_text {
+			flex: 1 1 auto;
+			min-width: 0;
+		}
+
+		.o_essay_ai_correction_assessment_label {
+			font-size: 1.1rem;
+			font-weight: 600;
+			line-height: 1.3;
+		}
+
+		.o_essay_ai_correction_overall_text {
+			margin: 0.25rem 0 0;
+		}
+
+		.o_essay_ai_correction_assessment_meta {
+			margin-top: 0.4rem;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.4rem;
+
+			.label {
+				/* roomier than Bootstrap's default .2em .6em .3em so the pills aren't squeezed */
+				display: inline-block;
+				padding: 0.35em 0.7em;
+				font-size: 85%;
+				line-height: 1.4;
+				border-radius: 0.3em;
+			}
+		}
+	}
+
+	/* Direct (annotated) feedback now renders inline, no view toggle. */
+	.o_ai_feedback_view_direct {
+		margin: 0.5rem 0 1rem;
+	}
+
+	/* Detailed feedback accordion below the direct view. */
+	.o_essay_ai_correction_detailed {
+		margin-top: 0.5rem;
+	}
 }

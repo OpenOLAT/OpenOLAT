@@ -4,361 +4,361 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-folder {
-.o_folder {
-	.o_folder_navigation {
-		margin-bottom: 1em;
-		display: grid;
-		grid-template-columns: auto auto;
-		gap: 0.5em;
-		.o_folder_view_selection {
-			display: flex;
-			column-gap: 5px;
-		}
-		.o_folder_trash {
-			display: block;
-		}
-		.o_folder_trash_menu_item {
-			display: none;
-		}
-		.o_folder_cmds {
-			justify-self: end;
-			
-			display: flex;
-			align-items: center;
-			gap: 5px;
-			.o_folder_create_group {
+	.o_folder {
+		.o_folder_navigation {
+			margin-bottom: 1em;
+			display: grid;
+			grid-template-columns: auto auto;
+			gap: 0.5em;
+			.o_folder_view_selection {
 				display: flex;
-			}
-			.o_noti, div > .o_noti {
-				display: inline;
-				margin: 0;
-				margin-right: 10px;
-				float: unset;
-			}
-			.o_folder_cmds_more {
-				// Hide more menu if only trash item and large screen
-				display: none;
-				&:has(a:not(.o_folder_trash_menu_item)) {
-					display: block;
-				}
-				
-				// Push to right (on small screens) if no add button
-				margin-left: auto;
-			}
-			.o_folder_create_group ~ .o_folder_cmds_more {
-				margin-left: 0;
-			}
-		}
-		
-		.o_folder_view_group {
-			display: flex; // no wrap
-		}
-		
-		.o_folder_view_search {
-			display: none;
-		}
-		
-		.o_folder_create_group {
-			display: flex;
-			align-items: stretch;
-			.o_fileinput.o_area {
-				@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
-				
-				margin-bottom: 0;
-				padding-top: 0px;
-				padding-bottom: 0px;
-				border: 1px solid var(--o-btn-default-border);
-				border-top-right-radius: 0;
-				border-bottom-right-radius: 0;
-				border-right: none;
-				background-color: var(--o-btn-default-bg);
-				display: flex;
-				height: 100%;
-				
-				&:has(.o_realchooser:hover),
-				&:has(.o_realchooser:focus) {
-					outline: 0;
-					color: var(--o-btn-default-fg);
-					background-color: var(--o-btn-default-bg-hover);
-					button {
-						color: var(--o-btn-default-fg);
-						background-color: var(--o-btn-default-bg-hover);
-						border: none;
-						box-shadow: none;
-					}
-				}
-			}
-		
-			.o_filepreview, .o_filemeta {
-				display: none;
-			}
-			
-			.o_dnd {
-				margin: auto;
-				.o_dnd_icon {
-					font-size: 1em;
-					color: var(--o-text);
-					display: inline-block;
-					margin-right: 5px;
-				}
-				
-				.o_dnd_select {
-					display: inline-block;
-					margin: 0;
-					
-					button {
-						@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
-				
-						padding: 0;
-						border: none;
-					}
-				}
-				.o_dnd_info {
-					display: none;
-				}
-			
-			}
-			
-			.btn-group {
-				z-index: 3;
-			}
-		} 
-		
-		@media (max-width: 1024px) {
-			.o_folder_noti_toggle {
-				display: none;
-			}
-		}
-		
-		@media (max-width: 540px) {
-			grid-template-columns: auto;
-			
-			.o_folder_cmds {
-				.o_folder_cmds_more {
-					display: block;
-				}
+				column-gap: 5px;
 			}
 			.o_folder_trash {
-				display: none;
+				display: block;
 			}
 			.o_folder_trash_menu_item {
-				display: block;
-			}
-			
-			.o_folder_view_search:not(:is(.o_folder_search_view *)) {
-				display: block;
-			}
-			.o_folder_quick_search:not(:is(.o_folder_search_view *)) {
 				display: none;
 			}
-			.o_folder_view_group:is(.o_folder_search_view *) {
-				span {
+			.o_folder_cmds {
+				justify-self: end;
+			
+				display: flex;
+				align-items: center;
+				gap: 5px;
+				.o_folder_create_group {
+					display: flex;
+				}
+				.o_noti, div > .o_noti {
+					display: inline;
+					margin: 0;
+					margin-right: 10px;
+					float: unset;
+				}
+				.o_folder_cmds_more {
+					// Hide more menu if only trash item and large screen
+					display: none;
+					&:has(a:not(.o_folder_trash_menu_item)) {
+						display: block;
+					}
+				
+					// Push to right (on small screens) if no add button
+					margin-left: auto;
+				}
+				.o_folder_create_group ~ .o_folder_cmds_more {
+					margin-left: 0;
+				}
+			}
+		
+			.o_folder_view_group {
+				display: flex; // no wrap
+			}
+		
+			.o_folder_view_search {
+				display: none;
+			}
+		
+			.o_folder_create_group {
+				display: flex;
+				align-items: stretch;
+				.o_fileinput.o_area {
+					@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
+				
+					margin-bottom: 0;
+					padding-top: 0px;
+					padding-bottom: 0px;
+					border: 1px solid var(--o-btn-default-border);
+					border-top-right-radius: 0;
+					border-bottom-right-radius: 0;
+					border-right: none;
+					background-color: var(--o-btn-default-bg);
+					display: flex;
+					height: 100%;
+				
+					&:has(.o_realchooser:hover),
+					&:has(.o_realchooser:focus) {
+						outline: 0;
+						color: var(--o-btn-default-fg);
+						background-color: var(--o-btn-default-bg-hover);
+						button {
+							color: var(--o-btn-default-fg);
+							background-color: var(--o-btn-default-bg-hover);
+							border: none;
+							box-shadow: none;
+						}
+					}
+				}
+		
+				.o_filepreview, .o_filemeta {
+					display: none;
+				}
+			
+				.o_dnd {
+					margin: auto;
+					.o_dnd_icon {
+						font-size: 1em;
+						color: var(--o-text);
+						display: inline-block;
+						margin-right: 5px;
+					}
+				
+					.o_dnd_select {
+						display: inline-block;
+						margin: 0;
+					
+						button {
+							@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
+				
+							padding: 0;
+							border: none;
+						}
+					}
+					.o_dnd_info {
+						display: none;
+					}
+			
+				}
+			
+				.btn-group {
+					z-index: 3;
+				}
+			} 
+		
+			@media (max-width: 1024px) {
+				.o_folder_noti_toggle {
 					display: none;
 				}
 			}
-			/* stretch full width */
-			.o_folder_view_selection:not(.o_folder_search_view) {
-				width: 100%;
-				.o_folder_view_group {
-					flex-grow: 100;
-					>a {
-						width: 100%;
-					}
-				}
-			}
-			.o_folder_cmds {
-				width: 100%;
-				.o_folder_create_group {
-					flex-grow: 100;
-					>:first-child {
-						width: 100%;
-					}
-				}
-			}
-		}
 		
-	}
-}
-
-.o_folder_breadcrumb {
-	.o_toolbar {
-		margin-top: -0.5em;
-		margin-bottom: 1em;
-	}
-}
-.o_folder_row_thumbnail {
-	width: $o-folder-row-thumbnail-size;
-	height: $o-folder-row-thumbnail-size;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	.o_icon {
-		font-size: $o-folder-row-thumbnail-icon-size;
-		&.o_filetype_folder, &.o_icon_sharepoint_drive, &.o_icon_onedrive {
-			color: var(--o-folder-row-thumbnail-folder-icon);
-		}
-	}
-	&:not(:has(.o_icon)) {
-		outline: $o-folder-row-thumbnail-image-border-width $o-folder-row-thumbnail-image-border-style var(--o-folder-row-thumbnail-image-border);
-	}
-	
-	>img {
-		max-height: 100%;
-		max-width: 100%;
-	}
-}
-tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, tr.o_folder_muted_row td a {
-	color: var(--o-folder-muted);
-}
-
-.o_folder {
-	.o_table_filters_wrapper {
-		z-index: initial;
-	}
-	.o_rendertype_custom {
-		.o_folder_table {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(207px, 1fr));
-			gap: 10px;
-		}
-		
-		.o_folder_row.o_dnd_over .o_card.o_folder_card {
-			border: 2px dashed var(--o-panel-placeholder-border-active);
-			border-radius: $o-card-border-radius;
-			margin: -1px;
-		}
-		
-		.o_folder_card {
-			overflow: hidden;
+			@media (max-width: 540px) {
+				grid-template-columns: auto;
 			
-			.o_folder_card_thumbnail {
-				&.o_folder_openable {
-					cursor: pointer;
-				}
-				height: $o-folder-card-thumbnail-height;
-				position: relative;
-				background-color: var(--o-bg-subtle);
-				.o_folder_card_img {
-					transition: opacity 200ms ease-in-out;
-					
-					text-align: center;
-					height: 100%;
-					
-					box-sizing: content-box;
-					border-radius: 3px 3px 0px 0px;
-					display: flex;
-					align-items: baseline;
-					width: inherit;
-					overflow: hidden;
-					
-					img {
-						min-height: $o-folder-card-thumbnail-height;
-						width: 100%;
-						object-fit: cover;
-						object-position: top center;
+				.o_folder_cmds {
+					.o_folder_cmds_more {
+						display: block;
 					}
-					&.o_folder_card_img_center {
-						img {
-							max-height: $o-folder-card-thumbnail-height;
-							object-position: center;
+				}
+				.o_folder_trash {
+					display: none;
+				}
+				.o_folder_trash_menu_item {
+					display: block;
+				}
+			
+				.o_folder_view_search:not(:is(.o_folder_search_view *)) {
+					display: block;
+				}
+				.o_folder_quick_search:not(:is(.o_folder_search_view *)) {
+					display: none;
+				}
+				.o_folder_view_group:is(.o_folder_search_view *) {
+					span {
+						display: none;
+					}
+				}
+				/* stretch full width */
+				.o_folder_view_selection:not(.o_folder_search_view) {
+					width: 100%;
+					.o_folder_view_group {
+						flex-grow: 100;
+						>a {
+							width: 100%;
 						}
 					}
 				}
-				.o_folder_row_thumbnail {
-					height: 100%;
+				.o_folder_cmds {
 					width: 100%;
-					.o_folder_icon_container {
-						position: relative;
-						.o_icon {
-							font-size: 80px;
-							color: var(--o-folder-card-thumbnail-icon);
-							&.o_filetype_folder {
-								color: var(--o-folder-card-thumbnail-folder-icon);
+					.o_folder_create_group {
+						flex-grow: 100;
+						>:first-child {
+							width: 100%;
+						}
+					}
+				}
+			}
+		
+		}
+	}
+
+	.o_folder_breadcrumb {
+		.o_toolbar {
+			margin-top: -0.5em;
+			margin-bottom: 1em;
+		}
+	}
+	.o_folder_row_thumbnail {
+		width: $o-folder-row-thumbnail-size;
+		height: $o-folder-row-thumbnail-size;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		.o_icon {
+			font-size: $o-folder-row-thumbnail-icon-size;
+			&.o_filetype_folder, &.o_icon_sharepoint_drive, &.o_icon_onedrive {
+				color: var(--o-folder-row-thumbnail-folder-icon);
+			}
+		}
+		&:not(:has(.o_icon)) {
+			outline: $o-folder-row-thumbnail-image-border-width $o-folder-row-thumbnail-image-border-style var(--o-folder-row-thumbnail-image-border);
+		}
+	
+		>img {
+			max-height: 100%;
+			max-width: 100%;
+		}
+	}
+	tr.o_folder_muted_row, tr.o_folder_muted_row td, tr.o_folder_muted_row td span, tr.o_folder_muted_row td a {
+		color: var(--o-folder-muted);
+	}
+
+	.o_folder {
+		.o_table_filters_wrapper {
+			z-index: initial;
+		}
+		.o_rendertype_custom {
+			.o_folder_table {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(207px, 1fr));
+				gap: 10px;
+			}
+		
+			.o_folder_row.o_dnd_over .o_card.o_folder_card {
+				border: 2px dashed var(--o-panel-placeholder-border-active);
+				border-radius: $o-card-border-radius;
+				margin: -1px;
+			}
+		
+			.o_folder_card {
+				overflow: hidden;
+			
+				.o_folder_card_thumbnail {
+					&.o_folder_openable {
+						cursor: pointer;
+					}
+					height: $o-folder-card-thumbnail-height;
+					position: relative;
+					background-color: var(--o-bg-subtle);
+					.o_folder_card_img {
+						transition: opacity 200ms ease-in-out;
+					
+						text-align: center;
+						height: 100%;
+					
+						box-sizing: content-box;
+						border-radius: 3px 3px 0px 0px;
+						display: flex;
+						align-items: baseline;
+						width: inherit;
+						overflow: hidden;
+					
+						img {
+							min-height: $o-folder-card-thumbnail-height;
+							width: 100%;
+							object-fit: cover;
+							object-position: top center;
+						}
+						&.o_folder_card_img_center {
+							img {
+								max-height: $o-folder-card-thumbnail-height;
+								object-position: center;
 							}
 						}
-						.o_folder_elements_labels {
-							position: absolute;
-							bottom: 10px;
-							right: 7px;
+					}
+					.o_folder_row_thumbnail {
+						height: 100%;
+						width: 100%;
+						.o_folder_icon_container {
+							position: relative;
+							.o_icon {
+								font-size: 80px;
+								color: var(--o-folder-card-thumbnail-icon);
+								&.o_filetype_folder {
+									color: var(--o-folder-card-thumbnail-folder-icon);
+								}
+							}
+							.o_folder_elements_labels {
+								position: absolute;
+								bottom: 10px;
+								right: 7px;
+							}
 						}
 					}
 				}
-			}
 			
-			.o_folder_new_labels {
-				margin-top: -160px;
-				margin-bottom: 140px;
-				margin-left: 10px;
+				.o_folder_new_labels {
+					margin-top: -160px;
+					margin-bottom: 140px;
+					margin-left: 10px;
+				}
+				.o_folder_labels {
+					margin-top: -30px;
+					margin-bottom: 10px;
+					margin-left: 10px;
+				}
+				.o_folder_card_meta {
+					padding: 10px;
+					.o_folder_card_title {
+						line-height: 1.2;
+					}
+				}
 			}
-			.o_folder_labels {
-				margin-top: -30px;
-				margin-bottom: 10px;
-				margin-left: 10px;
+		}
+	
+		tr.o_folder_row.o_dnd_over {
+			td {
+				border-top: 2px dashed var(--o-panel-placeholder-border-active);
+				border-bottom: 2px dashed var(--o-panel-placeholder-border-active);
+				padding-top: 4px;
+				padding-bottom: 3px;
 			}
-			.o_folder_card_meta {
-				padding: 10px;
-				.o_folder_card_title {
-					line-height: 1.2;
+		
+			td:first-child {
+				border-left: 2px dashed var(--o-panel-placeholder-border-active);
+				padding-left: 3px;
+			}
+		
+			td:last-child {
+				border-right: 2px dashed var(--o-panel-placeholder-border-active);
+				padding-right: 3px;
+			}
+		}
+	}
+
+	.o_folder_label {
+		@extend %o_labeled;
+		text-transform: none;
+		display: inline-block;
+		&.o_folder_label_new {
+			margin-top: -2px;
+		}
+	}
+
+	.o_quota_bar {
+		margin-top: 2em;
+		.o_quota_bar_bar {
+			.progress {
+				vertical-align: top;
+			}
+		}
+	}
+
+	/* File Browser */
+	.o_file_browser_quick_search {
+		max-width: 300px;
+		.input-group {
+			span {
+				input.o_disabled {
+					border-top-left-radius: $input-border-radius;
+					border-bottom-left-radius: $input-border-radius;
 				}
 			}
 		}
 	}
-	
-	tr.o_folder_row.o_dnd_over {
-		td {
-			border-top: 2px dashed var(--o-panel-placeholder-border-active);
-			border-bottom: 2px dashed var(--o-panel-placeholder-border-active);
-			padding-top: 4px;
-			padding-bottom: 3px;
-		}
-		
-		td:first-child {
-			border-left: 2px dashed var(--o-panel-placeholder-border-active);
-			padding-left: 3px;
-		}
-		
-		td:last-child {
-			border-right: 2px dashed var(--o-panel-placeholder-border-active);
-			padding-right: 3px;
-		}
-	}
-}
 
-.o_folder_label {
-	@extend %o_labeled;
-	text-transform: none;
-	display: inline-block;
-	&.o_folder_label_new {
-		margin-top: -2px;
+	/* File Hub */
+	.o_filehub_search {
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
-}
-
-.o_quota_bar {
-	margin-top: 2em;
-	.o_quota_bar_bar {
-		.progress {
-			vertical-align: top;
-		}
-	}
-}
-
-/* File Browser */
-.o_file_browser_quick_search {
-	max-width: 300px;
-	.input-group {
-		span {
-			input.o_disabled {
-				border-top-left-radius: $input-border-radius;
-				border-bottom-left-radius: $input-border-radius;
-			}
-		}
-	}
-}
-
-/* File Hub */
-.o_filehub_search {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
 }

@@ -3,349 +3,349 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-topicbroker {
-.o_tb_topic_header {
-	display: flex;
-	gap: 20px;
-	.o_tb_topic_teaser_visual {
-		max-width: 300px;
-		max-height: 300px;
-		overflow-y: hidden;
-		&.o_tb_topic_placeholder {
-			flex-shrink: 0;
-			width: 300px;
-			height: 200px;
-			padding: $o-tb_topic-card-image-margin;
+	.o_tb_topic_header {
+		display: flex;
+		gap: 20px;
+		.o_tb_topic_teaser_visual {
+			max-width: 300px;
+			max-height: 300px;
+			overflow-y: hidden;
+			&.o_tb_topic_placeholder {
+				flex-shrink: 0;
+				width: 300px;
+				height: 200px;
+				padding: $o-tb_topic-card-image-margin;
+			}
+		}
+		.o_tb_topic_meta {
+			display: flex;
+			flex-direction: column;
+			width: 100%;
+			h2 {
+				margin-top: 0;
+			}
 		}
 	}
-	.o_tb_topic_meta {
+	.o_tb_selection_detail_header {
+		.o_tb_selection_cmds {
+			margin-top: auto;
+			>div {
+				margin-top: 1.5em;
+			}
+		}
+	}
+	.o_tb_details_separator {
+		border-bottom: $o-tb-details-separator-border-bottom-width $o-tb-details-separator-border-bottom-style var(--o-topicbroker-details-separator-border);
+		margin: 30px 0;
+	}
+	.o_tb_topic_descriptions {
 		display: flex;
 		flex-direction: column;
-		width: 100%;
-		h2 {
+		gap: 10px;
+		.table.o_tb_topic_dates_table {
 			margin-top: 0;
 		}
 	}
-}
-.o_tb_selection_detail_header {
-	.o_tb_selection_cmds {
-		margin-top: auto;
-		>div {
-			margin-top: 1.5em;
-		}
-	}
-}
-.o_tb_details_separator {
-	border-bottom: $o-tb-details-separator-border-bottom-width $o-tb-details-separator-border-bottom-style var(--o-topicbroker-details-separator-border);
-	margin: 30px 0;
-}
-.o_tb_topic_descriptions {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	.table.o_tb_topic_dates_table {
-		margin-top: 0;
-	}
-}
 
-.o_tb_selection {
-	.o_rendertype_custom {
-		.o_tb_topic_table {
-			display: grid;
-			// 230px is minimum. Otherwise "Hinzufügen" has no less space.
-			grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-			gap: 10px;
-		}
-		
-		.o_tb_topic_card {
-			display: flex;
-			flex-direction: column;
-			height: 100%;
-			
-			.o_tb_topic_card_thumbnail {
-				&.o_tb_topic_openable {
-					cursor: pointer;
-				}
-				height: $o-tb_topic-card-thumbnail-height;
-				background-color: var(--o-bg-subtle);
-				.o_tb_topic_card_img {
-					transition: opacity 200ms ease-in-out;
-					
-					text-align: center;
-					height: 100%;
-					
-					box-sizing: content-box;
-					border-radius: 3px 3px 0px 0px;
-					display: flex;
-					align-items: baseline;
-					width: inherit;
-					overflow: hidden;
-					
-					img {
-						min-height: $o-tb_topic-card-thumbnail-height;
-						width: 100%;
-						object-fit: cover;
-						object-position: top center;
-					}
-				}
+	.o_tb_selection {
+		.o_rendertype_custom {
+			.o_tb_topic_table {
 				display: grid;
-				grid-template-areas: "topic-card-thumbnail";
-				>div {
-					grid-area: topic-card-thumbnail;
-				}
-				.o_tb_topic_title_abbr {
-					place-self: start start;
-					margin-top: $o-tb_topic-card-image-margin;
-					margin-left: $o-tb_topic-card-image-margin;
-				}
-				.o_tb_topic_status_label {
-					place-self: end start;
-					margin-bottom: $o-tb_topic-card-image-margin;
-					margin-left: $o-tb_topic-card-image-margin;
-				}
-				.o_tb_topic_priority_label {
-					place-self: start end;
-					margin-top: $o-tb_topic-card-image-margin;
-					margin-right: $o-tb_topic-card-image-margin;
-				}
+				// 230px is minimum. Otherwise "Hinzufügen" has no less space.
+				grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+				gap: 10px;
 			}
-			
-			.o_tb_topic_card_meta {
-				padding: 10px;
-				.o_tb_topic_card_title {
-					line-height: 1.2;
-				}
-			}
-			
-			.o_tb_topic_card_custom_fields {
-				margin-top: 10px;
+		
+			.o_tb_topic_card {
 				display: flex;
 				flex-direction: column;
-				gap: 10px;
-			}
+				height: 100%;
 			
-			.o_tb_topic_card_cmds {
-				margin-top: auto;
-			
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				gap: 10px;
-				padding: 10px;
-				a {
-					width: 100%
+				.o_tb_topic_card_thumbnail {
+					&.o_tb_topic_openable {
+						cursor: pointer;
+					}
+					height: $o-tb_topic-card-thumbnail-height;
+					background-color: var(--o-bg-subtle);
+					.o_tb_topic_card_img {
+						transition: opacity 200ms ease-in-out;
+					
+						text-align: center;
+						height: 100%;
+					
+						box-sizing: content-box;
+						border-radius: 3px 3px 0px 0px;
+						display: flex;
+						align-items: baseline;
+						width: inherit;
+						overflow: hidden;
+					
+						img {
+							min-height: $o-tb_topic-card-thumbnail-height;
+							width: 100%;
+							object-fit: cover;
+							object-position: top center;
+						}
+					}
+					display: grid;
+					grid-template-areas: "topic-card-thumbnail";
+					>div {
+						grid-area: topic-card-thumbnail;
+					}
+					.o_tb_topic_title_abbr {
+						place-self: start start;
+						margin-top: $o-tb_topic-card-image-margin;
+						margin-left: $o-tb_topic-card-image-margin;
+					}
+					.o_tb_topic_status_label {
+						place-self: end start;
+						margin-bottom: $o-tb_topic-card-image-margin;
+						margin-left: $o-tb_topic-card-image-margin;
+					}
+					.o_tb_topic_priority_label {
+						place-self: start end;
+						margin-top: $o-tb_topic-card-image-margin;
+						margin-right: $o-tb_topic-card-image-margin;
+					}
 				}
-				.o_tb_select_group {
+			
+				.o_tb_topic_card_meta {
+					padding: 10px;
+					.o_tb_topic_card_title {
+						line-height: 1.2;
+					}
+				}
+			
+				.o_tb_topic_card_custom_fields {
+					margin-top: 10px;
 					display: flex;
+					flex-direction: column;
+					gap: 10px;
+				}
+			
+				.o_tb_topic_card_cmds {
+					margin-top: auto;
+			
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					gap: 10px;
+					padding: 10px;
+					a {
+						width: 100%
+					}
+					.o_tb_select_group {
+						display: flex;
+					}
 				}
 			}
 		}
 	}
-}
 
-.o_tb_topic_title_abbr {
-	min-height: $o-tb-topic-card-title-abbr-size;
-	min-width: $o-tb-topic-card-title-abbr-size;
-	max-height: $o-tb-topic-card-title-abbr-size;
-	max-width: $o-tb-topic-card-title-abbr-size;
-	display: grid;
-	align-content: center;
-	justify-content: center;
-	color: var(--o-topicbroker-title-abbr-fg);
-	background-color: var(--o-topicbroker-title-abbr-bg);
-	border: $o-tb-topic-card-title-abbr-border-width $o-tb-topic-card-title-abbr-border-style var(--o-topicbroker-title-abbr-border);
-	border-radius: $o-tb-topic-card-title-abbr-border-radius;
-}
-
-.o_tb_topic_placeholder {
-	background: $o-not-available-bg; // o-color-keep(gradient)
 	.o_tb_topic_title_abbr {
-		border: $o-tb-topic-placeholder-title-abbr-border-width $o-tb-topic-placeholder-title-abbr-border-style var(--o-topicbroker-placeholder-title-abbr-border);
-	}
-}
-
-.o_tb_participant_num_cols {
-	display: flex;
-	column-gap: 33px;
-	.o_tb_participant_num_col {
-		display: flex;
-		gap: 5px;
-		align-items: baseline;
-		input {
-			max-width: 154px;
-		}
-	}
-	+.form-control-feedback {
-		display: none;
-	}
-}
-
-.o_tb_icon_colored_enrolled {
-	color: 				var(--o-topicbroker-enrolled);
-}
-.o_tb_icon_colored_waiting  {
-	color: 				var(--o-topicbroker-waiting);
-}
-.o_tb_priority_label {
-	display: grid;
-	justify-items: stretch;
-	min-width: 22px;
-	>div {
+		min-height: $o-tb-topic-card-title-abbr-size;
+		min-width: $o-tb-topic-card-title-abbr-size;
+		max-height: $o-tb-topic-card-title-abbr-size;
+		max-width: $o-tb-topic-card-title-abbr-size;
 		display: grid;
-		justify-items: center;
-		border-radius: 20px;
-		// width and style only: the border colour comes from the state (_states.scss, OO-10042)
-		border-width: 1px;
-		border-style: solid;
-		padding: 0 6px;
+		align-content: center;
+		justify-content: center;
+		color: var(--o-topicbroker-title-abbr-fg);
+		background-color: var(--o-topicbroker-title-abbr-bg);
+		border: $o-tb-topic-card-title-abbr-border-width $o-tb-topic-card-title-abbr-border-style var(--o-topicbroker-title-abbr-border);
+		border-radius: $o-tb-topic-card-title-abbr-border-radius;
 	}
-	// selected, enrolled, waiting, not_enrolled, surplus: semantic states in _states.scss (OO-10042)
-	>.o_tb_priority_fillin {
-		color: var(--o-topicbroker-fillin);
-		border-color: transparent;
-	}
-}
-.o_tb_priority_labels {
-	display: inline-grid;
-	grid-auto-flow: column;
-	grid-auto-columns: max-content;
-	gap: 5px;
-	.o_tb_priority_label > div {
-		white-space: nowrap;
-		font-variant-numeric: tabular-nums;
-	}
-}
 
-.o_tb_topic_card, .o_tb_selection_detail_header {
-	.o_tb_priority_label > .o_tb_priority_selected {
-		color: var(--o-btn-primary-light-fg);
-		border-color: var(--o-btn-primary-light-border);
-		background-color: var(--o-btn-primary-light-bg);
+	.o_tb_topic_placeholder {
+		background: $o-not-available-bg; // o-color-keep(gradient)
+		.o_tb_topic_title_abbr {
+			border: $o-tb-topic-placeholder-title-abbr-border-width $o-tb-topic-placeholder-title-abbr-border-style var(--o-topicbroker-placeholder-title-abbr-border);
+		}
 	}
-}
 
-.o_tb_config_suffix {
-	display: flex;
-	gap: 10px;
-	align-items: baseline;
-}
-
-.o_tb_enrollment_manual {
-	.o_tb_enrollment_manual_header {
+	.o_tb_participant_num_cols {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		column-gap: 5px;
-		
-		.o_tb_enrollment_manual_header_cmds {
-			margin-left: auto;
+		column-gap: 33px;
+		.o_tb_participant_num_col {
 			display: flex;
-			column-gap: 5px;
+			gap: 5px;
+			align-items: baseline;
+			input {
+				max-width: 154px;
+			}
 		}
-	}
-	.o_important_with_icon {
-		margin-top: 0;
-	}
-}
-.o_tb_weighting {
-	display: grid;
-	grid-template-columns: $o-tb-weighting-legend-width repeat(3, 1fr);
-	grid-template-rows: repeat(2, math.div($o-tb-weighting-heigth, 2)) 1fr;
-	justify-items: center;
-	align-items: center;	
-	
-	.o_tb_weighting_legend_top {
-		grid-area: 1 / 1;
-		align-self: start;
-		justify-self: end;
-		margin-right: 1em;
-		margin-top: -0.5em;
-	}
-	.o_tb_weighting_legend_bottom {
-		grid-area: 2 / 1;
-		align-self: end;
-		justify-self: end;
-		margin-right: 1em;
-		margin-bottom: -0.5em;
-	}
-	.o_tb_weighting_slider_grid_top {
-		grid-column: 2 / -1;
-		grid-row: 1;
-		align-self: stretch;
-		justify-self: stretch;
-		border-top: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
-		border-bottom: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
-	}
-	.o_tb_weighting_slider_grid_bottom {
-		grid-column: 2 / -1;
-		grid-row: 2;
-		align-self: stretch;
-		justify-self: stretch;
-		border-bottom: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
-	}
-	.o_tb_weighting_enrollments_slider {
-		grid-column: 2;
-		grid-row: 1 / span 2;
-	}
-	.o_tb_weighting_enrollments_label {
-		grid-area: 3 / 2;
-	}
-	.o_tb_weighting_priorities_slider {
-		grid-column: 3;
-		grid-row: 1 / span 2;
-	}
-	.o_tb_weighting_priorities_label {
-		grid-area: 3 / 3;
-	}
-	.o_tb_weighting_topics_slider {
-		grid-column: 4;
-		grid-row: 1 / span 2;
-	}
-	.o_tb_weighting_topics_label {
-		grid-area: 3 / 4;
-	}
-	
-	.o_tb_weighting_label {
-		padding: $o-tb-weighting-label-padding;
-		label {
-			font-weight: normal;
-		}
-	}
-	
-	.o_slider_wrapper {
-		.ui-slider {
-			height: $o-tb-weighting-heigth;
-		}
-		.ui-slider-pip {
+		+.form-control-feedback {
 			display: none;
 		}
-		.ui-slider-pips {
-			margin-bottom: 0;
-		}
 	}
-}
 
-.o_tb_priority_criterion {
-	.o_tb_priority_criterion_selection {
+	.o_tb_icon_colored_enrolled {
+		color: 				var(--o-topicbroker-enrolled);
+	}
+	.o_tb_icon_colored_waiting  {
+		color: 				var(--o-topicbroker-waiting);
+	}
+	.o_tb_priority_label {
 		display: grid;
-		gap: 10px;
-		grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); // 2 or 3 equal columns
-		align-items: end;
-	}
-	.o_tb_priority_criterion_chart {
-		display: flex;
-		justify-content: center;
-	}
-}
-.o_tb_function_chart_line {
-	stroke-width: 2;
-	stroke: $o-d3chart-default;
-	fill: none;
-	&.o_tb_help_line {
-		stroke: var(--o-chart-help-line);
-		stroke-width: 1;
-		opacity: 0.5;
-		&.o_tb_dash {
-			stroke-dasharray: 3,3;
+		justify-items: stretch;
+		min-width: 22px;
+		>div {
+			display: grid;
+			justify-items: center;
+			border-radius: 20px;
+			// width and style only: the border colour comes from the state (_states.scss, OO-10042)
+			border-width: 1px;
+			border-style: solid;
+			padding: 0 6px;
+		}
+		// selected, enrolled, waiting, not_enrolled, surplus: semantic states in _states.scss (OO-10042)
+		>.o_tb_priority_fillin {
+			color: var(--o-topicbroker-fillin);
+			border-color: transparent;
 		}
 	}
-}
+	.o_tb_priority_labels {
+		display: inline-grid;
+		grid-auto-flow: column;
+		grid-auto-columns: max-content;
+		gap: 5px;
+		.o_tb_priority_label > div {
+			white-space: nowrap;
+			font-variant-numeric: tabular-nums;
+		}
+	}
+
+	.o_tb_topic_card, .o_tb_selection_detail_header {
+		.o_tb_priority_label > .o_tb_priority_selected {
+			color: var(--o-btn-primary-light-fg);
+			border-color: var(--o-btn-primary-light-border);
+			background-color: var(--o-btn-primary-light-bg);
+		}
+	}
+
+	.o_tb_config_suffix {
+		display: flex;
+		gap: 10px;
+		align-items: baseline;
+	}
+
+	.o_tb_enrollment_manual {
+		.o_tb_enrollment_manual_header {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			column-gap: 5px;
+		
+			.o_tb_enrollment_manual_header_cmds {
+				margin-left: auto;
+				display: flex;
+				column-gap: 5px;
+			}
+		}
+		.o_important_with_icon {
+			margin-top: 0;
+		}
+	}
+	.o_tb_weighting {
+		display: grid;
+		grid-template-columns: $o-tb-weighting-legend-width repeat(3, 1fr);
+		grid-template-rows: repeat(2, math.div($o-tb-weighting-heigth, 2)) 1fr;
+		justify-items: center;
+		align-items: center;	
+	
+		.o_tb_weighting_legend_top {
+			grid-area: 1 / 1;
+			align-self: start;
+			justify-self: end;
+			margin-right: 1em;
+			margin-top: -0.5em;
+		}
+		.o_tb_weighting_legend_bottom {
+			grid-area: 2 / 1;
+			align-self: end;
+			justify-self: end;
+			margin-right: 1em;
+			margin-bottom: -0.5em;
+		}
+		.o_tb_weighting_slider_grid_top {
+			grid-column: 2 / -1;
+			grid-row: 1;
+			align-self: stretch;
+			justify-self: stretch;
+			border-top: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
+			border-bottom: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
+		}
+		.o_tb_weighting_slider_grid_bottom {
+			grid-column: 2 / -1;
+			grid-row: 2;
+			align-self: stretch;
+			justify-self: stretch;
+			border-bottom: $o-tb-weighting-grid-border-width $o-tb-weighting-grid-border-style var(--o-topicbroker-weighting-grid-border);
+		}
+		.o_tb_weighting_enrollments_slider {
+			grid-column: 2;
+			grid-row: 1 / span 2;
+		}
+		.o_tb_weighting_enrollments_label {
+			grid-area: 3 / 2;
+		}
+		.o_tb_weighting_priorities_slider {
+			grid-column: 3;
+			grid-row: 1 / span 2;
+		}
+		.o_tb_weighting_priorities_label {
+			grid-area: 3 / 3;
+		}
+		.o_tb_weighting_topics_slider {
+			grid-column: 4;
+			grid-row: 1 / span 2;
+		}
+		.o_tb_weighting_topics_label {
+			grid-area: 3 / 4;
+		}
+	
+		.o_tb_weighting_label {
+			padding: $o-tb-weighting-label-padding;
+			label {
+				font-weight: normal;
+			}
+		}
+	
+		.o_slider_wrapper {
+			.ui-slider {
+				height: $o-tb-weighting-heigth;
+			}
+			.ui-slider-pip {
+				display: none;
+			}
+			.ui-slider-pips {
+				margin-bottom: 0;
+			}
+		}
+	}
+
+	.o_tb_priority_criterion {
+		.o_tb_priority_criterion_selection {
+			display: grid;
+			gap: 10px;
+			grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); // 2 or 3 equal columns
+			align-items: end;
+		}
+		.o_tb_priority_criterion_chart {
+			display: flex;
+			justify-content: center;
+		}
+	}
+	.o_tb_function_chart_line {
+		stroke-width: 2;
+		stroke: $o-d3chart-default;
+		fill: none;
+		&.o_tb_help_line {
+			stroke: var(--o-chart-help-line);
+			stroke-width: 1;
+			opacity: 0.5;
+			&.o_tb_dash {
+				stroke-dasharray: 3,3;
+			}
+		}
+	}
 }

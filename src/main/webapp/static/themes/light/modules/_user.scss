@@ -41,671 +41,668 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-user {
-
-
-
-.o_user_portrait {
-	&.o_user_portrait_xsmall {
-		@include o-user_portrait_size(math.div($o-portrait-small-size, 2), $o-user-portrait-initials-font-size-xsmall, $o-user-portrait-im-margin-size-xsmall, $o-user-portrait-im-scale-xsmall);
-	}
-	&.o_user_portrait_small {
-		@include o-user_portrait_size($o-portrait-small-size, $o-user-portrait-initials-font-size-small, $o-user-portrait-im-margin-size-small, $o-user-portrait-im-scale-small);
-	}
-	&.o_user_portrait_medium {
-		@include o-user_portrait_size(math.div($o-portrait-size, 2), $o-user-portrait-initials-font-size-medium, $o-user-portrait-im-margin-size-medium, $o-user-portrait-im-scale-medium);
-	}
-	&.o_user_portrait_large {
-		@include o-user_portrait_size($o-portrait-size, $o-user-portrait-initials-font-size-large, $o-user-portrait-im-margin-size-large, $o-user-portrait-im-scale-large);
-	}
+	.o_user_portrait {
+		&.o_user_portrait_xsmall {
+			@include o-user_portrait_size(math.div($o-portrait-small-size, 2), $o-user-portrait-initials-font-size-xsmall, $o-user-portrait-im-margin-size-xsmall, $o-user-portrait-im-scale-xsmall);
+		}
+		&.o_user_portrait_small {
+			@include o-user_portrait_size($o-portrait-small-size, $o-user-portrait-initials-font-size-small, $o-user-portrait-im-margin-size-small, $o-user-portrait-im-scale-small);
+		}
+		&.o_user_portrait_medium {
+			@include o-user_portrait_size(math.div($o-portrait-size, 2), $o-user-portrait-initials-font-size-medium, $o-user-portrait-im-margin-size-medium, $o-user-portrait-im-scale-medium);
+		}
+		&.o_user_portrait_large {
+			@include o-user_portrait_size($o-portrait-size, $o-user-portrait-initials-font-size-large, $o-user-portrait-im-margin-size-large, $o-user-portrait-im-scale-large);
+		}
 	
-	display: grid;
-	>div {
-		grid-area: container;
-	}
-	
-	.o_user_portrait_avatar {
 		display: grid;
-		align-items: stretch;
-		justify-items: stretch;
-		
-		.o_user_portrait_image {
-			background-color: var(--o-bg);
-			border-radius: 50%;
-			object-fit: cover;
-			max-width: 100%;
-			aspect-ratio: 1;
-			overflow: hidden;
+		>div {
+			grid-area: container;
 		}
-		.o_user_portrait_initials {
-			border-radius: 50%;
-			-webkit-user-select: none; /* Safari */
- 			user-select: none;
-			
+	
+		.o_user_portrait_avatar {
 			display: grid;
-			align-items: center;
-			justify-content: center;
-		}
-	}
-	.o_user_portrait_border {
-		border-radius: 50%;
-		border: $o-user-info-portrait-border-width $o-user-info-portrait-border-style var(--o-user-info-portrait-border)	;
-		box-shadow: $o-user-info-portrait-box-shadow	;
-	
-		// https://stackoverflow.com/questions/48975398/how-to-create-a-circle-with-a-gradient-border-and-transparent-inner-area-using-c/48977042#48977042
-		&:is(.o_user_portrait_special *) {
-			position: relative;
-			border: unset;
-			&::before {
-				content: "";
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
+			align-items: stretch;
+			justify-items: stretch;
+		
+			.o_user_portrait_image {
+				background-color: var(--o-bg);
 				border-radius: 50%;
-				border: 3px solid transparent;
-				background: linear-gradient(180deg, var(--o-red-400) 0%, var(--o-yellow-400) 33%, var(--o-green-400) 60%, var(--o-blue-500) 100%) border-box;
-				mask-clip: padding-box, border-box;
-				mask-size: auto, auto;
-				mask-image: linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px); // o-color-keep(mask)
-				mask-composite: exclude;
+				object-fit: cover;
+				max-width: 100%;
+				aspect-ratio: 1;
+				overflow: hidden;
 			}
-			&::after {
-				content: "🎂";
-				position: absolute;
-				left: -8px;
-				bottom: -5px;
-				font-size: 140%;
-			}
-		}
-	}
-	.o_user_portrait_im {
-		place-self: end end;
-		
-		border-radius: 50%;
-		line-height: 12px;
-		border: solid 1px var(--o-bg);
-		background-color: var(--o-bg);
-	}
-	@media print {
-		.o_user_portrait_im {
-			display: none;
-		}
-	}
-}
-
-/* !important to display in print / pdf */
-.o_user_initials {
-	color: var(--o-user-initials-fg);
-	// A hue of the colour set M renders with its swatch class, e.g. o_swatch_blue
-	// (UserManagerImpl.getRandomInitialsColorCss(), UserPortraitRenderer)
-	@at-root #{o-swatch-selector(&)} {
-		background: var(--o-sw-bg) !important;
-		color: var(--o-sw-fg);
-	}
-	// For special user types like guests, deleted or unknown users
-	&.o_user_initials_grey {
-		background: var(--o-user-initials-base-bg) !important;
-	}
-}
-
-.o_portrait {
-	display: inline-block;
-}
-
-
-
-
-
-.o_users_portraits {
-	.o_portrait_user_not_visible {
-		display: inline-flex;
-		flex-shrink: 0;
-		align-items: center;
-		justify-content: center;
-		margin-left: 5px;
-		border-radius: 50%;
-		border: $o-user-info-portrait-border-width $o-user-info-portrait-border-style var(--o-user-info-portrait-border);
-		box-shadow: $o-user-info-portrait-box-shadow;
-		background-color: var(--o-bg-subtle);
-		color: var(--o-text-muted);
-		white-space: nowrap;
-	}
-	&.o_users_portraits_xsmall {
-		@include o-users_portrait_not_visible_size(math.div($o-portrait-small-size, 2), $o-user-portrait-initials-font-size-xsmall);
-	}
-	&.o_users_portraits_small {
-		@include o-users_portrait_not_visible_size($o-portrait-small-size, $o-user-portrait-initials-font-size-small);
-	}
-	&.o_users_portraits_medium {
-		@include o-users_portrait_not_visible_size(math.div($o-portrait-size, 2), $o-user-portrait-initials-font-size-medium);
-	}
-	&.o_users_portraits_large {
-		@include o-users_portrait_not_visible_size($o-portrait-size, $o-user-portrait-initials-font-size-large);
-	}
-	&.o_users_portraits_overlapping_portraits {
-		display: flex;
-		align-items: center;
-		.o_users_portraits_items {
-			margin-bottom: 0;
-			display: flex;
-			.o_portrait_user {
-				&:not(:first-child) {
-					margin-left: -60px;
-				}
-			}
-		}
-		&.o_users_portraits_xsmall {
-			@include o-users_portrait_offset(math.div($o-portrait-small-size, 2));
-		}
-		&.o_users_portraits_small {
-			@include o-users_portrait_offset($o-portrait-small-size);
-		}
-		&.o_users_portraits_medium {
-			@include o-users_portrait_offset(math.div($o-portrait-size, 2));
-		}
-		&.o_users_portraits_large {
-			@include o-users_portrait_offset($o-portrait-size);
-		}
-	}
-	&.o_users_portraits_vertical_displayname {
-		.o_users_portraits_items {
-			display: flex;
-			flex-direction: column;
-			gap: 5px;
-		}
-		.o_portrait_user {
-			display: flex;
-			align-items: center;
-			gap: 5px;
-		}
-	}
-}
-
-
-/* User infos */
-
-.o_togglebox_content {
-	> .o_user_infos {
-		padding-right: 20px;
-	}
-}
-
-.o_user_infos {
-	display: flex;
-	align-items: start;
-	
-	min-height:100px;
-	.o_portrait {
-		margin: 0 15px;
-	}
-	.o_user_infos_inner {
-		flex-grow: 2;
-	}
-
-	.o_userinfo_left {
-		flex: 0 0 auto;
-	}
-
-	.o_userinfo_portrait img {
-		width: 96px;
-		height: 96px;
-		border-radius: 50%;
-	}
-
-	.o_userinfo_right {
-		flex: 1;
-	}
-
-	.o_userinfo_name {
-		font-size: 1.25rem;
-		font-weight: 600;
-		margin-bottom: 0.2rem;
-	}
-
-	.o_userinfo_line {
-		margin-bottom: 0.8rem;
-	}
-
-}
-
-.o_user_info_profile_container {
-	container-type: inline-size;
-	container-name: o-profile-container;
-	
-	.o_user_info_profile {
-		border-radius: $o-user-info-profile-border-radius;
-		border: $o-user-info-profile-border-style $o-user-info-profile-border-width var(--o-user-info-profile-border);
-		padding: $o-user-info-profile-padding;
-		
-		&:is(.o_user_info_wrapper *) {
-			border: none;
-		}
-	
-		display: flex;
-		column-gap: $o-user-info-profile-column-gap;
-		row-gap: $o-user-info-profile-row-gap;
-		align-items: center;
-		
-		.o_user_info_profile_portrait_large {
-			display: none;
-		}
-		
-		.o_user_info_profile_name_wrapper {
-			display: flex;
-			flex-direction: column;
-			gap: 5px;
-			.o_user_info_profile_name {
-				font-size: $o-user-info-displayname-size-small;
-			}
-			.o_user_info_profile_cmds {
-				display: flex;
-				column-gap: 10px;
-			}
-		}
-		
-		&:has(.o_user_status_badge) {
-			position: relative;
-			.o_user_status_badge {
-				position: absolute;
-				top: $o-user-info-status-top;
-				right: $o-user-info-status-right;
-			}
-			.o_user_portrait_border {
-				// border of the state of the user status badge (OO-10042)
-				&:is(:has(.o_user_status_active) *) {
-					outline: solid 2px var(--o-state-success-border);
-				}
-				&:is(:has(.o_user_status_inactive) *) {
-					outline: solid 2px var(--o-user-status-inactive-border);
-				}
-				&:is(:has(.o_user_status_login_denied) *) {
-					outline: solid 2px var(--o-state-danger-border);
-				}
-				&:is(:has(.o_user_status_pending) *) {
-					outline: solid 2px var(--o-state-warning-border);
-				}
-				&:is(:has(.o_user_status_deleted) *) {
-					outline: solid 2px var(--o-user-status-deleted-border);
-				}
-			}
-			.o_user_info_profile_name {
-				padding-right: calc($o-user-info-status-top + 60px);
-			}
-		}
-	}
-	
-	@container o-profile-container (max-width: 280px) {
-		.o_user_info_profile {
-			flex-direction: column;
-			justify-content: center;
+			.o_user_portrait_initials {
+				border-radius: 50%;
+				-webkit-user-select: none; /* Safari */
+	 			user-select: none;
 			
-			.o_user_info_profile_portrait_medium {
+				display: grid;
+				align-items: center;
+				justify-content: center;
+			}
+		}
+		.o_user_portrait_border {
+			border-radius: 50%;
+			border: $o-user-info-portrait-border-width $o-user-info-portrait-border-style var(--o-user-info-portrait-border)	;
+			box-shadow: $o-user-info-portrait-box-shadow	;
+	
+			// https://stackoverflow.com/questions/48975398/how-to-create-a-circle-with-a-gradient-border-and-transparent-inner-area-using-c/48977042#48977042
+			&:is(.o_user_portrait_special *) {
+				position: relative;
+				border: unset;
+				&::before {
+					content: "";
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					border-radius: 50%;
+					border: 3px solid transparent;
+					background: linear-gradient(180deg, var(--o-red-400) 0%, var(--o-yellow-400) 33%, var(--o-green-400) 60%, var(--o-blue-500) 100%) border-box;
+					mask-clip: padding-box, border-box;
+					mask-size: auto, auto;
+					mask-image: linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px); // o-color-keep(mask)
+					mask-composite: exclude;
+				}
+				&::after {
+					content: "🎂";
+					position: absolute;
+					left: -8px;
+					bottom: -5px;
+					font-size: 140%;
+				}
+			}
+		}
+		.o_user_portrait_im {
+			place-self: end end;
+		
+			border-radius: 50%;
+			line-height: 12px;
+			border: solid 1px var(--o-bg);
+			background-color: var(--o-bg);
+		}
+		@media print {
+			.o_user_portrait_im {
 				display: none;
 			}
-			.o_user_info_profile_portrait_large {
-				display: block;
-			}
-			.o_user_info_profile_name_wrapper {
-				text-align: center;
-				.o_user_info_profile_cmds {
-					justify-content: center;
-				}
-				.o_user_info_profile_name {
-					font-size: $o-user-info-displayname-size;
-					padding-right: 0px;
-				}
-			}
 		}
 	}
-}
-.o_user_info {
-	border: $o-user-info-border-style $o-user-info-border-width var(--o-user-info-border);
-	border-radius: $o-user-info-border-radius;
-	
-	display: grid;
-	align-items: center;
-	grid-template-columns: 1fr;
-		
-	>div:has(.o_user_info_profile) {
-		/* Full height of the profile */
-		display: grid;
-		height: 100%;
-		.o_user_info_profile_container {
-			height: 100%;
-			.o_user_info_profile {
-				height: 100%;
-				/* Full width of the profile */
-				display: flex;
-			}
+
+	/* !important to display in print / pdf */
+	.o_user_initials {
+		color: var(--o-user-initials-fg);
+		// A hue of the colour set M renders with its swatch class, e.g. o_swatch_blue
+		// (UserManagerImpl.getRandomInitialsColorCss(), UserPortraitRenderer)
+		@at-root #{o-swatch-selector(&)} {
+			background: var(--o-sw-bg) !important;
+			color: var(--o-sw-fg);
+		}
+		// For special user types like guests, deleted or unknown users
+		&.o_user_initials_grey {
+			background: var(--o-user-initials-base-bg) !important;
 		}
 	}
-	
-	.o_user_info_divider {
-		border-right: $o-user-info-divider-border-style $o-user-info-divider-border-width var(--o-user-info-divider-border);
-		border-bottom: $o-user-info-divider-border-style $o-user-info-divider-border-width var(--o-user-info-divider-border);
-		// Did not work in gothenberg
-		//margin: 0px $o-user-info-divider-margin-base;
-		width: calc(100% - 2*$o-user-info-divider-margin-base);
-		margin-left: $o-user-info-divider-margin-base;
+
+	.o_portrait {
+		display: inline-block;
 	}
-	
-	.o_user_info_items {
-		padding: $o-user-info-items-padding;
-	
-		display: grid;
-		column-gap: 20px;
-		grid-template-columns: 1fr;
-		
-		.form-control-static {
-			padding: 0px;
-			min-height: 0px;
+
+
+
+
+
+	.o_users_portraits {
+		.o_portrait_user_not_visible {
+			display: inline-flex;
+			flex-shrink: 0;
+			align-items: center;
+			justify-content: center;
+			margin-left: 5px;
+			border-radius: 50%;
+			border: $o-user-info-portrait-border-width $o-user-info-portrait-border-style var(--o-user-info-portrait-border);
+			box-shadow: $o-user-info-portrait-box-shadow;
+			background-color: var(--o-bg-subtle);
+			color: var(--o-text-muted);
+			white-space: nowrap;
 		}
-	}
-}
-
-.o_user_info_wrapper {
-	container-type: inline-size;
-	
-	@container (min-width: 600px) {
-		.o_user_info {
-			.o_user_info_items {
-				grid-template-columns: 1fr 1fr;
-			}
+		&.o_users_portraits_xsmall {
+			@include o-users_portrait_not_visible_size(math.div($o-portrait-small-size, 2), $o-user-portrait-initials-font-size-xsmall);
 		}
-	}
-	@container (min-width: 800px) {
-		.o_user_info {
-			grid-template-columns: 1fr 2px 2fr;
-			&:has(.o_user_info_items_3cols) {
-				// Wider than the 280px of o-profile-container, so the profile is not stacked.
-				grid-template-columns: minmax(281px, 1fr) 2px 3fr;
-				&:is(.o_user_admin_info *) {
-					grid-template-columns: minmax(240px, 1fr) 2px 3fr;
-				}
-			}
-			
-			.o_user_info_divider {
-				margin: $o-user-info-divider-margin-base 0px;
-				align-self: stretch;
-				width: unset;
-			}
-			.o_user_info_items {
-				&.o_user_info_items_3cols {
-					grid-template-columns: 1fr 1fr 1fr;
-				}
-			}
+		&.o_users_portraits_small {
+			@include o-users_portrait_not_visible_size($o-portrait-small-size, $o-user-portrait-initials-font-size-small);
 		}
-	}
-}
-
-.o_user_dropdown_user {
-	display: flex;
-	column-gap: 10px;
-	align-items: center;
-}
-
-.o_object_selection {
-	.o_object_selection_option {
-		.o_object_selection_image {
-			&:has(.o_user_portrait_small) {
-				width: 32px;
-				max-width: 32px;
-				height: 32px;
-				max-height: 32px;
-			}
+		&.o_users_portraits_medium {
+			@include o-users_portrait_not_visible_size(math.div($o-portrait-size, 2), $o-user-portrait-initials-font-size-medium);
 		}
-	}
-}
-.o_useradmin {
-	.o_user_infos .o_user_infos_inner {
-		margin-right: 45px;
-	}
-	
-	.o_user_edit_username {
-		.form-inline .form-control-static {
-			padding-top: 0;
+		&.o_users_portraits_large {
+			@include o-users_portrait_not_visible_size($o-portrait-size, $o-user-portrait-initials-font-size-large);
 		}
-		.form-inline>a {
-			margin-left: 2em;
-		}
-	}
-}
-
-.o_user_status_badge {
-	display: inline-block;
-	padding: 1px 15px;
-	border-radius: $border-radius-small;
-	
-}
-
-div.o_skype_button {
-	display:inline-block;
-	p {
-		margin: 0 0 0 0;	
-		a img {
-			margin:0 !important;
-			vertical-align:middle !important;
-		}
-	}
-}
-
-.o_useradmin div#o_main_toolbar.o_toolbar {
-	margin-top: 0px;
-}
-
-
-.o_organisation_small_list {
-	>li {
-		margin: 6px 0;
-	}
-}
-
-.o_users_avatars {
-	display: grid;
-	gap: 20px;
-	grid-template-columns: calc(100% / 3) calc(100% / 3) calc(100% / 3);
-	@media (max-width: $screen-md-max) {
-		grid-template-columns: 50% 50%;
-	}
-	@media (max-width: $screen-xs-max) {
-		grid-template-columns: 100%;
-	}
-	.o_user_avatar {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: 50px auto;
-		.o_portrait {
-			img {
-				width: 50px;
-				height: 50px;
-			}
-		}
-		.o_properties {
-			:not(.o_name) {
-				color: var(--o-text-muted);
-			}
-		}
-	}
-}
-
-.panel.o_authentication_overview {
-	display: grid;
-	grid-template-columns: 50px 1fr;
-	align-items: center;
-	padding: 0 2em;
-	border: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
-	
-	&.o_authentication_upgrade {
-		grid-template-columns: 50px 1fr 1fr;
-	}
-	
-	i.o_icon {
-		font-size: 300%;
-		padding-right: 2em;
-	}
-	
-	.o_authentication_details, .o_authentication_upgrade {
-		padding: 2em;
-	}
-	
-	.o_authentication_details h3 {
-		margin: 0;
-	}
-	
-	.o_authentication_upgrade {
-		border-left: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
-	}
-}
-
-@media (max-width: $screen-xs-max) {
-	.panel.o_authentication_overview {
-		padding: 0 1em;
-		
-		&.o_authentication_upgrade {
-			grid-template-columns: 32px 1fr;
-		}
-		
-		i.o_icon {
-			font-size: 150%;
-			padding-right: 0.5em;
-		}
-		
-		.o_authentication_details, .o_authentication_upgrade {
-			padding: 1em;
-		}
-
-		.o_authentication_upgrade {
-			border-left: none;
-			border-top: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
-			grid-column: span 2;
-		}
-	}
-}
-
-.o_authentication_level1 {
-	color: var(--o-authentication-level1);
-}
-.o_authentication_level2 {
-	color: var(--o-authentication-level2);
-}
-.o_authentication_level3 {
-	color: var(--o-authentication-level3);
-}
-
-.o_authentication_recovery_keys div.panel {
-	padding: 1em 2em;
-	border: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
-	
-	>ul {
-		columns: 2;
-		font-weight: 900;
-	}
-}
-
-.o_authentication_olat, .o_authentication_passkeys {
-	.o_labeled {
-		color: var(--o-white);
-		text-transform: initial;
-		margin: -3px 0 0 1em;
-		font-weight: normal;
-		background-color: var(--o-authentication-label-bg);
-		border-color: var(--o-authentication-label-bg);
-	}
-}
-
-.o_authentication_info.o_info_with_icon {
-	&.o_info_with_icon {
-		display: flex;
-		flex-direction: row;
-
-		.o_button_wrapper {
+		&.o_users_portraits_overlapping_portraits {
 			display: flex;
 			align-items: center;
-			padding-left: 10px;
-		}
-	}
-}
-
-.o_roles_dropdown_row {
-	margin-top: 5px;
-	display: grid;
-	grid-template-columns: 1fr auto;
-	>div {
-		min-width: 0;
-	}
-	
-	.o_roles_dropdown_button {
-		a, button {
-			border-top-right-radius: 0;
-			border-bottom-right-radius: 0;
-		}
-		&:has(+ .o_roles_structure_button) {
-			a, button {
-				border-right-color: var(--o-btn-default-border);
+			.o_users_portraits_items {
+				margin-bottom: 0;
+				display: flex;
+				.o_portrait_user {
+					&:not(:first-child) {
+						margin-left: -60px;
+					}
+				}
+			}
+			&.o_users_portraits_xsmall {
+				@include o-users_portrait_offset(math.div($o-portrait-small-size, 2));
+			}
+			&.o_users_portraits_small {
+				@include o-users_portrait_offset($o-portrait-small-size);
+			}
+			&.o_users_portraits_medium {
+				@include o-users_portrait_offset(math.div($o-portrait-size, 2));
+			}
+			&.o_users_portraits_large {
+				@include o-users_portrait_offset($o-portrait-size);
 			}
 		}
-		button {
-			>span {
+		&.o_users_portraits_vertical_displayname {
+			.o_users_portraits_items {
 				display: flex;
-				flex-wrap: wrap;
+				flex-direction: column;
 				gap: 5px;
-				
-				white-space: wrap;
-				margin-top: auto;
-				margin-bottom: auto;
+			}
+			.o_portrait_user {
+				display: flex;
+				align-items: center;
+				gap: 5px;
 			}
 		}
 	}
 
-	.o_roles_structure_button {
-		div {
-			height: 100%;
-			button {
-				border-top-left-radius: 0;
-				border-bottom-left-radius: 0;
-				border-left-width: 0;
-				border-left-style: solid;
-				
-				height: 100%;
-				width: 100%;
+
+	/* User infos */
+
+	.o_togglebox_content {
+		> .o_user_infos {
+			padding-right: 20px;
+		}
+	}
+
+	.o_user_infos {
+		display: flex;
+		align-items: start;
+	
+		min-height:100px;
+		.o_portrait {
+			margin: 0 15px;
+		}
+		.o_user_infos_inner {
+			flex-grow: 2;
+		}
+
+		.o_userinfo_left {
+			flex: 0 0 auto;
+		}
+
+		.o_userinfo_portrait img {
+			width: 96px;
+			height: 96px;
+			border-radius: 50%;
+		}
+
+		.o_userinfo_right {
+			flex: 1;
+		}
+
+		.o_userinfo_name {
+			font-size: 1.25rem;
+			font-weight: 600;
+			margin-bottom: 0.2rem;
+		}
+
+		.o_userinfo_line {
+			margin-bottom: 0.8rem;
+		}
+
+	}
+
+	.o_user_info_profile_container {
+		container-type: inline-size;
+		container-name: o-profile-container;
+	
+		.o_user_info_profile {
+			border-radius: $o-user-info-profile-border-radius;
+			border: $o-user-info-profile-border-style $o-user-info-profile-border-width var(--o-user-info-profile-border);
+			padding: $o-user-info-profile-padding;
+		
+			&:is(.o_user_info_wrapper *) {
+				border: none;
+			}
+	
+			display: flex;
+			column-gap: $o-user-info-profile-column-gap;
+			row-gap: $o-user-info-profile-row-gap;
+			align-items: center;
+		
+			.o_user_info_profile_portrait_large {
+				display: none;
+			}
+		
+			.o_user_info_profile_name_wrapper {
 				display: flex;
-				i {
-					margin: auto
+				flex-direction: column;
+				gap: 5px;
+				.o_user_info_profile_name {
+					font-size: $o-user-info-displayname-size-small;
+				}
+				.o_user_info_profile_cmds {
+					display: flex;
+					column-gap: 10px;
+				}
+			}
+		
+			&:has(.o_user_status_badge) {
+				position: relative;
+				.o_user_status_badge {
+					position: absolute;
+					top: $o-user-info-status-top;
+					right: $o-user-info-status-right;
+				}
+				.o_user_portrait_border {
+					// border of the state of the user status badge (OO-10042)
+					&:is(:has(.o_user_status_active) *) {
+						outline: solid 2px var(--o-state-success-border);
+					}
+					&:is(:has(.o_user_status_inactive) *) {
+						outline: solid 2px var(--o-user-status-inactive-border);
+					}
+					&:is(:has(.o_user_status_login_denied) *) {
+						outline: solid 2px var(--o-state-danger-border);
+					}
+					&:is(:has(.o_user_status_pending) *) {
+						outline: solid 2px var(--o-state-warning-border);
+					}
+					&:is(:has(.o_user_status_deleted) *) {
+						outline: solid 2px var(--o-user-status-deleted-border);
+					}
+				}
+				.o_user_info_profile_name {
+					padding-right: calc($o-user-info-status-top + 60px);
+				}
+			}
+		}
+	
+		@container o-profile-container (max-width: 280px) {
+			.o_user_info_profile {
+				flex-direction: column;
+				justify-content: center;
+			
+				.o_user_info_profile_portrait_medium {
+					display: none;
+				}
+				.o_user_info_profile_portrait_large {
+					display: block;
+				}
+				.o_user_info_profile_name_wrapper {
+					text-align: center;
+					.o_user_info_profile_cmds {
+						justify-content: center;
+					}
+					.o_user_info_profile_name {
+						font-size: $o-user-info-displayname-size;
+						padding-right: 0px;
+					}
 				}
 			}
 		}
 	}
-}
-
-.o_callout_tree ul,
-.o_callout_tree ul ul {
-	list-style: none;
-	margin: 0;
-	padding-left: 1.2em;
-}
-
-.o_callout_tree li {
-	margin: 2px 0;
-	position: relative;
-	font-size: small;
-}
-
-.o_callout_tree .o_icon_caret {
-	vertical-align: middle;
-}
-
-/* spacer placeholder to align leaves under carets */
-.o_callout_tree .o_tree_spacer {
-	display: inline-block;
-	width: 1em;      /* same width as a caret icon */
-	margin-right: 3px;
-	vertical-align: middle;
-}
-
-.o_user_admin_lifecycle_cont {
-	legend {
-		margin-bottom: 0;
+	.o_user_info {
+		border: $o-user-info-border-style $o-user-info-border-width var(--o-user-info-border);
+		border-radius: $o-user-info-border-radius;
+	
+		display: grid;
+		align-items: center;
+		grid-template-columns: 1fr;
+		
+		>div:has(.o_user_info_profile) {
+			/* Full height of the profile */
+			display: grid;
+			height: 100%;
+			.o_user_info_profile_container {
+				height: 100%;
+				.o_user_info_profile {
+					height: 100%;
+					/* Full width of the profile */
+					display: flex;
+				}
+			}
+		}
+	
+		.o_user_info_divider {
+			border-right: $o-user-info-divider-border-style $o-user-info-divider-border-width var(--o-user-info-divider-border);
+			border-bottom: $o-user-info-divider-border-style $o-user-info-divider-border-width var(--o-user-info-divider-border);
+			// Did not work in gothenberg
+			//margin: 0px $o-user-info-divider-margin-base;
+			width: calc(100% - 2*$o-user-info-divider-margin-base);
+			margin-left: $o-user-info-divider-margin-base;
+		}
+	
+		.o_user_info_items {
+			padding: $o-user-info-items-padding;
+	
+			display: grid;
+			column-gap: 20px;
+			grid-template-columns: 1fr;
+		
+			.form-control-static {
+				padding: 0px;
+				min-height: 0px;
+			}
+		}
 	}
-}
+
+	.o_user_info_wrapper {
+		container-type: inline-size;
+	
+		@container (min-width: 600px) {
+			.o_user_info {
+				.o_user_info_items {
+					grid-template-columns: 1fr 1fr;
+				}
+			}
+		}
+		@container (min-width: 800px) {
+			.o_user_info {
+				grid-template-columns: 1fr 2px 2fr;
+				&:has(.o_user_info_items_3cols) {
+					// Wider than the 280px of o-profile-container, so the profile is not stacked.
+					grid-template-columns: minmax(281px, 1fr) 2px 3fr;
+					&:is(.o_user_admin_info *) {
+						grid-template-columns: minmax(240px, 1fr) 2px 3fr;
+					}
+				}
+			
+				.o_user_info_divider {
+					margin: $o-user-info-divider-margin-base 0px;
+					align-self: stretch;
+					width: unset;
+				}
+				.o_user_info_items {
+					&.o_user_info_items_3cols {
+						grid-template-columns: 1fr 1fr 1fr;
+					}
+				}
+			}
+		}
+	}
+
+	.o_user_dropdown_user {
+		display: flex;
+		column-gap: 10px;
+		align-items: center;
+	}
+
+	.o_object_selection {
+		.o_object_selection_option {
+			.o_object_selection_image {
+				&:has(.o_user_portrait_small) {
+					width: 32px;
+					max-width: 32px;
+					height: 32px;
+					max-height: 32px;
+				}
+			}
+		}
+	}
+	.o_useradmin {
+		.o_user_infos .o_user_infos_inner {
+			margin-right: 45px;
+		}
+	
+		.o_user_edit_username {
+			.form-inline .form-control-static {
+				padding-top: 0;
+			}
+			.form-inline>a {
+				margin-left: 2em;
+			}
+		}
+	}
+
+	.o_user_status_badge {
+		display: inline-block;
+		padding: 1px 15px;
+		border-radius: $border-radius-small;
+	
+	}
+
+	div.o_skype_button {
+		display:inline-block;
+		p {
+			margin: 0 0 0 0;	
+			a img {
+				margin:0 !important;
+				vertical-align:middle !important;
+			}
+		}
+	}
+
+	.o_useradmin div#o_main_toolbar.o_toolbar {
+		margin-top: 0px;
+	}
+
+
+	.o_organisation_small_list {
+		>li {
+			margin: 6px 0;
+		}
+	}
+
+	.o_users_avatars {
+		display: grid;
+		gap: 20px;
+		grid-template-columns: calc(100% / 3) calc(100% / 3) calc(100% / 3);
+		@media (max-width: $screen-md-max) {
+			grid-template-columns: 50% 50%;
+		}
+		@media (max-width: $screen-xs-max) {
+			grid-template-columns: 100%;
+		}
+		.o_user_avatar {
+			display: grid;
+			gap: 10px;
+			grid-template-columns: 50px auto;
+			.o_portrait {
+				img {
+					width: 50px;
+					height: 50px;
+				}
+			}
+			.o_properties {
+				:not(.o_name) {
+					color: var(--o-text-muted);
+				}
+			}
+		}
+	}
+
+	.panel.o_authentication_overview {
+		display: grid;
+		grid-template-columns: 50px 1fr;
+		align-items: center;
+		padding: 0 2em;
+		border: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
+	
+		&.o_authentication_upgrade {
+			grid-template-columns: 50px 1fr 1fr;
+		}
+	
+		i.o_icon {
+			font-size: 300%;
+			padding-right: 2em;
+		}
+	
+		.o_authentication_details, .o_authentication_upgrade {
+			padding: 2em;
+		}
+	
+		.o_authentication_details h3 {
+			margin: 0;
+		}
+	
+		.o_authentication_upgrade {
+			border-left: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
+		}
+	}
+
+	@media (max-width: $screen-xs-max) {
+		.panel.o_authentication_overview {
+			padding: 0 1em;
+		
+			&.o_authentication_upgrade {
+				grid-template-columns: 32px 1fr;
+			}
+		
+			i.o_icon {
+				font-size: 150%;
+				padding-right: 0.5em;
+			}
+		
+			.o_authentication_details, .o_authentication_upgrade {
+				padding: 1em;
+			}
+
+			.o_authentication_upgrade {
+				border-left: none;
+				border-top: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
+				grid-column: span 2;
+			}
+		}
+	}
+
+	.o_authentication_level1 {
+		color: var(--o-authentication-level1);
+	}
+	.o_authentication_level2 {
+		color: var(--o-authentication-level2);
+	}
+	.o_authentication_level3 {
+		color: var(--o-authentication-level3);
+	}
+
+	.o_authentication_recovery_keys div.panel {
+		padding: 1em 2em;
+		border: $o-panel-authentication-border-width $o-panel-authentication-border-style var(--o-panel-authentication-border);
+	
+		>ul {
+			columns: 2;
+			font-weight: 900;
+		}
+	}
+
+	.o_authentication_olat, .o_authentication_passkeys {
+		.o_labeled {
+			color: var(--o-white);
+			text-transform: initial;
+			margin: -3px 0 0 1em;
+			font-weight: normal;
+			background-color: var(--o-authentication-label-bg);
+			border-color: var(--o-authentication-label-bg);
+		}
+	}
+
+	.o_authentication_info.o_info_with_icon {
+		&.o_info_with_icon {
+			display: flex;
+			flex-direction: row;
+
+			.o_button_wrapper {
+				display: flex;
+				align-items: center;
+				padding-left: 10px;
+			}
+		}
+	}
+
+	.o_roles_dropdown_row {
+		margin-top: 5px;
+		display: grid;
+		grid-template-columns: 1fr auto;
+		>div {
+			min-width: 0;
+		}
+	
+		.o_roles_dropdown_button {
+			a, button {
+				border-top-right-radius: 0;
+				border-bottom-right-radius: 0;
+			}
+			&:has(+ .o_roles_structure_button) {
+				a, button {
+					border-right-color: var(--o-btn-default-border);
+				}
+			}
+			button {
+				>span {
+					display: flex;
+					flex-wrap: wrap;
+					gap: 5px;
+				
+					white-space: wrap;
+					margin-top: auto;
+					margin-bottom: auto;
+				}
+			}
+		}
+
+		.o_roles_structure_button {
+			div {
+				height: 100%;
+				button {
+					border-top-left-radius: 0;
+					border-bottom-left-radius: 0;
+					border-left-width: 0;
+					border-left-style: solid;
+				
+					height: 100%;
+					width: 100%;
+					display: flex;
+					i {
+						margin: auto
+					}
+				}
+			}
+		}
+	}
+
+	.o_callout_tree ul,
+	.o_callout_tree ul ul {
+		list-style: none;
+		margin: 0;
+		padding-left: 1.2em;
+	}
+
+	.o_callout_tree li {
+		margin: 2px 0;
+		position: relative;
+		font-size: small;
+	}
+
+	.o_callout_tree .o_icon_caret {
+		vertical-align: middle;
+	}
+
+	/* spacer placeholder to align leaves under carets */
+	.o_callout_tree .o_tree_spacer {
+		display: inline-block;
+		width: 1em;      /* same width as a caret icon */
+		margin-right: 3px;
+		vertical-align: middle;
+	}
+
+	.o_user_admin_lifecycle_cont {
+		legend {
+			margin-bottom: 0;
+		}
+	}
 }

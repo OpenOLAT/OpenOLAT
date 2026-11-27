@@ -1,819 +1,817 @@
 /* ------------------------------------------------------------- */
 /* block and wrapper styles mainling for spacing and positioning */
 /* ------------------------------------------------------------- */
-
-/* a block of content that should have margins like a paragraph */
 @use "sass:math";
 @use "../../../bootstrap/stylesheets/bootstrap/type" as *;
 @use "../config" as *;
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-helpers {
-
-.o_block_bottom, %o_block_bottom {
-	margin-bottom: 1em;
-}
-.o_block_top, %o_block_top {
-	margin-top: 1em;
-}
-.o_block, %o_block {
-	@extend %o_block_top;
-	@extend %o_block_bottom;
-}
-.o_block_small_bottom, %o_block_small_bottom {
-	margin-bottom: 0.5em;
-}
-.o_block_small_top, %o_block_small_top {
-	margin-top: 0.5em;
-}
-.o_block_small, %o_block_small {
-	@extend %o_block_small_top;
-	@extend %o_block_small_bottom;
-}
-.o_block_large_bottom, %o_block_large_bottom {
-	margin-bottom: 2em;
-}
-.o_block_large_top, %o_block_large_top {
-	margin-top: 2em;
-}
-.o_block_large, %o_block_large {
-	@extend %o_block_large_top;
-	@extend %o_block_large_bottom;
-}
-.o_block_move_up {
-	margin-top: -1em;
-}
-.o_block_move_up_small {
-	margin-top: -0.5em;
-}
-.o_block_move_up_large {
-	margin-top: -2em;
-}
-.o_block_inline, %o_block_inline {
-	display: inline-block;
-	vertical-align: top;
-}
-.o_block_inline_left, %o_block_inline_left {
-	@extend %o_block_inline;
-	margin-left: 0.5em;
-}
-
-.o_block_inline_right, %o_block_inline_right {
-	@extend %o_block_inline;
-	margin-right: 0.5em;
-}
-.o_block_inline_both {
-	@extend %o_block_inline_left;
-	@extend %o_block_inline_right;
-}
-
-.o_no_margin,
-.o_no_margin.o_warning,
-.o_no_margin.o_warning_with_icon,
-.o_no_margin.o_success_with_icon,
-.o_no_margin.o_hint,
-.o_no_margin.o_desc,
-%o_no_margin {
-	margin: 0;
-	
-	>p:last-of-type {
-		margin-bottom: 0;
+	/* a block of content that should have margins like a paragraph */
+	.o_block_bottom, %o_block_bottom {
+		margin-bottom: 1em;
 	}
-	
-	&.o_block_small_bottom {
+	.o_block_top, %o_block_top {
+		margin-top: 1em;
+	}
+	.o_block, %o_block {
+		@extend %o_block_top;
+		@extend %o_block_bottom;
+	}
+	.o_block_small_bottom, %o_block_small_bottom {
 		margin-bottom: 0.5em;
 	}
-}
-
-/* vertical and horizontal centered block: add wrappern and place content in wrapper */
-.o_block_centered_wrapper {
-	display: table; 
-	width: 100%; 
-	height: 100%;
-}
-.o_block_centered_content {
-	display: table-cell; 
-	vertical-align: middle; 
-	text-align: center;
-}
-
-/* content block with a full-scale background image (fat media style) */
-.o_block_imagebg {
-	background-repeat:no-repeat;
-	background-position: center;
-	background-size: cover;
-	span {
-		padding: 2px;
-		background-color: var(--o-imagebg-text-bg);
-	}	
-	
-	h1, h2, h3, h4, h5,
-	p {
-		padding: 2px;
-		background-color: var(--o-imagebg-text-bg);
+	.o_block_small_top, %o_block_small_top {
+		margin-top: 0.5em;
+	}
+	.o_block_small, %o_block_small {
+		@extend %o_block_small_top;
+		@extend %o_block_small_bottom;
+	}
+	.o_block_large_bottom, %o_block_large_bottom {
+		margin-bottom: 2em;
+	}
+	.o_block_large_top, %o_block_large_top {
+		margin-top: 2em;
+	}
+	.o_block_large, %o_block_large {
+		@extend %o_block_large_top;
+		@extend %o_block_large_bottom;
+	}
+	.o_block_move_up {
+		margin-top: -1em;
+	}
+	.o_block_move_up_small {
+		margin-top: -0.5em;
+	}
+	.o_block_move_up_large {
+		margin-top: -2em;
+	}
+	.o_block_inline, %o_block_inline {
 		display: inline-block;
-		&:after {
-			content: ' ';
-			display: block;
-		}
-	}	
-}
+		vertical-align: top;
+	}
+	.o_block_inline_left, %o_block_inline_left {
+		@extend %o_block_inline;
+		margin-left: 0.5em;
+	}
 
-/* block that has an image on the left side as first element in DOM */
-.o_block_with_icon_left {
-	display: grid;
-	align-items: center;
-	grid-template-columns: 32px auto;
+	.o_block_inline_right, %o_block_inline_right {
+		@extend %o_block_inline;
+		margin-right: 0.5em;
+	}
+	.o_block_inline_both {
+		@extend %o_block_inline_left;
+		@extend %o_block_inline_right;
+	}
+
+	.o_no_margin,
+	.o_no_margin.o_warning,
+	.o_no_margin.o_warning_with_icon,
+	.o_no_margin.o_success_with_icon,
+	.o_no_margin.o_hint,
+	.o_no_margin.o_desc,
+	%o_no_margin {
+		margin: 0;
 	
-	p:last-child {
-		margin-bottom: 0;
-	}
-}
-
-
-
-/* overflowing content that should have scrollbar when content overflows available space */
-.o_scrollblock, %o_scrollblock {
-	/* this must stay on "auto", change to "hidden" and the everything goes to hell */
-	overflow-x: auto;  
-	overflow-y: hidden;
-	/* allow scrolling of wrapped iframe on mobile devices */
-    -webkit-overflow-scrolling: touch;	
-}
-
-/* Flex box helpers                                                                    */
-/* one_line renders on one line, with fixed width objects and others that take all     */
-/* the available space and overflow with ellipsis                                      */
-.o_flex_block_one_line_left, %o_flex_block_one_line_left {
-	display: flex;	
-	flex-wrap: nowrap;
-	justify-content: left;
-	width: 100%;
-}
-.o_flex_block_last {
-	margin-top: auto;
-}
-.o_flex_item_fix, %o_flex_item_fix {
-	flex-grow: 0;
-	flex-shrink: 0;
-}
-.o_flex_item_max, %o_flex_item_max {
-	flex-grow: 1;
-	flex-shrink: 1;
-	width: 100%;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.o_flex_first_grow, %o_flex_first_grow {
-	display: flex;
-	> div:first-child {
-		margin-right: auto;
-	}
-}
-.o_flex_first_grow_base, %o_flex_first_grow_base  {
-	@extend %o_flex_first_grow;
-	align-items: baseline;
-}
-
-.o_flex_first_grow_vertical {
-	display: flex;
-	flex-direction: column;
-	> div:first-child {
-		margin-bottom: auto;
-		overflow: auto;
-	}
-}
-
-.o_flow_padding_left_large {
-	padding-left: 2em;
-}
-.o_flow_padding_left_small {
-	padding-left: 0.5em;
-}
-.o_list_unstyled_left {
-	padding-left: 20px;
-}
-.o_list_left_aligned {
-	padding-left: 0;
-	list-style-position: inside;
-}
-
-/* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */
-.o_button_group {
-	@extend %o_block;
-	text-align: center;
-	a, input, button, .btn-group {
-		margin-right: 5px;
-		&:last-child {
-			margin-right: 0;		
-		}
-		&.a_button_bottom {
+		>p:last-of-type {
 			margin-bottom: 0;
 		}
-	}
-	.btn-group {
-		a, input, button {
-			margin-right: 0;		
-			margin-bottom: 0;		
-		}	
-	}	
-	.dropdown-menu {
-		text-align: left;	
-	}
 	
-	&.open {
-		position: relative;
-	}
-	
-	&.compact {
-		margin-top: $padding-small-vertical;
-		margin-bottom: $padding-small-vertical;
-	}
-}
-/* use together with o_button_group to have buttons left or right aligned */
-.o_button_group_left {
-	text-align: left;
-}
-.o_button_group_right {
-	text-align: right;
-}
-.o_button_group_top {
-	margin-top: 0;
-}
-.o_button_group_bottom {
-	margin-bottom: 0;
-}
-
-/* Ghost button */
-.btn.o_button_ghost {
-	color: var(--o-btn-ghost-fg);
-	background-color: var(--o-btn-ghost-bg);
-	border-color: var(--o-btn-ghost-border);
-	&:hover {
-		color: var(--o-btn-ghost-hover-fg);
-		background-color: var(--o-btn-ghost-hover-bg);
-		border-color: var(--o-btn-ghost-hover-border);
-	}
-	&.btn-danger {
-		color: var(--o-state-danger-text);
-		&:hover {
-			color: var(--o-state-danger-text);
-			border-color: var(--o-state-danger-text);
+		&.o_block_small_bottom {
+			margin-bottom: 0.5em;
 		}
 	}
-}
-/* ---- Transitions for modern behavior ---- */
-@media (prefers-reduced-motion: no-preference) {
-	.o_button_ghost {
-		transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-	}
-}
 
-/* Mega button */
-.btn.o_button_mega {
-	height: $o-button-mega-height;
-	background-color: var(--o-btn-mega-bg);
-	&:hover {
-		background-color: var(--o-btn-mega-hover-bg);
-	}
-	
-	display: flex;
-	align-items: center;
-	column-gap: 0.5em;
-	i.o_icon {
-		width: $o-button-mega-icon-width;
-		min-width: $o-button-mega-icon-width;
-		max-width: $o-button-mega-icon-width;
-	}
-	>span {
-		@extend %o_nowrap;
-		display: inline-block;
-	}
-}
-.o_mega_buttons {
-	@include list-unstyled;
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(207px, 1fr));
-	gap: 8px;
-}
-
-/* Primary light button */
-.o_button_primary_light {
-	@include button-variant(var(--o-btn-primary-light-fg), var(--o-btn-primary-light-bg), var(--o-btn-primary-light-border),
-		var(--o-btn-primary-light-fg-hover), var(--o-btn-primary-light-fg-active));
-	&:focus,
-	&:hover {
-	  color: var(--o-btn-primary-light-hover-fg);
-	  background-color: var(--o-btn-primary-light-hover-bg);
-	  border-color: var(--o-btn-primary-light-hover-border);
-	}
-}
-
-.o_button_danger_light {
-	@include button-variant(var(--o-btn-danger-light-fg), var(--o-btn-danger-light-bg), var(--o-btn-danger-light-border),
-		var(--o-btn-danger-light-fg-hover), var(--o-btn-danger-light-fg-active));
-	&:focus,
-	&:hover {
-		color: var(--o-btn-danger-light-hover-fg);
-		background-color: var(--o-btn-danger-light-hover-bg);
-		border-color: var(--o-btn-danger-light-hover-border);
-	}
-}
-
-/* Call to action button */
-.btn.o_button_call_to_action {
-	font-size: math.floor($font-size-base * 1.3);
-	border-radius: $border-radius-base;
-	padding: $padding-large-vertical ($padding-base-horizontal * 3);
-	margin-top: 5px;
-	margin-bottom: 0px;
-	min-width: 30%;
-	
-	&.btn-primary {
-		font-weight: bold;
-	}
-}
-
-/* use as wrapper when buttons should be right aligned next to a title */
-.o_header_with_buttons {
-	@include clearfix();
-	@extend %o_block_bottom;
-	h1, h2, h3, h4, h5, h6 {
-		display: inline-block;
-	}
-	.o_button_group {
-		margin-bottom: 0;
-		float: right;
-	}
-	/* optimize for header spacing */
-	h1 +.o_button_group {
-		margin-top: ($line-height-computed * 1.4);
-	}	
-	h2 +.o_button_group {
-		margin-top: ($line-height-computed * 1.2);
-	}	
-	h3 +.o_button_group {
-		margin-top: ($line-height-computed);
-	}	
-	h4 +.o_button_group {
-		margin-top: ($line-height-computed * 0.5);
-	}	
-	h5 +.o_button_group {
-		margin-top: math.div($line-height-computed, 3);
-	}	
-	h6 +.o_button_group {
-		margin-top: ($line-height-computed * 0.25);
-	}
-	
-	.o_button_group .btn-group, .o_button_group .btn {
-		margin-bottom: 0;
-	}	
-}
-/* special case for no-margin headers in content area */
-#o_main_center .o_header_with_buttons h2 +.o_button_group {
-	margin-top: 0;	
-}
-.o_btn_group_nowrap {
-	&.btn-group {
-		display: flex;
-	}
-}
-
-.panel-heading.o_header_with_buttons {
-	margin-bottom: 0;
-}
-
-/* minimized text-style buttons */
-.o_button_textstyle {
-	&:before {content:'['}
-	&:after {content:']'}
-}
-
-
-/* Link without color and decoration */
-.o_link_plain, .o_link_plain:link, .o_link_plain:hover {
-	color: inherit;
-	text-decoration: inherit;
-}
-.o_link_uncolored, .o_link_uncolored:link, .o_link_uncolored:hover  {
-	color: inherit;
-}
-
-.panel-imagebg {
-	background-repeat:no-repeat;
-	background-position: center;
-	background-size: cover;
-
-	&.panel-default>.panel-heading {
-		background-color: var(--o-imagebg-text-bg);
-		border-bottom: transparent;
-	}
-	.panel-body span {
-		padding: 2px;
-		background-color: var(--o-imagebg-text-bg);
-	}	
-}
-
-/* Placeholder panel, used to indicate that there is something to be added */
-.panel-placeholder {
-	border-width: $o-panel-placeholder-border-width;
-	border-style: dashed;
-	border-color: var(--o-panel-placeholder-border);
-	border-radius: $o-panel-placeholder-border-radius;
-	background-color: var(--o-panel-placeholder-bg);
-	
-	.panel-body {
-		padding: $o-panel-placeholder-padding; 
-		&:nth-child(n+2) {
-			border-top: none;
-		}	
-		h3:nth-child(1),
-		h4:nth-child(1),
-		h5:nth-child(1) {
-			margin-top: 0;
-		}
-				
-		.o_button_group {
-			margin-bottom: 0;
-		}
-	}
-	.panel-heading {
-		border-top-right-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
-		border-top-left-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
-		border-width: $o-panel-placeholder-border-width;
-		border-style: dashed;
-		border-color: var(--o-panel-placeholder-border);
-		border-top: none;
-		border-left: none;
-		border-right: none;
-		color: var(--o-panel-placeholder-fg);
-		font-weight: $o-panel-placeholder-font-weight;
-	}
-	.panel-footer {
-		border-bottom-right-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
-		border-bottom-left-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
-		border-width: $o-panel-placeholder-border-width;
-		border-style: dashed;
-		border-color: var(--o-panel-placeholder-border);
-		border-bottom: none;
-		border-left: none;
-		border-right: none;
-	}
-}
-
-.o_msg_panel {
-	.panel-body {
-		&.o_note {
-			margin: 0px;
-		}
-	}
-}
-
-
-/* ---------------------------------------------------------- */
-/* general content styles for fonts, links and other elements */
-/* ---------------------------------------------------------- */
-
-/* font sizes */
-.o_xsmall, %o_xsmall {
-	font-size: math.ceil($font-size-small * .9);
-}
-.o_small, %o_small {
-	font-size: $font-size-small;
-}
-.o_large, %o_large {
-	font-size: $font-size-large;
-}
-.o_xlarge, %o_xlarge {
-	font-size: math.ceil($font-size-large * 1.1);
-}
-
-/* disabled elements */
-.o_disabled, %o_disabled {
-	color: var(--o-content-disabled) !important;
-	&:hover{
-		color: var(--o-content-disabled) !important;
-	}
-	@extend %o_undecorated;
-	cursor: default;
-}
-/* dimmed text */
-.o_dimmed, %o_dimmed { 
-	@include opacity(.4);
-}
-.o_muted, %o_muted {
-	color: var(--o-text-muted);
-}
-/* selected text */
-.o_selected, %o_selected { 
-	font-weight: bold; 
-}	
-/* deleted text */
-.o_deleted, %o_deleted { 
-	text-decoration: line-through;
-}	
-/* highlight a row on hover event */
-.o_highlight_on_hover:hover { 
-	background-color: var(--o-bg-hover);
-}
-	
-/* clickable elements that should indicate this with a cursor change */
-.o_clickable, %o_clickable {
-	cursor: pointer;
-}
-
-/* colors (used in repo and else where) //FIXME: FG refactor to something meaningfull*/
-.o_ochre { color: var(--o-state-warning-text); }
-.o_blue { color: #12223F; } // o-color-keep(stored-content)
-
-
-/* add to links that should not be decorated (system links) */ 
-.o_undecorated, %o_undecorated {
-	&:hover,&:focus {
-		text-decoration: none;
-	}
-}
-
-/* link or other copy&paste code blocks that might be to long for the screen (creates a scrollbar) */
-.o_copy_code, %o_copy_code {
-  	font-family: $font-family-monospace;
-  	padding: 2px 4px;
-  	font-size: 85%;
-  	color: var(--o-code-block-fg);
- 	background-color: var(--o-code-block-bg);
-  	border-radius: $border-radius-base;
-  	
-  	input,textarea {
-  		border: 0;
-  		width: 90%;
-  		background: transparent;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		cursor: copy;
-  	}
-}
-
-/* text that should be on one line, e.g. in tables */
-.o_nowrap, %o_nowrap {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}	
-.o_wrap_anywhere, %o_wrap_anywhere {
-	word-wrap: anywhere;
-}
-.o_wrap_break_word, %o_wrap_break_word {
-	overflow-wrap: break-word;
-}
-
-/* titles with subtitles */
-.o_titled_wrapper {
-	.o_content {
-		margin-top: $padding-large-vertical * 2;	
-	}
-}
-
-.dropdown-menu {
-	li {
-		.o_dropwdown_menu_subtitle {
-			@extend %o_muted;
-			padding: 3px 10px;
-		}
-	}
-}
-
-.dropdown_horizontal_alignment {
-	display: flex;
-	align-items: baseline;
-	gap: 20px;
-	padding: 10px 0 20px 0;
-}
-
-.checkbox_horizontal_alignment {
-	display: flex;
-	gap: 20px;
-	padding: 10px 0 20px 0;
-}
-
-/* media classes for video and image component */
-.o_video, .o_video video, %o_video, .o_video_wrapper {
-	@include img-responsive(inline-block);
-	max-width: 100%;
-}
-.o_image, .o_image img, %o_image {
-	@include img-responsive(inline-block);
-	max-width: 100%;
-}
-
-.mejs__fullscreen .mejs__mediaelement iframe[id$='youtube_iframe'] {
-	width: 100% !important;
-	height: 100% !important;
-}
-
-/* figures with captions */
-.o_figure_caption_bottom {
-	display: inline-block;	
-	min-width: 50%;
-	figure { 
+	/* vertical and horizontal centered block: add wrappern and place content in wrapper */
+	.o_block_centered_wrapper {
 		display: table; 
+		width: 100%; 
+		height: 100%;
 	}
-}
-
-/* Hyphenated text */
-.o_with_hyphens, %o_with_hyphens {	
-	-webkit-hyphens: auto;
-	-moz-hyphens: auto;
-	hyphens: auto;
-}
-
-/* Offline page */
-.o_page_margins {
-	padding: 25px;
-}
-
-/* Drag&Drop cursor */
-.o_dragable, %o_dragable {
-	cursor: move; /* fallback: no `url()` support or images disabled */
-    cursor: -webkit-grab; /* Chrome 1-21, Safari 4+ */
-    cursor: -moz-grab; /* Firefox 1.5-26 */
-    cursor: grab; /* W3C standards syntax, should come least */
-    &:active {
-	    cursor: -webkit-grabbing;
-    	cursor: -moz-grabbing;
-    	cursor: grabbing;
-    }
-}
-.o_draging, %o_draging {
-    cursor: -webkit-grabbing;
-   	cursor: -moz-grabbing;
-   	cursor: grabbing;
-   	&:active {
-	    cursor: -webkit-grabbing;
-    	cursor: -moz-grabbing;
-    	cursor: grabbing;
-    }
- }
-
-/* Horizontal scrolling indicator 
- * show/no-show of scrolling indicator as shadow effects on the left and right side
- * is controlled by setting the opacity via the corresponding class via JS. 
- * See function o_initScrollableOverflowIndicator
- */ 
-.o_scrollable_wrapper {
-	overflow: hidden;
-	position: relative;
-
-	&.o_scrollable_right:after,
-	&.o_scrollable_left:before {
-		opacity: 1;	
-		will-change: opacity;
+	.o_block_centered_content {
+		display: table-cell; 
+		vertical-align: middle; 
+		text-align: center;
 	}
-	&:after {
-		right: -10px;
-	}
-	&:before {
-		left: -10px;
-	}
+
+	/* content block with a full-scale background image (fat media style) */
+	.o_block_imagebg {
+		background-repeat:no-repeat;
+		background-position: center;
+		background-size: cover;
+		span {
+			padding: 2px;
+			background-color: var(--o-imagebg-text-bg);
+		}	
 	
-	&:before,
-	&:after {
-		/* the scrolling indicator DOM elements are always there but opaque */
-		bottom: 0px;
-		content: '';
-		pointer-events: none;
-		position: absolute;
-		top: 20px;
-		box-shadow: 0 3px 8px 0 color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
-		opacity: 0;
-		transition: 0.3s opacity;
-		width: 10px;	
-		z-index:3; /* needed to appear over sticky table columns */
+		h1, h2, h3, h4, h5,
+		p {
+			padding: 2px;
+			background-color: var(--o-imagebg-text-bg);
+			display: inline-block;
+			&:after {
+				content: ' ';
+				display: block;
+			}
+		}	
 	}
-}
-.o_scrollable {
-	/* make table always responsive, meaning span entire width with scrollbar in case of overflow
-	   note: bootstrapt table-responsive does the same but only for small viewports 
-	 */
-	width: 100%;
-	position: relative; 
-	overflow-y: hidden;
-	overflow-x: auto;
-	-webkit-overflow-scrolling: touch;
-}
 
-/* activity */
-.o_activity_add {
-	border: $o-activity-add-border-width $o-activity-add-border-style var(--o-activity-add-border);
-}
-
-.o_activity_modify {
-	border: $o-activity-modify-border-width $o-activity-modify-border-style var(--o-activity-modify-border);
-}
-
-.o_activity_remove {
-	border: $o-activity-remove-border-width $o-activity-remove-border-style var(--o-activity-remove-border);
-}
-
-.o_activity_modify, .o_activity_add, .o_activity_remove {
-	border-radius: $o-activity-border-radius;
-	width: 20px;
-	height: 20px;
-	display: inline-flex;
-	align-items: center;
-	justify-items: center;
-	padding: 2px 1px 1px 2px;
+	/* block that has an image on the left side as first element in DOM */
+	.o_block_with_icon_left {
+		display: grid;
+		align-items: center;
+		grid-template-columns: 32px auto;
 	
-	>i {
-		font-size: 80%;
-	}
-}
-
- 
- /* misc */
- .o_hidden {
- 	visibility: hidden;
- }
-
-.o_spacer_left {
-	margin-left: 2.5em;
-}
-
-.o_circle {
-	display: block;
-	width: 16px;
-	height: 16px;
-	border-radius:8px;
-}
-.o_table_wrapper {
-	.o_circle {
-		margin-top: 2px;
-	}
-}
-
-.first-letter-capitalize:first-letter {
-	text-transform: capitalize;
-}
-
-.o_markdown_striped {
-	white-space: pre-wrap; 
-	word-break: break-word;
-}
-
-.o_two_col_metadata {
-	display: grid;
-	grid-template-columns: 50% 50%;
-	@media (max-width: $screen-xs-max) {
-		grid-template-columns: 100%;
-	}
-	.o_two_span {
-		grid-column: span 2;
-		@media (max-width: $screen-xs-max) {
-			grid-column: span 1;
+		p:last-child {
+			margin-bottom: 0;
 		}
 	}
-}
 
-.o_metadata_horizontal {
-	display: flex;
-	column-gap: 45px;
-	
-	.form-group .vertical {
-		display: block;
+
+
+	/* overflowing content that should have scrollbar when content overflows available space */
+	.o_scrollblock, %o_scrollblock {
+		/* this must stay on "auto", change to "hidden" and the everything goes to hell */
+		overflow-x: auto;  
+		overflow-y: hidden;
+		/* allow scrolling of wrapped iframe on mobile devices */
+	    -webkit-overflow-scrolling: touch;	
 	}
-}
 
-/* Skeleton placeholder mimicking content */
-.o_skeleton {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	padding-top: 10px;
-	border-top: 1px solid color-mix(in srgb, var(--o-backdrop) 6%, transparent);
-}
-
-.o_skeleton_bar {
-	height: 12px;
-	border-radius: 6px;
-	background-color: color-mix(in srgb, var(--o-backdrop) 6%, transparent);
-
-	&.o_skeleton_bar_full {
+	/* Flex box helpers                                                                    */
+	/* one_line renders on one line, with fixed width objects and others that take all     */
+	/* the available space and overflow with ellipsis                                      */
+	.o_flex_block_one_line_left, %o_flex_block_one_line_left {
+		display: flex;	
+		flex-wrap: nowrap;
+		justify-content: left;
 		width: 100%;
 	}
-	&.o_skeleton_bar_long {
-		width: 80%;
+	.o_flex_block_last {
+		margin-top: auto;
 	}
-	&.o_skeleton_bar_medium {
-		width: 55%;
+	.o_flex_item_fix, %o_flex_item_fix {
+		flex-grow: 0;
+		flex-shrink: 0;
 	}
-	&.o_skeleton_bar_short {
-		width: 35%;
+	.o_flex_item_max, %o_flex_item_max {
+		flex-grow: 1;
+		flex-shrink: 1;
+		width: 100%;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
-}
+	.o_flex_first_grow, %o_flex_first_grow {
+		display: flex;
+		> div:first-child {
+			margin-right: auto;
+		}
+	}
+	.o_flex_first_grow_base, %o_flex_first_grow_base  {
+		@extend %o_flex_first_grow;
+		align-items: baseline;
+	}
 
-.o_component_list {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 10px;
-}
+	.o_flex_first_grow_vertical {
+		display: flex;
+		flex-direction: column;
+		> div:first-child {
+			margin-bottom: auto;
+			overflow: auto;
+		}
+	}
+
+	.o_flow_padding_left_large {
+		padding-left: 2em;
+	}
+	.o_flow_padding_left_small {
+		padding-left: 0.5em;
+	}
+	.o_list_unstyled_left {
+		padding-left: 20px;
+	}
+	.o_list_left_aligned {
+		padding-left: 0;
+		list-style-position: inside;
+	}
+
+	/* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */
+	.o_button_group {
+		@extend %o_block;
+		text-align: center;
+		a, input, button, .btn-group {
+			margin-right: 5px;
+			&:last-child {
+				margin-right: 0;		
+			}
+			&.a_button_bottom {
+				margin-bottom: 0;
+			}
+		}
+		.btn-group {
+			a, input, button {
+				margin-right: 0;		
+				margin-bottom: 0;		
+			}	
+		}	
+		.dropdown-menu {
+			text-align: left;	
+		}
+	
+		&.open {
+			position: relative;
+		}
+	
+		&.compact {
+			margin-top: $padding-small-vertical;
+			margin-bottom: $padding-small-vertical;
+		}
+	}
+	/* use together with o_button_group to have buttons left or right aligned */
+	.o_button_group_left {
+		text-align: left;
+	}
+	.o_button_group_right {
+		text-align: right;
+	}
+	.o_button_group_top {
+		margin-top: 0;
+	}
+	.o_button_group_bottom {
+		margin-bottom: 0;
+	}
+
+	/* Ghost button */
+	.btn.o_button_ghost {
+		color: var(--o-btn-ghost-fg);
+		background-color: var(--o-btn-ghost-bg);
+		border-color: var(--o-btn-ghost-border);
+		&:hover {
+			color: var(--o-btn-ghost-hover-fg);
+			background-color: var(--o-btn-ghost-hover-bg);
+			border-color: var(--o-btn-ghost-hover-border);
+		}
+		&.btn-danger {
+			color: var(--o-state-danger-text);
+			&:hover {
+				color: var(--o-state-danger-text);
+				border-color: var(--o-state-danger-text);
+			}
+		}
+	}
+	/* ---- Transitions for modern behavior ---- */
+	@media (prefers-reduced-motion: no-preference) {
+		.o_button_ghost {
+			transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+		}
+	}
+
+	/* Mega button */
+	.btn.o_button_mega {
+		height: $o-button-mega-height;
+		background-color: var(--o-btn-mega-bg);
+		&:hover {
+			background-color: var(--o-btn-mega-hover-bg);
+		}
+	
+		display: flex;
+		align-items: center;
+		column-gap: 0.5em;
+		i.o_icon {
+			width: $o-button-mega-icon-width;
+			min-width: $o-button-mega-icon-width;
+			max-width: $o-button-mega-icon-width;
+		}
+		>span {
+			@extend %o_nowrap;
+			display: inline-block;
+		}
+	}
+	.o_mega_buttons {
+		@include list-unstyled;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(207px, 1fr));
+		gap: 8px;
+	}
+
+	/* Primary light button */
+	.o_button_primary_light {
+		@include button-variant(var(--o-btn-primary-light-fg), var(--o-btn-primary-light-bg), var(--o-btn-primary-light-border),
+			var(--o-btn-primary-light-fg-hover), var(--o-btn-primary-light-fg-active));
+		&:focus,
+		&:hover {
+		  color: var(--o-btn-primary-light-hover-fg);
+		  background-color: var(--o-btn-primary-light-hover-bg);
+		  border-color: var(--o-btn-primary-light-hover-border);
+		}
+	}
+
+	.o_button_danger_light {
+		@include button-variant(var(--o-btn-danger-light-fg), var(--o-btn-danger-light-bg), var(--o-btn-danger-light-border),
+			var(--o-btn-danger-light-fg-hover), var(--o-btn-danger-light-fg-active));
+		&:focus,
+		&:hover {
+			color: var(--o-btn-danger-light-hover-fg);
+			background-color: var(--o-btn-danger-light-hover-bg);
+			border-color: var(--o-btn-danger-light-hover-border);
+		}
+	}
+
+	/* Call to action button */
+	.btn.o_button_call_to_action {
+		font-size: math.floor($font-size-base * 1.3);
+		border-radius: $border-radius-base;
+		padding: $padding-large-vertical ($padding-base-horizontal * 3);
+		margin-top: 5px;
+		margin-bottom: 0px;
+		min-width: 30%;
+	
+		&.btn-primary {
+			font-weight: bold;
+		}
+	}
+
+	/* use as wrapper when buttons should be right aligned next to a title */
+	.o_header_with_buttons {
+		@include clearfix();
+		@extend %o_block_bottom;
+		h1, h2, h3, h4, h5, h6 {
+			display: inline-block;
+		}
+		.o_button_group {
+			margin-bottom: 0;
+			float: right;
+		}
+		/* optimize for header spacing */
+		h1 +.o_button_group {
+			margin-top: ($line-height-computed * 1.4);
+		}	
+		h2 +.o_button_group {
+			margin-top: ($line-height-computed * 1.2);
+		}	
+		h3 +.o_button_group {
+			margin-top: ($line-height-computed);
+		}	
+		h4 +.o_button_group {
+			margin-top: ($line-height-computed * 0.5);
+		}	
+		h5 +.o_button_group {
+			margin-top: math.div($line-height-computed, 3);
+		}	
+		h6 +.o_button_group {
+			margin-top: ($line-height-computed * 0.25);
+		}
+	
+		.o_button_group .btn-group, .o_button_group .btn {
+			margin-bottom: 0;
+		}	
+	}
+	/* special case for no-margin headers in content area */
+	#o_main_center .o_header_with_buttons h2 +.o_button_group {
+		margin-top: 0;	
+	}
+	.o_btn_group_nowrap {
+		&.btn-group {
+			display: flex;
+		}
+	}
+
+	.panel-heading.o_header_with_buttons {
+		margin-bottom: 0;
+	}
+
+	/* minimized text-style buttons */
+	.o_button_textstyle {
+		&:before {content:'['}
+		&:after {content:']'}
+	}
+
+
+	/* Link without color and decoration */
+	.o_link_plain, .o_link_plain:link, .o_link_plain:hover {
+		color: inherit;
+		text-decoration: inherit;
+	}
+	.o_link_uncolored, .o_link_uncolored:link, .o_link_uncolored:hover  {
+		color: inherit;
+	}
+
+	.panel-imagebg {
+		background-repeat:no-repeat;
+		background-position: center;
+		background-size: cover;
+
+		&.panel-default>.panel-heading {
+			background-color: var(--o-imagebg-text-bg);
+			border-bottom: transparent;
+		}
+		.panel-body span {
+			padding: 2px;
+			background-color: var(--o-imagebg-text-bg);
+		}	
+	}
+
+	/* Placeholder panel, used to indicate that there is something to be added */
+	.panel-placeholder {
+		border-width: $o-panel-placeholder-border-width;
+		border-style: dashed;
+		border-color: var(--o-panel-placeholder-border);
+		border-radius: $o-panel-placeholder-border-radius;
+		background-color: var(--o-panel-placeholder-bg);
+	
+		.panel-body {
+			padding: $o-panel-placeholder-padding; 
+			&:nth-child(n+2) {
+				border-top: none;
+			}	
+			h3:nth-child(1),
+			h4:nth-child(1),
+			h5:nth-child(1) {
+				margin-top: 0;
+			}
+				
+			.o_button_group {
+				margin-bottom: 0;
+			}
+		}
+		.panel-heading {
+			border-top-right-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
+			border-top-left-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
+			border-width: $o-panel-placeholder-border-width;
+			border-style: dashed;
+			border-color: var(--o-panel-placeholder-border);
+			border-top: none;
+			border-left: none;
+			border-right: none;
+			color: var(--o-panel-placeholder-fg);
+			font-weight: $o-panel-placeholder-font-weight;
+		}
+		.panel-footer {
+			border-bottom-right-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
+			border-bottom-left-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
+			border-width: $o-panel-placeholder-border-width;
+			border-style: dashed;
+			border-color: var(--o-panel-placeholder-border);
+			border-bottom: none;
+			border-left: none;
+			border-right: none;
+		}
+	}
+
+	.o_msg_panel {
+		.panel-body {
+			&.o_note {
+				margin: 0px;
+			}
+		}
+	}
+
+
+	/* ---------------------------------------------------------- */
+	/* general content styles for fonts, links and other elements */
+	/* ---------------------------------------------------------- */
+
+	/* font sizes */
+	.o_xsmall, %o_xsmall {
+		font-size: math.ceil($font-size-small * .9);
+	}
+	.o_small, %o_small {
+		font-size: $font-size-small;
+	}
+	.o_large, %o_large {
+		font-size: $font-size-large;
+	}
+	.o_xlarge, %o_xlarge {
+		font-size: math.ceil($font-size-large * 1.1);
+	}
+
+	/* disabled elements */
+	.o_disabled, %o_disabled {
+		color: var(--o-content-disabled) !important;
+		&:hover{
+			color: var(--o-content-disabled) !important;
+		}
+		@extend %o_undecorated;
+		cursor: default;
+	}
+	/* dimmed text */
+	.o_dimmed, %o_dimmed { 
+		@include opacity(.4);
+	}
+	.o_muted, %o_muted {
+		color: var(--o-text-muted);
+	}
+	/* selected text */
+	.o_selected, %o_selected { 
+		font-weight: bold; 
+	}	
+	/* deleted text */
+	.o_deleted, %o_deleted { 
+		text-decoration: line-through;
+	}	
+	/* highlight a row on hover event */
+	.o_highlight_on_hover:hover { 
+		background-color: var(--o-bg-hover);
+	}
+	
+	/* clickable elements that should indicate this with a cursor change */
+	.o_clickable, %o_clickable {
+		cursor: pointer;
+	}
+
+	/* colors (used in repo and else where) //FIXME: FG refactor to something meaningfull*/
+	.o_ochre { color: var(--o-state-warning-text); }
+	.o_blue { color: #12223F; } // o-color-keep(stored-content)
+
+
+	/* add to links that should not be decorated (system links) */ 
+	.o_undecorated, %o_undecorated {
+		&:hover,&:focus {
+			text-decoration: none;
+		}
+	}
+
+	/* link or other copy&paste code blocks that might be to long for the screen (creates a scrollbar) */
+	.o_copy_code, %o_copy_code {
+	  	font-family: $font-family-monospace;
+	  	padding: 2px 4px;
+	  	font-size: 85%;
+	  	color: var(--o-code-block-fg);
+	 	background-color: var(--o-code-block-bg);
+	  	border-radius: $border-radius-base;
+  	
+	  	input,textarea {
+	  		border: 0;
+	  		width: 90%;
+	  		background: transparent;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			cursor: copy;
+	  	}
+	}
+
+	/* text that should be on one line, e.g. in tables */
+	.o_nowrap, %o_nowrap {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}	
+	.o_wrap_anywhere, %o_wrap_anywhere {
+		word-wrap: anywhere;
+	}
+	.o_wrap_break_word, %o_wrap_break_word {
+		overflow-wrap: break-word;
+	}
+
+	/* titles with subtitles */
+	.o_titled_wrapper {
+		.o_content {
+			margin-top: $padding-large-vertical * 2;	
+		}
+	}
+
+	.dropdown-menu {
+		li {
+			.o_dropwdown_menu_subtitle {
+				@extend %o_muted;
+				padding: 3px 10px;
+			}
+		}
+	}
+
+	.dropdown_horizontal_alignment {
+		display: flex;
+		align-items: baseline;
+		gap: 20px;
+		padding: 10px 0 20px 0;
+	}
+
+	.checkbox_horizontal_alignment {
+		display: flex;
+		gap: 20px;
+		padding: 10px 0 20px 0;
+	}
+
+	/* media classes for video and image component */
+	.o_video, .o_video video, %o_video, .o_video_wrapper {
+		@include img-responsive(inline-block);
+		max-width: 100%;
+	}
+	.o_image, .o_image img, %o_image {
+		@include img-responsive(inline-block);
+		max-width: 100%;
+	}
+
+	.mejs__fullscreen .mejs__mediaelement iframe[id$='youtube_iframe'] {
+		width: 100% !important;
+		height: 100% !important;
+	}
+
+	/* figures with captions */
+	.o_figure_caption_bottom {
+		display: inline-block;	
+		min-width: 50%;
+		figure { 
+			display: table; 
+		}
+	}
+
+	/* Hyphenated text */
+	.o_with_hyphens, %o_with_hyphens {	
+		-webkit-hyphens: auto;
+		-moz-hyphens: auto;
+		hyphens: auto;
+	}
+
+	/* Offline page */
+	.o_page_margins {
+		padding: 25px;
+	}
+
+	/* Drag&Drop cursor */
+	.o_dragable, %o_dragable {
+		cursor: move; /* fallback: no `url()` support or images disabled */
+	    cursor: -webkit-grab; /* Chrome 1-21, Safari 4+ */
+	    cursor: -moz-grab; /* Firefox 1.5-26 */
+	    cursor: grab; /* W3C standards syntax, should come least */
+	    &:active {
+		    cursor: -webkit-grabbing;
+	    	cursor: -moz-grabbing;
+	    	cursor: grabbing;
+	    }
+	}
+	.o_draging, %o_draging {
+	    cursor: -webkit-grabbing;
+	   	cursor: -moz-grabbing;
+	   	cursor: grabbing;
+	   	&:active {
+		    cursor: -webkit-grabbing;
+	    	cursor: -moz-grabbing;
+	    	cursor: grabbing;
+	    }
+	 }
+
+	/* Horizontal scrolling indicator 
+	 * show/no-show of scrolling indicator as shadow effects on the left and right side
+	 * is controlled by setting the opacity via the corresponding class via JS. 
+	 * See function o_initScrollableOverflowIndicator
+	 */ 
+	.o_scrollable_wrapper {
+		overflow: hidden;
+		position: relative;
+
+		&.o_scrollable_right:after,
+		&.o_scrollable_left:before {
+			opacity: 1;	
+			will-change: opacity;
+		}
+		&:after {
+			right: -10px;
+		}
+		&:before {
+			left: -10px;
+		}
+	
+		&:before,
+		&:after {
+			/* the scrolling indicator DOM elements are always there but opaque */
+			bottom: 0px;
+			content: '';
+			pointer-events: none;
+			position: absolute;
+			top: 20px;
+			box-shadow: 0 3px 8px 0 color-mix(in srgb, var(--o-shadow-color) 20%, transparent);
+			opacity: 0;
+			transition: 0.3s opacity;
+			width: 10px;	
+			z-index:3; /* needed to appear over sticky table columns */
+		}
+	}
+	.o_scrollable {
+		/* make table always responsive, meaning span entire width with scrollbar in case of overflow
+		   note: bootstrapt table-responsive does the same but only for small viewports 
+		 */
+		width: 100%;
+		position: relative; 
+		overflow-y: hidden;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	/* activity */
+	.o_activity_add {
+		border: $o-activity-add-border-width $o-activity-add-border-style var(--o-activity-add-border);
+	}
+
+	.o_activity_modify {
+		border: $o-activity-modify-border-width $o-activity-modify-border-style var(--o-activity-modify-border);
+	}
+
+	.o_activity_remove {
+		border: $o-activity-remove-border-width $o-activity-remove-border-style var(--o-activity-remove-border);
+	}
+
+	.o_activity_modify, .o_activity_add, .o_activity_remove {
+		border-radius: $o-activity-border-radius;
+		width: 20px;
+		height: 20px;
+		display: inline-flex;
+		align-items: center;
+		justify-items: center;
+		padding: 2px 1px 1px 2px;
+	
+		>i {
+			font-size: 80%;
+		}
+	}
+
+ 
+	 /* misc */
+	 .o_hidden {
+	 	visibility: hidden;
+	 }
+
+	.o_spacer_left {
+		margin-left: 2.5em;
+	}
+
+	.o_circle {
+		display: block;
+		width: 16px;
+		height: 16px;
+		border-radius:8px;
+	}
+	.o_table_wrapper {
+		.o_circle {
+			margin-top: 2px;
+		}
+	}
+
+	.first-letter-capitalize:first-letter {
+		text-transform: capitalize;
+	}
+
+	.o_markdown_striped {
+		white-space: pre-wrap; 
+		word-break: break-word;
+	}
+
+	.o_two_col_metadata {
+		display: grid;
+		grid-template-columns: 50% 50%;
+		@media (max-width: $screen-xs-max) {
+			grid-template-columns: 100%;
+		}
+		.o_two_span {
+			grid-column: span 2;
+			@media (max-width: $screen-xs-max) {
+				grid-column: span 1;
+			}
+		}
+	}
+
+	.o_metadata_horizontal {
+		display: flex;
+		column-gap: 45px;
+	
+		.form-group .vertical {
+			display: block;
+		}
+	}
+
+	/* Skeleton placeholder mimicking content */
+	.o_skeleton {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding-top: 10px;
+		border-top: 1px solid color-mix(in srgb, var(--o-backdrop) 6%, transparent);
+	}
+
+	.o_skeleton_bar {
+		height: 12px;
+		border-radius: 6px;
+		background-color: color-mix(in srgb, var(--o-backdrop) 6%, transparent);
+
+		&.o_skeleton_bar_full {
+			width: 100%;
+		}
+		&.o_skeleton_bar_long {
+			width: 80%;
+		}
+		&.o_skeleton_bar_medium {
+			width: 55%;
+		}
+		&.o_skeleton_bar_short {
+			width: 35%;
+		}
+	}
+
+	.o_component_list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
 }

@@ -2,37 +2,37 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-imscp {
-@media print, screen {
-	div.o_offline_cp, div.o_offline_cp * {
-		-webkit-print-color-adjust: exact;
-		color-adjust: exact;
-	}
+	@media print, screen {
+		div.o_offline_cp, div.o_offline_cp * {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+		}
 	
-	.o_offline_cp_header {
-		display: table-header-group;
-		padding-bottom: 20px;
-	}
+		.o_offline_cp_header {
+			display: table-header-group;
+			padding-bottom: 20px;
+		}
 	
-	.o_offline_cp_header .o_offline_cp_printed {
-   		display: none;
-	}
+		.o_offline_cp_header .o_offline_cp_printed {
+	   		display: none;
+		}
 
-   	.o_offline_cp_footer {
-   		display: table-footer-group;
-   		height: 32px;
-   		width: 100%;
-   	}
+	   	.o_offline_cp_footer {
+	   		display: table-footer-group;
+	   		height: 32px;
+	   		width: 100%;
+	   	}
    	
-   	.o_offline_cp_footer .o_offline_cp_title{
-   		display: none;
-	}
+	   	.o_offline_cp_footer .o_offline_cp_title{
+	   		display: none;
+		}
 
-   	.o_offline_cp_footer .o_offline_cp_copyright {
-   		display: none;
-   	}
+	   	.o_offline_cp_footer .o_offline_cp_copyright {
+	   		display: none;
+	   	}
    	
-   	.o_offline_cp_logo {
-   		display: none;
-   	}
-}
+	   	.o_offline_cp_logo {
+	   		display: none;
+	   	}
+	}
 }

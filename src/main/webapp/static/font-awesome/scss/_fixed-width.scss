@@ -6,9 +6,8 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin fa-rules-fixed-width {
-
-.#{$fa-css-prefix}-fw {
-  text-align: center;
-  width: $fa-fw-width;
-}
+  .#{$fa-css-prefix}-fw {
+    text-align: center;
+    width: $fa-fw-width;
+  }
 }

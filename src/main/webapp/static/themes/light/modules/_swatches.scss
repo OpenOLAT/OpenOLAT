@@ -27,49 +27,48 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-swatches {
-
-@each $hue, $swatch in $o-swatches {
-	// The placeholders keep the legacy classes out of the
-	// .o_swatch_<hue>.o_swatch_tint compound selectors
-	.o_swatch_#{$hue}, %o_swatch_#{$hue} {
-		--o-sw-bg: #{o-hex(map.get($swatch, "bg"))};
-		--o-sw-fg: #{o-hex(map.get($swatch, "fg"))};
-		--o-sw-border: #{o-hex(map.get($swatch, "border"))};
-		--o-sw-soft-bg: #{o-hex(map.get($swatch, "soft-bg"))};
-		--o-sw-soft-fg: #{o-hex(map.get($swatch, "soft-fg"))};
-		--o-sw-soft-border: #{o-hex(map.get($swatch, "soft-border"))};
-		--o-sw-text: #{o-hex(map.get($swatch, "text"))};
-	}
-	.o_swatch_#{$hue}.o_swatch_tint, %o_swatch_#{$hue}_tint {
-		--o-sw-bg: #{o-hex(map.get($swatch, "tint-bg"))};
-		--o-sw-fg: #{o-hex(map.get($swatch, "tint-fg"))};
-		--o-sw-border: #{o-hex(map.get($swatch, "tint-border"))};
-	}
-	.o_swatch_#{$hue}.o_swatch_light, %o_swatch_#{$hue}_light {
-		--o-sw-bg: #{o-hex(map.get($swatch, "light-bg"))};
-		--o-sw-fg: #{o-hex(map.get($swatch, "light-fg"))};
-		--o-sw-border: #{o-hex(map.get($swatch, "light-border"))};
-	}
-	.o_swatch_#{$hue}.o_swatch_dark, %o_swatch_#{$hue}_dark {
-		--o-sw-bg: #{o-hex(map.get($swatch, "dark-bg"))};
-		--o-sw-fg: #{o-hex(map.get($swatch, "dark-fg"))};
-		--o-sw-border: #{o-hex(map.get($swatch, "dark-border"))};
-	}
-	.o_swatch_#{$hue}.o_swatch_soft, %o_swatch_#{$hue}_soft {
-		--o-sw-bg: #{o-hex(map.get($swatch, "soft-bg"))};
-		--o-sw-fg: #{o-hex(map.get($swatch, "soft-fg"))};
-		--o-sw-border: #{o-hex(map.get($swatch, "soft-border"))};
-	}
-}
-
-@each $class, $alias in $o-swatch-aliases {
-	$hue: list.nth($alias, 1);
-	$variant: list.nth($alias, 2);
-	.#{$class} {
-		@extend %o_swatch_#{$hue};
-		@if $variant != "solid" {
-			@extend %o_swatch_#{$hue}_#{$variant};
+	@each $hue, $swatch in $o-swatches {
+		// The placeholders keep the legacy classes out of the
+		// .o_swatch_<hue>.o_swatch_tint compound selectors
+		.o_swatch_#{$hue}, %o_swatch_#{$hue} {
+			--o-sw-bg: #{o-hex(map.get($swatch, "bg"))};
+			--o-sw-fg: #{o-hex(map.get($swatch, "fg"))};
+			--o-sw-border: #{o-hex(map.get($swatch, "border"))};
+			--o-sw-soft-bg: #{o-hex(map.get($swatch, "soft-bg"))};
+			--o-sw-soft-fg: #{o-hex(map.get($swatch, "soft-fg"))};
+			--o-sw-soft-border: #{o-hex(map.get($swatch, "soft-border"))};
+			--o-sw-text: #{o-hex(map.get($swatch, "text"))};
+		}
+		.o_swatch_#{$hue}.o_swatch_tint, %o_swatch_#{$hue}_tint {
+			--o-sw-bg: #{o-hex(map.get($swatch, "tint-bg"))};
+			--o-sw-fg: #{o-hex(map.get($swatch, "tint-fg"))};
+			--o-sw-border: #{o-hex(map.get($swatch, "tint-border"))};
+		}
+		.o_swatch_#{$hue}.o_swatch_light, %o_swatch_#{$hue}_light {
+			--o-sw-bg: #{o-hex(map.get($swatch, "light-bg"))};
+			--o-sw-fg: #{o-hex(map.get($swatch, "light-fg"))};
+			--o-sw-border: #{o-hex(map.get($swatch, "light-border"))};
+		}
+		.o_swatch_#{$hue}.o_swatch_dark, %o_swatch_#{$hue}_dark {
+			--o-sw-bg: #{o-hex(map.get($swatch, "dark-bg"))};
+			--o-sw-fg: #{o-hex(map.get($swatch, "dark-fg"))};
+			--o-sw-border: #{o-hex(map.get($swatch, "dark-border"))};
+		}
+		.o_swatch_#{$hue}.o_swatch_soft, %o_swatch_#{$hue}_soft {
+			--o-sw-bg: #{o-hex(map.get($swatch, "soft-bg"))};
+			--o-sw-fg: #{o-hex(map.get($swatch, "soft-fg"))};
+			--o-sw-border: #{o-hex(map.get($swatch, "soft-border"))};
 		}
 	}
-}
+
+	@each $class, $alias in $o-swatch-aliases {
+		$hue: list.nth($alias, 1);
+		$variant: list.nth($alias, 2);
+		.#{$class} {
+			@extend %o_swatch_#{$hue};
+			@if $variant != "solid" {
+				@extend %o_swatch_#{$hue}_#{$variant};
+			}
+		}
+	}
 }

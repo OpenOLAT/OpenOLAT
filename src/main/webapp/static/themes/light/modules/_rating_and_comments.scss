@@ -2,313 +2,313 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-rating-and-comments {
-.o_rating {
-	.o_rating_title {
-		font-size: $font-size-small;	
-	}
-	.o_rating_items {
-		white-space: nowrap;	
-		.o_icon {
-			color: var(--o-rating-star);
-			// the darker edge gives the shape of the bright star 3:1 on the page
-			-webkit-text-stroke: 1px var(--o-rating-star-edge);
-			background: none;
-			border: none;
-			padding: 1px;
+	.o_rating {
+		.o_rating_title {
+			font-size: $font-size-small;	
 		}
-		// the empty star: the outline glyph in the colour of the edge, without
-		// a stroke (a stroke would double the thin outline)
-		.o_icon_rating_off {
-			color: var(--o-rating-star-edge);
-			-webkit-text-stroke-width: 0;
-		}
-		.o_legend {
-			margin-left: 1em;
-			font-size: $font-size-small;		
-			line-height: normal;
-		}
-		&.o_enabled {
-			.o_icon:hover {
-				@extend .o_icon_rating_on;					
-			}
-			// the empty star under the pointer shows the filled star
-			.o_icon_rating_off:hover {
+		.o_rating_items {
+			white-space: nowrap;	
+			.o_icon {
 				color: var(--o-rating-star);
-				-webkit-text-stroke-width: 1px;
+				// the darker edge gives the shape of the bright star 3:1 on the page
+				-webkit-text-stroke: 1px var(--o-rating-star-edge);
+				background: none;
+				border: none;
+				padding: 1px;
 			}
-		}
-		&:not(.o_enabled) {
-			a {
-				cursor: default;
+			// the empty star: the outline glyph in the colour of the edge, without
+			// a stroke (a stroke would double the thin outline)
+			.o_icon_rating_off {
+				color: var(--o-rating-star-edge);
+				-webkit-text-stroke-width: 0;
 			}
-		}
-	}	
-	&.o_rating_personal .o_rating_items {
-		.o_icon,
-		&.o_enabled .o_icon_rating_off:hover {
-			color: var(--o-primary-text);
-			-webkit-text-stroke-width: 0;
+			.o_legend {
+				margin-left: 1em;
+				font-size: $font-size-small;		
+				line-height: normal;
+			}
+			&.o_enabled {
+				.o_icon:hover {
+					@extend .o_icon_rating_on;					
+				}
+				// the empty star under the pointer shows the filled star
+				.o_icon_rating_off:hover {
+					color: var(--o-rating-star);
+					-webkit-text-stroke-width: 1px;
+				}
+			}
+			&:not(.o_enabled) {
+				a {
+					cursor: default;
+				}
+			}
 		}	
+		&.o_rating_personal .o_rating_items {
+			.o_icon,
+			&.o_enabled .o_icon_rating_off:hover {
+				color: var(--o-primary-text);
+				-webkit-text-stroke-width: 0;
+			}	
 
-	}
-	.o_rating_explanation {
-		font-size: $font-size-small;
-		color: var(--o-text-muted);
-	}
+		}
+		.o_rating_explanation {
+			font-size: $font-size-small;
+			color: var(--o-text-muted);
+		}
 	
-	@media (max-width: $screen-sm-max) {
-		.o_rating_title, .o_rating_explanation {
+		@media (max-width: $screen-sm-max) {
+			.o_rating_title, .o_rating_explanation {
+				display: none;
+			}
+		}
+	}
+
+	.o_rating.o_rating_yesno {
+		.o_rating_items {
+			white-space: nowrap;	
+			.o_icon {
+				color: var(--o-state-neutral-text);
+				-webkit-text-stroke-width: 0;
+			}
+			&.o_enabled a:hover {
+				.o_icon_rating_no_on {
+					@extend .o_icon_rating_no_off;					
+				}
+				.o_icon_rating_no_off {
+					@extend .o_icon_rating_no_on;					
+				}
+				.o_icon_rating_yes_on {
+					@extend .o_icon_rating_yes_off;					
+				}
+				.o_icon_rating_yes_off {
+					@extend .o_icon_rating_yes_on;					
+				}
+			}
+		
+			.btn-primary>i {
+				color: var(--o-white);
+			}
+		}
+	
+		.o_rating_explanation {
 			display: none;
 		}
 	}
-}
 
-.o_rating.o_rating_yesno {
-	.o_rating_items {
-		white-space: nowrap;	
-		.o_icon {
-			color: var(--o-state-neutral-text);
-			-webkit-text-stroke-width: 0;
-		}
-		&.o_enabled a:hover {
-			.o_icon_rating_no_on {
-				@extend .o_icon_rating_no_off;					
-			}
-			.o_icon_rating_no_off {
-				@extend .o_icon_rating_no_on;					
-			}
-			.o_icon_rating_yes_on {
-				@extend .o_icon_rating_yes_off;					
-			}
-			.o_icon_rating_yes_off {
-				@extend .o_icon_rating_yes_on;					
-			}
-		}
-		
-		.btn-primary>i {
-			color: var(--o-white);
-		}
+	.o_table_wrapper .table-striped>tbody>tr:nth-of-type(odd) .o_rating.o_rating_yesno .o_rating_items .o_icon {
+		color: var(--o-state-neutral-text);
 	}
+
+	.o_comments {
+
+		.o_button_container {
+			padding: $padding-large-horizontal 0 $padding-large-horizontal 0;
+		}
 	
-	.o_rating_explanation {
-		display: none;
-	}
-}
+		.o_comment_highlight {
+		  	@include box-shadow(0 1px 10px color-mix(in srgb, var(--o-comment-highlight-glow) 50%, transparent));
+		}
 
-.o_table_wrapper .table-striped>tbody>tr:nth-of-type(odd) .o_rating.o_rating_yesno .o_rating_items .o_icon {
-	color: var(--o-state-neutral-text);
-}
-
-.o_comments {
-
-	.o_button_container {
-		padding: $padding-large-horizontal 0 $padding-large-horizontal 0;
-	}
-	
-	.o_comment_highlight {
-	  	@include box-shadow(0 1px 10px color-mix(in srgb, var(--o-comment-highlight-glow) 50%, transparent));
-	}
-
-	.o_comment_wrapper {
-		>blockquote {
+		.o_comment_wrapper {
+			>blockquote {
+				.o_comment_meta {
+					>small:before {
+						display: none;
+					}
+				}
+			}
+			.o_avatar { 
+				float: left;
+				margin: 0 1em 0 0;
+			}
+			.o_tools {
+				float: right;
+			}
 			.o_comment_meta {
-				>small:before {
-					display: none;
-				}
-			}
-		}
-		.o_avatar { 
-			float: left;
-			margin: 0 1em 0 0;
-		}
-		.o_tools {
-			float: right;
-		}
-		.o_comment_meta {
-			display: flex;
-			flex-direction: column;
-			gap: 0.3rem;
-			.o_comment_author {
-				font-weight: bold;
-			}
-		}
-		.o_comment {
-			@extend %o_small;
-			border-left: none;
-			font-size: 14px;
-			padding: 5px 0 0 42px;
-			>a {
-				text-decoration: none;
-				&:hover,
-				&:focus {
-					text-decoration: none;
-				}
-			}
-		}
-		.o_comments_form {
-			display: flex;
-			.o_comments_form_reply {
-				width: 100%;
-				margin-top: -20px;
-			}
-		}
-
-		/* a reply to a comment */		
-		.o_comment_reply {
-			margin-left: $padding-large-horizontal;
-		}
-		.o_comment_reply_block {
-			border-left: 2px solid var(--o-blockquote-border);
-			padding: 5px 0 0 28px;
-			>p {
-				margin: 5px 44px 10px;
-			}
-			.o_reply {
-				margin-left: 40px;
-			}
-		}
-	}
-	.o_comments_form_init {
-		display: flex;
-		padding: 0 0 15px 0;
-		.o_avatar_pre {
-			padding: 0 10px 0 0;
-		}
-		.o_avatar {
-			padding: 20px 10px 0 0;
-		}
-		.o_comments_form_ctrl {
-			width: 100%;
-		}
-	}
-
-	.o_attachments {
-		display: flex;
-		flex-wrap: wrap;
-
-		&.o_attachments_upload {
-			flex-direction: column;
-		}
-		&.o_attachments_preview {
-			gap: $padding-large-vertical;
-		}
-
-		.o_attachment {
-			display: flex;
-			align-items: flex-end;
-			padding-bottom:$padding-large-vertical;
-
-			.o_attachment_thumbnail {
-				padding: 0 0 $padding-large-horizontal 0;
-			}
-			.o_attachment_thumbnail_preview {
-				display: grid;
-				padding: 0 0 $padding-large-horizontal 0;
-				height: 100%;
-				width: 100%;
-
-				> img {
-					border-radius: $border-radius-large;
-					transition: opacity 0.3s ease;
-				}
-
-				.o_file_suffix {
-					position: absolute;
-					margin: $padding-base-vertical 0 0 $padding-base-vertical;
-					color: var(--o-primary-text);
-					border-color: var(--o-brand-box-border);
-				}
-
-				.o_visual_not_available {
-					width: 135px;
-					height: $o-portrait-size;
-					background-color: var(--o-brand-box-bg);
-					border: solid 1px var(--o-brand-box-border);
-					border-radius: $border-radius-large;
-				}
-
-				.o_attachment_title {
-					position: absolute;
-					color: var(--o-primary-text);
-					margin-left: $padding-large-vertical;
-					margin-top: 50px;
-					max-width: 110px;
-					overflow: hidden;
-					text-overflow: ellipsis;
-				}
-
-				.o_attachment_thumbnail_action {
-					display: none;
-					position: absolute;
-					margin-top: 65px;
-				}
-			}
-
-			.o_attachment_thumbnail_preview:hover {
-				> img {
-					opacity: 0.5;
-					cursor: pointer;
-				}
-				.o_attachment_title {
-					display: none;
-				}
-				.o_file_suffix {
-					display: none;
-				}
-				.o_attachment_thumbnail_action {
-					display: block;
-				}
-			}
-
-			.o_attachment_meta {
 				display: flex;
 				flex-direction: column;
+				gap: 0.3rem;
+				.o_comment_author {
+					font-weight: bold;
+				}
+			}
+			.o_comment {
+				@extend %o_small;
+				border-left: none;
+				font-size: 14px;
+				padding: 5px 0 0 42px;
+				>a {
+					text-decoration: none;
+					&:hover,
+					&:focus {
+						text-decoration: none;
+					}
+				}
+			}
+			.o_comments_form {
+				display: flex;
+				.o_comments_form_reply {
+					width: 100%;
+					margin-top: -20px;
+				}
 			}
 
-			.o_sel_comment_attachment_delete {
-				margin-left: auto;
+			/* a reply to a comment */		
+			.o_comment_reply {
+				margin-left: $padding-large-horizontal;
+			}
+			.o_comment_reply_block {
+				border-left: 2px solid var(--o-blockquote-border);
+				padding: 5px 0 0 28px;
+				>p {
+					margin: 5px 44px 10px;
+				}
+				.o_reply {
+					margin-left: 40px;
+				}
+			}
+		}
+		.o_comments_form_init {
+			display: flex;
+			padding: 0 0 15px 0;
+			.o_avatar_pre {
+				padding: 0 10px 0 0;
+			}
+			.o_avatar {
+				padding: 20px 10px 0 0;
+			}
+			.o_comments_form_ctrl {
+				width: 100%;
+			}
+		}
+
+		.o_attachments {
+			display: flex;
+			flex-wrap: wrap;
+
+			&.o_attachments_upload {
+				flex-direction: column;
+			}
+			&.o_attachments_preview {
+				gap: $padding-large-vertical;
+			}
+
+			.o_attachment {
+				display: flex;
+				align-items: flex-end;
+				padding-bottom:$padding-large-vertical;
+
+				.o_attachment_thumbnail {
+					padding: 0 0 $padding-large-horizontal 0;
+				}
+				.o_attachment_thumbnail_preview {
+					display: grid;
+					padding: 0 0 $padding-large-horizontal 0;
+					height: 100%;
+					width: 100%;
+
+					> img {
+						border-radius: $border-radius-large;
+						transition: opacity 0.3s ease;
+					}
+
+					.o_file_suffix {
+						position: absolute;
+						margin: $padding-base-vertical 0 0 $padding-base-vertical;
+						color: var(--o-primary-text);
+						border-color: var(--o-brand-box-border);
+					}
+
+					.o_visual_not_available {
+						width: 135px;
+						height: $o-portrait-size;
+						background-color: var(--o-brand-box-bg);
+						border: solid 1px var(--o-brand-box-border);
+						border-radius: $border-radius-large;
+					}
+
+					.o_attachment_title {
+						position: absolute;
+						color: var(--o-primary-text);
+						margin-left: $padding-large-vertical;
+						margin-top: 50px;
+						max-width: 110px;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
+
+					.o_attachment_thumbnail_action {
+						display: none;
+						position: absolute;
+						margin-top: 65px;
+					}
+				}
+
+				.o_attachment_thumbnail_preview:hover {
+					> img {
+						opacity: 0.5;
+						cursor: pointer;
+					}
+					.o_attachment_title {
+						display: none;
+					}
+					.o_file_suffix {
+						display: none;
+					}
+					.o_attachment_thumbnail_action {
+						display: block;
+					}
+				}
+
+				.o_attachment_meta {
+					display: flex;
+					flex-direction: column;
+				}
+
+				.o_sel_comment_attachment_delete {
+					margin-left: auto;
+				}
 			}
 		}
 	}
-}
 
-.o_fake_comment_text_area {
-	text-align: left;
-	cursor: text;
-	width: 100%;
-	height: $input-height-base;
-	font-size: $font-size-base;
-	line-height: $line-height-base;
-	color: var(--o-input-fg);
-	background-color: var(--o-input-bg);
-	background-image: none;
-	border-radius: $input-border-radius;
-	@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent));
-	@include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
+	.o_fake_comment_text_area {
+		text-align: left;
+		cursor: text;
+		width: 100%;
+		height: $input-height-base;
+		font-size: $font-size-base;
+		line-height: $line-height-base;
+		color: var(--o-input-fg);
+		background-color: var(--o-input-bg);
+		background-image: none;
+		border-radius: $input-border-radius;
+		@include box-shadow(inset 0 1px 1px color-mix(in srgb, var(--o-shadow-color) 7.5%, transparent));
+		@include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
 
-	.form-control-static {
-		padding-top: 0;
+		.form-control-static {
+			padding-top: 0;
+		}
 	}
-}
 
-.o_ratings_and_comments {
-	display: flex;
-	flex-direction: column;
-	
-	.o_ratings_header {
+	.o_ratings_and_comments {
 		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
+		flex-direction: column;
+	
+		.o_ratings_header {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
 		
-		.o_notifications {
-			flex-grow: 2;
+			.o_notifications {
+				flex-grow: 2;
+			}
+		}
+	
+		a.o_comments {
+			margin-left: $padding-large-vertical;
+			position: relative;
+			top: 0.1em; /* fix line correlation to stars */
 		}
 	}
-	
-	a.o_comments {
-		margin-left: $padding-large-vertical;
-		position: relative;
-		top: 0.1em; /* fix line correlation to stars */
-	}
-}
 }

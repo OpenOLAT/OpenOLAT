@@ -12,58 +12,57 @@
  * fill and the text on the fill read them too, so a variant modifier
  * (o_swatch_blue o_swatch_light) shows its own fill and foreground.
  */
-
-// Solid fill, e.g. the colour picker swatch and room management building.
-// The border colour applies only to an element with a border width, e.g. a
-// label (o_labeled o_color_background o_color_<key>) in the swatch colour.
 @use "../config" as *;
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-colors {
-#{o-swatch-alias-selector("o_color_", ".o_color_background")},
-#{o-swatch-selector(".o_color_background")} {
-	background-color: var(--o-sw-bg);
-	color: var(--o-sw-fg);
-	border-color: var(--o-sw-border);
-}
+	// Solid fill, e.g. the colour picker swatch and room management building.
+	// The border colour applies only to an element with a border width, e.g. a
+	// label (o_labeled o_color_background o_color_<key>) in the swatch colour.
+	#{o-swatch-alias-selector("o_color_", ".o_color_background")},
+	#{o-swatch-selector(".o_color_background")} {
+		background-color: var(--o-sw-bg);
+		color: var(--o-sw-fg);
+		border-color: var(--o-sw-border);
+	}
 
-// Text and icons on white: the building colour, a key of the colour set M
-// with its swatch class (RoomUIHelper.toColorCss())
-#{o-swatch-selector(".o_color")} {
-	color: var(--o-sw-text);
-}
+	// Text and icons on white: the building colour, a key of the colour set M
+	// with its swatch class (RoomUIHelper.toColorCss())
+	#{o-swatch-selector(".o_color")} {
+		color: var(--o-sw-text);
+	}
 
-// Border of a solid fill: the building colour (room calendars, building list)
-#{o-swatch-selector(".o_color_border")},
-#{o-swatch-selector(".o_color_border_darken")} {
-	border-color: var(--o-sw-border);
-}
+	// Border of a solid fill: the building colour (room calendars, building list)
+	#{o-swatch-selector(".o_color_border")},
+	#{o-swatch-selector(".o_color_border_darken")} {
+		border-color: var(--o-sw-border);
+	}
 
-// Tinted fill, e.g. the page editor block background: an old key with its
-// alias (o_color_lightblue), a key of the colour set M with its swatch class
-// (o_swatch_blue, FragmentRendererHelper). The soft roles do not depend on
-// the variant of a swatch.
-.o_color_background_10 {
-	border-radius: $border-radius-base;
-	border: 1px solid var(--o-border-strong);
-}
-#{o-swatch-alias-selector("o_color_", ".o_color_background_10")},
-#{o-swatch-selector(".o_color_background_10")} {
-	background-color: var(--o-sw-soft-bg);
-	color: var(--o-sw-soft-fg);
-	border-color: var(--o-sw-soft-border);
-}
+	// Tinted fill, e.g. the page editor block background: an old key with its
+	// alias (o_color_lightblue), a key of the colour set M with its swatch class
+	// (o_swatch_blue, FragmentRendererHelper). The soft roles do not depend on
+	// the variant of a swatch.
+	.o_color_background_10 {
+		border-radius: $border-radius-base;
+		border: 1px solid var(--o-border-strong);
+	}
+	#{o-swatch-alias-selector("o_color_", ".o_color_background_10")},
+	#{o-swatch-selector(".o_color_background_10")} {
+		background-color: var(--o-sw-soft-bg);
+		color: var(--o-sw-soft-fg);
+		border-color: var(--o-sw-soft-border);
+	}
 
-// Border of the colour picker swatch: the border role of the swatch,
-// 3:1 on white. Works for every chooser class that sets the tokens
-// (o_color_, o_cal_, o_swatch_, ...), else the text colour.
-.o_color_contrast_border {
-	border-color: var(--o-sw-border, currentColor);
-}
+	// Border of the colour picker swatch: the border role of the swatch,
+	// 3:1 on white. Works for every chooser class that sets the tokens
+	// (o_color_, o_cal_, o_swatch_, ...), else the text colour.
+	.o_color_contrast_border {
+		border-color: var(--o-sw-border, currentColor);
+	}
 
-// Text on a solid fill (colour picker)
-#{o-swatch-alias-selector("o_color_", ".o_color_text_on_background")},
-#{o-swatch-selector(".o_color_text_on_background")} {
-	color: var(--o-sw-fg);
-}
+	// Text on a solid fill (colour picker)
+	#{o-swatch-alias-selector("o_color_", ".o_color_text_on_background")},
+	#{o-swatch-selector(".o_color_text_on_background")} {
+		color: var(--o-sw-fg);
+	}
 }

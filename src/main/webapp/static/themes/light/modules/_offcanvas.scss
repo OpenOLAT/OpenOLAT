@@ -2,166 +2,166 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-offcanvas {
-body {
-	overflow-x: hidden;
-}
-
-/* containers that are either overlayed or moved away */
-.o_container_offcanvas {
-	position: relative;
-	max-width: $o-page-width-max;
-}
-
-/* Button to enable / disable the max-width of the page */
-#o_container_page_width_toggler {
-	position: absolute;
-	/* position in middle of top nav: half of top nav height down and half of button height up again */
-	top: 25px;
-	margin-top: ($line-height-small * -0.5em); 
-	right: 10px;
-	z-index: 7;
-	display: none;
-}
-@media (min-width: $o-page-width-max + 40px ) { 
-	#o_container_page_width_toggler {
-		display: block;		
-		#o_go_standard_width {
-			display: none;
-		}
-		#o_go_full_width {
-			display: block;
-		}
+	body {
+		overflow-x: hidden;
 	}
-	body.o_width_full {		
-		.o_container_offcanvas {
-			max-width: 100%;
-			margin-left: 20px;
-			margin-right: 20px;
-		}
+
+	/* containers that are either overlayed or moved away */
+	.o_container_offcanvas {
+		position: relative;
+		max-width: $o-page-width-max;
+	}
+
+	/* Button to enable / disable the max-width of the page */
+	#o_container_page_width_toggler {
+		position: absolute;
+		/* position in middle of top nav: half of top nav height down and half of button height up again */
+		top: 25px;
+		margin-top: ($line-height-small * -0.5em); 
+		right: 10px;
+		z-index: 7;
+		display: none;
+	}
+	@media (min-width: $o-page-width-max + 40px ) { 
 		#o_container_page_width_toggler {
+			display: block;		
 			#o_go_standard_width {
-				display: block;
-			}
-			#o_go_full_width {
 				display: none;
 			}
+			#o_go_full_width {
+				display: block;
+			}
+		}
+		body.o_width_full {		
+			.o_container_offcanvas {
+				max-width: 100%;
+				margin-left: 20px;
+				margin-right: 20px;
+			}
+			#o_container_page_width_toggler {
+				#o_go_standard_width {
+					display: block;
+				}
+				#o_go_full_width {
+					display: none;
+				}
+			}
 		}
 	}
-}
-body.o_dmz #o_container_page_width_toggler {
-	display: none !important;
-}
-
-/* 	
-	Offcanvas is an absolute container positioned box outside the viewport. 
-	In closed state the element is hidden. To make the offcanvas appear
-	translations are performed using JavaScript. See navbar.js 
-   	Navbar.showRight(), Navbar.hideRight() and Navbar.toggleRight() 
-*/
-#o_offcanvas_right {
-	position: absolute;
-	top: 0;
-	right: -$o-offcanvas-width;
-	width: $o-offcanvas-width;
-
-	padding	: $o-offcanvas-padding-horizontal $o-offcanvas-padding-vertical;
-	background-color: var(--o-offcanvas-bg);
-	color: var(--o-offcanvas-link);
-  	border: 1px solid var(--o-offcanvas-border);
-	@include box-shadow(0px 0px 4px 3px color-mix(in srgb, var(--o-shadow-color) 25%, transparent));
-  	
-	// Prevent floats from breaking the navbar
- 	@include clearfix();
-	
-	min-height: 100%;
-	z-index: 10;
-	display: none;
-	
-	.o_offcanvas_close {
-		color: 	var(--o-offcanvas-logout);
-		:hover {
-			color: 	var(--o-offcanvas-logout-hover);		
-		}
+	body.o_dmz #o_container_page_width_toggler {
+		display: none !important;
 	}
-	
-	.dropdown-header  {
+
+	/* 	
+		Offcanvas is an absolute container positioned box outside the viewport. 
+		In closed state the element is hidden. To make the offcanvas appear
+		translations are performed using JavaScript. See navbar.js 
+	   	Navbar.showRight(), Navbar.hideRight() and Navbar.toggleRight() 
+	*/
+	#o_offcanvas_right {
+		position: absolute;
+		top: 0;
+		right: -$o-offcanvas-width;
+		width: $o-offcanvas-width;
+
+		padding	: $o-offcanvas-padding-horizontal $o-offcanvas-padding-vertical;
+		background-color: var(--o-offcanvas-bg);
 		color: var(--o-offcanvas-link);
+	  	border: 1px solid var(--o-offcanvas-border);
+		@include box-shadow(0px 0px 4px 3px color-mix(in srgb, var(--o-shadow-color) 25%, transparent));
+  	
+		// Prevent floats from breaking the navbar
+	 	@include clearfix();
+	
+		min-height: 100%;
+		z-index: 10;
+		display: none;
+	
+		.o_offcanvas_close {
+			color: 	var(--o-offcanvas-logout);
+			:hover {
+				color: 	var(--o-offcanvas-logout-hover);		
+			}
+		}
+	
+		.dropdown-header  {
+			color: var(--o-offcanvas-link);
+		}
 	}
-}
 
 
-/*
- * Off Canvas
- * --------------------------------------------------
- */
-@media screen and (max-width: 767px) {
-	.row-offcanvas {
- 		position: relative;
-		-webkit-transition: all .25s ease-out;
-		-moz-transition: all .25s ease-out;
-		transition: all .25s ease-out;
-	}
+	/*
+	 * Off Canvas
+	 * --------------------------------------------------
+	 */
+	@media screen and (max-width: 767px) {
+		.row-offcanvas {
+	 		position: relative;
+			-webkit-transition: all .25s ease-out;
+			-moz-transition: all .25s ease-out;
+			transition: all .25s ease-out;
+		}
 
-	.row-offcanvas-right {
-  		right: 0;
-    	.sidebar-offcanvas {
-   			right: -50%; /* 6 columns */
-  		}
-  		&.active	{
-    		right: 50%; /* 6 columns */
+		.row-offcanvas-right {
+	  		right: 0;
+	    	.sidebar-offcanvas {
+	   			right: -50%; /* 6 columns */
+	  		}
+	  		&.active	{
+	    		right: 50%; /* 6 columns */
+		  	}
+		}
+
+		.row-offcanvas-left {
+			left: 0;
+			.sidebar-offcanvas {
+				left: -50%; /* 6 columns */
+			}
+			&.active {
+	    		left: 50%; /* 6 columns */
+	  		}
+		}
+
+		.sidebar-offcanvas {
+	    	position: absolute;
+	    	top: 0;
+	    	width: 50%; /* 6 columns */
 	  	}
 	}
 
-	.row-offcanvas-left {
-		left: 0;
-		.sidebar-offcanvas {
-			left: -50%; /* 6 columns */
-		}
-		&.active {
-    		left: 50%; /* 6 columns */
-  		}
-	}
-
-	.sidebar-offcanvas {
-    	position: absolute;
-    	top: 0;
-    	width: 50%; /* 6 columns */
-  	}
-}
-
-/*
- * Helper to break out the width of the off canvas
- * --------------------------------------------------
- */
-.o_block_width_full {
-	// Reset horizontal width values of o_container_offcanvas
-	margin-left: min(calc(($o-page-width-max - 30px - 100vw)/2), ($grid-gutter-width * -0.5));
-	margin-right: min(calc(($o-page-width-max - 30px - 100vw)/2), ($grid-gutter-width * -0.5));
-	.o_fixed_width {
-		margin-left: max((0px - $o-page-width-max + 100vw)/2, 0px);
-		max-width: $o-page-width-max;
-	}
-}
-body.o_width_full {
+	/*
+	 * Helper to break out the width of the off canvas
+	 * --------------------------------------------------
+	 */
 	.o_block_width_full {
-		margin-left: ($grid-gutter-width * -0.5);
-		margin-right: ($grid-gutter-width * -0.5);
-		@media (min-width: $o-page-width-max) {
-			margin-left: -35px;
-			margin-right: -35px;
-		}
+		// Reset horizontal width values of o_container_offcanvas
+		margin-left: min(calc(($o-page-width-max - 30px - 100vw)/2), ($grid-gutter-width * -0.5));
+		margin-right: min(calc(($o-page-width-max - 30px - 100vw)/2), ($grid-gutter-width * -0.5));
 		.o_fixed_width {
-			margin-left: ($grid-gutter-width * 0.5);
+			margin-left: max((0px - $o-page-width-max + 100vw)/2, 0px);
 			max-width: $o-page-width-max;
 		}
 	}
-}
-.o_block_offcanvas_no_padding {
-	margin-left: ($grid-gutter-width * -0.5);
-	margin-right: ($grid-gutter-width * -0.5);
-}
-.o_block_offcanvas_padding {
-	padding-left: ($grid-gutter-width * 0.5);
-	padding-right: ($grid-gutter-width * 0.5);
-}
+	body.o_width_full {
+		.o_block_width_full {
+			margin-left: ($grid-gutter-width * -0.5);
+			margin-right: ($grid-gutter-width * -0.5);
+			@media (min-width: $o-page-width-max) {
+				margin-left: -35px;
+				margin-right: -35px;
+			}
+			.o_fixed_width {
+				margin-left: ($grid-gutter-width * 0.5);
+				max-width: $o-page-width-max;
+			}
+		}
+	}
+	.o_block_offcanvas_no_padding {
+		margin-left: ($grid-gutter-width * -0.5);
+		margin-right: ($grid-gutter-width * -0.5);
+	}
+	.o_block_offcanvas_padding {
+		padding-left: ($grid-gutter-width * 0.5);
+		padding-right: ($grid-gutter-width * 0.5);
+	}
 }

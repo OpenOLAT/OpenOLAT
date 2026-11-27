@@ -2,20 +2,20 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-creditpoint {
-.o_creditpoint_amount_debit {
-	color: var(--o-creditpoint-withdraw);
-}
-
-.o_creditpoint_amount_credit {
-	color: var(--o-creditpoint-deposit);
-}
-
-.o_labeled_light {
-	&.o_cp_status_active {
-		font-weight: normal;
+	.o_creditpoint_amount_debit {
+		color: var(--o-creditpoint-withdraw);
 	}
-	&.o_cp_status_inactive {
-		font-weight: normal;
+
+	.o_creditpoint_amount_credit {
+		color: var(--o-creditpoint-deposit);
 	}
-}
+
+	.o_labeled_light {
+		&.o_cp_status_active {
+			font-weight: normal;
+		}
+		&.o_cp_status_inactive {
+			font-weight: normal;
+		}
+	}
 }

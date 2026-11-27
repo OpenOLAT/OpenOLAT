@@ -14,23 +14,23 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-progress {
-body .progress {
-	margin-bottom:0;
-}
-
-body .progress-bar {
-	&[aria-valuenow="1"], &[aria-valuenow="2"] {
-		min-width: 1px;
+	body .progress {
+		margin-bottom:0;
 	}
-}
 
-/* Progress bar neutral */
-.progress-bar-neutral {
-	// the rules of the Bootstrap mixin progress-bar-variant with the token
-	// (the token branch of _state_variant.scss would add a text colour)
-	background-color: var(--o-progress-bar-neutral-bg);
-	.progress-striped & {
-		@include gradient-striped;
+	body .progress-bar {
+		&[aria-valuenow="1"], &[aria-valuenow="2"] {
+			min-width: 1px;
+		}
 	}
-}
+
+	/* Progress bar neutral */
+	.progress-bar-neutral {
+		// the rules of the Bootstrap mixin progress-bar-variant with the token
+		// (the token branch of _state_variant.scss would add a text colour)
+		background-color: var(--o-progress-bar-neutral-bg);
+		.progress-striped & {
+			@include gradient-striped;
+		}
+	}
 }

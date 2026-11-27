@@ -3,26 +3,26 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-chart {
-.d3chart {
-	.bar { shape-rendering: crispEdges; }
-	.bar_default_light { fill: var(--o-chart-bar-light); }
-	.bar_default, .bubble_default { fill: $o-d3chart-default; }
-	.bar_default_dark { fill: var(--o-chart-bar-dark); }
-	.bar_green { fill: var(--o-state-success-border); }
-	.bar_red { fill: var(--o-state-danger-border); }
-	.bar_grey { fill: var(--o-state-inactive-soft-border); }
+	.d3chart {
+		.bar { shape-rendering: crispEdges; }
+		.bar_default_light { fill: var(--o-chart-bar-light); }
+		.bar_default, .bubble_default { fill: $o-d3chart-default; }
+		.bar_default_dark { fill: var(--o-chart-bar-dark); }
+		.bar_green { fill: var(--o-state-success-border); }
+		.bar_red { fill: var(--o-state-danger-border); }
+		.bar_grey { fill: var(--o-state-inactive-soft-border); }
 
-	.axis { font: 12px sans-serif; }
+		.axis { font: 12px sans-serif; }
 
-	.axis path, .axis line {
-		fill: none;
-		stroke: var(--o-text);
-		shape-rendering: crispEdges;
-	}
+		.axis path, .axis line {
+			fill: none;
+			stroke: var(--o-text);
+			shape-rendering: crispEdges;
+		}
 	
 	
-	circle.bubble_green {
-		fill: var(--o-state-success-border);
+		circle.bubble_green {
+			fill: var(--o-state-success-border);
+		}
 	}
-}
 }

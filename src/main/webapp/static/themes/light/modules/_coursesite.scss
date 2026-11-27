@@ -3,145 +3,557 @@
 
 // The rules of this file, included where the file was imported before (OO-9995)
 @mixin o-rules-coursesite {
-/* The focus ring in an entry of the course list: inset, the image, the
-   title and the access area cut their content (overflow hidden). The start
-   and book buttons have a fill in the colour of the ring: the ring has the
-   text colour of the fill, inside the edge (OO-10043). */
-.o_repo_entry_list_item {
-	a, button {
-		&:focus:focus-visible {
-			@include o-focus-ring-inset;
+	/* The focus ring in an entry of the course list: inset, the image, the
+	   title and the access area cut their content (overflow hidden). The start
+	   and book buttons have a fill in the colour of the ring: the ring has the
+	   text colour of the fill, inside the edge (OO-10043). */
+	.o_repo_entry_list_item {
+		a, button {
+			&:focus:focus-visible {
+				@include o-focus-ring-inset;
+			}
+		}
+		// the link around the thumbnail has the box of the thumbnail, so the ring
+		// runs along the edge of the image (an inline link has the box of one text
+		// line at the bottom of the image, cut by the overflow of .o_visual)
+		.o_visual > a {
+			display: block;
+			height: 100%;
+		}
+		.btn-primary, .o_start, .o_book {
+			&:focus:focus-visible {
+				@include o-focus-ring-on-fill;
+			}
 		}
 	}
-	// the link around the thumbnail has the box of the thumbnail, so the ring
-	// runs along the edge of the image (an inline link has the box of one text
-	// line at the bottom of the image, cut by the overflow of .o_visual)
-	.o_visual > a {
-		display: block;
-		height: 100%;
-	}
-	.btn-primary, .o_start, .o_book {
-		&:focus:focus-visible {
-			@include o-focus-ring-on-fill;
+
+	/* custom layout */
+	.o_visual {
+		overflow: hidden;
+		height: $o-coursesite-rowelem-height-md;	
+		width: $o-coursesite-rowelem-width-md;
+		vertical-align: middle;
+		background: var(--o-bg);
+	
+		@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+			height: $o-coursesite-rowelem-height-sm;	
+			width: $o-coursesite-rowelem-width-sm;		
+		}
+		@media (max-width: $screen-xs-max) { 
+			height: $o-coursesite-rowelem-height-xs;	
+			width: $o-coursesite-rowelem-width-xs;		
+		}	
+	
+		img {
+			width: 100%;
+			height: auto;
+		}
+	
+		.o_visual_not_available {
+			width: 100%;
+			height: 100%;
+			background: $o-not-available-bg !important; // o-color-keep(gradient) Display in print
+			background-repeat:no-repeat;
+			background-position:50% 50%;		
+			background-size: contain;
 		}
 	}
-}
 
-/* custom layout */
-.o_visual {
-	overflow: hidden;
-	height: $o-coursesite-rowelem-height-md;	
-	width: $o-coursesite-rowelem-width-md;
-	vertical-align: middle;
-	background: var(--o-bg);
-	
-	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-		height: $o-coursesite-rowelem-height-sm;	
-		width: $o-coursesite-rowelem-width-sm;		
-	}
-	@media (max-width: $screen-xs-max) { 
-		height: $o-coursesite-rowelem-height-xs;	
-		width: $o-coursesite-rowelem-width-xs;		
-	}	
-	
-	img {
-		width: 100%;
-		height: auto;
-	}
-	
-	.o_visual_not_available {
-		width: 100%;
-		height: 100%;
-		background: $o-not-available-bg !important; // o-color-keep(gradient) Display in print
-		background-repeat:no-repeat;
-		background-position:50% 50%;		
-		background-size: contain;
-	}
-}
-
-.o_coursetable.o_rendertype_custom, .o_table_details {
-		.o_table_row:last-child .o_repo_entry_list_item {
-			border-bottom: 1px solid var(--o-coursesite-border);
-		}
-
-		.o_table_row:last-child, &.o_entry_wrapper {
-			.o_repo_entry_list_item {
+	.o_coursetable.o_rendertype_custom, .o_table_details {
+			.o_table_row:last-child .o_repo_entry_list_item {
 				border-bottom: 1px solid var(--o-coursesite-border);
-			}			
-		}
+			}
 
-		.o_table_row .o_repo_entry_list_item {
-			border-top: 1px solid var(--o-coursesite-border);
-		}
-	
-		.o_table_row, &.o_entry_wrapper {
-			margin-bottom: 0;
-			
-			.o_repo_entry_list_item {
-				display: flex;
-				position: relative;
-				height: $o-coursesite-rowelem-height-md + (2 * $o-coursesite-rowelem-space-md);	
-				padding: $o-coursesite-rowelem-space-md 0;
-				background: var(--o-coursesite-row-bg);			
-				
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					height: $o-coursesite-rowelem-height-sm + (2 * $o-coursesite-rowelem-space-sm);	
-					padding: $o-coursesite-rowelem-space-sm 0;
-				}
-				@media (max-width: $screen-xs-max) { 
-					height: $o-coursesite-rowelem-height-xs + (2 * $o-coursesite-rowelem-space-xs) + 2px;	
-					padding: $o-coursesite-rowelem-space-xs 0;
-				}	
-				@media (prefers-reduced-motion: no-preference) {
-					transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+			.o_table_row:last-child, &.o_entry_wrapper {
+				.o_repo_entry_list_item {
+					border-bottom: 1px solid var(--o-coursesite-border);
 				}			
 			}
-									
-			.o_visual {
-				flex: 0 0 auto;
-				box-sizing: content-box;
-				border-radius: $o-coursesite-rowelem-border-radius;
-				overflow: hidden;
-				
-				@media (max-width: $screen-xs-max) { 
-					border-top-right-radius: 0;
-					border-bottom-right-radius: 0;
-				}
-				@media (prefers-reduced-motion: no-preference) {
-					transition: transform 0.3s ease;			
-				}
+
+			.o_table_row .o_repo_entry_list_item {
+				border-top: 1px solid var(--o-coursesite-border);
 			}
+	
+			.o_table_row, &.o_entry_wrapper {
+				margin-bottom: 0;
 			
-			@media (prefers-reduced-motion: no-preference) {
-				&:hover {
-					.o_repo_entry_list_item {
-						background-color: var(--o-coursesite-row-hover-bg);
-						box-shadow: $o-coursesite-rowelem-hover-box-shadow;
-					}				
-					.o_visual {
-						transform: $o-coursesite-rowelem-hover-visual-transform;
+				.o_repo_entry_list_item {
+					display: flex;
+					position: relative;
+					height: $o-coursesite-rowelem-height-md + (2 * $o-coursesite-rowelem-space-md);	
+					padding: $o-coursesite-rowelem-space-md 0;
+					background: var(--o-coursesite-row-bg);			
+				
+					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+						height: $o-coursesite-rowelem-height-sm + (2 * $o-coursesite-rowelem-space-sm);	
+						padding: $o-coursesite-rowelem-space-sm 0;
+					}
+					@media (max-width: $screen-xs-max) { 
+						height: $o-coursesite-rowelem-height-xs + (2 * $o-coursesite-rowelem-space-xs) + 2px;	
+						padding: $o-coursesite-rowelem-space-xs 0;
+					}	
+					@media (prefers-reduced-motion: no-preference) {
+						transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+					}			
+				}
+									
+				.o_visual {
+					flex: 0 0 auto;
+					box-sizing: content-box;
+					border-radius: $o-coursesite-rowelem-border-radius;
+					overflow: hidden;
+				
+					@media (max-width: $screen-xs-max) { 
+						border-top-right-radius: 0;
+						border-bottom-right-radius: 0;
+					}
+					@media (prefers-reduced-motion: no-preference) {
+						transition: transform 0.3s ease;			
 					}
 				}
-			}		
+			
+				@media (prefers-reduced-motion: no-preference) {
+					&:hover {
+						.o_repo_entry_list_item {
+							background-color: var(--o-coursesite-row-hover-bg);
+							box-shadow: $o-coursesite-rowelem-hover-box-shadow;
+						}				
+						.o_visual {
+							transform: $o-coursesite-rowelem-hover-visual-transform;
+						}
+					}
+				}		
 			
 
+				.o_meta {
+					flex: 1 1 auto;
+					position: relative;
+					padding: 0  $o-coursesite-rowelem-space-md;
+					display: flex;
+					flex-direction: column;
+				
+					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+						padding: 0  $o-coursesite-rowelem-space-sm;
+					}
+					@media (max-width: $screen-xs-max) { 
+						padding: 0  10px;
+					}	
+
+					/* flex box hack to make text overflow and ellipsis work for following elements (title) */
+					min-width: 0;				
+				
+					.o_ext_ref {
+						color: var(--o-text-muted);
+						font-size: 10px;
+						line-height: 12px;
+						height: 12px;
+						@include text-overflow();
+						display: block;
+					}
+	
+					.o_title {
+						margin: 0 0 0.1em 0; /* box moves down otherwise, replaced with padding */
+						position: relative;
+						line-height: 1.2;
+						font-size: 21px;
+
+						a {
+							@extend %o_undecorated;
+							@include text-overflow();
+							display: block;
+							color: var(--o-coursesite-title);
+							&:hover {
+							    color: var(--o-coursesite-title-hover);
+							}			
+							@media (prefers-reduced-motion: no-preference) {
+								transition: color 0.15s ease;
+							}
+							
+						}
+					}
+					.o_educational_type {
+						font-size: 70%;
+					}
+					.o_with_certificate, .o_with_creditpoint {
+						font-size: 70%;
+						margin-top: auto;
+					}
+					.o_teaser {
+						margin-top: -5px;	
+					}
+					.o_author{
+						color: var(--o-coursesite-meta-author);
+					}
+					.o_closed {
+						display: inline-block;
+					}
+					.o_education {
+						margin-top: 0.5em;
+					}
+					.o_education + .o_lifecycle {
+						margin-top: 4px;
+					}
+					.o_lifecycle {
+						margin: 0.5em 0;
+						line-height: normal;
+						color: var(--o-coursesite-meta-lifecycle);
+						.o_lifecycle_date, .o_lifecycle_location {
+							display: inline;
+						}
+						.o_spacer {
+							margin: 0 0.5em;					
+						}
+					}
+					.o_desc {
+						display: none;
+					}
+				
+					.o_taxonomy_levels {
+						color: var(--o-text-muted);
+						vertical-align: text-bottom;
+						margin-top: auto;
+						margin-bottom: -3px;
+
+						@include text-overflow();					
+						width: 98%;
+									
+						.o_icon_tags {
+							display: none;
+						}					
+					
+						@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+							display: none;
+						}
+					}
+				
+					.o_bookmark {
+						position: absolute;
+						z-index: 2;
+						top: (-$o-coursesite-rowelem-space-md - 3px);
+						right: 10px;
+						@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+							top: (-$o-coursesite-rowelem-space-sm - 3px);
+						}
+					}
+				
+				
+					@media (max-width: $screen-md-max) { 
+						.o_teaser {
+							display: none;
+						}	
+					}
+					@media (max-width: $screen-xs-max) { 
+						.o_title {
+							line-height: $o-coursesite-rowelem-height-xs;
+							font-size: 18px;
+							margin-top: 0;
+							a {
+								border-right:math.floor($o-coursesite-rowelem-height-xs * .75) solid transparent;
+								@include text-overflow();
+							}
+						}
+						.o_educational_type, .o_teaser, .o_author, .o_closed, .o_lifecycle, .o_desc, .o_taxonomy_levels, .o_bookmark {
+							display: none;
+						}	
+						.o_ext_ref {
+							position: absolute;
+							top: 2px;
+							left: 10px;
+							width: 80%; /* for overflow */
+						}
+					}
+					.o_go_xs {
+						position: absolute;
+						top: 0;
+						right: 0;
+						padding: 0 1em;
+						height: $o-coursesite-rowelem-height-xs;
+						width: math.floor($o-coursesite-rowelem-height-xs * .75);
+						line-height: $o-coursesite-rowelem-height-xs;
+						color: var(--o-coursesite-start-xs-fg);
+						background-color: var(--o-coursesite-start-xs-bg);
+						border-top-right-radius: $o-coursesite-rowelem-border-radius;
+						border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
+						.o_icon {
+							margin-left: -5px;
+						}
+					}	
+				}
+			
+				.o_performance {
+					display: flex;
+					align-items: center;
+					.o_spacer {
+						margin: 0 0.4em;
+					}
+					.o_spacer:first-child {
+						display:none,
+					}
+					.o_progress > .progress {
+						vertical-align: middle;
+					}
+				
+					.o_icon_circle_color {
+						color: var(--o-coursesite-progress-icon);
+					}
+				
+					@media (max-width: $screen-sm-max) { 
+						display: none;
+					}
+				}
+			
+				@media (max-width: $screen-md-min) { 
+					.o_social_actions .o_repo_rating,
+					.o_social_actions .o_repo_comments,
+					.o_social_actions .o_repo_taxonomy,
+					.o_social_actions .o_spacer {
+						display: none !important;
+					}
+				}
+			
+				.o_access {
+					height: $o-coursesite-rowelem-height-md;	
+					width: $o-coursesite-rowelem-width-md + 15px;
+					position: relative;
+					overflow: hidden;
+					flex: 0 0 auto;
+				
+					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+						height: $o-coursesite-rowelem-height-sm;	
+						width: $o-coursesite-rowelem-width-sm;
+					}
+				
+					.o_completion {
+						text-align: center;
+					}
+					
+					.o_state, .o_score {
+						@extend %o_small;
+						height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
+						line-height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
+						position: relative;
+						@include text-overflow();
+					}
+				
+					.o_repo_rating .o_rating_items > a {
+						cursor: revert;
+					}
+						
+					.o_social {
+						position: absolute;
+						width: 100%;
+						bottom: math.floor(math.div($o-coursesite-rowelem-height-md,4)) + 2px;
+						height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
+						padding-left: 1em;
+				
+						.o_rating {
+							.o_rating_title, o_rating_legend, .o_rating_explanation { 
+								display: none; 
+							}
+						}
+						.o_comments {
+							@extend %o_undecorated;
+						}
+					}
+				
+					.o_access_info {
+						padding-top: 5px;
+						text-align: right;
+						@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+							padding-top: 1px;
+						}
+					}
+				
+					.o_social_actions {
+						display: flex;
+						flex-direction: row;
+						justify-content: flex-end;
+						gap: 5px;
+					
+						.o_rating {
+							.o_rating_title, o_rating_legend, .o_rating_explanation { 
+								display: none; 
+							}
+						}
+						.o_comments {
+							@extend %o_undecorated;
+						}
+					
+						.o_spacer:first-child {
+							display: none;
+						}
+					}
+
+					.o_actions {
+						position: absolute;
+						display: grid;
+						grid-template-columns: 1fr 1fr;
+						gap: 5px;
+						width: 100%;
+						bottom: 0;
+						right: 0;
+
+						a {
+							@include text-overflow();
+						
+							.o_icon_info_page {
+								display: none;
+							}
+						
+							@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+								span {
+									display: none;
+								}
+								.o_icon_info_page {
+									display: inline;
+								}		
+								&.o_in_preparation {
+									> span {
+										display: inline;
+									}
+									.o_icon_info_page {
+										display: none;
+									}	
+								}
+							}
+						}
+						div > a {
+							width: 100%;
+						}
+					}
+
+					.o_details {
+						margin-right: 5px;
+						@include text-overflow();
+					}
+				
+					.o_details.o_in_preparation {
+						padding-left: 3em;
+						padding-right: 3em;
+						grid-column: span 2;
+						width: calc($o-coursesite-rowelem-width-md + 10px);// + 15 - 5
+					}
+				
+					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+						.o_score, .o_comments, .o_label {
+							display: none;
+						}					
+						.o_details {
+							right: math.floor($o-coursesite-rowelem-width-sm * 0.5);
+						}		
+						.o_details.o_in_preparation {
+							width: auto;
+							padding-left: $padding-small-horizontal;
+							padding-right: $padding-small-horizontal;
+						}
+					}
+					@media (max-width: $screen-xs-max) { 
+						display: none;
+					}	
+				}
+			}
+			&:hover .o_meta .o_title a {
+				color: var(--o-primary-text);
+			}
+	}	
+
+	.o_coursetable {
+		&.o_rendertype_classic {
+			.o_rating_explanation {
+				display: none;
+			}
+			.o_start, .o_book {
+				white-space: nowrap;
+			}
+			.o_repoentry_type {
+				color: var(--o-text-muted);
+			}
+			.o_repoentry_ac {
+				color: var(--o-text-muted);
+				ul {
+					display: inline-block;
+				}
+			}
+		}
+	
+		.o_start { @include button-variant(var(--o-coursesite-start-fg), var(--o-coursesite-start-bg), var(--o-coursesite-start-border)); }
+		.o_book  { @include button-variant(var(--o-coursesite-book-fg), var(--o-coursesite-book-bg), var(--o-coursesite-book-border)); }
+	
+		.o_start, .o_book {
+			@include text-overflow();
+		}
+	}
+
+	.o_entry_cards {
+		.o_repo_entry_card {
+			background: var(--o-coursesite-row-bg);
+			cursor: pointer;
+			display: flex;
+			flex-direction: column;
+		
+			.o_entry_card_image {
+				display: grid;
+				grid-template: "card-image";
+				>div {
+					grid-area: card-image;
+				}
+			}
+		
+			.o_visual {
+				box-sizing: content-box;
+				border-radius: ($o-coursesite-rowelem-border-radius - 1px) ($o-coursesite-rowelem-border-radius - 1px) 0px 0px;
+				border-bottom: 1px solid var(--o-coursesite-border);
+				display: flex;
+				align-items: center;
+			
+				aspect-ratio: 1.5;
+				width: inherit;
+				height: inherit;
+			}
+		
+			.o_educational_type {
+				@extend %o_nowrap;
+				max-width: calc(100% - 2 * $o-cat2-card-meta-padding);
+			
+				margin: $o-cat2-card-meta-padding;
+				place-self: end end;
+			
+				background: var(--o-coursesite-row-bg);
+			}
+		
+			.o_benefits {
+				margin: $o-cat2-card-meta-padding;
+			
+				display: flex;
+				flex-wrap: wrap;
+				gap: 5px;
+				.o_with_creditpoint {
+					@extend %o_nowrap;
+				}
+			}
+		
+			.o_title {
+				margin: 0;
+				padding-bottom: 0.1em;
+				overflow: hidden;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+			
+				&+div {
+					margin-top: 10px;
+				}
+			}
+		
+			h3.o_title, h4.o_title {
+				font-size: 21px;
+			}
+		
 			.o_meta {
-				flex: 1 1 auto;
-				position: relative;
-				padding: 0  $o-coursesite-rowelem-space-md;
 				display: flex;
 				flex-direction: column;
-				
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					padding: 0  $o-coursesite-rowelem-space-sm;
-				}
-				@media (max-width: $screen-xs-max) { 
-					padding: 0  10px;
-				}	
-
-				/* flex box hack to make text overflow and ellipsis work for following elements (title) */
-				min-width: 0;				
-				
+				padding: $o-cat2-card-meta-padding;
+				gap: 5px;
 				.o_ext_ref {
 					color: var(--o-text-muted);
 					font-size: 10px;
@@ -150,971 +562,559 @@
 					@include text-overflow();
 					display: block;
 				}
-	
-				.o_title {
-					margin: 0 0 0.1em 0; /* box moves down otherwise, replaced with padding */
-					position: relative;
-					line-height: 1.2;
-					font-size: 21px;
-
-					a {
-						@extend %o_undecorated;
-						@include text-overflow();
-						display: block;
-						color: var(--o-coursesite-title);
-						&:hover {
-						    color: var(--o-coursesite-title-hover);
-						}			
-						@media (prefers-reduced-motion: no-preference) {
-							transition: color 0.15s ease;
-						}
-							
-					}
-				}
-				.o_educational_type {
-					font-size: 70%;
-				}
-				.o_with_certificate, .o_with_creditpoint {
-					font-size: 70%;
-					margin-top: auto;
-				}
-				.o_teaser {
-					margin-top: -5px;	
-				}
-				.o_author{
-					color: var(--o-coursesite-meta-author);
-				}
-				.o_closed {
-					display: inline-block;
-				}
-				.o_education {
-					margin-top: 0.5em;
-				}
-				.o_education + .o_lifecycle {
-					margin-top: 4px;
-				}
-				.o_lifecycle {
-					margin: 0.5em 0;
-					line-height: normal;
-					color: var(--o-coursesite-meta-lifecycle);
-					.o_lifecycle_date, .o_lifecycle_location {
-						display: inline;
-					}
-					.o_spacer {
-						margin: 0 0.5em;					
-					}
-				}
-				.o_desc {
-					display: none;
-				}
-				
 				.o_taxonomy_levels {
 					color: var(--o-text-muted);
+					font-size: 85%;
 					vertical-align: text-bottom;
-					margin-top: auto;
-					margin-bottom: -3px;
 
-					@include text-overflow();					
-					width: 98%;
-									
-					.o_icon_tags {
-						display: none;
-					}					
-					
-					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-						display: none;
-					}
-				}
-				
-				.o_bookmark {
-					position: absolute;
-					z-index: 2;
-					top: (-$o-coursesite-rowelem-space-md - 3px);
-					right: 10px;
-					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-						top: (-$o-coursesite-rowelem-space-sm - 3px);
-					}
-				}
-				
-				
-				@media (max-width: $screen-md-max) { 
-					.o_teaser {
-						display: none;
-					}	
-				}
-				@media (max-width: $screen-xs-max) { 
-					.o_title {
-						line-height: $o-coursesite-rowelem-height-xs;
-						font-size: 18px;
-						margin-top: 0;
-						a {
-							border-right:math.floor($o-coursesite-rowelem-height-xs * .75) solid transparent;
-							@include text-overflow();
-						}
-					}
-					.o_educational_type, .o_teaser, .o_author, .o_closed, .o_lifecycle, .o_desc, .o_taxonomy_levels, .o_bookmark {
-						display: none;
-					}	
-					.o_ext_ref {
-						position: absolute;
-						top: 2px;
-						left: 10px;
-						width: 80%; /* for overflow */
-					}
-				}
-				.o_go_xs {
-					position: absolute;
-					top: 0;
-					right: 0;
-					padding: 0 1em;
-					height: $o-coursesite-rowelem-height-xs;
-					width: math.floor($o-coursesite-rowelem-height-xs * .75);
-					line-height: $o-coursesite-rowelem-height-xs;
-					color: var(--o-coursesite-start-xs-fg);
-					background-color: var(--o-coursesite-start-xs-bg);
-					border-top-right-radius: $o-coursesite-rowelem-border-radius;
-					border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
-					.o_icon {
-						margin-left: -5px;
-					}
-				}	
-			}
-			
-			.o_performance {
-				display: flex;
-				align-items: center;
-				.o_spacer {
-					margin: 0 0.4em;
-				}
-				.o_spacer:first-child {
-					display:none,
-				}
-				.o_progress > .progress {
-					vertical-align: middle;
-				}
-				
-				.o_icon_circle_color {
-					color: var(--o-coursesite-progress-icon);
-				}
-				
-				@media (max-width: $screen-sm-max) { 
-					display: none;
-				}
-			}
-			
-			@media (max-width: $screen-md-min) { 
-				.o_social_actions .o_repo_rating,
-				.o_social_actions .o_repo_comments,
-				.o_social_actions .o_repo_taxonomy,
-				.o_social_actions .o_spacer {
-					display: none !important;
-				}
-			}
-			
-			.o_access {
-				height: $o-coursesite-rowelem-height-md;	
-				width: $o-coursesite-rowelem-width-md + 15px;
-				position: relative;
-				overflow: hidden;
-				flex: 0 0 auto;
-				
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					height: $o-coursesite-rowelem-height-sm;	
-					width: $o-coursesite-rowelem-width-sm;
-				}
-				
-				.o_completion {
-					text-align: center;
-				}
-					
-				.o_state, .o_score {
-					@extend %o_small;
-					height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
-					line-height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
-					position: relative;
 					@include text-overflow();
-				}
+					width: 98%;
 				
-				.o_repo_rating .o_rating_items > a {
-					cursor: revert;
-				}
-						
-				.o_social {
-					position: absolute;
-					width: 100%;
-					bottom: math.floor(math.div($o-coursesite-rowelem-height-md,4)) + 2px;
-					height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
-					padding-left: 1em;
-				
-					.o_rating {
-						.o_rating_title, o_rating_legend, .o_rating_explanation { 
-							display: none; 
-						}
-					}
-					.o_comments {
-						@extend %o_undecorated;
+					.o_taxonomy {
+						font-size: 82%;
+						display: inline-block;
+						margin-bottom: 0;
 					}
 				}
-				
-				.o_access_info {
-					padding-top: 5px;
-					text-align: right;
-					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-						padding-top: 1px;
-					}
-				}
-				
-				.o_social_actions {
+			}
+		}
+		
+		// make space for the box shadow
+		&.swiper {
+			margin-bottom: -20px;
+			.swiper-wrapper {
+				padding-bottom: 20px;
+			}
+		}
+	
+		// All cards have the same height
+		&.swiper {
+			.swiper-wrapper {
+				align-items: stretch;
+				.swiper-slide {
+					height: auto;
 					display: flex;
-					flex-direction: row;
-					justify-content: flex-end;
-					gap: 5px;
-					
-					.o_rating {
-						.o_rating_title, o_rating_legend, .o_rating_explanation { 
-							display: none; 
-						}
-					}
-					.o_comments {
-						@extend %o_undecorated;
-					}
-					
-					.o_spacer:first-child {
-						display: none;
-					}
-				}
-
-				.o_actions {
-					position: absolute;
-					display: grid;
-					grid-template-columns: 1fr 1fr;
-					gap: 5px;
-					width: 100%;
-					bottom: 0;
-					right: 0;
-
-					a {
-						@include text-overflow();
-						
-						.o_icon_info_page {
-							display: none;
-						}
-						
-						@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-							span {
-								display: none;
-							}
-							.o_icon_info_page {
-								display: inline;
-							}		
-							&.o_in_preparation {
-								> span {
-									display: inline;
-								}
-								.o_icon_info_page {
-									display: none;
-								}	
-							}
-						}
-					}
-					div > a {
+					align-content: stretch;
+					align-items: stretch;
+					.o_repo_entry_card {
 						width: 100%;
 					}
 				}
-
-				.o_details {
-					margin-right: 5px;
-					@include text-overflow();
-				}
-				
-				.o_details.o_in_preparation {
-					padding-left: 3em;
-					padding-right: 3em;
-					grid-column: span 2;
-					width: calc($o-coursesite-rowelem-width-md + 10px);// + 15 - 5
-				}
-				
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					.o_score, .o_comments, .o_label {
-						display: none;
-					}					
-					.o_details {
-						right: math.floor($o-coursesite-rowelem-width-sm * 0.5);
-					}		
-					.o_details.o_in_preparation {
-						width: auto;
-						padding-left: $padding-small-horizontal;
-						padding-right: $padding-small-horizontal;
-					}
-				}
-				@media (max-width: $screen-xs-max) { 
-					display: none;
-				}	
 			}
 		}
-		&:hover .o_meta .o_title a {
-			color: var(--o-primary-text);
-		}
-}	
-
-.o_coursetable {
-	&.o_rendertype_classic {
-		.o_rating_explanation {
-			display: none;
-		}
-		.o_start, .o_book {
-			white-space: nowrap;
-		}
-		.o_repoentry_type {
-			color: var(--o-text-muted);
-		}
-		.o_repoentry_ac {
-			color: var(--o-text-muted);
-			ul {
-				display: inline-block;
+	
+		// place the bullet pagination
+		&.swiper {
+			.swiper-pagination {
+				&.swiper-pagination-bullets.swiper-pagination-horizontal {
+					bottom: 0px;
+				}
 			}
 		}
 	}
-	
-	.o_start { @include button-variant(var(--o-coursesite-start-fg), var(--o-coursesite-start-bg), var(--o-coursesite-start-border)); }
-	.o_book  { @include button-variant(var(--o-coursesite-book-fg), var(--o-coursesite-book-bg), var(--o-coursesite-book-border)); }
-	
-	.o_start, .o_book {
-		@include text-overflow();
-	}
-}
 
-.o_entry_cards {
-	.o_repo_entry_card {
-		background: var(--o-coursesite-row-bg);
-		cursor: pointer;
-		display: flex;
-		flex-direction: column;
-		
-		.o_entry_card_image {
-			display: grid;
-			grid-template: "card-image";
-			>div {
-				grid-area: card-image;
-			}
-		}
-		
+	.o_with_certificate, .o_with_creditpoint {
+		@extend %o_labeled;
+		background: transparent;
+		text-transform: none;
+		display: inline-block;
+		border-color: var(--o-entry-benefit-border);
+		color: var(--o-entry-benefit);
+		margin-right: 5px;
+	}
+
+	/* the course catalog */
+	.o_catalog {
 		.o_visual {
+			flex: 0 0 auto;
 			box-sizing: content-box;
-			border-radius: ($o-coursesite-rowelem-border-radius - 1px) ($o-coursesite-rowelem-border-radius - 1px) 0px 0px;
-			border-bottom: 1px solid var(--o-coursesite-border);
-			display: flex;
-			align-items: center;
-			
-			aspect-ratio: 1.5;
-			width: inherit;
-			height: inherit;
 		}
-		
-		.o_educational_type {
-			@extend %o_nowrap;
-			max-width: calc(100% - 2 * $o-cat2-card-meta-padding);
-			
-			margin: $o-cat2-card-meta-padding;
-			place-self: end end;
-			
-			background: var(--o-coursesite-row-bg);
-		}
-		
-		.o_benefits {
-			margin: $o-cat2-card-meta-padding;
-			
-			display: flex;
-			flex-wrap: wrap;
-			gap: 5px;
-			.o_with_creditpoint {
-				@extend %o_nowrap;
-			}
-		}
-		
+
 		.o_title {
-			margin: 0;
-			padding-bottom: 0.1em;
-			overflow: hidden;
-			display: -webkit-box;
-			-webkit-line-clamp: 2;
-			-webkit-box-orient: vertical;
-			
-			&+div {
-				margin-top: 10px;
-			}
-		}
-		
-		h3.o_title, h4.o_title {
-			font-size: 21px;
-		}
-		
-		.o_meta {
-			display: flex;
-			flex-direction: column;
-			padding: $o-cat2-card-meta-padding;
-			gap: 5px;
-			.o_ext_ref {
-				color: var(--o-text-muted);
-				font-size: 10px;
-				line-height: 12px;
-				height: 12px;
-				@include text-overflow();
+			a {
 				display: block;
-			}
-			.o_taxonomy_levels {
-				color: var(--o-text-muted);
-				font-size: 85%;
-				vertical-align: text-bottom;
-
-				@include text-overflow();
-				width: 98%;
-				
-				.o_taxonomy {
-					font-size: 82%;
-					display: inline-block;
-					margin-bottom: 0;
-				}
-			}
-		}
-	}
-		
-	// make space for the box shadow
-	&.swiper {
-		margin-bottom: -20px;
-		.swiper-wrapper {
-			padding-bottom: 20px;
-		}
-	}
-	
-	// All cards have the same height
-	&.swiper {
-		.swiper-wrapper {
-			align-items: stretch;
-			.swiper-slide {
-				height: auto;
-				display: flex;
-				align-content: stretch;
-				align-items: stretch;
-				.o_repo_entry_card {
-					width: 100%;
-				}
-			}
-		}
-	}
-	
-	// place the bullet pagination
-	&.swiper {
-		.swiper-pagination {
-			&.swiper-pagination-bullets.swiper-pagination-horizontal {
-				bottom: 0px;
-			}
-		}
-	}
-}
-
-.o_with_certificate, .o_with_creditpoint {
-	@extend %o_labeled;
-	background: transparent;
-	text-transform: none;
-	display: inline-block;
-	border-color: var(--o-entry-benefit-border);
-	color: var(--o-entry-benefit);
-	margin-right: 5px;
-}
-
-/* the course catalog */
-.o_catalog {
-	.o_visual {
-		flex: 0 0 auto;
-		box-sizing: content-box;
-	}
-
-	.o_title {
-		a {
-			display: block;
-			white-space: nowrap; 
-			overflow: hidden;	
-			text-overflow: ellipsis;			
-		}
-	}
-
-	.o_level {
-		position: relative;
-		display: flex;
-		margin-bottom: math.div($o-coursesite-catalog-space,2);
-		padding: 0;
-
-		border-top: 1px solid var(--o-coursesite-catalog-border);
-		border-bottom: 1px solid var(--o-coursesite-catalog-border);
-
-		.o_visual {
-			height: $o-coursesite-rowelem-width-md;
-		}	
-
-		.o_meta {
-			position: relative;
-			min-height: $o-coursesite-rowelem-width-md;	
-			height: $o-coursesite-rowelem-width-md;	
-
-			padding: 1em 0.5em 0.5em 2em;			
-			overflow-y: hidden;
-
-			.o_title {
-				margin: 0; /* box moves down otherwhise, replaced with padding */
-				a {
-					@extend %o_undecorated;
-					color: var(--o-coursesite-title);
-					&:hover {
-					    color: var(--o-coursesite-title-hover);
-					}				
-				}
-			}
-			.o_desc {
-				padding: 1em 0 0.5em 0;
+				white-space: nowrap; 
+				overflow: hidden;	
+				text-overflow: ellipsis;			
 			}
 		}
 
-		@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-			.o_visual {
-				height: $o-coursesite-rowelem-width-sm;	
-			}
-			.o_meta {
-				min-height: $o-coursesite-rowelem-width-sm;	
-				height: $o-coursesite-rowelem-width-sm;	
-			}
-			h2.o_title {
-				font-size: 1.5em;
-			}
-		}	
-		@media (max-width: $screen-xs-max) { 
-			.o_visual {
-				height: $o-coursesite-rowelem-width-xs;	
-			}	
-			.o_meta {
-				min-height: $o-coursesite-rowelem-width-xs;	
-				height: $o-coursesite-rowelem-width-xs;	
-				padding: 0 0 0 1em;
-				.o_title {
-					line-height: $o-coursesite-rowelem-width-xs;
-				}
-				.o_desc {
-					display: none;
-				}	
-			}
-			h2.o_title {
-				font-size: 1.5em;
-			}
-		}
-	}
-	
-	.o_sublevels_list {
-		.o_sublevel {
+		.o_level {
 			position: relative;
 			display: flex;
-			border: 1px solid var(--o-coursesite-border);
-			margin-bottom: math.floor(math.div($line-height-computed,2));
-			
-			.o_visual {
-				height: $o-coursesite-rowelem-width-xs;
-				width: $o-coursesite-rowelem-width-xs;
-				
-				span.o_visual_not_available {
-					width:100%;
-					height:100%;
-					display:block;
-				}
-			}
-			
-			.o_title {
-				margin: 0;
-			}
-			
-			.o_meta {
-				border-left: 1px solid var(--o-coursesite-border);
-				min-height: $o-coursesite-rowelem-width-xs;	
-				height: $o-coursesite-rowelem-width-xs;	
-				padding: 0 0 0 1em;
-				
-				overflow: hidden;
-				
-				.o_title {
-					line-height: $o-coursesite-rowelem-width-xs;
-				}
-				.o_desc {
-					display: none;
-				}
-				
-				h3.o_title > a, h4.o_title > a {
-					//override o_icon styles, hide the icon
-					font-family: inherit;
-					font-weight: inherit;
-					>i {
-						display:none;
-					}
-				}	
-			}	
-		}
-		
-		.o_sublevel.o_fill_sublevels {
-			border: 1px solid transparent;
-			
-			.o_meta {
-				border-left: 1px solid transparent;
-			}
-		}
-	}	
-	
-	.o_sublevels {
-		position: relative;
-		display: flex;
-		flex-wrap: wrap;
-		margin-bottom: $o-coursesite-catalog-space;
-		
-		.o_sublevel {
-			position: relative;
-			margin: 0 $o-coursesite-catalog-space $o-coursesite-catalog-space 0;
-			width: $o-coursesite-rowelem-width-md;	
+			margin-bottom: math.div($o-coursesite-catalog-space,2);
+			padding: 0;
 
-			&:last-child {
-				margin-right: 0;			
-			}
-						
+			border-top: 1px solid var(--o-coursesite-catalog-border);
+			border-bottom: 1px solid var(--o-coursesite-catalog-border);
+
 			.o_visual {
-				border: 1px solid var(--o-coursesite-catalog-border);
-				position: relative;
 				height: $o-coursesite-rowelem-width-md;
-			
-				span.o_visual_not_available {
-					width:100%;
-					height:100%;
-					display:block;
-				}
 			}	
-			.o_meta {
-				position: absolute;
-				left: 0;
-				bottom: 0;
-				width: $o-coursesite-rowelem-width-md + 2px;
 
-				border: 1px solid var(--o-coursesite-catalog-border);
-				border-top: 0;
-				background-color: color-mix(in srgb, var(--o-scrim) 80%, transparent);
-				
+			.o_meta {
+				position: relative;
+				min-height: $o-coursesite-rowelem-width-md;	
+				height: $o-coursesite-rowelem-width-md;	
+
+				padding: 1em 0.5em 0.5em 2em;			
+				overflow-y: hidden;
+
 				.o_title {
 					margin: 0; /* box moves down otherwhise, replaced with padding */
-					text-align: center;
-					line-height: 2em;
-					height: 1.8em;
-					width: 100%;
-
-					overflow: hidden;
-					/* overflow via JS OPOL.Ellipsis */
 					a {
 						@extend %o_undecorated;
-						display: block;
 						color: var(--o-coursesite-title);
 						&:hover {
 						    color: var(--o-coursesite-title-hover);
-						}
-						
+						}				
+					}
+				}
+				.o_desc {
+					padding: 1em 0 0.5em 0;
+				}
+			}
+
+			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+				.o_visual {
+					height: $o-coursesite-rowelem-width-sm;	
+				}
+				.o_meta {
+					min-height: $o-coursesite-rowelem-width-sm;	
+					height: $o-coursesite-rowelem-width-sm;	
+				}
+				h2.o_title {
+					font-size: 1.5em;
+				}
+			}	
+			@media (max-width: $screen-xs-max) { 
+				.o_visual {
+					height: $o-coursesite-rowelem-width-xs;	
+				}	
+				.o_meta {
+					min-height: $o-coursesite-rowelem-width-xs;	
+					height: $o-coursesite-rowelem-width-xs;	
+					padding: 0 0 0 1em;
+					.o_title {
+						line-height: $o-coursesite-rowelem-width-xs;
+					}
+					.o_desc {
+						display: none;
+					}	
+				}
+				h2.o_title {
+					font-size: 1.5em;
+				}
+			}
+		}
+	
+		.o_sublevels_list {
+			.o_sublevel {
+				position: relative;
+				display: flex;
+				border: 1px solid var(--o-coursesite-border);
+				margin-bottom: math.floor(math.div($line-height-computed,2));
+			
+				.o_visual {
+					height: $o-coursesite-rowelem-width-xs;
+					width: $o-coursesite-rowelem-width-xs;
+				
+					span.o_visual_not_available {
+						width:100%;
+						height:100%;
+						display:block;
+					}
+				}
+			
+				.o_title {
+					margin: 0;
+				}
+			
+				.o_meta {
+					border-left: 1px solid var(--o-coursesite-border);
+					min-height: $o-coursesite-rowelem-width-xs;	
+					height: $o-coursesite-rowelem-width-xs;	
+					padding: 0 0 0 1em;
+				
+					overflow: hidden;
+				
+					.o_title {
+						line-height: $o-coursesite-rowelem-width-xs;
+					}
+					.o_desc {
+						display: none;
+					}
+				
+					h3.o_title > a, h4.o_title > a {
 						//override o_icon styles, hide the icon
 						font-family: inherit;
 						font-weight: inherit;
 						>i {
 							display:none;
 						}
+					}	
+				}	
+			}
+		
+			.o_sublevel.o_fill_sublevels {
+				border: 1px solid transparent;
+			
+				.o_meta {
+					border-left: 1px solid transparent;
+				}
+			}
+		}	
+	
+		.o_sublevels {
+			position: relative;
+			display: flex;
+			flex-wrap: wrap;
+			margin-bottom: $o-coursesite-catalog-space;
+		
+			.o_sublevel {
+				position: relative;
+				margin: 0 $o-coursesite-catalog-space $o-coursesite-catalog-space 0;
+				width: $o-coursesite-rowelem-width-md;	
+
+				&:last-child {
+					margin-right: 0;			
+				}
+						
+				.o_visual {
+					border: 1px solid var(--o-coursesite-catalog-border);
+					position: relative;
+					height: $o-coursesite-rowelem-width-md;
+			
+					span.o_visual_not_available {
+						width:100%;
+						height:100%;
+						display:block;
+					}
+				}	
+				.o_meta {
+					position: absolute;
+					left: 0;
+					bottom: 0;
+					width: $o-coursesite-rowelem-width-md + 2px;
+
+					border: 1px solid var(--o-coursesite-catalog-border);
+					border-top: 0;
+					background-color: color-mix(in srgb, var(--o-scrim) 80%, transparent);
+				
+					.o_title {
+						margin: 0; /* box moves down otherwhise, replaced with padding */
+						text-align: center;
+						line-height: 2em;
+						height: 1.8em;
+						width: 100%;
+
+						overflow: hidden;
+						/* overflow via JS OPOL.Ellipsis */
+						a {
+							@extend %o_undecorated;
+							display: block;
+							color: var(--o-coursesite-title);
+							&:hover {
+							    color: var(--o-coursesite-title-hover);
+							}
+						
+							//override o_icon styles, hide the icon
+							font-family: inherit;
+							font-weight: inherit;
+							>i {
+								display:none;
+							}
+						}
 					}
 				}
-			}
 
-			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-				width: $o-coursesite-rowelem-width-sm;	
-				margin: 0 $o-coursesite-catalog-space-sm $o-coursesite-catalog-space-sm 0;
-	
-				.o_meta {
-					width: $o-coursesite-rowelem-width-sm + 2px;
-				}
-				.o_visual {
-					height: $o-coursesite-rowelem-width-sm;	
-				}	
-				h4.o_title {
-					font-size: 1.2em;
-				}
-			}
-			@media (max-width: $screen-xs-max) { 
-				width: $o-coursesite-rowelem-width-sm;	
-				margin: 0 $o-coursesite-catalog-space-xs $o-coursesite-catalog-space-xs 0;
-				
-				.o_meta {
-					width: $o-coursesite-rowelem-width-sm + 2px;
-				}
-				.o_visual {
-					height: $o-coursesite-rowelem-width-sm;	
+				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 					width: $o-coursesite-rowelem-width-sm;	
+					margin: 0 $o-coursesite-catalog-space-sm $o-coursesite-catalog-space-sm 0;
+	
+					.o_meta {
+						width: $o-coursesite-rowelem-width-sm + 2px;
+					}
+					.o_visual {
+						height: $o-coursesite-rowelem-width-sm;	
+					}	
+					h4.o_title {
+						font-size: 1.2em;
+					}
+				}
+				@media (max-width: $screen-xs-max) { 
+					width: $o-coursesite-rowelem-width-sm;	
+					margin: 0 $o-coursesite-catalog-space-xs $o-coursesite-catalog-space-xs 0;
+				
+					.o_meta {
+						width: $o-coursesite-rowelem-width-sm + 2px;
+					}
+					.o_visual {
+						height: $o-coursesite-rowelem-width-sm;	
+						width: $o-coursesite-rowelem-width-sm;	
+					}	
+					h4.o_title {
+						font-size: 1em;
+					}
 				}	
-				h4.o_title {
-					font-size: 1em;
-				}
-			}	
+			}
 		}
-	}
 	
-	/* multi-column layout for list and compact styles */
-	@media (min-width: $screen-sm-min) {
-		.o_sublevels_list, .o_sublevels_compact {
-			-webkit-column-count:2;
-			-moz-column-count:2;
-			-o-column-count:2;
-			column-count:2;
-			columns:2;
-		}
-	}
-}
- 
-/* Catalog V2 */
-.o_catalog2 {
-	.o_catalog_header {
-		margin-top: -$o-navbar-margin-bottom;
-		margin-bottom: -20px;
-		.o_catalog_header_item {
-			padding: 20px 20px 40px 20px;
-			height: $o-cat2-header-height;
-			max-height: $o-cat2-header-height;
-			&.o_catalog_temporarily_disabled {
-				padding: 0;
-			}
-		}
-		.o_catalog_header_item:not(.o_header_bg_image) {
-			background: $o-cat2-header-noimage-bg; // o-color-keep(gradient)
-			background-blend-mode: $o-cat2-header-noimage-bg-blend-mode;
-		}
-		.o_header_bg_image {
-			background-repeat: no-repeat;
-			background-position: center left;
-			background-size: cover;
-		}
-		&.o_preview {
-			margin: 0;
-		}
-	}
-	.o_catalog_search_header.o_catalog_search {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		
-		.o_catalog_admin_tools {
-			margin-top: $line-height-computed;
-		}
-		.o_search_box {
-			border-radius: $o-coursesite-rowelem-border-radius;
-			background-color: var(--o-input-bg);
-			padding: 1px 20px 20px 20px;
-			.o_search_row {
-				.form-group {
-					margin-bottom: $o-cat2-search-row-margin-bottom;
-				}
-			}
-		}
-		.o_search_box:is(.o_header_bg_image *) {
-			background-color: var(--o-catalog-header-box-bg);
-		}
-		.o_search_button {
-			span {
-				display: none
-			}
-		}
+		/* multi-column layout for list and compact styles */
 		@media (min-width: $screen-sm-min) {
-			.o_search_button {
-				span {
-					display: inline;
+			.o_sublevels_list, .o_sublevels_compact {
+				-webkit-column-count:2;
+				-moz-column-count:2;
+				-o-column-count:2;
+				column-count:2;
+				columns:2;
+			}
+		}
+	}
+ 
+	/* Catalog V2 */
+	.o_catalog2 {
+		.o_catalog_header {
+			margin-top: -$o-navbar-margin-bottom;
+			margin-bottom: -20px;
+			.o_catalog_header_item {
+				padding: 20px 20px 40px 20px;
+				height: $o-cat2-header-height;
+				max-height: $o-cat2-header-height;
+				&.o_catalog_temporarily_disabled {
+					padding: 0;
 				}
 			}
-		}
-	}
-	.o_catalog_taxonomy_header {
-		.o_taxonomy_block {
-			padding: 20px;
-			display: flex;
-			h3 {
-				margin: 0px;
+			.o_catalog_header_item:not(.o_header_bg_image) {
+				background: $o-cat2-header-noimage-bg; // o-color-keep(gradient)
+				background-blend-mode: $o-cat2-header-noimage-bg-blend-mode;
 			}
-			.o_taxonomy:is(.o_header_bg_image *) {
-				border-radius: $o-coursesite-rowelem-border-radius;
-				background-color: var(--o-catalog-header-box-bg);
-				padding: 20px;
+			.o_header_bg_image {
+				background-repeat: no-repeat;
+				background-position: center left;
+				background-size: cover;
 			}
-		}
-	}
-	.o_catalog_temporarily_disabled {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		.o_empty_state {
-			background-color: var(--o-input-bg);
-		}
-		.o_empty_state:is(.o_header_bg_image *) {
-			background-color: var(--o-catalog-header-box-bg);
-			.o_empty_visual i:nth-child(2) {
-				color: var(--o-text-muted);
-			}
-		}
-	}
-	.o_catalog_breadcrumb {
-		.breadcrumb {
-			background-color: var(--o-input-bg);
-			border: 1px solid var(--o-border-strong);
-			border-radius: $input-border-radius;
-			margin-left: 15px;
-			margin-right: 15px;
-		}
-	}
-	
-	.o_catalog_launcher {
-		margin-top: $o-cat2-launcher-margin-top;
-		@media (min-width: $screen-xs-min) { 
-			margin-top: $o-cat2-launcher-margin-top-xs;
-		}
-		@media (min-width: $screen-md-min) { 
-			margin-top: $o-cat2-launcher-margin-top-md;
-		}
-		&:first-child {
-			margin-top: 0;
-		}
-	
-		.o_launcher_title {
-			margin: $o-cat2-launcher-title-margin;
-			h1, h2, h3 {
+			&.o_preview {
 				margin: 0;
 			}
-			&.o_flex_first_grow {
-				align-items: end;
-			}
-			.o_repo_title {
-				display: flex;
-				flex-wrap: wrap;
-				align-items: baseline;
-				gap: 10px;
-			}
 		}
-	}
-	
-	.o_taxonomy_launchers {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: repeat(auto-fill, minmax(208px, 1fr));
-		&.o_launchers_square {
-			grid-template-columns: repeat(auto-fill, minmax(153px, 1fr));
-		}
-		@media (max-width: 605px) {
-			// Always display at least two cards side by side like defined in swiper (launch_repository_entry.html)
-			grid-template-columns: repeat(2, auto);
-		}
-		.o_taxonomy_launcher {
-			background: var(--o-coursesite-row-bg);
-			cursor: pointer;
-			&.o_tax_teaser_preview {
-				cursor: auto;
+		.o_catalog_search_header.o_catalog_search {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		
+			.o_catalog_admin_tools {
+				margin-top: $line-height-computed;
 			}
-			position: relative;
-			aspect-ratio: 2.4;
-			&:is(.o_launchers_square *) {
-				aspect-ratio: 1;
-				.o_meta {
-					.o_title {
-						font-size: $o-cat2-tax-launcher-square-font-size;
+			.o_search_box {
+				border-radius: $o-coursesite-rowelem-border-radius;
+				background-color: var(--o-input-bg);
+				padding: 1px 20px 20px 20px;
+				.o_search_row {
+					.form-group {
+						margin-bottom: $o-cat2-search-row-margin-bottom;
 					}
 				}
 			}
-			.o_visual {
-				box-sizing: content-box;
-				border-radius: $o-card-border-radius;
-				height: auto;
-				width: auto;
+			.o_search_box:is(.o_header_bg_image *) {
+				background-color: var(--o-catalog-header-box-bg);
+			}
+			.o_search_button {
+				span {
+					display: none
+				}
+			}
+			@media (min-width: $screen-sm-min) {
+				.o_search_button {
+					span {
+						display: inline;
+					}
+				}
+			}
+		}
+		.o_catalog_taxonomy_header {
+			.o_taxonomy_block {
+				padding: 20px;
+				display: flex;
+				h3 {
+					margin: 0px;
+				}
+				.o_taxonomy:is(.o_header_bg_image *) {
+					border-radius: $o-coursesite-rowelem-border-radius;
+					background-color: var(--o-catalog-header-box-bg);
+					padding: 20px;
+				}
+			}
+		}
+		.o_catalog_temporarily_disabled {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			.o_empty_state {
+				background-color: var(--o-input-bg);
+			}
+			.o_empty_state:is(.o_header_bg_image *) {
+				background-color: var(--o-catalog-header-box-bg);
+				.o_empty_visual i:nth-child(2) {
+					color: var(--o-text-muted);
+				}
+			}
+		}
+		.o_catalog_breadcrumb {
+			.breadcrumb {
+				background-color: var(--o-input-bg);
+				border: 1px solid var(--o-border-strong);
+				border-radius: $input-border-radius;
+				margin-left: 15px;
+				margin-right: 15px;
+			}
+		}
+	
+		.o_catalog_launcher {
+			margin-top: $o-cat2-launcher-margin-top;
+			@media (min-width: $screen-xs-min) { 
+				margin-top: $o-cat2-launcher-margin-top-xs;
+			}
+			@media (min-width: $screen-md-min) { 
+				margin-top: $o-cat2-launcher-margin-top-md;
+			}
+			&:first-child {
+				margin-top: 0;
+			}
+	
+			.o_launcher_title {
+				margin: $o-cat2-launcher-title-margin;
+				h1, h2, h3 {
+					margin: 0;
+				}
+				&.o_flex_first_grow {
+					align-items: end;
+				}
+				.o_repo_title {
+					display: flex;
+					flex-wrap: wrap;
+					align-items: baseline;
+					gap: 10px;
+				}
+			}
+		}
+	
+		.o_taxonomy_launchers {
+			display: grid;
+			gap: 10px;
+			grid-template-columns: repeat(auto-fill, minmax(208px, 1fr));
+			&.o_launchers_square {
+				grid-template-columns: repeat(auto-fill, minmax(153px, 1fr));
+			}
+			@media (max-width: 605px) {
+				// Always display at least two cards side by side like defined in swiper (launch_repository_entry.html)
+				grid-template-columns: repeat(2, auto);
+			}
+			.o_taxonomy_launcher {
+				background: var(--o-coursesite-row-bg);
+				cursor: pointer;
+				&.o_tax_teaser_preview {
+					cursor: auto;
+				}
+				position: relative;
 				aspect-ratio: 2.4;
 				&:is(.o_launchers_square *) {
 					aspect-ratio: 1;
+					.o_meta {
+						.o_title {
+							font-size: $o-cat2-tax-launcher-square-font-size;
+						}
+					}
 				}
-				.o_visual_not_available {
-					display: block;
-				}
-				.o_visual_available {
-					background-size: contain;
-				}
-			}
-			
-			.o_meta {
-				position: absolute;
-				left: 0;
-				bottom: 0;
-				width: 100%;
-				border-bottom-left-radius: $o-card-border-radius;
-				border-bottom-right-radius: $o-card-border-radius;
-				background-color: color-mix(in srgb, var(--o-scrim) 80%, transparent);
-				
-				.o_title {
-					margin: 0;
-					padding: 0px 5px;
-					line-height: 2em;
-					height: 2em;
-					width: 100%;
-					a, &:is(.o_tax_teaser_preview *) {
+				.o_visual {
+					box-sizing: content-box;
+					border-radius: $o-card-border-radius;
+					height: auto;
+					width: auto;
+					aspect-ratio: 2.4;
+					&:is(.o_launchers_square *) {
+						aspect-ratio: 1;
+					}
+					.o_visual_not_available {
 						display: block;
-						white-space: nowrap;
-						overflow: hidden;
-						text-overflow: ellipsis;
+					}
+					.o_visual_available {
+						background-size: contain;
+					}
+				}
+			
+				.o_meta {
+					position: absolute;
+					left: 0;
+					bottom: 0;
+					width: 100%;
+					border-bottom-left-radius: $o-card-border-radius;
+					border-bottom-right-radius: $o-card-border-radius;
+					background-color: color-mix(in srgb, var(--o-scrim) 80%, transparent);
+				
+					.o_title {
+						margin: 0;
+						padding: 0px 5px;
+						line-height: 2em;
+						height: 2em;
+						width: 100%;
+						a, &:is(.o_tax_teaser_preview *) {
+							display: block;
+							white-space: nowrap;
+							overflow: hidden;
+							text-overflow: ellipsis;
+						}
 					}
 				}
 			}
 		}
-	}
 	
-	/** Override some settings from the course table **/
-	.o_coursetable {
-		&.o_rendertype_classic {
-			// Display the start button like an btn-xs in the table (but not in the custom renderer)
-			a.o_catalog_open {
-				@include button-size($padding-xs-vertical, $padding-xs-horizontal, $font-size-small, $line-height-small, $btn-border-radius-small)
+		/** Override some settings from the course table **/
+		.o_coursetable {
+			&.o_rendertype_classic {
+				// Display the start button like an btn-xs in the table (but not in the custom renderer)
+				a.o_catalog_open {
+					@include button-size($padding-xs-vertical, $padding-xs-horizontal, $font-size-small, $line-height-small, $btn-border-radius-small)
+				}
 			}
-		}
-		&.o_rendertype_custom {
-			a.o_catalog_open {
-				width: 100%;
-			}
-			.o_table_row {
-				.o_access {
-					flex: 0 0 auto;
-					display: flex;
-					flex-direction: column;
-					gap: 5px;
+			&.o_rendertype_custom {
+				a.o_catalog_open {
+					width: 100%;
+				}
+				.o_table_row {
+					.o_access {
+						flex: 0 0 auto;
+						display: flex;
+						flex-direction: column;
+						gap: 5px;
 					
-					.o_access_info {
-						margin-bottom: auto;
-					}
-					.o_catalog_seats_left {
-						align-self: flex-end;
-					}
-					.o_actions {
-						position: initial;
-					}
+						.o_access_info {
+							margin-bottom: auto;
+						}
+						.o_catalog_seats_left {
+							align-self: flex-end;
+						}
+						.o_actions {
+							position: initial;
+						}
 					
-					@media (max-width: $screen-xs-max) { 
-						display: none;
+						@media (max-width: $screen-xs-max) { 
+							display: none;
+						}
 					}
 				}
 			}
 		}
-	}
 	
-	.o_taxonomy_mgmt {
-		.o_taxonomy_hint {
-			@extend %o_flex_first_grow;
-			column-gap: 15px;
+		.o_taxonomy_mgmt {
+			.o_taxonomy_hint {
+				@extend %o_flex_first_grow;
+				column-gap: 15px;
+			}
 		}
 	}
-}
 
-.o_catalog_seats_left {
-	width: fit-content;
-}
+	.o_catalog_seats_left {
+		width: fit-content;
+	}
 }
