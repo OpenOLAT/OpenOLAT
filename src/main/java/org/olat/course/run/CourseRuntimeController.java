@@ -1896,7 +1896,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					doEdit(ureq);
 				}
 			} else if("Infos".equalsIgnoreCase(type)) {
-				activateSubEntries(ureq, doDetails(ureq), entries);
+				// Do not tear down an open course editor as a side effect of an unrelated
+				// business-path activation (e.g. a direct link to the info page) - doDetails()
+				// pops and disposes everything but the root via the shared toolbarPanel,
+				// which would otherwise dispose the live editor and leave it permanently
+				// unusable.
+				if (!isInEditor()) {
+					activateSubEntries(ureq, doDetails(ureq), entries);
+				}
 			} else if("LearningPath".equalsIgnoreCase(type)) {
 				if (learningPathLink != null && learningPathLink.isVisible()) {
 					doLearningPath(ureq);
