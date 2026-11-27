@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-projects {
 .o_proj_projects {
 	.o_proj_project_list {
 		.o_rendertype_custom {
@@ -896,4 +900,5 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			margin-left: 5px;
 		}
 	}
+}
 }

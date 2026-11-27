@@ -4,6 +4,11 @@
 
 /* a block of content that should have margins like a paragraph */
 @use "sass:math";
+@use "../../../bootstrap/stylesheets/bootstrap/type" as *;
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-helpers {
 
 .o_block_bottom, %o_block_bottom {
 	margin-bottom: 1em;
@@ -811,4 +816,4 @@
 	flex-wrap: wrap;
 	gap: 10px;
 }
-
+}

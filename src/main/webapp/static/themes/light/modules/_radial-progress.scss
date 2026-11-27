@@ -18,8 +18,12 @@ Concept:
 */
 
 /* Standard size */
-$o-radial-progress-inset-size			: $o-radial-progress-circle-size * 0.75 !default; // 90px
-$o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 !default; // 22px
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-radial-progress {
+// $o-radial-progress-inset-size: in light/_config_modules.scss // 90px
+// $o-radial-progress-percentage-font-size: in light/_config_modules.scss // 22px
 .radial-progress {				
 	margin: $o-radial-progress-margin;
 	width: $o-radial-progress-circle-size;
@@ -189,8 +193,8 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 }
 	
 /* small variant */
-$o-radial-progress-inset-size-sm				: $o-radial-progress-circle-size-sm * 0.75 !default;
-$o-radial-progress-percentage-font-size-sm		: $o-radial-progress-circle-size-sm * 0.24 !default;
+// $o-radial-progress-inset-size-sm: in light/_config_modules.scss
+// $o-radial-progress-percentage-font-size-sm: in light/_config_modules.scss
 .radial-progress-sm {
 	width: $o-radial-progress-circle-size-sm;
 	height: $o-radial-progress-circle-size-sm;
@@ -203,8 +207,8 @@ $o-radial-progress-percentage-font-size-sm		: $o-radial-progress-circle-size-sm 
 
 
 /* large variant */
-$o-radial-progress-inset-size-lg				: $o-radial-progress-circle-size-lg * 0.75 !default;
-$o-radial-progress-percentage-font-size-lg		: $o-radial-progress-circle-size-lg * 0.18 !default;
+// $o-radial-progress-inset-size-lg: in light/_config_modules.scss
+// $o-radial-progress-percentage-font-size-lg: in light/_config_modules.scss
 
 .radial-progress-lg {
 	width: $o-radial-progress-circle-size-lg;
@@ -218,8 +222,8 @@ $o-radial-progress-percentage-font-size-lg		: $o-radial-progress-circle-size-lg 
 
 
 /* inline variant */
-$o-radial-progress-inset-size-inline				: $o-radial-progress-circle-size-inline * 0.70 !default;
-$o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size-inline * 0.18 !default;
+// $o-radial-progress-inset-size-inline: in light/_config_modules.scss
+// $o-radial-progress-percentage-font-size-inline: in light/_config_modules.scss
 .radial-progress-inline {
 	width: $o-radial-progress-circle-size-inline;
 	height: $o-radial-progress-circle-size-inline;
@@ -302,9 +306,9 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 }
 
 /* toolbar variant */
-$o-radial-progress-circle-size-toolbar				: $o-toolbar-height-md + 8px !default;
-$o-radial-progress-inset-size-toolbar				: $o-radial-progress-circle-size-toolbar - 8px !default;
-$o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !default;
+// $o-radial-progress-circle-size-toolbar: in light/_config_modules.scss
+// $o-radial-progress-inset-size-toolbar: in light/_config_modules.scss
+// $o-radial-progress-percentage-font-size-toolbar: in light/_config_modules.scss
 
 .o_toolbar .o_tool .o_progress {
 	width: $o-toolbar-height-md;
@@ -463,4 +467,5 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 .o_progress_passed .percentage {
 	@include o-add-icon('check');
 	color: var(--o-radial-progress-passed-glyph);
+}
 }

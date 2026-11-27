@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-practice {
 .o_practice_run {
 	display: grid;
 	grid-template-columns: 3fr 1fr;
@@ -362,4 +366,5 @@ svg {
 
 .o_assessmentitem_level>i {
 	color: var(--o-practice-level-disc);
+}
 }

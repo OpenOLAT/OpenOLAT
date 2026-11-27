@@ -4,6 +4,10 @@ $bootstrap-sass-asset-helper: false !default;
 // --------------------------------------------------
 @use "sass:color";
 @use "sass:math";
+// The OpenOLAT values of the Bootstrap variables: a default below keeps them
+@use "../../../themes/light/functions" as *;
+@use "../../../themes/light/config_base" as *;
+@use "../../../themes/light/config_bootstrap" as *;
 
 
 //== Colors

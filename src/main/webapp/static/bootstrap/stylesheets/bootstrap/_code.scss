@@ -4,6 +4,10 @@
 
 
 // Inline and block code styles
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-code {
 code,
 kbd,
 pre,
@@ -66,4 +70,5 @@ pre {
 .pre-scrollable {
   max-height: $pre-scrollable-max-height;
   overflow-y: scroll;
+}
 }

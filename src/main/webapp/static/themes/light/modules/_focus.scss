@@ -8,9 +8,9 @@
  * :focus-visible. The gap shows the page background, so the ring needs
  * 3:1 on the page background only (contrast pair focus on bg).
  *
- * This file has mixins only and writes no CSS. Imported after the Bootstrap
- * mixins (modules/_bootstrap.scss, content.scss): the mixins tab-focus and
- * form-control-focus replace the Bootstrap mixins of the same name, so the
+ * This file has mixins only and writes no CSS. Part of light/config:
+ * _config.scss forwards it and hides the Bootstrap mixins tab-focus and
+ * form-control-focus, the mixins of this file replace them, so the
  * Bootstrap rules of links, buttons, checkboxes, radios, file inputs and
  * form fields get the ring.
  *
@@ -41,6 +41,7 @@
  * @date November 2026
  * =================================================
  */
+@use "../variables" as *;
 
 @mixin o-focus-ring($offset: $o-focus-ring-offset, $color: var(--o-focus)) {
 	outline: $o-focus-ring-width solid $color;

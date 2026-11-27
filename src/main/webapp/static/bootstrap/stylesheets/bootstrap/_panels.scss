@@ -2,6 +2,10 @@
 // Panels
 // --------------------------------------------------
 @use "sass:math";
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-panels {
 
 
 // Base class
@@ -269,4 +273,5 @@
 }
 .panel-danger {
   @include panel-variant($panel-danger-border, $panel-danger-text, $panel-danger-heading-bg, $panel-danger-border);
+}
 }

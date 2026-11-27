@@ -4,6 +4,10 @@
 
 
 // Base class
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-badges {
 .badge {
   display: inline-block;
   min-width: 10px;
@@ -65,4 +69,5 @@ a.badge {
     text-decoration: none;
     cursor: pointer;
   }
+}
 }

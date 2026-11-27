@@ -1,4 +1,8 @@
 /* question pool */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-qpool {
 .o_qpool_source_status {
 	text-align: center;
 }
@@ -123,4 +127,4 @@ a.o_qpool_status {
 	/* hide arrow tails background */
 	background-color: var(--o-bg);
 }
-
+}

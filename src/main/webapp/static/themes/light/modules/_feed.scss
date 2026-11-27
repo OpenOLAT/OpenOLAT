@@ -3,6 +3,10 @@
 // Status labels (o_feed_status_*): semantic states in _states.scss (OO-10042)
 
 /* special case for table, last child behaves different */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-feed {
 .o_table_body {
 	> div {
 		&:not(:last-child) {
@@ -76,4 +80,5 @@
 		align-items: center;
 		gap: $o-widgets-gap;
 	}
+}
 }

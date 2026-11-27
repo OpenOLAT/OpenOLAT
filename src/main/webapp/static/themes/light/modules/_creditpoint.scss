@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-creditpoint {
 .o_creditpoint_amount_debit {
 	color: var(--o-creditpoint-withdraw);
 }
@@ -13,4 +17,5 @@
 	&.o_cp_status_inactive {
 		font-weight: normal;
 	}
+}
 }

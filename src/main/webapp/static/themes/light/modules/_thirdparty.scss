@@ -4,6 +4,10 @@
  */
  
 @use "sass:list";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-thirdparty {
 
 .ui-widget {
 	font-family: $font-family-base;
@@ -385,4 +389,5 @@ body:has(.basicLightbox) {
 		font-weight: bold;
 		text-align: left;
 	}
+}
 }

@@ -1,0 +1,50 @@
+/*
+ * =================================================
+ *
+ * Variables that OpenOLAT removed (OO-10043): the shorthand borders and
+ * $o-cn-style-border. No rule reads them. Each one is declared null, so a
+ * theme config that still sets one passes its value here, and
+ * modules/_tokens.scss prints a warning with the replacement. Keep the list
+ * in sync with $o-token-removed-shorthands and
+ * $o-token-removed-shorthands-renamed in modules/_tokens.scss.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+$o-cn-style-border: null !default;
+$o-card-border: null !default;
+$o-widget-border: null !default;
+$o-fact-sheet-border: null !default;
+$o-fact-sheet-separator-border: null !default;
+$o-dashboard-widget-border: null !default;
+$o-table-details-container-border: null !default;
+$o-activity-add-border: null !default;
+$o-activity-modify-border: null !default;
+$o-activity-remove-border: null !default;
+$o-repo-info-border: null !default;
+$o-repo-info-separator-border: null !default;
+$o-editor-layout-inner-h-border: null !default;
+$o-editor-layout-inner-v-border: null !default;
+$o-icon-panel-border: null !default;
+$o-indicator-separator-border: null !default;
+$o-curriculum-widget-border: null !default;
+$o-curriculum-widget-card-border: null !default;
+$o-lp-border: null !default;
+$o-user-info-border: null !default;
+$o-user-info-divider-border: null !default;
+$o-user-info-profile-border: null !default;
+$o-user-info-portrait-border: null !default;
+$o-panel-authentication-border: null !default;
+$o-folder-row-thumbnail-image-border: null !default;
+$o-swiper-button-border: null !default;
+$o-empty-border-color: null !default;
+$o-assessment-inspection-border-color: null !default;
+$o-hs-podium-border: null !default;
+$o-users-portrait-img-border: null !default;
+$o-step-border: null !default;
+$o-ac-ba-border: null !default;
+$o-tb-details-separator-border-bottom: null !default;
+$o-tb-topic-card-title-abbr-border: null !default;
+$o-tb-topic-placeholder-title-abbr-border: null !default;
+$o-tb-weighting-grid-border: null !default;

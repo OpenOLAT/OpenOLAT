@@ -31,6 +31,10 @@
  */
 @use "sass:list";
 @use "sass:map";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-states {
 
 $o-state-styles: ("dark", "solid", "tint", "light", "text");
 
@@ -559,4 +563,5 @@ $o-state-wiring: (
 	#{$selector} {
 		@extend %o_state_#{list.nth($wiring, 1)}_#{list.nth($wiring, 2)};
 	}
+}
 }

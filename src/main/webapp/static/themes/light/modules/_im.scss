@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-im {
 /* Instant Messaging components in navbar */
 #o_navbar_imclient {
 	.o_im_messages {
@@ -338,6 +342,4 @@
 .o_im_supervised_list table>tbody>tr.o_im_danger>td.o_col_sticky_right {
 	background-color: var(--o-state-danger-soft-bg) !important;
 }
-
-
-
+}

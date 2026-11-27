@@ -1,0 +1,1718 @@
+/*
+ * =================================================
+ *
+ * OpenOLAT theme configuration, part 3 of 3: the variables of the OpenOLAT
+ * modules. All variables with the o- prefix are OpenOLAT specific
+ * variables, the other variables are from Bootstrap. They read the
+ * Bootstrap defaults (bootstrap/_variables.scss) and parts 1 and 2
+ * (_config_base.scss, _config_bootstrap.scss).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date April 2014
+ * =================================================
+ */
+@use "sass:math";
+@use "sass:color";
+@use "sass:map";
+@use "sass:meta";
+@use "sass:list";
+@use "functions" as *;
+@use "palette" as *;
+@use "palette_neutral" as *;
+@use "config_base" as *;
+@use "palette_theme" as *;
+@use "functions_scale" as *;
+@use "config_bootstrap" as *;
+@use "../../bootstrap/stylesheets/bootstrap/variables" as *;
+
+/* General purpose brand based style */
+$o-brand-box-border				: o-scale-snap($brand-primary, o-darker($brand-primary, 5%)) !default;
+$o-brand-box-bg 				: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
+$o-brand-text					: $brand-primary !default;
+/* override primary button to match a11y standards */
+$btn-primary-bg:                 $brand-primary !default;
+$btn-primary-border:             o-scale-snap($btn-primary-bg, o-darker($btn-primary-bg, 5%)) !default;
+
+/* ---- OpenOLAT specific configurations ---- */
+$o-images-path : "../light/images/" !default; 
+
+/* Content styles used in iFrame e-learning content and in HTML editor */
+$o-content-font-family-base		: $font-family-base !default;
+$o-content-font-size-base		: $font-size-base !default;
+$o-content-line-height-base		: $line-height-base !default;
+$o-content-line-height-computed	: math.floor(($o-content-font-size-base * $o-content-line-height-base)) !default;
+$o-content-link-color			: $link-color !default;
+$o-content-link-hover-color		: $link-hover-color !default;
+$o-content-link-decoration		: underline !default;
+$o-content-header-base-color	: $text-color !default;
+$o-content-h5-color				: $o-content-header-base-color !default;
+$o-content-fieldset-legend-color: $text-color !default;
+$o-content-hr-color				: $hr-border !default;
+$o-content-hr-size				: 1px !default;
+$o-content-table-border			: $gray-light !default;
+$o-content-table-header			: $gray-light !default;
+// The coloured tables (table style b_{key}, one per swatch key: the 14 hues
+// and the theme colours): the swatch role of the key for the fill of the
+// cells (soft fill), for the fill of the header cells (light fill) and for
+// the lines of the white even rows (border of the soft fill); the cell lines
+// are white. The roles follow the variant steps of the hue, e.g. the light
+// fill of yellow is step 100, of blue step 200. The compile warns when the
+// text of the content has less than 4.5:1 on the three fills or the link on
+// the cell fill and on white (o-content-table-contrast-check(), _tokens.scss).
+$o-content-table-roles			: ("bg": "soft-bg", "header-bg": "light-bg", "line": "soft-border") !default;
+// class name of a table swatch key when it differs from b_{key}: the pure hue gray is b_gray_hue, because b_gray is the slate table
+$o-content-table-class-names	: ("gray": "gray_hue") !default;
+$o-content-dimmed-color			: $text-muted !default;
+$o-content-border-box-border	: $gray-light !default;
+$o-content-border-box-radius	: $border-radius-small !default;
+$o-content-border-box-padding	: 1em !default;
+$o-content-border-img-border	: $thumbnail-border !default;
+$o-content-border-img-radius	: $thumbnail-border-radius !default;
+$o-content-border-img-padding	: 3px !default;
+
+$o-font-size-xlarge				: math.ceil(($font-size-base * 1.7)) !default;  // ~24px
+$o-font-size-xsmall				: math.ceil(($font-size-base * 0.71)) !default; // ~10px
+$o-font-size-section-title		: math.ceil(($font-size-base * 1.3)) !default; // ~18px
+// the selected row: the selected fill (level 1 in the hue of the focus colour)
+$o-table-row-selected-color     : $table-bg-active !default;
+
+$o-table-edit-border			: o-palette("orange", 400);
+$o-table-edit-bg				: o-neutral(25);
+
+// the opened row and its details row: the selected fill (level 1 in the hue
+// of the focus colour); under the pointer o-table-details-bg-hover()
+$o-table-details-bg							: $table-bg-active !default;
+// The fill of the opened row and its details row under the pointer (token
+// table-details-bg-hover) for the fill $bg of the details row: the hover
+// fill while $bg is the selected fill, else (a theme colour of
+// $o-table-details-bg) the step of its scale that is 10% darker, or the
+// computed colour for a colour on no scale.
+@function o-table-details-bg-hover($bg) {
+	@if $bg == $table-bg-active and $table-bg-hover != $table-bg-active {
+		@return $table-bg-hover;
+	}
+	@return o-scale-snap($bg, o-darker($bg, 10%));
+}
+// The darkest fill of a table row: page, striped row, row under the pointer,
+// selected row, opened row and its details row with and without the
+// pointer. A text token of a row is adjusted against it.
+@function o-table-row-darkest-bg() {
+	@return o-darkest-color(o-opaque-colors($body-bg, $table-bg-accent, $table-bg-hover, $table-bg-active, $o-table-row-selected-color, $o-table-details-bg, o-table-details-bg-hover($o-table-details-bg))...);
+}
+$o-table-details-padding						: 5px 30px 20px 30px !default;
+$o-table-details-container-margin			: 0px !default;
+$o-table-details-container-padding			: 10px !default;
+// table-details-container-border: width and style; the colour is the token table-details-container-border
+// (replaces the shorthand $o-table-details-container-border)
+$o-table-details-container-border-width : 1px !default;
+$o-table-details-container-border-style : solid !default;
+$o-table-details-container-border-radius	: 5px !default;
+$o-table-details-container-bg				: o-neutral(0) !default;
+
+$o-table-filter-collapse-color	: o-neutral(150);
+
+$o-table-filter-color			: $btn-primary-border !default;
+$o-table-filter-border			: $btn-primary-border !default;
+$o-table-filter-bg				: o-neutral(0) !default;
+$o-table-filter-active-color	: o-neutral(0) !default;
+$o-table-filter-active-border	: $btn-primary-border !default;
+$o-table-filter-active-bg		: $btn-primary-border !default;
+/* Override if color contrast not high enough */
+@if contrast($btn-primary-border, $o-table-filter-bg) < 4.5 {
+	$o-table-filter-color			: $text-color;
+	$o-table-filter-active-color	: $text-color;
+}
+
+/* Empty state in various modules */
+$o-empty-indicator-color		: o-neutral(700) !default;
+$o-empty-icon-color				: o-neutral(300) !default;
+// empty-border: width and style; the colour is the token empty-border
+// (replaces the shorthand $o-empty-border-color)
+$o-empty-border-width                   : 1px !default;
+$o-empty-border-style                   : solid !default;
+$o-empty-border-radius			: $panel-border-radius !default;
+$o-empty-msg-color				: $text-color !default;
+
+/* Empty panel component */
+$o-empty-panel-icon-bg-color		: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
+
+/* The max width the header/navbar/main/footer can possibly have. */
+$o-page-width-max : 1324px !default;
+$o-page-width-toggler-border-color			: o-neutral(100) !default;
+$o-page-width-toggler-border-radius			: $border-radius-base !default;
+$o-page-width-toggler-background			: o-neutral(50) !default;
+$o-page-width-toggler-border-hover-color	: o-neutral(250) !default;
+$o-page-width-toggler-hover-background		: o-neutral(100) !default;
+
+
+/* Main content area. The outer area is left and right outside the content area (only visible in large screen).  */
+$o-main-outer-bg 	: o-neutral(0) !default;
+$o-main-inner-bg 	: o-neutral(0) !default;
+$o-main-left-bg		: o-neutral(0) !default;
+// the centre and the right column: transparent, they show the fill of the main container
+$o-main-center-bg	: transparent !default;
+$o-main-right-bg	: transparent !default;
+
+/* Page main navigation for sites, tabs and tools */
+$o-navbar-height					: $navbar-height !default;
+$o-navbar-dmz-height				: $navbar-height !default;
+$o-navbar-z-index					: 6 !default;
+$o-navbar-margin-bottom				: $navbar-margin-bottom !default;
+$o-navbar-padding-horizontal		: $navbar-padding-horizontal !default;
+$o-navbar-padding-vertical			: $navbar-padding-vertical !default;
+$o-navbar-collapse-max-height		: $navbar-collapse-max-height !default;
+$o-navbar-border-color				: $navbar-default-border !default;
+$o-navbar-bg						: $navbar-default-bg !default;
+// text and tool icons of the navbar: the Bootstrap text colour (#777) adjusted
+// to 4.5:1 on the navbar, #777 has 4.48:1 on white
+$o-navbar-color						: o-a11y-color($navbar-default-color, $o-navbar-bg) !default;
+$o-navbar-link-color				: o-neutral(600) !default;
+$o-navbar-link-hover-color			: o-scale-snap($o-navbar-link-color, o-darker($o-navbar-link-color, 10%)) !default;
+$o-navbar-link-hover-bg 			: $navbar-default-link-hover-bg !default;
+$o-navbar-link-active-color 		: $navbar-default-link-active-color !default;
+$o-navbar-link-active-bg 			: $navbar-default-link-active-bg !default;
+$o-navbar-link-disabled-color 		: $navbar-default-link-disabled-color !default;
+$o-navbar-link-disabled-bg 			: $navbar-default-link-disabled-bg !default;
+$o-navbar-toggle-border-color		: $navbar-default-toggle-border-color !default;
+$o-navbar-toggle-border-radius		: $border-radius-base !default;
+$o-navbar-toggle-hover-bg			: $navbar-default-toggle-hover-bg !default;
+$o-navbar-toggle-icon-bar-bg		: $navbar-default-toggle-icon-bar-bg !default;
+$o-navbar-tab-close-color			: o-state-color("danger", "text") !default;
+// darker on hover; on a dark navbar the close colour itself when the darker colour has less than 3:1 (OO-10043)
+$o-navbar-tab-close-hover-color		: o-contrast-hover(o-scale-snap($o-navbar-tab-close-color, o-darker($o-navbar-tab-close-color, 10%)), $o-navbar-tab-close-color, $o-navbar-bg) !default;
+$o-navbar-tools-permanent-color		: o-a11y-color($navbar-default-color, $o-navbar-bg) !default;
+$o-navbar-logout-color				: o-state-color("danger", "text") !default;
+$o-navbar-brand-font-size			: $font-size-large !default;
+$o-navbar-brand-height				: $navbar-height !default;
+$o-navbar-brand-color				: $navbar-default-brand-color !default;
+$o-navbar-brand-hover-color			: $navbar-default-brand-hover-color !default;
+$o-navbar-brand-hover-bg			: $navbar-default-brand-hover-bg !default;
+
+/* inverse style
+$o-navbar-border-color				: $navbar-inverse-border ;
+$o-navbar-bg						: $navbar-inverse-bg ;
+$o-navbar-color						: $navbar-inverse-color ;
+$o-navbar-link-color				: $navbar-inverse-link-color ;
+$o-navbar-link-hover-color			: $navbar-inverse-link-hover-color ;
+$o-navbar-link-hover-bg 			: $navbar-inverse-link-hover-bg ;
+$o-navbar-link-active-color 		: $navbar-inverse-link-active-color ;
+$o-navbar-link-active-bg 			: $navbar-inverse-link-active-bg ;
+$o-navbar-link-disabled-color 		: $navbar-inverse-link-disabled-color ;
+$o-navbar-link-disabled-bg 			: $navbar-inverse-link-disabled-bg ;
+$o-navbar-tools-permanent-color		: $navbar-inverse-link-color;
+$o-navbar-toggle-border-color		: $navbar-inverse-toggle-border-color ;
+$o-navbar-toggle-hover-bg			: $navbar-inverse-toggle-hover-bg ;
+$o-navbar-toggle-icon-bar-bg		: $navbar-inverse-toggle-icon-bar-bg ;
+$o-navbar-brand-color				: $navbar-inverse-brand-color ;
+$o-navbar-brand-hover-color			: $navbar-inverse-brand-hover-color ;
+$o-navbar-brand-hover-bg			: $navbar-inverse-brand-hover-bg ;
+*/
+
+$o-navbar-tab-max-width				: 150px !default;
+$o-navbar-tab-enable-icons			: false !default;
+// the bar under the active site or tab, under the item of the pointer and next
+// to the active item of the "More" dropdown: width, 0 = no bar (colour: token navbar-tab-indicator)
+$o-navbar-tab-indicator-width		: 0 !default;
+// the bottom border of the navigation bar of the login page from 768px (colour: token login-navbar-border)
+$o-login-navbar-border-width		: 1px !default;
+
+/* More button and dropdown menu */
+$o-navbar-more-dropdown-max-width	: 300px !default;
+$o-navbar-more-dropdown-enable-icons: false !default;
+
+/* Right off-canvas menu, part of navbar */
+$o-offcanvas-width 					: 250px !default;
+$o-offcanvas-padding-horizontal		: $navbar-padding-horizontal !default;
+$o-offcanvas-padding-vertical		: $navbar-padding-vertical !default;
+$o-offcanvas-border 				: $navbar-inverse-border !default;
+$o-offcanvas-bg 					: $navbar-inverse-bg !default;
+$o-offcanvas-link-color				: o-neutral(400)!default;
+$o-offcanvas-link-hover-color 		: o-neutral(450) !default;
+$o-offcanvas-link-hover-bg 			: $navbar-inverse-link-hover-bg!default;
+$o-offcanvas-link-active-color		: $navbar-inverse-link-active-color!default;
+$o-offcanvas-link-active-bg			: $navbar-inverse-link-active-bg!default;
+$o-offcanvas-logout-color			: o-palette("red", 300) !default;
+$o-offcanvas-logout-hover-color		: o-scale-snap($o-offcanvas-logout-color, o-darker($o-offcanvas-logout-color, 10%))!default;
+$o-offcanvas-dropdown-bg			: $o-offcanvas-bg !default;
+$o-offcanvas-dropdown-font-size		: $font-size-base !default;
+
+/* Page footer */
+$o-footer-font-size					: $font-size-small !default;
+$o-footer-line-height				: 16px !default;
+$o-footer-share-font-size			: $font-size-base !default;
+$o-footer-padding-top				: 10px !default;
+$o-footer-height 					: 70px !default;
+$o-footer-dmz-height 				: $o-footer-height !default;
+$o-footer-outer-bg 					: o-neutral(25) !default;
+$o-footer-inner-bg 					: o-neutral(25) !default;
+$o-footer-default-color 			: o-neutral(500) !default;
+$o-footer-default-link-color 		: o-neutral(500) !default;
+$o-footer-default-link-hover-color 	: o-neutral(750) !default;
+$o-footer-position-absolute 		: true !default;
+$o-footer-margin-top				: $padding-large-vertical !default;
+// the top border of the footer: width, 0 = no border (colour: token footer-border)
+$o-footer-border-width				: 0 !default;
+
+/* Toolbar in course, editor etc */
+$o-toolbar-bg-color				: $navbar-default-bg !default;
+$o-toolbar-box-shadow			: 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
+$o-toolbar-edit_bg-color		: o-neutral(0) !default;
+$o-toolbar-edit_stripe-color	: o-palette("yellow", 100) !default;
+$o-toolbar-border-color			: $navbar-default-border !default;
+$o-toolbar-border-radius		: $navbar-border-radius !default;
+$o-toolbar-link-color			: $navbar-default-link-color !default;
+$o-toolbar-link-hover-color		: $navbar-default-link-hover-color !default;
+// the disabled text, not a lighter link colour
+$o-toolbar-link-disabled-color	: $btn-link-disabled-color !default;
+$o-toolbar-link-active-color	: $link-color !default;
+$o-toolbar-link-active-bg		: transparent !default;
+$o-toolbar-dropdown-active-bg	: transparent !default;
+$o-toolbar-size-icon-md 		: math.ceil($font-size-base * 1.25) !default;
+$o-toolbar-size-text-md 		: math.ceil($font-size-base * 0.85) !default;
+$o-toolbar-size-caret-md 		: $font-size-base !default;
+$o-toolbar-size-icon-sm 		: math.ceil($font-size-base * 1.1) !default;
+$o-toolbar-size-text-sm 		: math.ceil($font-size-base * 0.75) !default;
+$o-toolbar-size-caret-sm 		: math.ceil($font-size-base * 0.85) !default;
+$o-toolbar-size-icon-xs 		: math.ceil($font-size-base * 1.4) !default;
+$o-toolbar-height-md			: 37px !default;
+$o-toolbar-height-sm			: 35px !default;
+$o-toolbar-height-xs			: 22px !default;
+$o-toolbar-margin-top			: -10px !default;
+$o-toolbar-margin-bottom		: ($navbar-margin-bottom + 5px) !default; // 5 extra for course pagination
+$o-toolbar-tools-margin-top-md		: 8px !default;
+$o-toolbar-tools-margin-bottom-md	: 5px !default;
+$o-toolbar-tools-margin-top-sm		: 6px !default;
+$o-toolbar-tools-margin-bottom-sm	: 4px !default;
+$o-toolbar-tools-margin-top-xs		: 6px !default;
+$o-toolbar-tools-margin-bottom-xs	: 4px !default;
+$o-toolbar-close-color				: o-state-color("danger", "text") !default;
+$o-toolbar-breadcrumb-bg-color		: $panel-default-heading-bg !default;
+$o-toolbar-breadcrumb-font-size 	: $font-size-base !default;
+$o-toolbar-breadcrumb-line-height	: $line-height-base !default;
+$o-toolbar-nav-link-disabled-color	: $o-toolbar-link-disabled-color !default; 
+$o-toolbar-nav-bg-color				: $gray-lighter !default;
+$o-toolbar-nav-border-radius		: 4px !default; 
+$o-toolbar-nav-size-icon-md 		: math.ceil($font-size-base * 1.5) !default;
+$o-toolbar-nav-size-icon-sm 		: math.ceil($font-size-base * 1.25) !default;
+$o-toolbar-nav-size-icon-xs 		: math.ceil($font-size-base * 1.4) !default;
+
+/* Form styles */
+$o-radio-cards-gap					: 10px !default;
+$o-radio-card-width					: 260px !default;
+$o-radio-card-width-sm				: 150px !default;
+$o-radio-card-width-lg				: 350px !default;
+$o-radio-card-border-radius			: $border-radius-base !default;
+$o-radio-card-bg					: $input-bg !default;
+// the checked radio card is a selection in the brand colour:
+// the border reads the primary colour, the fill step 50 of the brand ramp, the
+// label the brand text colour
+$o-radio-card-border-color-checked	: $brand-primary !default;
+$o-radio-card-bg-checked			: o-palette("theme1", 50) !default;
+$o-radio-card-label-color-checked	: $o-brand-text !default;
+
+$o-radio-card-border-color-hover	: o-scale-snap($input-border, o-darker($input-border, 6%)) !default;
+$o-radio-card-bg-hover				: o-scale-snap($btn-default-bg, o-darker($btn-default-bg, 5%)) !default;
+
+$o-radio-card-image-border-radius	: $border-radius-small !default;
+$o-radio-card-icon-font-size		: 28px !default;
+
+/* Left side menu tree. The tree, its items and the selected item have no own fill (transparent) */
+$o-tree-bg						: transparent !default;
+$o-tree-border-color			: $list-group-border !default;
+$o-tree-border-radius			: $list-group-border-radius !default;
+$o-tree-link-color 				: $navbar-default-link-color !default;
+$o-tree-link-bg					: transparent !default;
+$o-tree-link-hover-color 		: $navbar-default-link-hover-color !default;
+$o-tree-link-hover-bg			: $navbar-default-bg !default;
+$o-tree-link-active-color 		: $link-color !default;
+$o-tree-link-active-bg			: transparent !default;
+$o-tree-link-active-hover-color : $link-hover-color !default;
+$o-tree-link-active-hover-bg	: $gray-lighter !default;
+$o-tree-link-active-font-weight	: bold !default;
+$o-tree-link-active-parent-color 			: $o-tree-link-color !default;
+$o-tree-link-active-parent-hover-color 		: $o-tree-link-hover-color !default;
+$o-tree-link-active-parent-font-weight		: $o-tree-link-active-font-weight !default;
+$o-tree-font-size							: $font-size-base !default;
+$o-tree-padding-vertical					: 10px !default;
+$o-tree-padding-vertical-small				: 7px !default;
+$o-tree-padding-horizontal_root_visible		: 10px !default;
+$o-tree-padding-horizontal_root_hidden		: 20px !default;
+$o-tree-padding-steps-px 					: 15px !default;
+$o-tree-padding-left-steps-px 				: 2px !default;
+$o-tree-padding-opener-left-px 				: 1px !default;
+$o-tree-dnd-hover							: o-state-color("warning", "bg");
+$o-tree-insertion-disabled-color			: o-neutral(500) !default;
+$o-tree-insertion-source-color				: o-palette("yellow", 800) !default;
+$o-tree-insertion-source-bg					: o-palette("orange", 300) !default;
+$o-tree-insertion-source-border				: o-palette("orange", 200) !default;
+
+/* Tabbed pane component */
+$o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;
+
+/* Icon panel component */
+// icon-panel-border: width and style; the colour is the token icon-panel-border
+// (replaces the shorthand $o-icon-panel-border)
+$o-icon-panel-border-width              : 1px !default;
+$o-icon-panel-border-style              : solid !default;
+$o-icon-panel-border-radius			: $panel-border-radius !default;
+$o-icon-panel-icon-bg-color			: o-neutral(25) !default;
+$o-icon-panel-content-bg-color		: $panel-bg !default;
+
+/* Wizard */
+$o-wizard-steps-bg-color				: o-neutral(25) !default;
+$o-wizard-steps-border-color			: o-neutral(250) !default;
+$o-wizard-step-bg-color					: o-neutral(100) !default;
+
+/* Auto completer input field */
+$o-autocomplete-width				: 400px !default;
+$o-autocomplete-font-size			: $font-size-base !default;
+$o-autocomplete-line-height			: $line-height-base !default;
+$o-autocomplete-border-radius		: $input-border-radius !default;
+$o-autocomplete-bg-color			: $input-bg !default;
+$o-autocomplete-color 				: $input-color !default;
+
+/* Chart library configuration for visualized statistics */
+$o-d3chart-default 				: $brand-primary !default;
+// the light bar is a fill without text: the fill step 450 is a candidate
+$o-d3chart-light 				: o-scale-snap($brand-primary, o-lighter($brand-primary, 15%), $fill: true) !default;
+$o-d3chart-dark 				: o-scale-snap($brand-primary, o-darker($brand-primary, 15%)) !default;
+
+/* Toggle sliders */
+$o-toggle-size					: 14px !default;
+$o-toggle-border-color			: $gray-light !default;
+$o-toggle-bg					: $gray-lighter !default;
+$o-toggle-color					: $gray-light !default;
+$o-toggle-on-color				: $gray-lighter !default;
+// the text of the switched on toggle: $gray-lighter, or the nearest neutral step with 4.5:1 on the primary fill
+$o-toggle-on-text-color			: o-scale-on-color($gray-lighter, $brand-primary) !default;
+
+/* Dirty button: the fill of the warning state, the text of the fg role on
+   it (OO-10043, decisions S5 and S3). The text of an own fill of the theme
+   stays the adjusted white. */
+$o-button-dirty-bg				: o-state-color("warning", "bg") !default;
+$o-button-dirty-color			: if(sass($o-button-dirty-bg == o-state-color("warning", "bg")): o-state-color("warning", "fg"); else: o-a11y-color($btn-warning-color, $o-button-dirty-bg)) !default;
+$o-button-dirty-border			: o-scale-snap($o-button-dirty-bg, o-darker($o-button-dirty-bg, 5%), $distinct: false) !default;
+/* Ghost button */
+$o-button-ghost-background-color			: transparent !default;
+$o-button-ghost-border-color				: transparent !default;
+$o-button-ghost-hover-color					: $link-color !default;
+$o-button-ghost-hover-background-color	: transparent !default;
+$o-button-ghost-hover-border-color			: $link-color !default;
+$o-button-mega-height					: 55px !default;
+$o-button-mega-bg-color					: o-neutral(0) !default;
+$o-button-mega-hover-bg-color			: o-neutral(150) !default;
+$o-button-mega-icon-width				: 26px !default;
+$o-button-primary-light-bg					: o-neutral(0) !default;
+$o-button-primary-light-color				: o-a11y-color($btn-primary-bg, $o-button-primary-light-bg) !default;
+$o-button-primary-light-border				: $o-button-primary-light-color !default;
+$o-button-primary-light-hover-bg			: $o-button-primary-light-color !default;
+$o-button-primary-light-hover-color			: $o-button-primary-light-bg !default;
+$o-button-primary-light-hover-border		: $btn-default-hover-border !default;
+$o-button-danger-light-bg					: o-neutral(0) !default;
+$o-button-danger-light-color				: o-a11y-color(o-state-color("danger", "text"), $o-button-danger-light-bg) !default;
+$o-button-danger-light-border				: $o-button-danger-light-color !default;
+$o-button-danger-light-hover-bg			: $o-button-danger-light-color !default;
+$o-button-danger-light-hover-color			: $o-button-danger-light-bg !default;
+$o-button-danger-light-hover-border		: $o-button-danger-light-color !default;
+
+/* Bento layout */
+$o-bento-cols							: 8 !default;
+$o-bento-gap							: 10px !default;
+$o-bento-border-radius					: $panel-border-radius !default;
+
+/* Login page */
+$o-login-header-color			: $brand-primary !default;
+// The translucent defaults mix a token with transparent (OO-10043): your value replaces them
+$o-login-bg-color				: color-mix(in srgb, var(--o-scrim) 95%, transparent) !default;
+$o-login-border-color			: o-neutral(150) !default;
+// login-border: width and style; the colour is the token login-border ($o-login-border-color)
+// (replaces the shorthand $o-login-border)
+$o-login-border-width                   : 1px !default;
+$o-login-border-style                   : solid !default;
+// The shorthand of before. A theme that sets it keeps it: the rules of the
+// login box use the value as it is, the compile prints a warning.
+$o-login-border                         : null !default;
+// The border of the login box: the shorthand of the theme, else width,
+// style and the token login-border
+@function o-login-border() {
+	@if $o-login-border != null {
+		@return $o-login-border;
+	}
+	@return $o-login-border-width $o-login-border-style var(--o-login-border);
+}
+$o-login-border-radius			: $panel-border-radius !default;
+$o-login-box-shadow				: 0 8px 32px color-mix(in srgb, var(--o-shadow-color) 12%, transparent), 0 2px 8px color-mix(in srgb, var(--o-shadow-color) 6%, transparent) !default;
+
+$o-login-padding				: 50px !default;
+$o-login-xs-padding				: 10px !default;
+$o-login-help-bg-color			: o-neutral(150) !default;
+$o-login-help-link-color		: o-scale-a11y-color($link-color, $o-login-help-bg-color) !default;
+$o-login-form-width				: 480px !default;
+$o-login-form-align				: right !default; 								/* left, center or right */
+$o-login-form-bg-gradient-steps	: color-mix(in srgb, var(--o-scrim) 10%, transparent) 0.2%, color-mix(in srgb, var(--o-scrim) 60%, transparent) 60%, color-mix(in srgb, var(--o-scrim) 80%, transparent) 100% !default;
+$o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
+$o-login-form-bg-position-left 	: center !default;
+$o-login-form-bg-position-top	: center !default;
+$o-login-infomessage-border		: transparent !default;
+$o-login-infomessage-radius		: $border-radius-base !default;
+$o-login-infomessage-bg			: color-mix(in srgb, var(--o-scrim) 50%, transparent) !default;
+$o-login-lead-color				: $text-color !default;
+$o-login-lead-header-color		: $o-content-header-base-color !default;
+$o-login-border-color			: o-neutral(150) !default;
+
+/* Course and catalog site */
+$o-coursesite-rowelem-width-md 		: 210px !default;
+$o-coursesite-rowelem-height-md 	: 140px !default;
+$o-coursesite-rowelem-space-md		: 15px 	!default;
+$o-coursesite-rowelem-width-sm 		: 120px !default;
+$o-coursesite-rowelem-height-sm 	: 80px !default;
+$o-coursesite-rowelem-space-sm		: 8px 	!default;
+$o-coursesite-rowelem-width-xs 		: 75px !default;
+$o-coursesite-rowelem-height-xs 	: 50px !default;
+$o-coursesite-rowelem-space-xs		: 0px 	!default;
+$o-coursesite-rowelem-border 		: $input-border !default;
+$o-coursesite-rowelem-border-radius : $border-radius-base !default;
+$o-coursesite-rowelem-bg			: o-neutral(0) !default;
+$o-coursesite-rowelem-hover-bg			: color-mix(in srgb, var(--o-coursesite-row-hover) 1%, transparent) !default;
+$o-coursesite-rowelem-hover-box-shadow	: inset 0 1px 4px color-mix(in srgb, var(--o-primary) 5%, transparent) !default;
+$o-coursesite-rowelem-hover-visual-transform	: scale(1.02) !default;
+$o-coursesite-catalog-space 		: $padding-large-vertical * 2 !default;
+$o-coursesite-catalog-space-sm 		: $padding-large-vertical !default;
+$o-coursesite-catalog-space-xs 		: math.ceil($padding-large-vertical * 0.5) !default;
+$o-coursesite-catalog-border 		: $o-coursesite-rowelem-border !default;
+$o-coursesite-meta-title-color		: $o-content-header-base-color !default;
+$o-coursesite-meta-author-color		: $text-color !default;
+$o-coursesite-meta-title-font-size	: math.ceil(($font-size-base * 2.6)) !default; /* same as h1 default size: 36px */
+$o-coursesite-meta-header-border-width	: 1px !default; 
+$o-coursesite-meta-header-padding-bottom	: 2em !default;
+$o-coursesite-sidecol-radius	: $border-radius-base !default;
+$o-coursesite-sidecol-padding 	: $panel-body-padding !default;
+$o-coursesite-start-bg			: $btn-primary-bg !default;
+// The text of the Start button: the text of the primary button on the
+// primary fill; on an other fill white, or the colour with 4.5:1 on it,
+// as for $btn-primary-color.
+$o-coursesite-start-color-default	: o-a11y-color(o-neutral(0), $o-coursesite-start-bg);
+@if $o-coursesite-start-bg == $btn-primary-bg {
+	$o-coursesite-start-color-default	: o-a11y-color($btn-primary-color, $o-coursesite-start-bg);
+}
+$o-coursesite-start-color		: $o-coursesite-start-color-default !default;
+$o-coursesite-start-border		: o-scale-snap($o-coursesite-start-bg, o-darker($o-coursesite-start-bg, 5%)) !default;
+// the book button follows the dirty button: warning state (OO-10043, S5 and S3)
+$o-coursesite-book-bg			: o-state-color("warning", "bg") !default;
+$o-coursesite-book-color		: if(sass($o-coursesite-book-bg == o-state-color("warning", "bg")): o-state-color("warning", "fg"); else: o-a11y-color($btn-warning-color, $o-coursesite-book-bg)) !default;
+$o-coursesite-book-border		: o-scale-snap($o-coursesite-book-bg, o-darker($o-coursesite-book-bg, 5%), $distinct: false) !default;
+$o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
+$o-cat2-header-height			: 240px !default;
+$o-cat2-header-noimage-bg				: linear-gradient(190deg, var(--o-catalog-header-noimage-stop-1) 10%, var(--o-primary) 100%), linear-gradient(40deg, var(--o-catalog-header-noimage-stop-3) 0%, var(--o-catalog-header-noimage-stop-4) 60%) !default;
+$o-cat2-header-noimage-bg-blend-mode		: screen, normal !default;
+$o-cat2-header-box-bg-color				: color-mix(in srgb, var(--o-scrim) 70%, transparent) !default;
+$o-cat2-search-row-margin-bottom		: 5px !default;
+$o-cat2-launcher-margin-top				: 30px !default;
+$o-cat2-launcher-margin-top-xs			: 40px !default;
+$o-cat2-launcher-margin-top-md			: 55px !default;
+$o-cat2-launcher-title-margin			: 20px 0px !default;
+$o-cat2-card-meta-padding				: 10px !default;
+$o-cat2-tax-launcher-square-font-size	: 14px !default;
+
+/* Repository */
+$o-repo-access-denied-cross-fill		: $brand-primary  !default;
+// repo-info-border: width and style; the colour is the token repo-info-border
+// (replaces the shorthand $o-repo-info-border)
+$o-repo-info-border-width               : 1px !default;
+$o-repo-info-border-style               : solid !default;
+$o-repo-info-border-radius				: 4px !default;
+$o-repo-info-padding					: 20px 20px 5px 20px !default;
+$o-repo-info-header-size-small			: 16px !default;
+// repo-info-separator-border: width and style; the colour is the token repo-info-separator-border
+// (replaces the shorthand $o-repo-info-separator-border)
+$o-repo-info-separator-border-width     : 1px !default;
+$o-repo-info-separator-border-style     : solid !default;
+$o-repo-info-print-logo-height			: $o-navbar-brand-height !default;
+
+/* Access control */
+$o-ac-offers-container-max-width		: math.div($o-page-width-max, 3) !default;
+$o-ac-ba-radio-card-width			: 270px !default;
+$o-ac-ba-min-width					: 250px !default;
+$o-ac-ba-bg-color					: o-neutral(25) !default;
+// o-ac-ba-border: width and style; the colour is the token ac-billing-address-border
+// (replaces the shorthand $o-ac-ba-border)
+$o-ac-ba-border-width		: 1px !default;
+$o-ac-ba-border-style		: solid !default;
+$o-ac-ba-border-radius				: 4px !default;
+$o-ac-ba-padding					: 10px 15px 10px 0px !default;
+$o-ac-ba-icon-width					: 65px !default;
+$o-ac-ba-icon-font-size				: 28px !default;
+$o-ac-ba-no-ident-bg-color			: $o-color-warning-text-bg !default;
+
+/* Curriculum in course site */
+$o-coursesite-curriculum-rowelem-height-md :	40px !default;
+
+/* Course editor and runtime */
+$o-course-show-icon-title		: false !default; 	// don't show icon in title - no info value
+$o-course-show-icon-toc			: true !default;	// show icons in menu - looks prettier
+$o-course-show-icon-menu		: true !default;	// show icons in menu - looks prettier
+$o-course-show-icon-editor-menu : true !default;	// show icons in menu - looks prettier
+$o-course-state-passed-color	: o-state-color("success", "text") !default;
+$o-course-assessment-chart-size:	62px !default;
+$o-course-assessment-chart-padding:	2px !default;
+$o-course-node-published		: o-state-color("success", "text") !default;
+$o-course-node-warning			: o-state-color("warning", "text") !default;
+$o-course-node-locked			: o-state-color("neutral", "text") !default;
+$o-course-node-error			: o-state-color("danger", "text") !default;
+// text of a deleted course element in the editor overview: the disabled text colour (token course-node-deleted)
+$o-course-node-deleted			: $btn-link-disabled-color !default;
+// the border of a styled course element: width and style; the colour is the
+// token course-style-border (replaces the shorthand
+// $o-cn-style-border)
+$o-cn-style-border-line-width		: 1px !default;
+$o-cn-style-border-line-style		: solid !default;
+$o-cn-style-border-radius			: $panel-border-radius !default;
+$o-cn-style-border-width			: 3px !default;
+$o-cn-style-bg						: o-neutral(25) !default;
+$o-cn-style-text-pading				: $panel-body-padding !default;
+$o-cn-style-image-bg				: $brand-primary !default;
+$o-cn-style-image-height			: 120px !default;
+$o-cn-style-image-width				: 240px !default;
+$o-cn-style-cover-text-bg			: color-mix(in srgb, var(--o-scrim) 95%, transparent) !default;
+$o-cn-style-cover-text-padding		: 8px !default;
+// Colour category colours: the "bg" of the solid swatch the predefined
+// category stores (o_swatch_<key>, ColorCategoryDAO).
+// Not used by the light theme itself: educational types, course benefits,
+// practice and course quota name their swatches themselves.
+$o-cn-style-cat-dark-blue-color		: o-swatch-color("blue", "bg") !default;
+$o-cn-style-cat-light-blue-color	: o-swatch-color("cyan", "bg") !default;
+$o-cn-style-cat-purple-color		: o-swatch-color("magenta", "bg") !default;
+$o-cn-style-cat-red-color			: o-swatch-color("red", "bg") !default;
+$o-cn-style-cat-orange-color		: o-swatch-color("orange", "bg") !default;
+$o-cn-style-cat-yellow-color		: o-swatch-color("yellow", "bg") !default;
+$o-cn-style-cat-light-green-color	: o-swatch-color("lime", "bg") !default;
+$o-cn-style-cat-dark-green-color	: o-swatch-color("green", "bg") !default;
+$o-cn-style-peekview-bg				: color-mix(in srgb, var(--o-shadow-color) 2%, transparent) !default;
+$o-st-peekview-text-padding			: 2px 15px !default;
+
+/* Learning path */
+$o-lp-not-accessible			: o-state-color("inactive", "text") !default;
+$o-lp-ready						: o-state-color("warning", "text") !default;
+$o-lp-in-progress				: o-state-color("neutral", "text") !default;
+$o-lp-in-review					: o-state-color("warning", "text") !default;
+$o-lp-done						: o-state-color("success", "text") !default;
+$o-lp-default					: o-neutral(450) !default;
+$o-lp-icon-bg-color				: o-neutral(0) !default;
+$o-lp-icon-radius				: 6px !default;
+// lp-border: width and style; the colour is the token lp-border ($navbar-default-border)
+// (replaces the shorthand $o-lp-border)
+$o-lp-border-width                      : 1px !default;
+$o-lp-border-style                      : solid !default;
+$o-lp-bg						: color-mix(in srgb, var(--o-backdrop) 2.5%, transparent) !default;
+$o-lp-step-top					: 13px !default;
+$o-lp-step-size					: 13px !default;
+$o-lp-path-width				: 2px !default;
+$o-lp-right						: 3px !default;
+$o-lp-left						: 3px !default;
+$o-lp-pagination-done-bgcolor				: o-state-color("success", "text") !default;
+$o-lp-pagination-done-border-color			: o-palette("lime", 600) !default;
+$o-lp-pagination-done-color					: o-neutral(0) !default;
+$o-lp-pagination-in-progress-bgcolor		: color-mix(in srgb, var(--o-lp-in-progress) 20%, transparent) !default;
+$o-lp-pagination-in-progress-icon-bgcolor	: o-neutral(25) !default;
+
+/* Curriculum */
+/* Basic rendering configuration */
+$o-curriculum-level-steps-enabled		: false !default;
+$o-curriculum-entry-image-enabled		: true !default;
+$o-curriculum-show-description			: false !default;
+$o-curriculum-element-inactive-color	: o-neutral(500);
+/* Default styles for each level */
+$o-curriculum-border				: none !default;
+$o-curriculum-bg					: none !default;
+$o-curriculum-cols					: 1 !default;
+$o-curriculum-margin				: math.div($line-height-computed,2) 0 math.div($line-height-computed,4) 0!default;
+$o-curriculum-title-bg				: transparent !default;
+$o-curriculum-title-padding			: $padding-base-horizontal $padding-base-vertical math.div($padding-base-horizontal,2) $padding-base-vertical!default;
+$o-curriculum-lifecycle-bg			: transparent !default;
+$o-curriculum-lifecycle-padding		: math.div($padding-base-horizontal,2) $padding-base-vertical $padding-base-horizontal $padding-base-vertical!default;
+/* Level 0 specific styling */
+$o-curriculum-l0-show-description	: true !default;
+$o-curriculum-l0-border				: 1px solid o-neutral(100) !default;
+$o-curriculum-l0-bg					: o-neutral(50) !default;
+$o-curriculum-l0-margin				: math.div($line-height-computed,2) 0 math.div($line-height-computed,4) 0 !default;
+$o-curriculum-l0-title-bg			: $o-curriculum-title-bg !default;
+$o-curriculum-l0-title-padding		: $padding-base-horizontal $padding-base-vertical !default;
+$o-curriculum-l0-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+$o-curriculum-l0-lifecycle-bg		: $o-curriculum-lifecycle-bg !default;
+$o-curriculum-l0-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+/* Level 1 specific rendering */
+$o-curriculum-l1-show-description	: $o-curriculum-show-description !default;
+$o-curriculum-l1-border				: $o-curriculum-border !default;
+$o-curriculum-l1-bg					: $o-curriculum-bg !default;
+$o-curriculum-l1-margin				: $o-curriculum-margin !default;
+$o-curriculum-l1-title-bg			: o-neutral(100) !default;
+$o-curriculum-l1-title-padding		: $o-curriculum-title-padding !default;
+$o-curriculum-l1-lifecycle-bg		: $o-curriculum-l1-title-bg !default;
+$o-curriculum-l1-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+/* Level 2 specific rendering */
+$o-curriculum-l2-show-description	: $o-curriculum-show-description !default;
+$o-curriculum-l2-border				: $o-curriculum-border !default;
+$o-curriculum-l2-bg					: $o-curriculum-bg !default;
+$o-curriculum-l2-margin				: $o-curriculum-margin !default;
+$o-curriculum-l2-title-bg			: $o-curriculum-title-bg !default;
+$o-curriculum-l2-title-padding		: $o-curriculum-title-padding !default;
+$o-curriculum-l2-lifecycle-bg		: $o-curriculum-lifecycle-bg !default;
+$o-curriculum-l2-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+/* Level 3 specific rendering */
+$o-curriculum-l3-show-description	: $o-curriculum-show-description !default;
+$o-curriculum-l3-margin				: $o-curriculum-margin !default;
+$o-curriculum-l3-title-padding		: $o-curriculum-title-padding !default;
+$o-curriculum-l3-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+/* Render all curriculum elements with courses in multi columnn layout? If no set to 1 */
+$o-curriculum-entry-cols			: 2 !default;
+$o-curriculum-entry-bg				: o-neutral(50) !default;
+/* Element type specific styles */
+/* Type course program */
+$o-curriculum-style-program-show-description	: $o-curriculum-l0-show-description !default;
+$o-curriculum-style-program-cols				: 1 !default;
+$o-curriculum-style-program-border				: $o-curriculum-l0-border !default;
+$o-curriculum-style-program-bg					: $o-curriculum-l0-bg !default;
+$o-curriculum-style-program-margin				: $o-curriculum-l0-margin !default;
+$o-curriculum-style-program-title-bg			: $o-curriculum-l0-title-bg !default;
+$o-curriculum-style-program-title-padding		: $o-curriculum-l0-title-padding !default;
+$o-curriculum-style-program-lifecycle-bg		: $o-curriculum-l0-lifecycle-bg !default;
+$o-curriculum-style-program-lifecycle-padding	: $o-curriculum-l0-lifecycle-padding !default;
+/* Type semester as part of a course program */
+$o-curriculum-style-semester-show-description	: $o-curriculum-l1-show-description !default;
+$o-curriculum-style-semester-cols				: 1 !default;
+$o-curriculum-style-semester-border				: $o-curriculum-l1-border !default;
+$o-curriculum-style-semester-bg					: $o-curriculum-l1-bg !default;
+$o-curriculum-style-semester-margin				: $o-curriculum-l1-margin !default;
+$o-curriculum-style-semester-title-bg			: $o-curriculum-l1-title-bg !default;
+$o-curriculum-style-semester-title-padding		: $o-curriculum-l1-title-padding !default;
+$o-curriculum-style-semester-lifecycle-bg		: $o-curriculum-l1-lifecycle-bg !default;
+$o-curriculum-style-semester-lifecycle-padding	: $o-curriculum-l1-lifecycle-padding !default;
+/* Type module within a semester */
+$o-curriculum-style-module-show-description		: $o-curriculum-l2-show-description !default;
+$o-curriculum-style-module-cols					: $o-curriculum-entry-cols !default;
+$o-curriculum-style-module-border				: $o-curriculum-l2-border !default;
+$o-curriculum-style-module-bg					: $o-curriculum-entry-bg !default;
+$o-curriculum-style-module-margin				: $o-curriculum-l2-margin !default;
+$o-curriculum-style-module-title-bg				: $o-curriculum-l2-title-bg !default;
+$o-curriculum-style-module-title-padding		: $o-curriculum-l2-title-padding !default;
+$o-curriculum-style-module-lifecycle-bg			: $o-curriculum-l2-lifecycle-bg !default;
+$o-curriculum-style-module-lifecycle-padding	: $o-curriculum-l2-lifecycle-padding !default;
+/* Type single course */
+$o-curriculum-style-course-show-description		: $o-curriculum-l2-show-description !default;
+$o-curriculum-style-course-cols					: 1 !default;
+$o-curriculum-style-course-border				: $o-curriculum-l2-border !default;
+$o-curriculum-style-course-bg					: $o-curriculum-l2-bg !default;
+$o-curriculum-style-course-margin				: $o-curriculum-l2-margin !default;
+$o-curriculum-style-course-title-bg				: $o-curriculum-l2-title-bg !default;
+$o-curriculum-style-course-title-padding		: $o-curriculum-l2-title-padding !default;
+$o-curriculum-style-course-lifecycle-bg			: $o-curriculum-l2-lifecycle-bg !default;
+$o-curriculum-style-course-lifecycle-padding	: $o-curriculum-l2-lifecycle-padding !default;
+
+/* Curriculum management */
+$o-curriculum-title-font-size-medium			: 21px !default;
+$o-curriculum-title-font-size-small				: 18px !default;
+$o-curriculum-avatar-width-medium				: 120px !default;
+$o-curriculum-avatar-font-size-medium			: 14px !default;
+$o-curriculum-avatar-font-size-large			: 18px !default;
+$o-curriculum-avatar-color						: o-neutral(0) !default;
+$o-curriculum-avatar-border-radius				: 6px !default;
+
+
+/* Curriculum overview */
+// curriculum-widget-border: width and style; the colour is the token curriculum-widget-border
+// (replaces the shorthand $o-curriculum-widget-border)
+$o-curriculum-widget-border-width       : 1px !default;
+$o-curriculum-widget-border-style       : solid !default;
+$o-curriculum-widget-border-radius				: 4px !default;
+$o-curriculum-widget-bg-color					: $panel-bg !default;
+// curriculum-widget-card-border: width and style; the colour is the token curriculum-widget-card-border
+// (replaces the shorthand $o-curriculum-widget-card-border)
+$o-curriculum-widget-card-border-width  : 1px !default;
+$o-curriculum-widget-card-border-style  : solid !default;
+$o-curriculum-widget-card-border-radius			: 4px !default;
+
+/* Curriculum element in catalog */
+$o-curriculum-outline-height					: 60px !default;
+$o-curriculum-outline-thumb-height				: 48px !default;
+$o-curriculum-outline-thumb-width				: 72px !default;
+$o-curriculum-outline-thumb-border-radius		: 4px !default;
+$o-curriculum-outline-padding					: 10px !default;
+$o-curriculum-outline-space-width				: 2em !default;
+
+/* Curriculum import */
+$o-curriculum-import-bg-new						: $o-color-success-text-bg !default;
+$o-curriculum-import-bg-error					: $o-color-error-text-bg !default;
+$o-curriculum-import-bg-changed					: $o-color-info-text-bg	 !default;
+$o-curriculum-import-bg-ignored					: $o-color-note-text-bg !default;
+
+/* Activity */
+// the borders of the activity entries: width and style; the colours are the
+// tokens activity-add-border, activity-modify-border, activity-remove-border
+// (replaces the shorthands $o-activity-*-border)
+$o-activity-add-border-width            : 1px !default;
+$o-activity-add-border-style            : solid !default;
+$o-activity-modify-border-width         : 1px !default;
+$o-activity-modify-border-style         : solid !default;
+$o-activity-remove-border-width         : 1px !default;
+$o-activity-remove-border-style         : solid !default;
+$o-activity-border-radius						: 4px !default;
+
+/* Asssessment */
+$o-assessment-mode-today-bg						: o-state-color("success", "soft-bg") !default;
+$o-assessment-mode-today-border-color			: o-state-color("success", "text") !default;
+$o-assessment-mode-end-soon-bg					: o-state-color("danger", "soft-bg") !default;
+$o-assessment-mode-end-soon-border-color		: o-state-color("danger", "text") !default;
+
+// assessment-inspection-border: width and style; the colour is the token assessment-inspection-border
+// (replaces the shorthand $o-assessment-inspection-border-color)
+$o-assessment-inspection-border-width   : 1px !default;
+$o-assessment-inspection-border-style   : solid !default;
+
+
+
+/* Portfolio v2 */
+$o-portfolio-assignment-color						: o-state-color("danger", "bg") !default;
+$o-portfolio-assignment-background-color			: o-state-color("danger", "soft-bg") !default;
+$o-portfolio-assignment-font-size					: $font-size-small !default;
+$o-portfolio-editor-border-width					: 25px !default;
+
+$o-portfolio-media-content-background-color			: o-neutral(25) !default;
+$o-portfolio-media-content-space					: $padding-large-vertical !default;
+$o-portfolio-lead-space-sm							: $padding-large-vertical !default;
+$o-portfolio-lead-background-color					: o-scale-snap($gray-base, o-lighter($gray-base, 95%)) !default;
+$o-portfolio-lead-border-color						: o-scale-snap($o-portfolio-lead-background-color, o-darker($o-portfolio-lead-background-color, 10%)) !default;
+$o-portfolio-lead-border-radius						: $border-radius-small !default;
+// the lead of an ended section: the soft swatch of the state danger (as the error box), body text and links keep 4.5:1
+$o-portfolio-lead-ended-background-color			: o-state-color("danger", "soft-bg") !default;
+$o-portfolio-lead-ended-border-color				: o-state-color("danger", "soft-border") !default;
+$o-portfolio-page-summary-font-size					: $font-size-large !default;
+
+/* Page editor */
+$o-editor-edit-background-color						: o-neutral(50);
+
+/* Editor */
+$o-editor-title-dark								: o-neutral(1000) !default;
+$o-editor-title-bright								: o-neutral(25) !default;
+$o-editor-hover-border-color						: o-palette("magenta", 450) !default;
+$o-editor-container-border-color					: o-neutral(100) !default;
+$o-editor-container-slot-padding					: 10px;
+
+$o-editor-border-color								: o-neutral(250) !default;
+$o-editor-border-width								: 25px !default;
+$o-editor-selected-border-color						: $brand-primary !default;
+$o-editor-element-border-width						: 1px !default;
+$o-editor-inspector-border-width					: 1px;
+$o-editor-inspector-border-color					: $o-editor-border-color;
+$o-editor-inspector-box-shadow						: 0px 8px 16px color-mix(in srgb, var(--o-shadow-color) 15%, transparent);
+$o-editor-tools-box-shadow							: $o-editor-inspector-box-shadow;
+// the inner lines of a layout: width and style; the colours are the tokens
+// editor-layout-inner-v-border and editor-layout-inner-h-border, default
+// $o-editor-border-color (replaces the shorthands)
+$o-editor-layout-inner-v-border-width   : 1px;
+$o-editor-layout-inner-v-border-style   : solid;
+$o-editor-layout-inner-h-border-width   : 1px;
+$o-editor-layout-inner-h-border-style   : dashed;
+$o-editor-layout-pseudo-icon-border-color			: o-neutral(500);
+$o-editor-layout-pseudo-icon-bg-color				: o-neutral(100);
+
+/* Media */
+
+$o-media-version-label-color						: o-state-color("neutral", "text");
+$o-media-version-label-text							: o-state-color("neutral", "text");
+$o-media-version-label-bg							: o-state-color("neutral", "soft-bg");
+
+$o-media-browser-space								: $padding-large-vertical * 2 - 1 !default;
+$o-media-browser-space-sm							: $padding-large-vertical !default;
+$o-media-browser-space-xs							: 6px !default;
+$o-media-browser-card-width-md 						: 195px !default;
+$o-media-browser-card-height-md 					: 215px !default;
+$o-media-browser-card-visual-height-md 				: 130px !default;
+$o-media-browser-card-width-sm 						: 104px !default;
+$o-media-browser-card-height-sm 					: 122px !default;
+$o-media-browser-card-visual-height-sm 				: 70px !default;
+
+/* Content Editor */
+$o-ce-padding-large									: 32px;
+$o-ce-padding-light									: 24px;
+$o-ce-padding-normal								: 16px;
+$o-ce-padding-compact								: 8px;
+$o-cc-box-shadow		 							: 0 1px 3px color-mix(in srgb, var(--o-shadow-color) 6%, transparent), 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
+
+/* QTI2 eAssessment */
+$o-qti-status-notPresented-color					: o-state-color("inactive", "bg") !default;
+$o-qti-status-notAnswered-color						: o-state-color("critical", "text") !default;
+$o-qti-status-ended-color							: o-state-color("finished", "text") !default;
+$o-qti-status-invalid-color							: o-state-color("danger", "text") !default;
+$o-qti-menu-link-active-font-weight					: $o-tree-link-active-font-weight !default;
+$o-qti-menu-bg										: $o-toolbar-bg-color !default;
+$o-qti-menu-border-color							: $o-toolbar-border-color !default;
+$o-qti-menu-border-radius							: $border-radius-base !default;
+$o-qti-item-title-bg								: $o-qti-menu-bg !default;
+$o-qti-item-title-border-color						: $o-qti-menu-border-color !default;
+$o-qti-item-title-border-radius						: $o-qti-menu-border-radius !default;
+$o-qti-item-min-height								: 200px !default;
+$o-qti-item-border-color							: $o-qti-menu-border-color !default;
+$o-qti-item-controls-bg								: $o-qti-menu-bg !default;
+$o-qti-item-controls-border-color					: $o-qti-menu-border-color !default;
+$o-qti-item-controls-border-radius					: $o-qti-menu-border-radius !default;
+$o-qti-item-max-score-border-color					: o-neutral(1000) !default;
+$o-qti-run-infos-bg									: $o-qti-menu-bg !default;
+$o-qti-run-infos-border-color						: $o-qti-menu-border-color !default;
+$o-qti-run-infos-border-radius						: $o-qti-menu-border-radius !default;
+$o-qti-run-infos-progress-bg						: o-neutral(100) !default;
+$o-qti-run-infos-question-progress-color				: $progress-bar-neutral-bg !default;
+$o-qti-run-infos-score-progress-color				: $progress-bar-neutral-bg !default;
+$o-qti-badResponse-color							: o-state-color("danger", "text") !default;
+$o-qti-badResponse-warning-color					: o-state-color("warning", "text") !default;
+$o-qti-highlight-color								: o-state-color("danger", "bg") !default;
+$o-qti-bar-green									: o-state-color("success", "border") !default;
+$o-qti-bar-red										: o-state-color("danger", "border") !default;
+$o-qti-success										: o-state-color("success", "bg") !default;
+$o-qti-failure										: o-state-color("warning", "bg") !default;
+$o-qti-error										: o-state-color("danger", "bg") !default;
+$o-qti-box-bg										: o-neutral(100) !default;
+$o-qti-box-color									: o-neutral(500) !default;
+$o-qti-choice-tablelayout-bg						: o-neutral(150) !default;
+$o-qti-userselection-color							: $text-color !default;
+$o-qti-userselection-bg								: o-state-color("neutral", "soft-bg") !default;
+$o-qti-userselection-border-color					: o-state-color("neutral", "soft-border") !default;
+$o-qti-gap-border-color								: $input-border !default;
+$o-qti-hottext-bg									: $o-qti-menu-bg !default;
+$o-qti-hottext-border-color							: $o-qti-menu-border-color !default;
+$o-qti-hottext-border-radius						: 2px !default;
+$o-qti-hottext-checked-bg							: $o-qti-userselection-bg !default;
+$o-qti-hottext-checked-border-color					: $o-qti-userselection-border-color !default;
+$o-qti-match-choosed-border-color					: o-neutral(500) !default;
+$o-qti-match-drag-border-color						: o-state-color("warning", "bg") !default;
+$o-qti-match-sources-bg								: $o-qti-run-infos-bg !default;
+$o-qti-match-sources-border-color					: $o-qti-run-infos-border-color !default;
+$o-qti-match-source-bg								: o-state-color("warning", "soft-bg") !default;
+$o-qti-match-source-border-style						: dashed !default;
+$o-qti-match-selected-border-color					: o-state-color("warning", "bg") !default;
+$o-qti-match-selected-bg								: o-state-color("warning", "bg", "tint") !default;
+$o-qti-match-drop-accept-border-color				: o-scale-snap(o-state-color("neutral", "bg"), o-darker(o-state-color("neutral", "bg"), 25%)) !default;
+$o-qti-match-target-border-color						: o-state-color("neutral", "bg") !default;
+$o-qti-match-target-bg								: o-state-color("neutral", "soft-bg") !default;
+$o-qti-match-border-radius							: $panel-border-radius !default;
+$o-qti-match-true-false-unanswered-bg				: o-scale-snap($gray-lighter, o-lighter($gray-lighter, 5%)) !default;
+// the right and correct cells: the soft fill of the success state (OO-10043, S4)
+$o-qti-match-true-false-right-bg						: o-state-color("success", "soft-bg") !default;
+$o-qti-match-true-false-wrong-bg						: o-scale-snap(o-state-color("danger", "bg"), o-lighter(o-state-color("danger", "bg"), 40%)) !default;
+$o-qti-match-kprim-correct-bg						: o-state-color("success", "soft-bg") !default;
+$o-qti-match-kprim-wrong-bg							: o-scale-snap(o-state-color("danger", "bg"), o-lighter(o-state-color("danger", "bg"), 40%)) !default;
+$o-qti-order-source-border-style					: dashed !default;
+$o-qti-order-sources-border-color					: $o-qti-run-infos-border-color !default;
+$o-qti-order-border-radius							: $panel-border-radius !default;
+$o-qti-order-source-bg								: o-state-color("warning", "soft-bg") !default;
+$o-qti-order-sources-bg								: $o-qti-run-infos-bg !default;
+$o-qti-order-drop-accept-border-color				: o-scale-snap(o-state-color("neutral", "bg"), o-darker(o-state-color("neutral", "bg"), 25%)) !default;
+$o-qti-order-target-bg								: o-state-color("neutral", "soft-bg") !default;
+$o-qti-order-target-border-color					: o-state-color("neutral", "bg") !default;
+$o-qti-textEntryInteraction-color					: $text-color !default;
+$o-qti-textEntryInteraction-bg						: o-neutral(0) !default;
+$o-qti-textEntryInteraction-border-color			: $o-qti-gap-border-color !default;
+$o-qti-textEntryInteraction-filled-color			: $o-qti-userselection-color !default;
+$o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
+$o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
+
+$o-qti-inline-choice-print-border-color				: o-neutral(450) !default;
+
+$o-qti-editor-box-border-color						: o-neutral(150);
+
+$o-qti-log-viewer-manual-correction-bg-color		: o-palette("yellow", 50);
+
+/* Video module */
+$o-video-controls-selected							: rgba(33, 248, 248, 1);
+$o-video-controls-bg								: color-mix(in srgb, var(--o-shadow-color) 95%, transparent);
+$o-video-marker-bg-color							: o-neutral(100);
+$o-video-time-marker-default-bg-color				: o-state-color("neutral", "bg");
+
+$o-video-startbox-main-bg-color						: color-mix(in srgb, var(--o-primary) 10%, transparent);
+$o-video-startbox-border-radius						: $border-radius-base !default;
+
+$o-video-correct-segments-color						: o-state-color("success", "text");
+$o-video-notcorrect-segments-color					: o-state-color("danger", "text");
+
+$o-video-timeline-correct-bg						: o-state-color("success", "bg");
+$o-video-timeline-incorrect-bg						: o-state-color("danger", "bg");
+
+/* Lecture module */
+$o-lm-current-bg									: $o-toolbar-bg-color !default;
+$o-lm-current-border-color							: transparent !default; 
+$o-lm-current-border-radius							: $border-radius-base !default;
+$o-lm-excluded-color								: o-state-color("danger", "text") !default;
+
+$o-lm-timeline-rows-gap								: 5px !default;
+$o-lm-timeline-row-bg								: o-neutral(0) !default;
+$o-lm-timeline-row-border-radius					: $border-radius-base !default;
+$o-lm-timeline-row-padding							: 15px !default;
+$o-lm-timeline-day-width							: 90px !default;
+$o-lm-timeline-path-width							: 30px !default;
+$o-lm-timeline-path-stroke-width					: 0.3rem !default;
+$o-lm-timeline-path-top-height						: $o-lm-timeline-row-padding !default;
+
+
+
+/* Chat and other floating window */
+$o-dialog-window-bg				: o-neutral(0) !default;
+$o-dialog-window-bar-bg			: o-neutral(50) !default;
+$o-dialog-header-color			: $brand-primary !default;
+$o-dialog-header-font-weight	: $headings-font-weight !default;
+$o-dialog-header-background		: o-neutral(25) !default;
+$o-dialog-footer-background		: $o-dialog-header-background !default;
+
+/* Instant messaging and chat */
+$o-im-chat-load-font-size		: $font-size-small !default;
+$o-im-chat-history-border		: $gray-lighter !default;
+$o-im-chat-message-bg			: o-neutral(0) !default;
+$o-im-chat-message-bg-me			: o-neutral(50) !default;
+$o-im-chat-message-bg-status		: o-state-color("warning", "soft-bg") !default;
+$o-im-chat-message-bg-error			: o-state-color("danger", "soft-bg") !default;
+$o-im-chat-message-border-radius	: $border-radius-base !default;
+$o-im-chat-roster-bg				: o-scale-snap($gray-lighter, o-lighter($gray-lighter, 5%)) !default;
+$o-im-chat-border				: $gray-lighter !default;
+
+// the name and the time of a message: neutral 600, 4.5:1 also on the grey
+// fill of the own message. A theme that sets $gray-light keeps its colour.
+$o-im-chat-from-color			: o-own-or($gray-light, o-neutral(500), o-neutral(600)) !default;
+$o-im-chat-from-font-size		: $font-size-base !default;
+$o-im-chat-date-font-size		: $font-size-small !default;
+$o-im-chat-body-font-size		: $font-size-base !default;
+$o-im-groupchat-font-size		: math.floor($font-size-base * 0.9) !default;
+$o-im-groupchat-vip-color 		: o-state-color("success", "text") !default;
+$o-im-groupchat-anonymous-color : o-state-color("neutral", "text") !default;
+$o-im-buddies-font-size			: math.floor($font-size-base * 0.9) !default;
+$o-im-summary-color				: $badge-color !default;
+$o-im-summary-bg				: $badge-bg !default;
+$o-im-status-available-color	: o-state-color("success", "text") !default;
+$o-im-status-dnd-color			: o-state-color("critical", "text") !default;
+$o-im-status-unavailable-color	: o-state-color("danger", "text") !default;
+$o-im-newmessage-color			: o-state-color("danger", "text") !default;
+// the icon is in the navbar: the lighter warning text when it has 3:1 on the navbar, else the warning text (OO-10043)
+$o-im-newmessage-hover-color	: o-contrast-hover(o-lighter(o-state-color("warning", "text"), 10%), o-state-color("warning", "text"), $o-navbar-bg) !default;
+
+/* Forum module */
+$o-forum-message-header-bg				: $panel-default-heading-bg !default;
+$o-forum-message-header-modified-color	:  o-a11y-color(o-state-color("warning", "text"), $o-forum-message-header-bg) !default;
+
+$o-forum-quote-padding			: $padding-large-vertical;
+$o-forum-quote-color 			: $gray !default;
+$o-forum-quote-font-size		: $font-size-small !default;
+$o-forum-attachment-font-size	: $font-size-small !default;
+
+/* Evaluation forms */
+$o-evaluation-block-margin-top				: 2em !default;
+$o-evaluation-block-margin-bottom			: 2em !default;
+$o-evaluation-side-labels-font-weight		: normal !default;
+$o-evaluation-step-labels-margin-bottom		: 1em !default;
+$o-evaluation-step-labels-font-weight		: bold !default;
+$o-evaluation-step-background-color 		: $table-bg-accent !default;
+$o-evaluation-slider-margin-bottom			: 1em !default;
+$o-evaluation-slider-hover-background-color	: $table-bg-hover !default;
+
+// The rubric ratings: the fill of the state; the fill of the box plot is the
+// light fill of the state (lighten() would make the danger fill white)
+$o-evaluation-insufficient-color 			: o-state-color("danger", "bg") !default;
+$o-evaluation-insufficient-fill 			: if(sass($o-evaluation-insufficient-color == o-state-color("danger", "bg")): o-state-color("danger", "bg", "light"); else: o-lighter($o-evaluation-insufficient-color, 50%)) !default;
+$o-evaluation-neutral-color					: o-state-color("warning", "bg") !default;
+$o-evaluation-neutral-fill					: if(sass($o-evaluation-neutral-color == o-state-color("warning", "bg")): o-state-color("warning", "bg", "light"); else: o-lighter($o-evaluation-neutral-color, 30%)) !default;
+$o-evaluation-sufficient-color				: o-state-color("success", "bg") !default;
+$o-evaluation-sufficient-fill				: if(sass($o-evaluation-sufficient-color == o-state-color("success", "bg")): o-state-color("success", "bg", "light"); else: o-lighter($o-evaluation-sufficient-color, 30%)) !default;
+$o-evaluation-anonymous-info-display		: inherit !default;
+
+/* Box-Plot graphic */
+$o-box-plot-axis-color						: $gray-dark !default;
+$o-box-plot-quartile-fill		 			: o-scale-snap($brand-primary, o-lighter($brand-primary, 45%)) !default;
+
+/* Quality management */
+$o-qual-hm-base-background-color	: o-palette("cyan", 500);
+
+/* Portlets site */
+$o-portlet-border-radius		: $panel-border-radius !default;
+$o-portlet-bg					: $panel-bg !default;
+$o-portlet-edit-border			: o-state-color("warning", "soft-border") !default;
+$o-portlet-edit-bg				: o-state-color("warning", "soft-bg") !default;
+
+/* Full text search results */
+$o-search-details-font-size		: $font-size-small !default;
+$o-search-highlight-font-weight	: bold !default; 
+
+/* Message boxes */
+$o-box-margin					: 20px !default;
+$o-box-padding					: 12px !default;
+$o-box-border-size				: 1px !default;
+$o-box-border-radius			: $border-radius-base !default;
+// The fill ($o-box-*-bg) and the border ($o-box-*-color) of the message
+// boxes. Only the info box has a strong border: a near white fill
+// ($o-color-info-text-bg, neutral 25) and a border in the fill of the
+// neutral state ($o-color-info, blue 500). The other boxes of a state have
+// the soft fill and the soft border of their state: note inactive, success,
+// warning, error danger. Tip and important have no state. Tip: one hue,
+// the fill cyan 50 and a soft border, cyan 100. Important: the soft swatch of
+// violet, fill violet 50 and border violet 100. Their icon is dark,
+// cyan 700 for tip and violet 800 for important (tokens box-tip-icon, box-important-icon). A theme
+// that sets $o-color-tip or $o-color-important (or $o-box-*-color) keeps
+// its colour for the icon.
+$o-box-info-bg					: $o-color-info-text-bg !default;
+$o-box-info-color				: $o-color-info !default;
+$o-box-note-bg					: o-own-or($o-color-note-text-bg, o-neutral(25), o-state-color("inactive", "soft-bg")) !default;
+$o-box-note-color				: o-own-or($o-color-note, o-neutral(500), o-state-color("inactive", "soft-border")) !default;
+$o-box-tip-bg					: o-own-or($o-color-tip-text-bg, o-neutral(50), o-palette("cyan", 50)) !default;
+$o-box-tip-color				: o-own-or($o-color-tip, o-neutral(600), o-palette("cyan", 100)) !default;
+$o-box-important-bg				: o-own-or($o-color-important-text-bg, o-neutral(25), o-swatch-color("violet", "soft-bg")) !default;
+$o-box-important-color			: o-own-or($o-color-important, o-swatch-color("violet", "text"), o-swatch-color("violet", "soft-border")) !default;
+$o-box-success-bg				: o-own-or($o-color-success-text-bg, o-neutral(50), o-state-color("success", "soft-bg")) !default;
+$o-box-success-color			: o-own-or($o-color-success, o-state-color("success", "bg"), o-state-color("success", "soft-border")) !default;
+$o-box-warning-bg				: o-own-or($o-color-warning-text-bg, o-neutral(0), o-state-color("warning", "soft-bg")) !default;
+$o-box-warning-color			: o-own-or($o-color-warning, o-state-color("warning", "bg"), o-state-color("warning", "soft-border")) !default;
+$o-box-error-bg					: o-own-or($o-color-error-text-bg, o-neutral(25), o-state-color("danger", "soft-bg")) !default;
+$o-box-error-color				: o-own-or($o-color-error, o-state-color("danger", "bg"), o-state-color("danger", "soft-border")) !default;
+$o-message-line-padding			: 5px !default;
+$o-message-line-padding-table	: 1px 5px !default;
+$o-message-line-radius			: $border-radius-base !default;
+$o-line-warning-bg				: o-state-color("critical", "bg", "tint") !default;
+$o-line-warning-color			: o-state-color("critical", "fg", "tint") !default;
+$o-line-error-bg				: o-state-color("danger", "bg", "tint") !default;
+$o-line-error-color				: o-state-color("danger", "fg", "tint") !default;
+
+/* Context help buttons */
+$o-chelp-font-size				: 10px !default;
+$o-chelp-font-weight			: $btn-font-weight !default;
+$o-chelp-bg						: $btn-primary-bg !default;
+$o-chelp-border					: $btn-primary-border !default;
+$o-chelp-border-radius			: 2px !default;
+/* Form context help, aka help text */
+// muted text, not a lighter text colour
+$o-chelp-tooltip-color			: $text-muted !default;
+
+/* Date component */
+$o-datecomp-border				: $gray !default;
+$o-datecomp-month-color			: o-neutral(0) !default;
+
+/* Date picker component */
+
+/* Highscore component */
+// position title: a gradient text (true) or the colour of the token
+// highscore-position-title (false).
+// $o-hs-position-title-color ("gradient" or a colour) stays valid for a theme
+// that sets it; the compile prints a warning (_tokens.scss).
+$o-hs-position-title-gradient		: true !default;
+$o-hs-position-title-color			: null !default;
+@function o-hs-position-title-gradient() {
+	@if $o-hs-position-title-color != null {
+		@return $o-hs-position-title-color == gradient;
+	}
+	@return $o-hs-position-title-gradient;
+}
+// the default of the token highscore-position-title: the colour of the old
+// variable, else the text colour
+@function o-hs-position-title-color() {
+	@if $o-hs-position-title-color != null and $o-hs-position-title-color != gradient {
+		@return $o-hs-position-title-color;
+	}
+	@return $text-color;
+}
+$o-hs-position-title-size			: 3em !default;
+$o-hs-position-title-weight			: 700 !default;
+$o-hs-position-size					: 1.2em !default;
+$o-hs-position-weight				: bold !default;
+$o-hs-position-relative-size		: 1em !default;	
+$o-hs-position-relative-weight		: normal !default;	
+
+// hs-podium-border: width and style; the colour is the token highscore-podium-border
+// (replaces the shorthand $o-hs-podium-border)
+$o-hs-podium-border-width               : 1px !default;
+$o-hs-podium-border-style               : solid !default;
+$o-hs-podium-border-radius			: $panel-border-radius !default;
+$o-hs-podium-bg-gradientstyle		: true !default;
+$o-hs-podium-first-bg				: o-palette("yellow", 300) !default;
+$o-hs-podium-second-bg				: o-neutral(400) !default;
+// bronze: the fill step 450 of orange
+$o-hs-podium-third-bg				: o-palette("orange", 450) !default;
+
+$o-hs-score-size					: 90% !default;
+// the rank numbers: the darkest step of the hue of their block, 3:1 on each
+// stop of the gradient
+$o-hs-rank-first-color				: o-palette("yellow", 900) !default;
+$o-hs-rank-second-color				: o-neutral(900) !default;
+$o-hs-rank-third-color				: o-palette("orange", 900) !default;
+
+$o-hs-podium-height					: 300px !default;
+$o-hs-podium-margin-bottom			: 50px !default;
+$o-hs-podium-first-height			: 150px !default;
+$o-hs-podium-second-height			: 100px !default;
+$o-hs-podium-third-height			: 80px !default;
+
+$o-hs-singleportrait-vertical-align	: -125px !default;
+$o-hs-position-height				: 30px !default;
+$o-hs-position-fontsize				: 130% !default;
+
+$o-hs-histogram-height				: 300px !default;
+$o-hs-histogram-bottom				: -40px !default;
+$o-hs-histogram-margin-bottom		: 40px !default;
+
+$o-hs-histogram-axis-color				: o-neutral(450) !default;
+// the axis and value labels of the histogram: the muted text
+$o-hs-histogram-text-color				: $text-muted !default;
+// a fill without text: the fill step 450 is a candidate
+$o-hs-histogram-bar-myself-hover-color	: o-scale-snap($brand-primary, o-lighter($brand-primary, 10%), $fill: true) !default;
+$o-hs-histogram-bar-other-color			: $gray-light !default;
+$o-hs-histogram-bar-other-hover-color	: o-scale-snap($gray-light, o-lighter($gray-light, 10%)) !default;
+$o-hs-histogram-bar-empty-color			: o-neutral(1000) !default;
+
+/* Radial progress component */
+$o-radial-progress-circle-size			: 120px !default;
+$o-radial-progress-circle-size-sm		: 60px !default;
+$o-radial-progress-circle-size-lg		: 180px !default;
+$o-radial-progress-circle-size-inline	: $line-height-computed !default;
+$o-radial-progress-circle-bg			: o-neutral(100) !default;
+$o-radial-progress-circle-color			: $progress-bar-bg !default;
+$o-radial-progress-inset-color			: o-neutral(0) !default;
+$o-radial-progress-number-color			: $progress-bar-bg !default;
+$o-radial-progress-margin 				: 10px !default;
+$o-radial-progress-circle-success-color		: o-state-color("success", "bg") !default;
+$o-radial-progress-percentage-success-color	: o-state-color("success", "text") !default;
+$o-radial-progress-circle-neutral-color		: $progress-bar-neutral-bg !default;
+$o-radial-progress-percentage-neutral-color	: o-state-color("success", "text") !default;
+$o-radial-progress-circle-warning-color		: o-state-color("warning", "bg") !default;
+$o-radial-progress-percentage-warning-color	: o-state-color("warning", "text") !default;
+$o-radial-progress-circle-danger-color		: o-state-color("danger", "bg") !default;
+$o-radial-progress-percentage-danger-color	: o-state-color("danger", "text") !default;
+$o-radial-progress-circle-info-color		: o-state-color("neutral", "bg") !default;
+$o-radial-progress-percentage-info-color	: o-state-color("neutral", "text") !default;
+// the sizes of the variants (modules/_radial-progress.scss)
+$o-radial-progress-inset-size			: $o-radial-progress-circle-size * 0.75 !default; // 90px
+$o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 !default; // 22px
+$o-radial-progress-inset-size-sm				: $o-radial-progress-circle-size-sm * 0.75 !default;
+$o-radial-progress-percentage-font-size-sm		: $o-radial-progress-circle-size-sm * 0.24 !default;
+$o-radial-progress-inset-size-lg				: $o-radial-progress-circle-size-lg * 0.75 !default;
+$o-radial-progress-percentage-font-size-lg		: $o-radial-progress-circle-size-lg * 0.18 !default;
+$o-radial-progress-inset-size-inline				: $o-radial-progress-circle-size-inline * 0.70 !default;
+$o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size-inline * 0.18 !default;
+$o-radial-progress-circle-size-toolbar				: $o-toolbar-height-md + 8px !default;
+$o-radial-progress-inset-size-toolbar				: $o-radial-progress-circle-size-toolbar - 8px !default;
+$o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !default;
+
+/* Colour picker grid (modules/_form.scss) */
+$o-picker-grid-cell-size: 28px !default;
+$o-picker-grid-gap: 6px !default;
+$o-picker-grid-group-gap: 10px !default;
+
+/* Drawing (border cannot be change without modifications of the jquery plugin and hotspot interaction) */
+$o-drawing-border-width		: 2px !default;
+$o-drawing-select-bg		: color-mix(in srgb, var(--o-primary) 50%, transparent) !default;
+
+/* Placeholder panels */
+$o-panel-placeholder-border-width			: 2px !default;
+$o-panel-placeholder-border-radius			: 10px !default;
+$o-panel-placeholder-color					: o-neutral(500) !default;
+$o-panel-placeholder-font-weight			: bold !default;
+$o-panel-placeholder-border-color			: o-neutral(250) !default;
+$o-panel-placeholder-bg						: o-neutral(0) !default;
+$o-panel-placeholder-bg-active				: o-neutral(25) !default;
+$o-panel-placeholder-padding				: 10px !default;
+
+/* Citations */
+$o-cit-quote-font-size			: $font-size-large !default;
+$o-cit-quote-color				: $o-forum-quote-color !default;
+
+/* Sliders */
+$o-slider-border					: o-neutral(400) !default;
+$o-slider-background				: o-neutral(25) !default;
+
+/* QPool */
+$o-qpool-arrow-bg-color				: $o-toolbar-bg-color !default;
+$o-qpool-arrow-border-bottom-width	: 3px !default;
+
+
+/* Process step component */
+// o-step-border-line: width and style; the colour is the token step-border ($o-step-border-width is the width of the step marker)
+// (replaces the shorthand $o-step-border)
+$o-step-border-line-width		: 1px !default;
+$o-step-border-line-style		: solid !default;
+$o-step-border-radius				: $panel-border-radius !default;
+$o-step-border-header-padding		: 10px !default;
+$o-step-border-header-bg-color		: o-neutral(25);
+$o-step-border-content-padding			: $panel-body-padding !default;
+$o-step-border-width				: 4px !default;
+$o-step-milestone-size				: ($o-step-border-width * 4) !default;
+$o-step-bubble-font-size			: 19px;
+
+$o-step-padding-top					: 10px !default;
+$o-step-padding-left				: 30px !default;
+$o-step-padding-bottom				: 10px !default;
+$o-step-color						: o-neutral(450) !default;
+$o-step-active-marker-color			: $o-step-color !default;
+$o-step-notavailable-color			: $o-step-color !default;
+$o-step-notavailable-marker-color	: $o-step-notavailable-color !default;
+
+$o-step-expired-marker-color		: $o-step-color;
+
+$o-step-meta-size					: $font-size-small !default;
+
+
+/* Email */
+$o-email-brand							: $btn-primary-bg !default;
+$o-email-font-family					: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif !default;
+$o-email-max-width						: 768px !default;
+$o-email-content-margin					: 14px 0 14px 0 !default;
+$o-email-content-padding-left			: 12px !default;
+$o-email-content-h1-color				: $btn-primary-color !default;
+$o-email-content-h1-bg					: $o-email-brand !default;
+$o-email-content-strong-color			: $o-email-brand !default;
+$o-email-content-link-color				: $o-content-link-color !default;
+$o-email-footer-color					: o-neutral(400) !default;
+$o-email-footer-top-color				: $o-email-brand !default;
+$o-email-btn-color						: $btn-primary-color !default;
+$o-email-btn-bg							: $btn-primary-bg !default;
+$o-email-btn-border-color				: $btn-primary-border !default;
+$o-email-btn-border-radius				: 4px !default;
+// the done icon of the to-do mail: fill and text (OO-10043)
+$o-email-todo-done-bg					: #5cb85c !default;
+$o-email-todo-done-color				: #fff !default;
+
+/* Appointments */
+$o-ap-planned-color					: o-state-color("warning", "bg") !default;
+$o-ap-confirmed-color				: o-state-color("success", "bg") !default;
+// text of the confirm button on the planned fill: the fg role on the state
+// fill (OO-10043), else the old near-white
+$o-ap-select-icon-color				: if(sass($o-ap-planned-color == o-state-color("warning", "bg")): o-state-color("warning", "fg"); else: o-neutral(25)) !default;
+
+/* Reminders */
+$o-reminder-cell-padding			: 0.4em 0.6em 0.4em 0em !default;
+$o-reminder-div-padding				: 0.2em 0em !default;
+$o-reminder-marker-padding			: 0.2em 0.4em !default;
+
+/* other configurations */
+$o-portrait-size				: 100px !default;
+$o-portrait-small-size			: 30px !default;
+$o-user-initials-color					: o-neutral(0) !default;
+$o-user-initials-base-bg-color			: $badge-bg !default;
+$o-user-portrait-initials-font-size-xsmall	: 7px !default;
+$o-user-portrait-im-scale-xsmall				: 0.5 !default;
+$o-user-portrait-im-margin-size-xsmall		: -5px !default;
+$o-user-portrait-initials-font-size-small	: 12px !default;
+$o-user-portrait-im-scale-small				: 0.8 !default;
+$o-user-portrait-im-margin-size-small		: -3px !default;
+$o-user-portrait-initials-font-size-medium	: 22px !default;
+$o-user-portrait-im-scale-medium				: 1 !default;
+$o-user-portrait-im-margin-size-medium		: -2px !default;
+$o-user-portrait-initials-font-size-large	: 44px !default;
+$o-user-portrait-im-scale-large				: 1 !default;
+$o-user-portrait-im-margin-size-large		: 6px !default;
+$o-users-portrait-img-box-shadow			: 0px 1px 3px 0px color-mix(in srgb, var(--o-shadow-color) 20%, transparent) !default;
+$o-users-portrait-overlap				: 0.3; // 30%
+// user-info-border: width and style; the colour is the token user-info-border
+// (replaces the shorthand $o-user-info-border; the rules write the style first)
+$o-user-info-border-width               : 1px !default;
+$o-user-info-border-style               : solid !default;
+$o-user-info-border-radius				: 4px !default;
+$o-user-info-profile-breakpoint			: 280px !default;
+$o-user-info-profile-border-radius		: 4px !default;
+// user-info-profile-border: width and style; the colour is the token user-info-profile-border
+// (replaces the shorthand $o-user-info-profile-border; the rules write the style first)
+$o-user-info-profile-border-width       : 1px !default;
+$o-user-info-profile-border-style       : solid !default;
+$o-user-info-profile-padding				: 20px !default;
+$o-user-info-profile-column-gap			: 20px !default;
+$o-user-info-profile-row-gap				: 10px !default;
+// user-info-portrait-border: width and style; the colour is the token user-info-portrait-border
+// (replaces the shorthand $o-user-info-portrait-border and its default $o-users-portrait-img-border)
+$o-user-info-portrait-border-width      : 2px !default;
+$o-user-info-portrait-border-style      : solid !default;
+$o-user-info-portrait-box-shadow			: $o-users-portrait-img-box-shadow !default;
+$o-user-info-displayname-size			: 18px !default;
+$o-user-info-displayname-size-small		: 16px !default;
+// user-info-divider-border: width and style; the colour is the token user-info-divider-border (follows user-info-border)
+// (replaces the shorthand $o-user-info-divider-border; the rules write the style first)
+$o-user-info-divider-border-width       : $o-user-info-border-width !default;
+$o-user-info-divider-border-style       : $o-user-info-border-style !default;
+$o-user-info-divider-margin-base			: 20px !default;
+$o-user-info-items-padding				: 20px 20px 5px 20px !default;
+$o-user-info-status-top					: $o-user-info-profile-padding !default;
+$o-user-info-status-right				: $o-user-info-profile-padding !default;
+$o-print-header-logo-height		: 2cm !default;
+$o-print-header-logo-width		: 5cm !default;
+$o-bookmark-color				: o-palette("red", 600) !default;
+$o-imagebg-text-background		: color-mix(in srgb, var(--o-scrim) 80%, transparent) !default;
+
+/* User autentication */
+// panel-authentication-border: width and style; the colour is the token panel-authentication-border
+// (replaces the shorthand $o-panel-authentication-border)
+$o-panel-authentication-border-width    : 1px !default;
+$o-panel-authentication-border-style    : solid !default;
+$o-authentication-color-level1	: o-palette("orange", 700);
+$o-authentication-color-level2	: o-palette("blue", 800);
+$o-authentication-color-level3	: o-palette("lime", 700);
+
+/* Calendar */
+$o-cal-color-width 					: 20px !default;
+$o-cal-sec-border-width				: 5px !default;
+$o-cal-desc-background-color			: $o-toolbar-bg-color !default;
+
+/* Files and Folders */
+$o-files-size-okay								: o-palette("lime", 300);
+$o-files-size-warning							: o-palette("orange", 400);
+$o-files-size-large								: o-palette("red", 500);
+$o-folder-row-thumbnail-size					: 30px !default;
+$o-folder-row-thumbnail-icon-size				: 22px !default;
+// o-folder-row-thumbnail-image-border: width and style; the colour is the token folder-row-thumbnail-image-border
+// (replaces the shorthand $o-folder-row-thumbnail-image-border)
+$o-folder-row-thumbnail-image-border-width		: 1px !default;
+$o-folder-row-thumbnail-image-border-style		: solid !default;
+$o-folder-card-thumbnail-height					: 172px !default;
+$o-folder-card-thumbnail-icon-color				: o-neutral(300) !default;
+
+/* Contact tracing */
+$o-ct-confirmation-bg-color		: o-palette("lime", 400);
+
+/* Immunity proof */
+$o-ip-validated-bg-color		: o-palette("lime", 300);
+$o-ip-claimed-bg-color			: o-palette("orange", 400);
+$o-ip-none-bg-color				: o-palette("red", 500);
+
+/* AddRemove Component */
+$o-addremove-add-color			: o-state-color("success", "soft-bg");
+$o-addremove-remove-color		: o-state-color("danger", "soft-bg");
+
+/* Tags */
+$o-tag-background-color								: $brand-primary !default;
+$o-tag-font-color									: o-neutral(0);
+$o-tag-selected-background-color					: $o-button-dirty-bg;
+$o-tag-selected-border-color						: $o-button-dirty-border;
+$o-tag-selection-border-color						: $input-border !default;
+$o-tag-selection-background-color					: $btn-default-bg !default;
+$o-tag-selection-selected-border-color				: $btn-primary-border !default;
+$o-tag-selection-selected-background-color 			: $btn-primary-bg !default;
+// the selected remove tag looks like the danger button (tokens btn-danger-*)
+$o-tag-selection-remove-selected-border-color		: o-state-color("danger", "border") !default;
+$o-tag-selection-remove-selected-background-color 	: o-state-color("danger", "bg") !default;
+$o-tag-selection-remove-selected-font-color			: o-state-color("danger", "fg") !default;
+
+/* Competences */
+$o-competences-color				: o-scale-snap($brand-primary, o-darker($brand-primary, 5%));
+$o-competences-font-color			: $o-competences-color;
+$o-competences-selected-border-color: $o-button-dirty-border;
+
+/* Shared Colors: the fill of the dark gray swatch, the swatch of o_color_lightgray in _palette.scss */
+$o-color-light-gray  : o-swatch-color("gray", "dark-bg");
+
+/* Background variants: the soft fill of the swatch alias */
+
+$o-bright-text-and-border : o-neutral(25);
+
+/* Video Colors */
+$o-video-color             : $o-bright-text-and-border;
+
+$o-video-color-practice    : o-neutral(0);
+
+$o-video-border-color      : $o-bright-text-and-border;
+
+/* Selectus */
+$o-selectus-review-comment-date-color		: o-neutral(500) !default;
+$o-selectus-review-comment-glowing-color	: o-state-color("warning", "bg");
+// the text and the links of a row on hold and of a row with the mail
+// disabled: the muted text
+$o-selectus-onhold-color					: $text-muted;
+$o-selectus-mail-disabled-color				: $text-muted;
+// the decision rows A, B, C: the hue of the rating (A green, B yellow, C red),
+// the hover one step darker than the row
+$o-selectus-table-a-decision-bg				: o-palette("green", 200);
+$o-selectus-table-b-decision-bg				: o-palette("yellow", 100);
+$o-selectus-table-c-decision-bg				: o-palette("red", 100);
+$o-selectus-table-a-decision-bg-hover		: o-palette("green", 300);
+$o-selectus-table-b-decision-bg-hover		: o-palette("yellow", 200);
+$o-selectus-table-c-decision-bg-hover		: o-palette("red", 200);
+
+
+/* Educational course types */
+$o-edu-type-standard-course-color 			: o-a11y-color($gray) !default;
+$o-edu-type-exam-course-color 				: o-swatch-on-white("red") !default;
+$o-edu-type-certification-course-color		: o-swatch-on-white("orange") !default;
+$o-edu-type-date-course-color				: o-swatch-on-white("magenta", "dark") !default;
+$o-edu-type-seminar-course-color			: o-swatch-on-white("cyan") !default;
+$o-edu-type-lecture-course-color			: o-swatch-on-white("lime") !default;
+$o-edu-type-blendedlearning-course-color	: o-swatch-on-white("yellow") !default;
+$o-edu-type-selfstudy-course-color			: o-swatch-on-white("green") !default;
+
+/* Course benefits */
+$o-entry-benefit-border-color 				: o-swatch-on-white("blue") !default;
+$o-entry-benefit-color 						: o-swatch-on-white("blue") !default;
+
+/* Export area */
+$o-export-area-meta-color					: o-neutral(500);
+$o-export-area-rowelem-space-md				: 10px !default;
+
+/* Practice */
+$o-practice-play-main-bg-color				: color-mix(in srgb, var(--o-primary) 10%, transparent);
+$o-practice-play-bg-color					: o-neutral(25);
+$o-practice-play-border-color				: o-neutral(150);
+$o-practice-play-border-radius				: $border-radius-base !default;
+$o-practice-play-start-link-bg-color		: o-neutral(50);
+$o-practice-progress-not-bg-color			: o-neutral(300);
+$o-practice-progress-l1-bg-color			: o-swatch-color("cyan", "bg");
+$o-practice-progress-l2-bg-color			: o-swatch-color("magenta", "dark-bg");
+$o-practice-progress-l3-bg-color			: o-swatch-color("orange", "bg");
+$o-practice-progress-l4-bg-color			: o-swatch-color("yellow", "bg");
+$o-practice-progress-l5-bg-color			: o-swatch-color("lime", "bg");
+
+/* Swiper */
+$o-swiper-color								: $btn-primary-bg !default;
+$o-swiper-button-width						: 30px !default;
+$o-swiper-button-height						: 30px !default;
+$o-swiper-button-font-size					: 20px !default;
+// o-swiper-button-border: width and style; the colour is the token swiper-button-border ($btn-default-border)
+// (replaces the shorthand $o-swiper-button-border)
+$o-swiper-button-border-width		: 1px !default;
+$o-swiper-button-border-style		: solid !default;
+$o-swiper-button-border-radius				: $border-radius-base !default;
+$o-swiper-button-hover-box-shadow			: 0px 2px 6px rgba($btn-default-border, 0.5) !default;
+$o-swiper-button-disabled-opacity			: .35 !default;
+
+/* Glossary */
+$o-gloss-tooltip-border-color               : o-neutral(400);
+
+/* Projects */
+$o-proj-message-font-weight					: bold !default;
+$o-proj-proj-rows-gap						: 10px !default;
+$o-proj-timeline-row-gap						: 15px  !default;
+$o-proj-timeline-row-margin-top				: 10px  !default;
+$o-proj-timeline-overdue-color				: o-state-color("danger", "bg") !default;
+$o-proj-timeline-today-color					: o-state-color("neutral", "bg") !default;
+$o-proj-avatar-size-large					: 120px !default;
+$o-proj-avatar-font-size-large				: calc($o-proj-avatar-size-large / 2) !default;
+$o-proj-avatar-size-medium					: 60px !default;
+$o-proj-avatar-font-size-medium				: calc($o-proj-avatar-size-medium / 2) !default;
+$o-proj-avatar-size-small					: 30px !default;
+$o-proj-avatar-font-size-small				: 14px !default;
+$o-proj-avatar-border-radius					: 12px !default;
+$o-proj-avatar-border-radius-small			: 6px !default;
+$o-proj-avatar-color						: o-neutral(0) !default;
+// Upload example text: 2 * ($o-proj-header-background-width-max $o-proj-header-background-height-max)
+$o-proj-header-avatar-offset-bottom			: 30px !default;
+$o-proj-header-avatar-offset-left			: 20px !default;
+$o-proj-header-background-height-min			: 110px !default;
+$o-proj-header-background-height-max			: 250px !default;
+$o-proj-header-background-width-max			: calc($o-page-width-max - $grid-gutter-width) !default;
+$o-proj-header-margin-bottom					: 20px !default;
+$o-proj-whiteboard-widget-image-height		: 240px  !default;
+
+/* To-dos */
+$o-todo-overdue-color						: o-state-color("danger", "text") !default;
+$o-todo-details-row-gap						: 15px !default;
+
+/* Dialog courseNode */
+$o-dialog-cn-box-border-color				: $panel-default-border;
+$o-dialog-cn-label-new-border-color			: $o-edu-type-standard-course-color;
+$o-dialog-cn-label-new-color				: o-palette("yellow", 500) !default;
+
+/* Card */
+// card-border: width and style; the colour is the token card-border
+// (replaces the shorthand $o-card-border)
+$o-card-border-width                    : 1px !default;
+$o-card-border-style                    : solid !default;
+$o-card-border-radius						: $border-radius-base !default;
+$o-card-bg-color							: o-neutral(25) !default;
+$o-card-box-shadow 							: 0 1px 3px color-mix(in srgb, var(--o-shadow-color) 6%, transparent), 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
+$o-card-box-hover-shadow					: 0 4px 12px color-mix(in srgb, var(--o-shadow-color) 8%, transparent), 0 2px 4px color-mix(in srgb, var(--o-shadow-color) 4%, transparent) !default;
+
+/* Performance Widget */
+$o-widget-min-width							: 260px !default;
+$o-widget-height							: 135px !default;
+$o-widget-padding							: 20px !default;
+// widget-border: width and style; the colour is the token widget-border
+// (replaces the shorthand $o-widget-border)
+$o-widget-border-width                  : 1px !default;
+$o-widget-border-style                  : solid !default;
+$o-widget-border-radius						: 4px !default;
+$o-widget-title-font-size					: 18px !default;
+$o-widget-title-font-weight					: bold !default;
+$o-widget-subtitle-font-size				: 12px !default;
+$o-widget-subtitle-font-weight				: normal !default;
+$o-widget-subtitle-color					: o-neutral(500) !default;
+$o-widget-icon-oversize						: 3px !default;
+$o-widget-icon-font-size					: ($o-widget-title-font-size + $o-widget-icon-oversize) !default;
+$o-widget-additional-height					: 15px !default;
+$o-widget-text-font-size					: 24px !default;
+$o-widget-text-font-weight					: bold !default;
+$o-widget-text-additional-font-size			: 12px !default;
+$o-widget-text-additional-color				: o-neutral(500) !default;
+$o-widget-figure-value-font-size			: 40px !default;
+$o-widget-figure-value-font-weight			: bold !default;
+$o-widget-figure-desc-font-size				: 14px !default;
+$o-widget-figure-desc-font-weight			: normal !default;
+$o-widget-figure-desc-color					: o-neutral(900) !default;
+$o-widgets-gap								: 10px !default;
+
+/* Fact sheet */
+// the borders of the fact sheet: width and style of the information page of
+// a learning resource; the colours are the tokens fact-sheet-border and
+// fact-sheet-separator-border (replaces the
+// shorthands $o-fact-sheet-border and $o-fact-sheet-separator-border)
+$o-fact-sheet-border-width              : $o-repo-info-border-width !default;
+$o-fact-sheet-border-style              : $o-repo-info-border-style !default;
+$o-fact-sheet-border-radius					: $o-repo-info-border-radius !default;
+$o-fact-sheet-separator-border-width    : $o-repo-info-separator-border-width !default;
+$o-fact-sheet-separator-border-style    : $o-repo-info-separator-border-style !default;
+$o-fact-sheet-padding						: 20px !default;
+$o-fact-sheet-title-font-size				: 18px !default;
+$o-fact-sheet-title-font-weight				: bold !default;
+$o-fact-sheet-gap							: 20px !default;
+$o-fact-min-width							: 320px !default;
+$o-fact-icon-size							: 32px !default;
+$o-fact-icon-font-size						: 14px !default;
+$o-fact-icon-bg-color						: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
+$o-fact-value-font-size						: 16px !default;
+
+/* Dashboard Widget */
+$o-dashboard-widget-padding						: 0 !default;
+$o-dashboard-widget-base-margin					: 15px !default;
+// dashboard-widget-border: width and style; the colour is the token dashboard-widget-border
+// (replaces the shorthand $o-dashboard-widget-border)
+$o-dashboard-widget-border-width        : 1px !default;
+$o-dashboard-widget-border-style        : solid !default;
+$o-dashboard-widget-border-radius				: 4px !default;
+$o-dashboard-widget-bg-color						: $panel-bg !default;
+$o-dashboard-widget-header-margin				: $o-dashboard-widget-base-margin !default;
+$o-dashboard-widget-title-font-size				: 16px !default;
+$o-dashboard-widget-footer-font-size			: 14px !default;
+$o-dashboard-widget-indicators-margin-bottom		: $o-dashboard-widget-base-margin !default;
+$o-dashboard-widget-header-footer-bg-color		: o-neutral(25) !default;
+$o-dashboard-widget-table-bg-color				: o-neutral(0) !default;
+$o-dashboard-widget-table-th-font-size			: 12px !default;
+$o-dashboard-widget-table-th-font-weight			: normal !default;
+$o-dashboard-widget-table-max-height				: 400px !default;
+$o-dashboard-widget-rowelem-visual-border-radius	: $border-radius-base  !default;
+
+/* Course Quota */
+$o-course-quota-progress-iq-bg-color		: o-swatch-color("cyan", "bg");
+$o-course-quota-progress-i-bg-color			: o-swatch-color("orange", "bg");
+$o-course-quota-progress-ex-bg-color		: o-swatch-color("magenta", "dark-bg");
+$o-course-quota-progress-iq-text-color		: o-swatch-on-white("cyan") !default;
+$o-course-quota-progress-i-text-color		: o-swatch-on-white("orange") !default;
+$o-course-quota-progress-ex-text-color		: o-swatch-on-white("magenta", "dark") !default;
+
+/* Scope */
+$o-scopes-gap								: 10px !default;
+$o-scope-toggle-bg-color					: o-neutral(0) !default;
+$o-scope-toggle-on-bg-color					: $brand-primary !default;
+$o-scope-toggle-on-color					: o-neutral(0) !default;
+$o-scope-toggle-on-border-color				: o-neutral(0) !default;
+$o-scope-toggle-bg-hover-color				: o-scale-snap($o-scope-toggle-bg-color, o-darker($o-scope-toggle-bg-color, 10%)) !default;
+// lighter under the pointer, at most 10%: the text keeps 4.5:1.
+// Below 3% the hover fill is 10% lighter and the text gets the
+// colour of the token scope-toggle-on-hover-fg. A scale colour
+// takes the nearest other step of its scale with 4.5:1 for the text
+// (o-scale-snap()).
+$o-scope-toggle-on-bg-hover-color			: o-scale-snap($o-scope-toggle-on-bg-color, o-lighter($o-scope-toggle-on-bg-color, o-contrast-shade-amount($o-scope-toggle-on-color, $o-scope-toggle-on-bg-color, 10%, "lighten")), $fg: $o-scope-toggle-on-color) !default;
+$o-scope-pref-wdith							: 180px !default;
+$o-scope-height								: 45px !default;
+$o-scope-title-font-weight					: bold !default;
+
+/* Topic broker */
+$o-tb_topic-card-thumbnail-height			: 172px !default;
+$o-tb_topic-card-image-margin				: 10px !default;
+$o-tb-topic-card-title-abbr-size				: 50px !default;
+// o-tb-topic-card-title-abbr-border: width and style; the colour is the token topicbroker-title-abbr-border ($btn-primary-color)
+// (replaces the shorthand $o-tb-topic-card-title-abbr-border)
+$o-tb-topic-card-title-abbr-border-width		: 1px !default;
+$o-tb-topic-card-title-abbr-border-style		: solid !default;
+$o-tb-topic-card-title-abbr-border-radius	: 4px !default;
+// o-tb-topic-placeholder-title-abbr-border: width and style; the colour is the token topicbroker-placeholder-title-abbr-border
+// (replaces the shorthand $o-tb-topic-placeholder-title-abbr-border)
+$o-tb-topic-placeholder-title-abbr-border-width		: 2px !default;
+$o-tb-topic-placeholder-title-abbr-border-style		: solid !default;
+// o-tb-details-separator-border-bottom: width and style; the colour is the token topicbroker-details-separator-border ($panel-default-border)
+// (replaces the shorthand $o-tb-details-separator-border-bottom)
+$o-tb-details-separator-border-bottom-width		: 1px !default;
+$o-tb-details-separator-border-bottom-style		: solid !default;
+$o-tb-weighting-heigth						: 200px !default;
+$o-tb-weighting-legend-width					: 100px !default;
+// o-tb-weighting-grid-border: width and style; the colour is the token topicbroker-weighting-grid-border ($panel-default-border)
+// (replaces the shorthand $o-tb-weighting-grid-border)
+$o-tb-weighting-grid-border-width		: 1px !default;
+$o-tb-weighting-grid-border-style		: solid !default;
+$o-tb-weighting-label-padding				: 1em !default;
+
+/* Credit point */
+$o-cp-deposit-color							: o-state-color("success", "text");
+$o-cp-withdraw-color						: o-state-color("danger", "text");
+
+
+/* Not available visual: gradients of the primary colour and the tokens
+   not-available-dark and not-available-light. The gradients interpolate in
+   sRGB ("in srgb"), as with the rgba() stops of 21.1: the default
+   interpolation of the current browsers with color-mix() stops is Oklab.
+   The syntax needs Chrome and Edge 111, Safari 16.2 or Firefox 127; an older
+   browser shows no gradient. A theme that sets $o-not-available-bg keeps its
+   value. */
+$o-not-available-bg: 		linear-gradient(40deg in srgb, var(--o-primary), color-mix(in srgb, var(--o-not-available-light) 50%, transparent) 90%), linear-gradient(160deg in srgb, var(--o-not-available-dark), color-mix(in srgb, var(--o-primary) 30%, transparent) 40%), linear-gradient(280deg in srgb, color-mix(in srgb, var(--o-primary) 70%, transparent), color-mix(in srgb, var(--o-not-available-dark) 60%, transparent) 80%) !default;
+
+/* Vertical timeline */
+$o-v-timeline-rows-gap								: 5px !default;
+$o-v-timeline-row-bg								: o-neutral(0) !default;
+$o-v-timeline-row-border-radius						: $border-radius-base !default;
+$o-v-timeline-row-padding							: 15px !default;
+$o-v-timeline-day-width								: 90px !default;
+$o-v-timeline-path-width							: 30px !default;
+$o-v-timeline-path-stroke-width						: 0.3rem !default;
+$o-v-timeline-path-top-height						: $o-v-timeline-row-padding !default;
+
+/* Speedometer */
+$o-o_speedometer-not-border-color		: $gray-lighter !default;
+$o-o_speedometer-default-border-color	: o-state-color("neutral", "border") !default;
+$o-o_speedometer-success-border-color	: o-state-color("success", "border") !default;
+// warning reads the text role: the border of the solid yellow fill (step 400) has no 3:1 on white
+$o-o_speedometer-warning-border-color	: o-state-color("warning", "text") !default;
+$o-o_speedometer-danger-border-color	: o-state-color("danger", "border") !default;
+
+/* Indicators */
+$o-indicator-indicators-gap					: 20px !default;
+// indicator-separator-border: width and style; the colour is the token indicator-separator-border ($o-dialog-cn-box-border-color)
+// (replaces the shorthand $o-indicator-separator-border)
+$o-indicator-separator-border-width     : 1px !default;
+$o-indicator-separator-border-style     : solid !default;
+$o-indicator-separator-margin				: 20px !default;
+$o-indicator-key-min-width					: 100px !default;
+$o-indicator-key-padding						: 0 5px !default;
+$o-indicator-focus-gap						: 10px !default;
+$o-indicator-indicator-max-width				: 165px !default;
+$o-indicator-label-font-size					: 14px !default;
+$o-indicator-indicator-figure-height			: 50px !default;
+$o-indicator-figure-font-size				: 40px !default;
+$o-indicator-focus-figure-padding-top		: 0.15 * $o-indicator-figure-font-size !default;
+$o-indicator-focus-figure-font-size			: 0.85 * $o-indicator-figure-font-size !default;
+
+/* Figure cards */
+$o-figure-cards-gap							: 6px !default;
+$o-figure-card-two-line-min-width			: 140px !default;
+$o-figure-card-one-line-min-width			: 160px !default;
+$o-figure-card-padding						: 9px 10px !default;
+$o-figure-card-one-line-padding				: 3px 10px !default;
+$o-figure-card-bg-color						: o-neutral(0) !default;
+$o-figure-card-figure-font-size				: 18px !default;
+$o-figure-card-label-font-size				: 14px !default;
+$o-figure-card-icon-size						: 22px !default;
+$o-figure-card-icon-color					: $brand-primary !default;
+$o-figure-card-icon-bg-color					: color-mix(in srgb, var(--o-primary) 10%, transparent) !default;
+$o-dashboard-widget-indicators-min-height		: math.ceil(max($o-figure-card-figure-font-size * $line-height-base, $o-figure-card-icon-size) + $o-figure-card-label-font-size * $line-height-base + 2 * list.nth($o-figure-card-padding, 1) + 2 * $o-card-border-width) !default;
+
+/* day navigation */
+$o-day-nav-period-font-size					: 16px !default;
+$o-day-nav-days-gap							: 6px !default;
+$o-day-nav-day-padding						: 4px 2px 12px 2px !default;
+$o-day-nav-day-bg-color						: o-neutral(0) !default;
+$o-day-nav-day-weekend-bg-color				: o-neutral(25) !default;
+$o-day-nav-day-hover-border-color			: o-neutral(450) !default;
+// the selected day has the colour of a selected control (toggle, scope toggle, active dropdown item): the brand colour
+$o-day-nav-day-selected-bg-color				: $brand-primary !default;
+$o-day-nav-day-selected-color				: o-a11y-color(o-neutral(0), $o-day-nav-day-selected-bg-color) !default;
+$o-day-nav-abbr-font-size					: 14px !default;
+$o-day-nav-num-font-size						: 20px !default;
+
+
+// The results of modules/_tokens.scss: the module sets them when it is
+// loaded. The button mixins (modules/_button_variant.scss) and the realistic
+// style (styles/_realistic.scss) read them. null before the module is loaded.
+$o-token-shades: null;
+$o-token-values: null;

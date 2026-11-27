@@ -2,6 +2,7 @@
 //
 // Easily pump out default styles, as well as :hover, :focus, :active,
 // and disabled options for all buttons
+@use "../../../../themes/light/variables" as *;
 
 @mixin button-variant($color, $background, $border) {
   color: $color;

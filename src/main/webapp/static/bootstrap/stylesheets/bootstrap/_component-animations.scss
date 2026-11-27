@@ -6,6 +6,10 @@
 //
 // We don't use the `.opacity()` mixin here since it causes a bug with text
 // fields in IE7-8. Source: https://github.com/twbs/bootstrap/pull/3552.
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-component-animations {
 
 .fade {
   opacity: 0;
@@ -35,4 +39,5 @@ tbody.collapse.in { display: table-row-group; }
   @include transition-property(height, visibility);
   @include transition-duration(.35s);
   @include transition-timing-function(ease);
+}
 }

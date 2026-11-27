@@ -1,4 +1,8 @@
 /* peekview */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-edubase {
 .o_edubase_pv {
 	overflow:hidden;
 	padding-top: 10px;
@@ -58,4 +62,5 @@
 }
 .o_edubase_edit_books .row {
     margin-bottom: 5px;
+}
 }

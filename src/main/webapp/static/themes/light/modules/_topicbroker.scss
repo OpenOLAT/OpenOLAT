@@ -1,3 +1,8 @@
+@use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-topicbroker {
 .o_tb_topic_header {
 	display: flex;
 	gap: 20px;
@@ -342,4 +347,5 @@
 			stroke-dasharray: 3,3;
 		}
 	}
+}
 }

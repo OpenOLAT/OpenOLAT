@@ -1,0 +1,165 @@
+/*
+ * =================================================
+ *
+ * OpenOLAT theme configuration, part 2 of 3: the OpenOLAT values of the
+ * Bootstrap variables that read the brand ramp and the colour scales. The
+ * Bootstrap defaults (bootstrap/_variables.scss) follow and keep every value
+ * set here or in _config_base.scss.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date April 2014
+ * =================================================
+ */
+@use "sass:math";
+@use "sass:color";
+@use "sass:map";
+@use "sass:meta";
+@use "sass:list";
+@use "functions" as *;
+@use "palette" as *;
+@use "palette_neutral" as *;
+@use "config_base" as *;
+// the brand ramp theme1 ... themeN: the defaults below read its steps with o-palette("theme1", 600)
+@use "palette_theme" as *;
+@use "functions_scale" as *;
+
+/* Modern navbar - white with subtle border */
+$navbar-default-bg				: o-neutral(0) !default;
+$navbar-default-border			: o-neutral(100) !default;
+/* Modern panel borders */
+$panel-default-heading-bg		: o-neutral(25) !default;
+$panel-default-border			: o-neutral(150) !default;
+$nav-tabs-border-color			: $panel-default-border !default;
+/* Modern dropdown */
+// a dark tint: the token backdrop with the alpha
+$dropdown-border				: color-mix(in srgb, var(--o-backdrop) 3%, transparent) !default;
+/* The shadows read the token shadow-color (black) with their alpha.
+   email.scss does not read the $o-*-box-shadow variables. */
+$o-dropdown-box-shadow			: 0 4px 16px color-mix(in srgb, var(--o-shadow-color) 10%, transparent), 0 1px 3px color-mix(in srgb, var(--o-shadow-color) 6%, transparent) !default;
+/* Modern table */ 
+$table-bg-accent				: o-neutral(25) !default;
+
+/* Colors (style guide) */
+$o-base-blue-color						: o-palette("blue", 600) !default;
+$o-base-green-color						: o-palette("green", 500) !default;
+$o-base-orange-color					: o-palette("orange", 500) !default;
+
+/* other general colors, override bootstrap counterparts */
+$brand-info						: #2B78E4 !default;
+$brand-warning					: #F2AF40 !default; //#B89230 !default;
+$brand-danger					: #D6001C !default; //#8C1A11 !default;
+$brand-success					: #5cb85c !default; //#469C30 !default;
+
+$progress-bar-neutral-bg			: $o-base-blue-color !default;
+
+// The colours of the message boxes: border ($o-color-*) and fill
+// ($o-color-*-text-bg). A theme value is the colour of its box ($o-box-*
+// below). With the light value the info box has these two colours, the other
+// boxes of a state have the soft roles of their state.
+$o-color-info					: o-state-color("neutral", "bg") !default;
+$o-color-info-text-bg			: o-neutral(25) !default;
+$o-color-note					: o-neutral(500) !default;
+$o-color-note-text-bg			: o-neutral(25) !default;
+$o-color-tip					: o-neutral(600) !default;
+$o-color-tip-text-bg			: o-neutral(50) !default;
+$o-color-important				: o-swatch-color("violet", "text") !default;
+$o-color-important-text-bg		: o-neutral(25) !default;
+$o-color-success				: o-state-color("success", "bg") !default;
+$o-color-success-text-bg		: o-neutral(50) !default;
+$o-color-warning				: o-state-color("warning", "bg") !default;
+$o-color-warning-text-bg		: o-neutral(0) !default;
+$o-color-error					: o-state-color("danger", "bg") !default;
+$o-color-error-text-bg			: o-neutral(25) !default;
+
+// Focus ring (OO-10043): true when the client config sets
+// $input-border-focus. The declaration with null takes the value of the
+// config, before the Bootstrap defaults (bootstrap/_variables.scss) define it.
+$input-border-focus				: null !default;
+$o-focus-color-from-input-border: $input-border-focus != null;
+
+/* The Bootstrap colours that feed a token read the three colour scales
+: the neutral scale, the palette and the brand ramp.
+   A colour maths default keeps its derivation: o-scale-snap() gives the
+   nearest scale colour of the result while the source is a colour of a
+   default. The greys keep the derivation from $gray-base. */
+$gray-base						: o-neutral(1000) !default;
+$gray-dark						: o-scale-snap($gray-base, o-lighter($gray-base, 20%)) !default;
+$gray							: o-scale-snap($gray-base, o-lighter($gray-base, 33.5%)) !default;
+$gray-light						: o-scale-snap($gray-base, o-lighter($gray-base, 46.7%)) !default;
+$gray-lighter					: o-scale-snap($gray-base, o-lighter($gray-base, 93.5%)) !default;
+$body-bg						: o-neutral(0) !default;
+$link-color						: $brand-primary !default;
+$link-hover-color				: o-scale-snap($link-color, o-darker($link-color, 15%)) !default;
+$btn-primary-bg					: $brand-primary !default;
+// The text of the primary button: white, or the colour with 4.5:1 on the
+// fill. Before the Bootstrap defaults, which set white with !default. A dark
+// text gets lighter hover and pressed fills ($o-token-state-text-buttons).
+$btn-primary-color				: o-a11y-color(o-neutral(0), $btn-primary-bg) !default;
+$btn-primary-border				: o-scale-snap($btn-primary-bg, o-darker($btn-primary-bg, 5%)) !default;
+
+/* Focus ring of every control (OO-10043): outline of
+   $o-focus-ring-width in the colour of the token focus, $o-focus-ring-offset
+   away from the control, on :focus-visible (modules/_focus.scss).
+   $o-focus-color is the base colour of the token focus. Default: the primary
+   colour, adjusted to 3:1 on the page background and on the subtle
+   backgrounds (striped table rows, panel headings). A theme that sets
+   $input-border-focus keeps that colour. A value that the theme sets for
+   $o-focus-color or $input-border-focus is not adjusted. */
+$o-focus-color						: null !default;
+@if not $o-focus-color {
+	@if $o-focus-color-from-input-border {
+		$o-focus-color: $input-border-focus;
+	} @else {
+		// 3:1 on the darkest of these backgrounds; the hex value of the token,
+		// so that the row fills (o-scale-tint() below) derive from the colour of the CSS
+		$o-focus-bg: o-darkest-color(o-opaque-colors($body-bg, $panel-default-heading-bg, $table-bg-accent)...);
+		$o-focus-color: o-color-round(o-a11y-color($brand-primary, $o-focus-bg, 3));
+	}
+}
+$o-focus-ring-width					: 2px !default;
+$o-focus-ring-offset				: 2px !default;
+
+$dropdown-link-hover-bg			: o-neutral(50) !default;
+/* The fills of a selection have the hue of the focus colour, in a light
+   version (o-scale-tint(), _functions.scss): a step of the scale of the
+   focus colour. Level 1, $o-selection-step: the selected row and the opened
+   details row. Level 2, $o-selection-hover-step: a row or an item under the
+   pointer, also on a selected or an opened row. A step is a text step of
+   the palette (50, 100, 200, ...). Light: theme1-100 and theme1-200.
+   $table-bg-active is the default of $o-table-row-selected-color and
+   $o-table-details-bg. */
+$o-selection-step				: 100 !default;
+$o-selection-hover-step			: 200 !default;
+$table-bg-hover					: o-scale-tint($o-focus-color, $o-selection-hover-step) !default;
+$table-bg-active				: o-scale-tint($o-focus-color, $o-selection-step) !default;
+// the placeholder of a field 4.5:1 on the field; the typed text the body
+// text (light: neutral 750). A theme that sets $gray keeps its typed text.
+$input-color-placeholder		: o-neutral(500) !default;
+$input-color					: o-own-or($gray, o-neutral(600), $text-color) !default;
+$legend-border-color			: o-neutral(150) !default;
+$dropdown-divider-bg			: o-neutral(150) !default;
+$dropdown-link-hover-color		: o-scale-snap($gray-dark, o-darker($gray-dark, 5%)) !default;
+$navbar-default-color			: o-neutral(500) !default;
+$navbar-default-link-hover-color	: o-neutral(800) !default;
+// neutral-700: the link (neutral-600), its hover (neutral-750) and the active link differ
+$navbar-default-link-active-color	: o-neutral(700) !default;
+$navbar-default-link-active-bg	: o-scale-snap($navbar-default-bg, o-darker($navbar-default-bg, 6.5%)) !default;
+$navbar-default-link-disabled-color	: o-neutral(300) !default;
+$navbar-default-brand-color		: $navbar-default-link-color !default;
+$navbar-default-brand-hover-color	: o-scale-snap($navbar-default-brand-color, o-darker($navbar-default-brand-color, 10%)) !default;
+$navbar-default-toggle-icon-bar-bg	: o-neutral(450) !default;
+// the Bootstrap default #222
+$navbar-inverse-bg				: o-palette("gray", 900) !default;
+$navbar-inverse-border			: o-scale-snap($navbar-inverse-bg, o-darker($navbar-inverse-bg, 10%)) !default;
+$navbar-inverse-link-active-bg	: o-scale-snap($navbar-inverse-bg, o-darker($navbar-inverse-bg, 10%)) !default;
+$popover-bg						: o-neutral(0) !default;
+$popover-title-bg				: o-scale-snap($popover-bg, o-darker($popover-bg, 3%)) !default;
+// the translucent black of Bootstrap: the token shadow-color with the alpha
+$popover-border-color			: color-mix(in srgb, var(--o-shadow-color) 20%, transparent) !default;
+// fade_in($popover-border-color, 0.05) of Bootstrap
+$popover-arrow-outer-color		: color-mix(in srgb, var(--o-shadow-color) 25%, transparent) !default;
+$popover-fallback-border-color	: o-neutral(300) !default;
+$modal-backdrop-bg				: o-neutral(1000) !default;
+$modal-header-border-color		: o-neutral(150) !default;
+$pre-bg							: o-neutral(50) !default;
+$pre-border-color				: color-mix(in srgb, var(--o-shadow-color) 10%, transparent) !default;

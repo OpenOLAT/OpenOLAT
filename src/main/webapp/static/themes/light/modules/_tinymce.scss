@@ -3,6 +3,10 @@
 */
 
 @use "sass:list";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-tinymce {
 
 /* Image captions using the HTML5 figure element */
 figure.align-left {
@@ -297,4 +301,4 @@ figure.image {
 		}
 	}
 }
-
+}

@@ -1,4 +1,5 @@
 // Alerts
+@use "../../../../themes/light/variables" as *;
 
 @mixin alert-variant($background, $border, $text-color) {
   color: $text-color;

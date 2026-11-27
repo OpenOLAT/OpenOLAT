@@ -1,3 +1,5 @@
+@use "../config" as *;
+
 @mixin o-rfg-visually-hidden() {
 	position: absolute;
 	width: 1px;
@@ -19,6 +21,11 @@
 	clip: auto;
 	white-space: normal;
 }
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-repeatable-field-group {
+
+
 
 .o_rfg {
 	margin-bottom: 15px;
@@ -246,4 +253,5 @@
 			}
 		}
 	}
+}
 }

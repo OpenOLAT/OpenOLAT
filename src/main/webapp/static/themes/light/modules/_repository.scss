@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-repository {
 .o_info_page {
 	position: relative;
 
@@ -1001,4 +1005,4 @@ form { .o_form { .o_radio_cards_wrapper {
 	grid-template-columns: 1fr auto;
 	align-items: center;
 }
-
+}

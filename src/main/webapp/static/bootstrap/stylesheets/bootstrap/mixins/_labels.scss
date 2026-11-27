@@ -1,4 +1,5 @@
 // Labels
+@use "../../../../themes/light/variables" as *;
 
 @mixin label-variant($color) {
   background-color: $color;

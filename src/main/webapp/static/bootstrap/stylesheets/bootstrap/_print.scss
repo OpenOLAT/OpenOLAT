@@ -1,3 +1,7 @@
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-print {
 /*! Source: https://github.com/h5bp/html5-boilerplate/blob/master/src/css/main.css */
 
 // ==========================================================================
@@ -96,4 +100,5 @@
       border: 1px solid #ddd !important;
     }
   }
+}
 }

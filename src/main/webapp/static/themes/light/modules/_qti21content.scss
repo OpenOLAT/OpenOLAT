@@ -1,4 +1,8 @@
 /* For TinyMCE */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-qti21content {
 .textEntryInteraction {
 	input, span.o_input_value {
 		margin: -1px 2px;
@@ -21,4 +25,5 @@
 			border: 1px solid var(--o-qti-text-entry-filled-border);
 		}
 	}
+}
 }

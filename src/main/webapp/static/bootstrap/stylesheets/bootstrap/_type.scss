@@ -2,6 +2,16 @@
 // Typography
 // --------------------------------------------------
 @use "sass:math";
+@use "../../../themes/light/config" as *;
+
+// [converter] extracted from `.list-unstyled` for libsass compatibility
+@mixin list-unstyled {
+  padding-left: 0;
+  list-style: none;
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-type {
 
 // Headings
 // -------------------------
@@ -158,11 +168,7 @@ ol {
 
 // List options
 
-// [converter] extracted from `.list-unstyled` for libsass compatibility
-@mixin list-unstyled {
-  padding-left: 0;
-  list-style: none;
-}
+
 // [converter] extracted as `@mixin list-unstyled` for libsass compatibility
 .list-unstyled {
   @include list-unstyled;
@@ -295,4 +301,5 @@ address {
   margin-bottom: $line-height-computed;
   font-style: normal;
   line-height: $line-height-base;
+}
 }

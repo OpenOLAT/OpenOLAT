@@ -8,6 +8,10 @@
 // .modal-content   - actual modal w/ bg and corners and shit
 
 // Kill the scroll on the body
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-modals {
 .modal-open {
   overflow: hidden;
 }
@@ -158,4 +162,5 @@
 }
 .o_layer_3 dialog.dialog {
 	padding: 60px;
+}
 }

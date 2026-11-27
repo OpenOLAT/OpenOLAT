@@ -1,0 +1,19 @@
+/*
+ * =================================================
+ *
+ * Import-only file of light/email.scss (OO-9995): a client theme with
+ * @import "light/email" loads this file. The global variables that the
+ * theme config sets before the import configure light/config (implicit
+ * configuration of the Sass module system), the rules of email.css go into
+ * the stylesheet of the theme, and every variable, function and mixin of
+ * light/config is available to the files of the theme after the import.
+ * A theme with the module system uses light/email.scss, see themes.README.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+@forward "config";
+@use "email_modules" as *;
+
+@include o-email;

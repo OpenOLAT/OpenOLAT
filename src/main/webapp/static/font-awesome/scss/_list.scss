@@ -1,5 +1,11 @@
 // icons in a list
 // -------------------------
+@use "functions" as *;
+@use "variables" as *;
+@use "mixins" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin fa-rules-list {
 
 .#{$fa-css-prefix}-ul {
   list-style-type: none;
@@ -15,4 +21,5 @@
   text-align: center;
   width: var(--#{$fa-css-prefix}-li-width, #{$fa-li-width});
   line-height: inherit;
+}
 }

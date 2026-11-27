@@ -5,6 +5,10 @@
 
 // Floats
 // -------------------------
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-utilities {
 
 .clearfix {
   @include clearfix;
@@ -52,4 +56,5 @@
 
 .affix {
   position: fixed;
+}
 }

@@ -40,6 +40,7 @@
 @use "sass:meta";
 @use "sass:selector";
 @use "sass:string";
+@use "functions" as *;
 
 $o-palette: (
 	"red": (50: #FBF6F4, 100: #FAE8E6, 200: #FAD4CE, 300: #FFBBB1, 400: #FF9E90, 450: #F36660, 500: #E2002D, 600: #B50022, 700: #8E0D1C, 800: #6C0F16, 900: #470A0E),

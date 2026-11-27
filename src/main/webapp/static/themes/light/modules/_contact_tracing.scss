@@ -1,4 +1,8 @@
 // Used after registration to show confirmation
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-contact-tracing {
 .o_ct_confirmation_wrapper {
   width: 100%;
   height: 100%;
@@ -93,4 +97,5 @@
       padding-right: 2em;
     }
   }
+}
 }

@@ -6,6 +6,10 @@
 // Base class
 //
 // Easily usable on <ul>, <ol>, or <div>.
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-list-group {
 
 .list-group {
   // No need to set list-style: none; since .list-group-item is block level
@@ -134,4 +138,5 @@ button.list-group-item {
 .list-group-item-text {
   margin-bottom: 0;
   line-height: 1.3;
+}
 }

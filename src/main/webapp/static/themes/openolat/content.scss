@@ -1,13 +1,13 @@
 @charset "UTF-8";
 
 /* Add client fonts */
-@import "fonts/fonts";
+@use "fonts/fonts";
 
-/* Use OpenOLAT configuration to override defaults */
-@import "openolat_config";
+/* Use OpenOLAT configuration to override defaults: it configures light/config */
+@use "openolat_config";
 
 /* Add all default config and apply styles from light theme */
-@import "light/content";
+@use "light/content";
 
 /* Override with OpenOLAT customizations */
-@import "openolat_content"; 
+@use "openolat_content";

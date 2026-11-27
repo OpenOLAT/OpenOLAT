@@ -1,6 +1,10 @@
 /*
  * Based on the very good Fuel UX (https://github.com/ExactTarget/fuelux/) wizard style
  */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-wizard {
 
 .o_wizard {
 	.o_steps {
@@ -145,5 +149,4 @@
 		}
 	}
 }
-
-
+}

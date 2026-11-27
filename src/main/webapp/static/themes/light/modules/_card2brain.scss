@@ -1,6 +1,10 @@
 /*
 	The purpose of the three classes of the peek view is to disable clicking inside the iFrame.
 */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-card2brain {
 .o_c2b_peekview {
 	height: 182px;
 	width: 302px;
@@ -22,4 +26,5 @@
 	width: 300px;
 	position: absolute;
 	z-index: 1;
+}
 }

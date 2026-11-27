@@ -1,3 +1,22 @@
+@use "../config" as *;
+
+// $mainColor: the border (15% translucent) and the icon; $iconColor: another colour for the icon
+@mixin alert_box($mainColor, $backgroundColor, $iconColor: $mainColor) {
+	box-shadow: $o-cc-box-shadow;
+	border-color: color-mix(in srgb, #{$mainColor} 15%, transparent);
+	background-color: $backgroundColor;
+
+	> .o_container_block > .o_container_block_alert > .o_alert_icon {
+		color: $iconColor;
+	}
+	
+	&.o_page_layout {
+		box-shadow: none;
+	}
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-contenteditor {
 .o_page_layout {
 
 	&.o_apply_layout_spacing_after {
@@ -157,20 +176,7 @@
 	}
 }
 
-// $mainColor: the border (15% translucent) and the icon; $iconColor: another colour for the icon
-@mixin alert_box($mainColor, $backgroundColor, $iconColor: $mainColor) {
-	box-shadow: $o-cc-box-shadow;
-	border-color: color-mix(in srgb, #{$mainColor} 15%, transparent);
-	background-color: $backgroundColor;
 
-	> .o_container_block > .o_container_block_alert > .o_alert_icon {
-		color: $iconColor;
-	}
-	
-	&.o_page_layout {
-		box-shadow: none;
-	}
-}
 
 .o_page_content_editor > .o_page_fragment_edit > .o_container_part.o_apply_background_color {
 	padding-top: 30px;
@@ -2837,4 +2843,5 @@ table.o_ce_table {
 			margin-right: $o-ce-padding-compact;
 		}
 	}
+}
 }

@@ -2,41 +2,39 @@
 	The square style can be added to the light theme to remove any round borders
 	from the light theme.
 	
-	To use this style, include both square_config and square_theme.
-	Config must be loaded before the light theme. Theme must be loaded after.
-	See the theme boilerplate for an example.
+	To use this style, include both square_config and square_theme. See the
+	theme boilerplate for an example.
+
+	The config forwards light/config with the square values (OO-9995). A
+	theme config forwards this file instead of light/config; its own values
+	win over the square values (!default):
+
+		@forward "light/styles/square_config" with ($brand-primary: #126365, ...);
+
+	and the theme loads @use "light/styles/square_theme" after light/theme.
+	The variables of the light theme that follow these values keep them:
+	the border radius of inputs, the navbar, nav pills, alerts, list groups,
+	panels and thumbnails follows $border-radius-base (Bootstrap), and the
+	light theme derives $o-content-border-box-radius, $o-content-border-img-radius,
+	$o-navbar-toggle-border-radius, $o-toolbar-border-radius, $o-tree-border-radius,
+	$o-autocomplete-border-radius, $o-login-infomessage-radius and
+	$o-portlet-border-radius from them, as _square_config.import.scss sets them.
 */
+@forward "../config" with (
+	/* bootstrap _variables overrides */
+	$border-radius-base:			0px !default,
+	$border-radius-large:			0px !default,
+	$border-radius-small:			0px !default,
+	$pager-border-radius:			0px !default,
+	$badge-border-radius:			0px !default,
 
-/* bootstrap _variables overrides */
-$border-radius-base:        0px !default;
-$border-radius-large:       0px !default;
-$border-radius-small:       0px !default;
+	/* buttons */
+	$btn-default-color:				#333 !default,
+	$btn-default-bg:				#e6e6e6 !default,
+	$btn-default-border:			transparent !default,
+	$input-border:					#d4d4d4 !default, // normally inherited from btn-default-border
 
-$input-border-radius:         $border-radius-base !default;
-$navbar-border-radius:        $border-radius-base !default;
-$nav-pills-border-radius:     $border-radius-base !default;
-$pager-border-radius:         0px !default;
-$alert-border-radius:         $border-radius-base !default;
-$list-group-border-radius:    $border-radius-base !default;
-$panel-border-radius:         $border-radius-base !default;
-$thumbnail-border-radius:     $border-radius-base !default;
-$badge-border-radius:         0px !default;
-
-/* buttons */
-$btn-default-color:              #333 !default;
-$btn-default-bg:                 #e6e6e6 !default;
-$btn-default-border:             transparent !default;
-$input-border:					 #d4d4d4 !default; // normally inherited from btn-default-border
-
-
-/* light theme _config overrides */
-$o-content-border-box-radius	: $border-radius-small !default;
-$o-content-border-img-radius	: $thumbnail-border-radius !default;
-$o-navbar-toggle-border-radius	: $border-radius-base !default;
-$o-toolbar-border-radius		: $navbar-border-radius !default;
-$o-toolbar-nav-border-radius	: 0px !default; 
-$o-tree-border-radius			: $list-group-border-radius !default;
-$o-autocomplete-border-radius	: $input-border-radius !default;
-$o-login-infomessage-radius		: $border-radius-base !default;
-$o-portlet-border-radius		: $panel-border-radius !default;
-$o-chelp-border-radius			: 0px !default;
+	/* light theme _config overrides */
+	$o-toolbar-nav-border-radius	: 0px !default,
+	$o-chelp-border-radius			: 0px !default
+);

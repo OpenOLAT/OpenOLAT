@@ -1,16 +1,23 @@
 /* Load font-awesome library as we use font styles for the default icons */
-$fa-font-path:        "../../font-awesome/webfonts" !default;
+@use "../config" as *;
+@use "../../../font-awesome/scss/fontawesome" as *;
+@use "../../../font-awesome/scss/solid" as *;
+@use "../../../font-awesome/scss/regular" as *;
+@use "../../../font-awesome/scss/brands" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-icons {
 /* we use fonts as icon base. In case you want to use bitmap icons instead, 
  * create your own o_icon class and add icons that correspond with the 
  * font-awesome icon names 
  */
-$fa-css-prefix: "o_icon" !default;
+// The font path and the class prefix "o_icon" of Font Awesome: light/_variables.scss
 /* Immport everything but the icons definitions as we define only the icons we actually use.
    Don't use extend here to not make CSS explode */
-@import "../../../font-awesome/scss/fontawesome.scss";
-@import "../../../font-awesome/scss/solid.scss";
-@import "../../../font-awesome/scss/regular.scss";
-@import "../../../font-awesome/scss/brands.scss";
+@include fa-rules-fontawesome;
+@include fa-rules-solid;
+@include fa-rules-regular;
+@include fa-rules-brands;
 
 /* OpenOLAT Icons */ 
 .o_icon_about { @include o-add-icon('info');}
@@ -1363,3 +1370,4 @@ a.o_icon {
 .o_icon_s { @include o-add-icon('s');}
 .o_icon_v { @include o-add-icon('v');}
 .o_icon_timeline { @include o-add-icon('timeline');}
+}

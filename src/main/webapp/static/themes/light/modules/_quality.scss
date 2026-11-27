@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-quality {
 .o_qual_main {
 
 	/* Second css class because o_qual_main is used in home and breadcrumb ...  */
@@ -243,3 +247,4 @@
 }
 
 // Preview status labels (o_qual_prev_*_light): semantic states in _states.scss (OO-10042)
+}

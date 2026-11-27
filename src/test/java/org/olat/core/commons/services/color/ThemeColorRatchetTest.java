@@ -362,6 +362,13 @@ public class ThemeColorRatchetTest {
 	@Test
 	public void bootstrapHasNoOwnRules() throws IOException {
 		String code = withoutComments(Files.readString(BOOTSTRAP, StandardCharsets.UTF_8));
+		// the module system (OO-9995): the content of the file is the mixin
+		// o-rules-bootstrap, its braces are no rule
+		String wrapper = "@mixin o-rules-bootstrap {";
+		int open = code.indexOf(wrapper);
+		int close = code.lastIndexOf('}');
+		Assert.assertTrue("_bootstrap.scss has no mixin o-rules-bootstrap", open >= 0 && close > open);
+		code = code.substring(0, open) + code.substring(open + wrapper.length(), close) + code.substring(close + 1);
 		Assert.assertFalse("_bootstrap.scss has an own rule. Put it into the module of its component.", code.contains("{"));
 	}
 

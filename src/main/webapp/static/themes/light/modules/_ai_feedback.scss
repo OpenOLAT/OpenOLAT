@@ -10,6 +10,10 @@
 /* --------------------------------------------------------------------------
  * View toggle toolbar — relies on default Bootstrap .btn sizing.
  * ---------------------------------------------------------------------- */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-ai-feedback {
 .o_ai_feedback_view_toggle {
 	display: flex;
 	gap: 0.25rem;
@@ -162,4 +166,5 @@
 /* Detailed feedback accordion below the direct view. */
 .o_essay_ai_correction_detailed {
 	margin-top: 0.5rem;
+}
 }

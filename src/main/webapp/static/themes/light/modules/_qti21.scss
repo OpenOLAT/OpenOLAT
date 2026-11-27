@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-qti21 {
 ul.sessionControl {
 	list-style: none;
 	margin: 1em;
@@ -2202,4 +2206,5 @@ div.o_qti_statistics {
 /* Course element */
 .o_course_iq fieldset.o_start_info_box>div.o_note {
 	margin-top: 0px;
+}
 }

@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-immunity-proof {
 .o_immunity_proof_wrapper {
 	position: relative;
 	width: 100%;
@@ -145,4 +149,4 @@
 		cursor: default;
 	}
 }
-
+}

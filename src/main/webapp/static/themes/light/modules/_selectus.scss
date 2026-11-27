@@ -1,3 +1,18 @@
+@use "../config" as *;
+
+// The bar of the abstention in the statistics: the fill of the abstention
+// button as vertical gradient to its hover shade, 10% darker. The rules of
+// the Bootstrap mixin gradient-vertical without its IE 9 filter, which
+// cannot read a token.
+@mixin progress-bar-rating-styles($token) {
+	background-image: -webkit-linear-gradient(top, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
+	background-image: -o-linear-gradient(top, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
+	background-image: linear-gradient(to bottom, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
+	background-repeat: repeat-x;
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-selectus {
 table.o_table tr.fx_r_withdrawn td span, table.o_table tr.fx_r_withdrawn td,
 table.table tr.fx_r_withdrawn td span, table.table tr.fx_r_withdrawn td {
 	text-decoration: line-through;
@@ -193,16 +208,7 @@ div.f_rating_abstention, span.f_rating_abstention{ background-color: var(--o-sel
 	}
 }
 
-// The bar of the abstention in the statistics: the fill of the abstention
-// button as vertical gradient to its hover shade, 10% darker. The rules of
-// the Bootstrap mixin gradient-vertical without its IE 9 filter, which
-// cannot read a token.
-@mixin progress-bar-rating-styles($token) {
-	background-image: -webkit-linear-gradient(top, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
-	background-image: -o-linear-gradient(top, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
-	background-image: linear-gradient(to bottom, var(--o-#{$token}) 0%, var(--o-#{$token}-hover) 100%);
-	background-repeat: repeat-x;
-}
+
 
 // The bars of the ratings A, B and C in the statistics: the solid fill of
 // the marks of the ratings and the text of the state on it. Bar A has also
@@ -617,5 +623,4 @@ fieldset.o_letter_preview legend {
 		border: none;
 	}
 }
-
-
+}

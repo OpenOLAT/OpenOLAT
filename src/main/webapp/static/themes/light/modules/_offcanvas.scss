@@ -1,4 +1,7 @@
+@use "../config" as *;
 
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-offcanvas {
 body {
 	overflow-x: hidden;
 }
@@ -160,4 +163,5 @@ body.o_width_full {
 .o_block_offcanvas_padding {
 	padding-left: ($grid-gutter-width * 0.5);
 	padding-right: ($grid-gutter-width * 0.5);
+}
 }

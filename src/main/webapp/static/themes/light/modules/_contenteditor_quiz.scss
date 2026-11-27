@@ -1,5 +1,9 @@
 // Answer feedback: colours of the semantic states (o-state-color, OO-10042)
 // the light tint of the brand colour: the primary token with 10% opacity
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-contenteditor-quiz {
 $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 
 
@@ -604,4 +608,5 @@ $brand-primary-bg : color-mix(in srgb, var(--o-primary) 10%, transparent);
 			}
 		}
 	}
+}
 }

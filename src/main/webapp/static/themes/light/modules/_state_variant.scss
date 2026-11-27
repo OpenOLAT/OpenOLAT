@@ -6,8 +6,8 @@
  * Replaces the Bootstrap mixins label-variant, progress-bar-variant,
  * alert-variant, form-control-validation, table-row-variant,
  * list-group-item-variant, bg-variant and text-emphasis-variant
- * (bootstrap/mixins/) with the same rules and selectors. Imported after
- * the Bootstrap mixins and after _button_variant.scss.
+ * (bootstrap/mixins/) with the same rules and selectors. Part of
+ * light/config: _config.scss forwards it and hides the Bootstrap mixins.
  *
  * Each mixin takes colours or tokens:
  *
@@ -43,12 +43,18 @@
 @use "sass:map";
 @use "sass:meta";
 @use "sass:string";
+@use "../variables" as *;
+// the Bootstrap mixins: gradient-striped, box-shadow, and the mixins that the
+// mixins below replace (meta.get-mixin())
+@use "../../../bootstrap/stylesheets/bootstrap/mixins" as *;
+@use "../../../bootstrap/stylesheets/bootstrap/mixins" as bootstrap;
+@use "button_variant" as *;
 
 // The Bootstrap mixins, for colour arguments
 $o-bootstrap-state-mixins: ();
 @each $name in ("label-variant", "progress-bar-variant", "alert-variant", "form-control-validation",
 		"table-row-variant", "list-group-item-variant", "bg-variant", "text-emphasis-variant") {
-	$o-bootstrap-state-mixins: map.merge($o-bootstrap-state-mixins, ($name: meta.get-mixin($name)));
+	$o-bootstrap-state-mixins: map.merge($o-bootstrap-state-mixins, ($name: meta.get-mixin($name, "bootstrap")));
 }
 
 // Includes the Bootstrap mixin with the colour arguments

@@ -1,5 +1,11 @@
 // animating icons
 // --------------------------
+@use "functions" as *;
+@use "variables" as *;
+@use "mixins" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin fa-rules-animated {
 
 .#{$fa-css-prefix}-beat {
   animation-name: #{$fa-css-prefix}-beat;
@@ -149,4 +155,5 @@
 @keyframes #{$fa-css-prefix}-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
 }

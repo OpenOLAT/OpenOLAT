@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-portal {
 
 .o_home_main {
 	h1 {
@@ -92,4 +96,5 @@
 .o_portlet_dyk_next {
 	margin: $padding-small-vertical 0;
 	text-align: right;
+}
 }

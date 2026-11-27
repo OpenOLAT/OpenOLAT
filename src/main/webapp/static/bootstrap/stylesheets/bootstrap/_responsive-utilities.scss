@@ -17,6 +17,10 @@
 // Docs: https://getbootstrap.com/docs/3.4/getting-started/#support-ie10-width
 // Source: https://timkadlec.com/2013/01/windows-phone-8-and-device-width/
 // Source: https://timkadlec.com/2012/10/ie10-snap-mode-and-responsive-design/
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-responsive-utilities {
 
 @at-root {
   @-ms-viewport {
@@ -176,4 +180,5 @@
 
 @media print {
   @include responsive-invisibility('.hidden-print');
+}
 }

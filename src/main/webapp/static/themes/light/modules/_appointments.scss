@@ -1,4 +1,8 @@
 /* Appointments module */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-appointments {
 .o_appointment_header {
 	.o_organizer {
 		white-space: nowrap;
@@ -291,5 +295,5 @@ fieldset.o_form.o_enrollment_layout {
 		vertical-align: top;
 		margin-left: 4px;
 	}
-} 
-
+}
+}

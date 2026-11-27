@@ -1,5 +1,8 @@
 @charset "UTF-8";
 
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-license {
+
 /*!
  * ========================================================
  *  <a href="http://www.openolat.org">
@@ -25,3 +28,4 @@
  *  @date April. 2014
  * ========================================================
 **/
+}

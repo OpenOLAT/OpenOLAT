@@ -5,6 +5,10 @@
 
 // Base class
 // --------------------------------------------------
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-navs {
 
 .nav {
   padding-left: 0; // Override default ul/ol
@@ -239,4 +243,5 @@
   margin-top: -1px;
   // Remove the top rounded corners here since there is a hard edge above the menu
   @include border-top-radius(0);
+}
 }

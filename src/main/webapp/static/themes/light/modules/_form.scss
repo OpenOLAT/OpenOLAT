@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-form {
 
 form .o_form, form.o_form {
 	.o_desc {
@@ -1423,9 +1427,9 @@ dialog.popover:has(.o_color_picker_popup_grid) {
 // the cell, the focused cell the focus ring on the fill (the text colour of
 // the swatch), so both show at the same time. A grid wider than the
 // callout scrolls.
-$o-picker-grid-cell-size: 28px !default;
-$o-picker-grid-gap: 6px !default;
-$o-picker-grid-group-gap: 10px !default;
+// $o-picker-grid-cell-size: in light/_config_modules.scss
+// $o-picker-grid-gap: in light/_config_modules.scss
+// $o-picker-grid-group-gap: in light/_config_modules.scss
 
 .o_color_picker_popup_grid {
 	padding: 10px;
@@ -1819,4 +1823,5 @@ dialog {
 			}
 		}
 	}
+}
 }

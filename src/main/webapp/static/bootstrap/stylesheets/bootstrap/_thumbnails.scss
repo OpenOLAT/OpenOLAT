@@ -4,6 +4,10 @@
 
 
 // Mixin and adjust the regular image class
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-thumbnails {
 .thumbnail {
   display: block;
   padding: $thumbnail-padding;
@@ -35,4 +39,5 @@ a.thumbnail:hover,
 a.thumbnail:focus,
 a.thumbnail.active {
   border-color: $link-color;
+}
 }

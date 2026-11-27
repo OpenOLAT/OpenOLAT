@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-layout {
 html {
 	position: relative;
 	min-height: 100%;
@@ -9,4 +13,5 @@ body {
 	@if $o-footer-position-absolute == true {
 		margin-bottom: $o-footer-height + $o-footer-margin-top;
 	}
+}
 }

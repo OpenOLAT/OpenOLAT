@@ -2,144 +2,271 @@
 
 /*
  * =================================================
- * Import of all submodules and includes, can be reused
- * by other themes. Normally you do not have to modify
+ * All modules of theme.css in their order: the mixin o-theme
+ * writes the rules of theme.css. light/theme.scss includes it,
+ * and light/_theme.import.scss for a theme with
+ * @import "light/theme". Normally you do not have to modify
  * this file.
+ *
+ * Each module file has its rules in a mixin o-rules-{module}
+ * (OO-9995): all rules of theme.css are in one stylesheet, so an
+ * @extend reaches every rule as with @import. A module
+ * file writes no CSS when it is loaded.
  * =================================================
  */
 
+@use "license" as *;
+@use "modules/bootstrap" as *;
+@use "modules/modal" as *;
+@use "modules/progress" as *;
+@use "modules/panel" as *;
+@use "modules/form_bootstrap" as *;
+@use "modules/buttons" as *;
+@use "modules/navbar_bootstrap" as *;
+@use "modules/dropdown" as *;
+@use "modules/tooltip" as *;
+@use "modules/accessibility" as *;
+@use "modules/fonts" as *;
+@use "modules/icons" as *;
+@use "modules/emoticons" as *;
+@use "modules/helpers" as *;
+@use "modules/type" as *;
+@use "modules/content_embedded" as *;
+@use "modules/radial-progress" as *;
+@use "modules/layout" as *;
+@use "modules/main" as *;
+@use "modules/footer" as *;
+@use "modules/navbar" as *;
+@use "modules/toolbar" as *;
+@use "modules/offcanvas" as *;
+@use "modules/bento" as *;
+@use "modules/boxplot" as *;
+@use "modules/dialog" as *;
+@use "modules/tree" as *;
+@use "modules/breadcrumb" as *;
+@use "modules/form" as *;
+@use "modules/repeatable_field_group" as *;
+@use "modules/overview_nav" as *;
+@use "modules/search" as *;
+@use "modules/table" as *;
+@use "modules/im" as *;
+@use "modules/feed" as *;
+@use "modules/flags" as *;
+@use "modules/rating_and_comments" as *;
+@use "modules/chart" as *;
+@use "modules/forum" as *;
+@use "modules/various_modules" as *;
+@use "modules/autocomplete" as *;
+@use "modules/wizard" as *;
+@use "modules/process" as *;
+@use "modules/addremove" as *;
+@use "modules/assistance_accordion" as *;
+@use "modules/colors" as *;
+@use "modules/card" as *;
+@use "modules/scope" as *;
+@use "modules/vertical_timeline" as *;
+@use "modules/room_management" as *;
+@use "modules/badge" as *;
+@use "modules/cal" as *;
+@use "modules/contenteditor" as *;
+@use "modules/contenteditor_media" as *;
+@use "modules/contenteditor_quiz" as *;
+@use "modules/coursesite" as *;
+@use "modules/creditpoint" as *;
+@use "modules/repository" as *;
+@use "modules/course" as *;
+@use "modules/course_quota" as *;
+@use "modules/dialog_coursenode" as *;
+@use "modules/courseeditor" as *;
+@use "modules/curriculum" as *;
+@use "modules/certification" as *;
+@use "modules/coaching" as *;
+@use "modules/group" as *;
+@use "modules/qti21" as *;
+@use "modules/practice" as *;
+@use "modules/devel" as *;
+@use "modules/wiki" as *;
+@use "modules/scorm" as *;
+@use "modules/portfolio_v2" as *;
+@use "modules/evaluation_form" as *;
+@use "modules/exportarea" as *;
+@use "modules/quality" as *;
+@use "modules/citation" as *;
+@use "modules/contact_tracing" as *;
+@use "modules/immunity_proof" as *;
+@use "modules/video" as *;
+@use "modules/video_edit" as *;
+@use "modules/videotask" as *;
+@use "modules/admin" as *;
+@use "modules/qpool" as *;
+@use "modules/dmz" as *;
+@use "modules/imscp" as *;
+@use "modules/portal" as *;
+@use "modules/library" as *;
+@use "modules/user" as *;
+@use "modules/grouptask" as *;
+@use "modules/lecture" as *;
+@use "modules/lti" as *;
+@use "modules/edubase" as *;
+@use "modules/edusharing" as *;
+@use "modules/doceditor" as *;
+@use "modules/taxonomy" as *;
+@use "modules/appointments" as *;
+@use "modules/tags" as *;
+@use "modules/mathlive" as *;
+@use "modules/todo" as *;
+@use "modules/projects" as *;
+@use "modules/folder" as *;
+@use "modules/topicbroker" as *;
+@use "modules/ai_pulse" as *;
+@use "modules/ai_feedback" as *;
+@use "modules/selectus" as *;
+@use "modules/thirdparty" as *;
+@use "modules/print" as *;
+@use "modules/highscore" as *;
+@use "modules/palette_vars" as *;
+@use "modules/swatches" as *;
+@use "modules/tokens" as *;
+@use "modules/states" as *;
+@use "patches" as *;
+
+@mixin o-theme {
+@include o-rules-license;
+
 /* Bootstrap classes. Override bootstrap variables in your _config.scss file */
-@import "modules/bootstrap";
+@include o-rules-bootstrap;
 /* own rules of Bootstrap components, directly after Bootstrap (OO-10043) */
-@import "modules/modal";
-@import "modules/progress";
-@import "modules/panel";
-@import "modules/form_bootstrap";
-@import "modules/buttons";
-@import "modules/navbar_bootstrap";
-@import "modules/dropdown";
-@import "modules/tooltip";
-@import "modules/accessibility";
+@include o-rules-modal;
+@include o-rules-progress;
+@include o-rules-panel;
+@include o-rules-form-bootstrap;
+@include o-rules-buttons;
+@include o-rules-navbar-bootstrap;
+@include o-rules-dropdown;
+@include o-rules-tooltip;
+@include o-rules-accessibility;
 
 /* -------- OpenOLAT modules -------- */
-@import "modules/mixins";
-@import "modules/fonts"; /* defines extra fonts used as icons */
-@import "modules/icons"; /* must be second include - provides classes used as extensions */
-@import "modules/emoticons";
-@import "modules/helpers";
-@import "modules/type";
-@import "modules/content_embedded";  /* add all styles that are created by html editor but can also be rendered in
+// the mixins of modules/_mixins.scss: part of light/config
+@include o-rules-fonts; /* defines extra fonts used as icons */
+@include o-rules-icons; /* must be second include - provides classes used as extensions */
+@include o-rules-emoticons;
+@include o-rules-helpers;
+@include o-rules-type;
+@include o-rules-content-embedded;  /* add all styles that are created by html editor but can also be rendered in
    										main window, not in iframe (e.g. forum post, blog entry) */
-@import "modules/radial-progress";
+@include o-rules-radial-progress;
 
 
 /* general layout */
-@import "modules/layout";
-@import "modules/main";
-@import "modules/footer";
-@import "modules/navbar";
-@import "modules/toolbar";
-@import "modules/offcanvas";
+@include o-rules-layout;
+@include o-rules-main;
+@include o-rules-footer;
+@include o-rules-navbar;
+@include o-rules-toolbar;
+@include o-rules-offcanvas;
 
 /* components */
-@import "modules/bento";
-@import "modules/boxplot";
-@import "modules/dialog";
-@import "modules/tree";
-@import "modules/breadcrumb";
-@import "modules/form";
-@import "modules/repeatable_field_group";
-@import "modules/overview_nav";
-@import "modules/search";
-@import "modules/table";
-@import "modules/im";
-@import "modules/feed";
-@import "modules/flags";
-@import "modules/rating_and_comments";
-@import "modules/chart";
-@import "modules/forum";
-@import "modules/various_modules";
-@import "modules/autocomplete";
-@import "modules/search";
-@import "modules/wizard";
-@import "modules/process";
-@import "modules/addremove";
-@import "modules/assistance_accordion";
-@import "modules/colors";
-@import "modules/card";
-@import "modules/scope";
-@import "modules/vertical_timeline";
-@import "modules/room_management";
+@include o-rules-bento;
+@include o-rules-boxplot;
+@include o-rules-dialog;
+@include o-rules-tree;
+@include o-rules-breadcrumb;
+@include o-rules-form;
+@include o-rules-repeatable-field-group;
+@include o-rules-overview-nav;
+@include o-rules-search;
+@include o-rules-table;
+@include o-rules-im;
+@include o-rules-feed;
+@include o-rules-flags;
+@include o-rules-rating-and-comments;
+@include o-rules-chart;
+@include o-rules-forum;
+@include o-rules-various-modules;
+@include o-rules-autocomplete;
+@include o-rules-search;
+@include o-rules-wizard;
+@include o-rules-process;
+@include o-rules-addremove;
+@include o-rules-assistance-accordion;
+@include o-rules-colors;
+@include o-rules-card;
+@include o-rules-scope;
+@include o-rules-vertical-timeline;
+@include o-rules-room-management;
 
 /* sites specific styles */
-@import "modules/badge";
-@import "modules/cal";
-@import "modules/contenteditor";
-@import "modules/contenteditor_media";
-@import "modules/contenteditor_quiz";
-@import "modules/coursesite";
-@import "modules/creditpoint";
-@import "modules/repository";
-@import "modules/course";
-@import "modules/course_quota";
-@import "modules/dialog_coursenode";
-@import "modules/courseeditor";
-@import "modules/curriculum";
-@import "modules/certification";
-@import "modules/coaching";
-@import "modules/group";
-@import "modules/qti21";
-@import "modules/practice";
-@import "modules/devel";
-@import "modules/wiki";
-@import "modules/scorm";
-@import "modules/portfolio_v2";
-@import "modules/evaluation_form";
-@import "modules/exportarea";
-@import "modules/quality";
-@import "modules/citation";
-@import "modules/contact_tracing";
-@import "modules/immunity_proof";
-@import "modules/video";
-@import "modules/video_edit";
-@import "modules/videotask";
-@import "modules/admin";
-@import "modules/qpool";
-@import "modules/dmz";
-@import "modules/imscp";
-@import "modules/portal";
-@import "modules/library";
-@import "modules/user";
-@import "modules/grouptask";
-@import "modules/lecture";
-@import "modules/lti";
-@import "modules/edubase";
-@import "modules/edusharing";
-@import "modules/doceditor";
-@import "modules/taxonomy";
-@import "modules/appointments";
-@import "modules/tags";
-@import "modules/mathlive";
-@import "modules/todo";
-@import "modules/projects";
-@import "modules/folder";
-@import "modules/topicbroker";
-@import "modules/ai_pulse";
-@import "modules/ai_feedback";
-@import "modules/selectus";
+@include o-rules-badge;
+@include o-rules-cal;
+@include o-rules-contenteditor;
+@include o-rules-contenteditor-media;
+@include o-rules-contenteditor-quiz;
+@include o-rules-coursesite;
+@include o-rules-creditpoint;
+@include o-rules-repository;
+@include o-rules-course;
+@include o-rules-course-quota;
+@include o-rules-dialog-coursenode;
+@include o-rules-courseeditor;
+@include o-rules-curriculum;
+@include o-rules-certification;
+@include o-rules-coaching;
+@include o-rules-group;
+@include o-rules-qti21;
+@include o-rules-practice;
+@include o-rules-devel;
+@include o-rules-wiki;
+@include o-rules-scorm;
+@include o-rules-portfolio-v2;
+@include o-rules-evaluation-form;
+@include o-rules-exportarea;
+@include o-rules-quality;
+@include o-rules-citation;
+@include o-rules-contact-tracing;
+@include o-rules-immunity-proof;
+@include o-rules-video;
+@include o-rules-video-edit;
+@include o-rules-videotask;
+@include o-rules-admin;
+@include o-rules-qpool;
+@include o-rules-dmz;
+@include o-rules-imscp;
+@include o-rules-portal;
+@include o-rules-library;
+@include o-rules-user;
+@include o-rules-grouptask;
+@include o-rules-lecture;
+@include o-rules-lti;
+@include o-rules-edubase;
+@include o-rules-edusharing;
+@include o-rules-doceditor;
+@include o-rules-taxonomy;
+@include o-rules-appointments;
+@include o-rules-tags;
+@include o-rules-mathlive;
+@include o-rules-todo;
+@include o-rules-projects;
+@include o-rules-folder;
+@include o-rules-topicbroker;
+@include o-rules-ai-pulse;
+@include o-rules-ai-feedback;
+@include o-rules-selectus;
 
-@import "modules/thirdparty";
+@include o-rules-thirdparty;
 
-@import "modules/print";
+@include o-rules-print;
 
-@import "modules/highscore";
+@include o-rules-highscore;
 
 /* palette primitives --o-{hue}-{step} and swatch role tokens --o-sw-* */
-@import "modules/palette_vars";
-@import "modules/swatches";
+@include o-rules-palette-vars;
+@include o-rules-swatches;
 /* base, semantic and state tokens --o-base-*, --o-text, --o-state-* (OO-9994) */
-@import "modules/tokens";
+@include o-rules-tokens;
 
 /* semantic states of badges and status labels, after all modules (OO-10042) */
-@import "modules/states";
+@include o-rules-states;
 
+@include o-rules-patches;
+}

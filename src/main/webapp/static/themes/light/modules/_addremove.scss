@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-addremove {
 .o_addremove_add_active {
 	background-color: var(--o-addremove-add-bg) !important;
 
@@ -20,4 +24,5 @@
 
 .o_badge_removed {
 	@extend %o_state_danger_solid;
+}
 }

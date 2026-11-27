@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-certification {
 .o_certificates_cards {
 	display: flex;
 	flex-wrap: wrap;
@@ -285,4 +289,4 @@
 		border-bottom-right-radius: $btn-border-radius-base;
 	}
 }
-
+}

@@ -8,6 +8,10 @@
 // Heads up! This reset may cause conflicts with some third-party widgets.
 // For recommendations on resolving such conflicts, see
 // https://getbootstrap.com/docs/3.4/getting-started/#third-box-sizing
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-scaffolding {
 * {
   @include box-sizing(border-box);
 }
@@ -159,4 +163,5 @@ hr {
 
 [role="button"] {
   cursor: pointer;
+}
 }

@@ -1,4 +1,14 @@
 @use "sass:math";
+@use "../config" as *;
+
+/* Helper classes to display a custom row as a table */
+@mixin row-flex($index) {
+	padding: $table-condensed-cell-padding;
+	flex: $index $index 0%;
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-table {
 .o_table_wrapper {
 
 	&.o_table_flexi {
@@ -1054,11 +1064,7 @@ a.o_orderby, a.o_orderby:hover {
 }
 
 
-/* Helper classes to display a custom row as a table */
-@mixin row-flex($index) {
-	padding: $table-condensed-cell-padding;
-	flex: $index $index 0%;
-}
+
 
 .o_row_link {
 	display: flex;
@@ -1080,4 +1086,5 @@ a.o_orderby, a.o_orderby:hover {
 	.o_row_flex_3 {@include row-flex(3); }
 
 
+}
 }

@@ -1,4 +1,8 @@
 /* Overview navigation */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-overview-nav {
 .o_overview_nav {
 	position: relative;
 	container: o_overview_nav / inline-size;
@@ -281,4 +285,5 @@
 			"title tools"
 			"search search";
 	}
+}
 }

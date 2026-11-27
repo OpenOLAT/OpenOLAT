@@ -1,4 +1,5 @@
 // Contextual backgrounds
+@use "../../../../themes/light/variables" as *;
 
 // [converter] $parent hack
 @mixin bg-variant($parent, $color) {

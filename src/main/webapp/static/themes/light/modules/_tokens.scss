@@ -130,9 +130,11 @@
 @use "sass:map";
 @use "sass:meta";
 @use "sass:string";
+@use "../config" as *;
+// the removed variables of the theme config, read by name
+@use "../config_removed";
 
-// Client overrides of tokens: name without "--o-" -> token name, palette step or colour
-$o-tokens: () !default;
+// Client overrides of tokens: $o-tokens in _config_base.scss
 
 // Base colours: the colour inputs of the theme, emitted as --o-base-{name}.
 // Each semantic token with the same name reads its base colour.
@@ -3050,7 +3052,7 @@ $o-token-state-fills: (
 // One warning per stylesheet when the client config sets the removed
 // shorthand $o-cn-style-border: the value has no
 // effect any more. It never stops the compile.
-@if meta.global-variable-exists("o-cn-style-border") {
+@if $o-cn-style-border != null {
 	@warn "OpenOLAT theme: your config sets $o-cn-style-border. The variable has no effect any more. Set $o-cn-style-border-line-width, $o-cn-style-border-line-style and the colour with $o-tokens: (\"course-style-border\": ...), see themes.README.";
 }
 
@@ -3060,7 +3062,7 @@ $o-token-state-fills: (
 // token {name} without "o-". It never stops the compile.
 $o-token-removed-shorthands: ("o-card-border", "o-widget-border", "o-fact-sheet-border", "o-fact-sheet-separator-border", "o-dashboard-widget-border", "o-table-details-container-border", "o-activity-add-border", "o-activity-modify-border", "o-activity-remove-border", "o-repo-info-border", "o-repo-info-separator-border", "o-editor-layout-inner-h-border", "o-editor-layout-inner-v-border", "o-icon-panel-border", "o-indicator-separator-border", "o-curriculum-widget-border", "o-curriculum-widget-card-border", "o-lp-border", "o-user-info-border", "o-user-info-divider-border", "o-user-info-profile-border", "o-user-info-portrait-border", "o-panel-authentication-border", "o-folder-row-thumbnail-image-border", "o-swiper-button-border");
 @each $name in $o-token-removed-shorthands {
-	@if meta.global-variable-exists($name) {
+	@if map.get(meta.module-variables("config_removed"), $name) != null {
 		@warn "OpenOLAT theme: your config sets $#{$name}. The variable has no effect any more. Set $#{$name}-width, $#{$name}-style and the colour with $o-tokens: (\"#{string.slice($name, 3)}\": ...), see themes.README.";
 	}
 }
@@ -3079,7 +3081,7 @@ $o-token-removed-shorthands-renamed: (
 	"o-tb-weighting-grid-border": ("o-tb-weighting-grid-border", "topicbroker-weighting-grid-border")
 );
 @each $name, $new in $o-token-removed-shorthands-renamed {
-	@if meta.global-variable-exists($name) {
+	@if map.get(meta.module-variables("config_removed"), $name) != null {
 		@warn "OpenOLAT theme: your config sets $#{$name}. The variable has no effect any more. Set $#{list.nth($new, 1)}-width, $#{list.nth($new, 1)}-style and the colour with $o-tokens: (\"#{list.nth($new, 2)}\": ...), see themes.README.";
 	}
 }
@@ -3141,6 +3143,10 @@ $o-token-removed-shorthands-renamed: (
 	@return o-token-literal($color);
 }
 
+// The rules of this file: the token custom properties, included where the
+// file was imported before (OO-9995). The variables and functions above are
+// computed when the module is loaded.
+@mixin o-rules-tokens {
 :root {
 	// palette layer: white and the base colours of the theme
 	--o-white: #{o-hex(o-neutral(0))};
@@ -3205,4 +3211,5 @@ $o-token-removed-shorthands-renamed: (
 			--o-#{$name}: #{o-token-ref(map.get($o-token-values, $name), $neutral: true)};
 		}
 	}
+}
 }

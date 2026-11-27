@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-grouptask {
 .o_gta_coach_selection {
 	.o_noti {
 		display:inline-block;
@@ -261,4 +265,4 @@ p.o_gta_reopen_warning {
 .o_gta_workflow_received_reviews {
 	margin: 20px 0 20px 0;
 }
-
+}

@@ -17,6 +17,11 @@
  */
 
 /* 1) Override some styles from scaffolding */
+@use "../config" as *;
+@use "content_embedded" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-content {
 
 body {
   font-family: $o-content-font-family-base;
@@ -78,4 +83,5 @@ hr {
 
 /* add all styles that are created by html editor but can also be rendered in 
    main window, not in iframe (e.g. forum post, blog entry) */
-@import "content_embedded";
+@include o-rules-content-embedded;
+}

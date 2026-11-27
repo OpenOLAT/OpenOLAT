@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-rating-and-comments {
 .o_rating {
 	.o_rating_title {
 		font-size: $font-size-small;	
@@ -306,4 +310,5 @@
 		position: relative;
 		top: 0.1em; /* fix line correlation to stars */
 	}
+}
 }

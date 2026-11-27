@@ -1,5 +1,9 @@
 // Expenditure of work: the <script> injected by the form framework is the last
 // child, making the input a middle child whose right corners Bootstrap squares.
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-todo {
 .o_expenditure_input_group {
 	> input.form-control:not(:first-child):not(:last-child) {
 		@include border-right-radius($border-radius-base);
@@ -183,4 +187,5 @@
 .o_labeled_light[class*="o_todo_status_"] .o_icon,
 .o_labeled_light[class*="o_todo_priority_"] .o_icon {
 	color: inherit;
+}
 }

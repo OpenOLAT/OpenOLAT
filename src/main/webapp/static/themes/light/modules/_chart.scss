@@ -1,4 +1,8 @@
 /* charts (crispEdges) */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-chart {
 .d3chart {
 	.bar { shape-rendering: crispEdges; }
 	.bar_default_light { fill: var(--o-chart-bar-light); }
@@ -20,4 +24,5 @@
 	circle.bubble_green {
 		fill: var(--o-state-success-border);
 	}
+}
 }

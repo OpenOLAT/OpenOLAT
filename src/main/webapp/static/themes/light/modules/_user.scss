@@ -1,4 +1,6 @@
 /* User portrait: image or initials */
+@use "sass:math";
+@use "../config" as *;
 
 @mixin o-user_portrait_size($size, $initials-font-size, $im-margin-size, $im-scale) {
 	width: $size;
@@ -16,6 +18,31 @@
 		transform: scale($im-scale);
 	}
 }
+
+/* Users portraits */
+@mixin o-users_portrait_offset($size){
+	.o_portrait_user {
+		&:not(:first-child) {
+			margin-left: -$o-users-portrait-overlap * $size;
+		}
+	}
+	.o_portrait_user_not_visible {
+		margin-left: -$o-users-portrait-overlap * $size;
+	}
+}
+
+@mixin o-users_portrait_not_visible_size($size, $font-size){
+	.o_portrait_user_not_visible {
+		width: $size;
+		height: $size;
+		font-size: $font-size;
+	}
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-user {
+
+
 
 .o_user_portrait {
 	&.o_user_portrait_xsmall {
@@ -126,25 +153,9 @@
 	display: inline-block;
 }
 
-/* Users portraits */
-@mixin o-users_portrait_offset($size){
-	.o_portrait_user {
-		&:not(:first-child) {
-			margin-left: -$o-users-portrait-overlap * $size;
-		}
-	}
-	.o_portrait_user_not_visible {
-		margin-left: -$o-users-portrait-overlap * $size;
-	}
-}
 
-@mixin o-users_portrait_not_visible_size($size, $font-size){
-	.o_portrait_user_not_visible {
-		width: $size;
-		height: $size;
-		font-size: $font-size;
-	}
-}
+
+
 
 .o_users_portraits {
 	.o_portrait_user_not_visible {
@@ -696,4 +707,5 @@ div.o_skype_button {
 	legend {
 		margin-bottom: 0;
 	}
+}
 }

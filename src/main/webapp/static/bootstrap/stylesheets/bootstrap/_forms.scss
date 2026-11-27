@@ -2,6 +2,81 @@
 // Forms
 // --------------------------------------------------
 @use "sass:math";
+@use "../../../themes/light/config" as *;
+
+// [converter] extracted from `.form-inline` for libsass compatibility
+@mixin form-inline {
+
+  // Kick in the inline
+  @media (min-width: $screen-sm-min) {
+    // Inline-block all the things for "inline"
+    .form-group {
+      display: inline-block;
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    // In navbar-form, allow folks to *not* use `.form-group`
+    .form-control {
+      display: inline-block;
+      width: auto; // Prevent labels from stacking above inputs in `.form-group`
+      vertical-align: middle;
+    }
+
+    // Make static controls behave like regular ones
+    .form-control-static {
+      display: inline-block;
+    }
+
+    .input-group {
+      display: inline-table;
+      vertical-align: middle;
+
+      .input-group-addon,
+      .input-group-btn,
+      .form-control {
+        width: auto;
+      }
+    }
+
+    // Input groups need that 100% width though
+    .input-group > .form-control {
+      width: 100%;
+    }
+
+    .control-label {
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    // Remove default margin on radios/checkboxes that were used for stacking, and
+    // then undo the floating of radios and checkboxes to match.
+    .radio,
+    .checkbox {
+      display: inline-block;
+      margin-top: 0;
+      margin-bottom: 0;
+      vertical-align: middle;
+
+      label {
+        padding-left: 0;
+      }
+    }
+    .radio input[type="radio"],
+    .checkbox input[type="checkbox"] {
+      position: relative;
+      margin-left: 0;
+    }
+
+    // Re-override the feedback icon.
+    .has-feedback .form-control-feedback {
+      top: 0;
+    }
+  }
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-forms {
 
 
 // Normalize non-controls
@@ -460,76 +535,7 @@ textarea.form-control {
 //
 // Heads up! This is mixin-ed into `.navbar-form` in navbars.less.
 
-// [converter] extracted from `.form-inline` for libsass compatibility
-@mixin form-inline {
 
-  // Kick in the inline
-  @media (min-width: $screen-sm-min) {
-    // Inline-block all the things for "inline"
-    .form-group {
-      display: inline-block;
-      margin-bottom: 0;
-      vertical-align: middle;
-    }
-
-    // In navbar-form, allow folks to *not* use `.form-group`
-    .form-control {
-      display: inline-block;
-      width: auto; // Prevent labels from stacking above inputs in `.form-group`
-      vertical-align: middle;
-    }
-
-    // Make static controls behave like regular ones
-    .form-control-static {
-      display: inline-block;
-    }
-
-    .input-group {
-      display: inline-table;
-      vertical-align: middle;
-
-      .input-group-addon,
-      .input-group-btn,
-      .form-control {
-        width: auto;
-      }
-    }
-
-    // Input groups need that 100% width though
-    .input-group > .form-control {
-      width: 100%;
-    }
-
-    .control-label {
-      margin-bottom: 0;
-      vertical-align: middle;
-    }
-
-    // Remove default margin on radios/checkboxes that were used for stacking, and
-    // then undo the floating of radios and checkboxes to match.
-    .radio,
-    .checkbox {
-      display: inline-block;
-      margin-top: 0;
-      margin-bottom: 0;
-      vertical-align: middle;
-
-      label {
-        padding-left: 0;
-      }
-    }
-    .radio input[type="radio"],
-    .checkbox input[type="checkbox"] {
-      position: relative;
-      margin-left: 0;
-    }
-
-    // Re-override the feedback icon.
-    .has-feedback .form-control-feedback {
-      top: 0;
-    }
-  }
-}
 // [converter] extracted as `@mixin form-inline` for libsass compatibility
 .form-inline {
   @include form-inline;
@@ -605,4 +611,5 @@ textarea.form-control {
       }
     }
   }
+}
 }

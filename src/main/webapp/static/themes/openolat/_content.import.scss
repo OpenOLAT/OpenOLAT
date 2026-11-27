@@ -1,0 +1,20 @@
+@charset "UTF-8";
+
+/*
+	Import-only file of openolat/content.scss (OO-9995): a client theme with
+	@import "openolat/content" loads this file. It keeps the import order of the
+	OpenOLAT theme: the global variables of the client config configure
+	light/config, the values of _openolat_config.scss without !default win.
+	A theme with the module system uses openolat/content.scss.
+*/
+/* Add client fonts */
+@import "fonts/fonts";
+
+/* Use OpenOLAT configuration to override defaults */
+@import "openolat_config";
+
+/* Add all default config and apply styles from light theme */
+@import "light/content";
+
+/* Override with OpenOLAT customizations */
+@import "openolat_content"; 

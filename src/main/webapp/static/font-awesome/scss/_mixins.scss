@@ -1,6 +1,8 @@
 // mixins
 // --------------------------
 @use "sass:string";
+@use "functions" as *;
+@use "variables" as *;
 
 // base rendering for an icon
 @mixin fa-icon {

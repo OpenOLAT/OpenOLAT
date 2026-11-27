@@ -7,6 +7,10 @@
 // -------------------------
 
 // WebKit
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-progress-bars {
 @-webkit-keyframes progress-bar-stripes {
   from  { background-position: 40px 0; }
   to    { background-position: 0 0; }
@@ -84,4 +88,5 @@
 
 .progress-bar-danger {
   @include progress-bar-variant($progress-bar-danger-bg);
+}
 }

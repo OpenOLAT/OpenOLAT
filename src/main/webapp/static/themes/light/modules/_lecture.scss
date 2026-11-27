@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-lecture {
 
 .o_lecture_authorized_absence {
 	div.form-inline {
@@ -872,4 +876,5 @@ tr.o_rm_room_preselected {
 			border-top: 0;
 		}
 	}
+}
 }

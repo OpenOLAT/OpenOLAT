@@ -1,9 +1,19 @@
 /* The bento box layout */
+@use "sass:math";
+@use "../config" as *;
 
 $o-bento-width-without-gap: $o-page-width-max - ($o-bento-cols * $o-bento-gap) + $o-bento-gap;
+
 $o-bento-row-min-height: math.div($o-bento-width-without-gap, $o-bento-cols);
+
 $o-bento-half-columns-width: math.div($o-page-width-max, 2);
+
 $o-bento-half-columns: math.div($o-bento-cols, 2);
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-bento {
+
+
 
 .o_bento_container {
 	container-type: inline-size;
@@ -93,4 +103,5 @@ $o-bento-half-columns: math.div($o-bento-cols, 2);
 		border: 2px solid var(--o-primary);
 		padding: $panel-body-padding;
 	}
+}
 }

@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-toolbar {
 
 .o_toolbar {
 	position: relative;
@@ -580,4 +584,5 @@
 /* Test / Assessment coach view */
 .o_segment_toolbar .o_toolbar {
 	margin-top: 0px;
+}
 }

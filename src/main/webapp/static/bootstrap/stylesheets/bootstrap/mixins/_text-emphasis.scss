@@ -1,4 +1,5 @@
 // Typography
+@use "../../../../themes/light/variables" as *;
 
 // [converter] $parent hack
 @mixin text-emphasis-variant($parent, $color) {

@@ -1,6 +1,10 @@
 // Embeds responsive
 //
 // Credit: Nicolas Gallagher and SUIT CSS.
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-responsive-embed {
 
 .embed-responsive {
   position: relative;
@@ -32,4 +36,5 @@
 // Modifier class for 4:3 aspect ratio
 .embed-responsive-4by3 {
   padding-bottom: 75%;
+}
 }

@@ -4,6 +4,8 @@
 // and successes.
 @use "sass:color";
 @use "sass:math";
+@use "../../../../themes/light/variables" as *;
+@use "vendor-prefixes" as *;
 
 @mixin form-control-validation($text-color: #555, $border-color: #ccc, $background-color: #f5f5f5) {
   // Color the label and help text

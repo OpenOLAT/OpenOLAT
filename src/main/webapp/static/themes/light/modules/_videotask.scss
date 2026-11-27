@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-videotask {
 .o_videotask_box {
 	padding: 1em 2em;
 	border: 1px solid var(--o-video-startbox-main-border);
@@ -302,8 +306,4 @@
 .o_videotask_category_incorrect:hover {
 	text-decoration: line-through;
 }
-
-
-
-
-
+}

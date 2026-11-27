@@ -2,6 +2,12 @@
 // -------------------------
 
 // literal magnification scale
+@use "functions" as *;
+@use "variables" as *;
+@use "mixins" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin fa-rules-sizing {
 @for $i from 1 through 10 {
   .#{$fa-css-prefix}-#{$i}x {
     font-size: $i * 1em;
@@ -13,4 +19,5 @@
   .#{$fa-css-prefix}-#{$size} {
      @include fa-size($value);
   }
+}
 }

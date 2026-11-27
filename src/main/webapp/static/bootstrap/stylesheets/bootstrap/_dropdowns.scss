@@ -4,6 +4,10 @@
 
 
 // Dropdown arrow/caret
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-dropdowns {
 .caret {
   display: inline-block;
   width: 0;
@@ -210,4 +214,5 @@
       left: 0; right: auto;
     }
   }
+}
 }

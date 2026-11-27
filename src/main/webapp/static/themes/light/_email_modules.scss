@@ -1,0 +1,157 @@
+@charset "UTF-8";
+
+/*
+ *  =================================================
+ *
+ *   The rules of email.css: the mixin o-email. light/email.scss
+ *   includes it, and light/_email.import.scss for a theme with
+ *   @import "light/email". email.css has no colour tokens: the rules
+ *   read the Sass values of the config.
+ *
+ *   @author uhensler, www.frentix.com
+ *   @date November 2018
+ *
+ *	 also read themes.README!
+ *  =================================================
+ */
+@use "sass:color";
+@use "sass:math";
+@use "config" as *;
+
+@mixin o-email {
+/*** General style of the email text ***/
+.o_email_body {
+	font-family: $o-email-font-family;
+	max-width: $o-email-max-width;
+
+	.o_email_content {
+		margin: $o-email-content-margin;
+		padding-left: $o-email-content-padding-left;
+		
+		h1 {
+			background-color: $o-email-content-h1-bg;
+			color: $o-email-content-h1-color;
+			padding: 20px 0 20px $o-email-content-padding-left;
+			margin-bottom: 30px;
+			margin-left: -$o-email-content-padding-left;
+			font-size: x-large;
+		}
+		
+		strong {
+			color: $o-email-content-strong-color;
+		}
+		
+		a:not(.o_email_button) {
+			color: $o-email-content-link-color	;
+		}
+	}
+	.o_email_footer {
+		font-size: smaller;
+		color: $o-email-footer-color;
+		border-top: 5px solid $o-email-footer-top-color;
+		padding: 4px 12px;
+		margin-top: 1em;
+		
+		a {
+			color: $o-email-footer-color;
+		}
+	}
+	
+	/*** Message box ***/
+	.o_email_info { 
+		@include o-make-message-box($o-box-info-bg, $o-box-info-color);
+	}
+	.o_email_box {
+		@include o-make-message-box($o-box-info-bg, $o-box-info-color);
+		border: 0;
+	}
+}
+
+// Use the font of the OpenOLAT theme inside the OpenOLAT mailbox.
+.o_mail_message {
+	.o_email_body {
+		font-family: inherit;
+	}
+}
+
+
+/*** Buttons ***/
+/* Usage:
+	...  <a class="o_email_button" href="https://www.openolat.com/">OpenOLAT</a> ...
+	... <div class="o_email_button_group o_email_button_group_left"><a class="o_email_button" href="$url">Open report</a></div> ...
+*/
+.o_email_body {
+	.o_email_button {
+		color: $o-email-btn-color;
+		background-color: $o-email-btn-bg;
+		border-color: $o-email-btn-border-color;
+		border-radius: $o-email-btn-border-radius;
+		padding: 6px 12px;
+		text-align: center;
+		white-space: nowrap;
+		vertical-align: middle;
+		touch-action: manipulation;
+		cursor: pointer;
+		text-decoration: none;
+	}
+	
+	.o_email_button_group {
+		margin-top: 1em;
+		margin-bottom: 1em;
+		text-align: center;
+		
+		a {
+			margin-right: 5px;
+			margin-bottom: 0.5em;
+			font-weight: bold;
+			&:last-child {
+				margin-right: 0;
+			}
+		}
+	}
+	
+	/* use together with o_email_button_group to have buttons left or right aligned */
+	.o_email_button_group_left {
+		text-align: left;
+	}
+	.o_email_button_group_right {
+		text-align: right;
+	}
+}
+
+/*** To-dos ***/
+.o_email_body {
+	.o_email_box {
+		margin: 5px 0;
+	}
+	.o_email_todo_more {
+		// the coloured text of the info box: the text of the state neutral, or
+		// the info colour of a theme that sets $o-box-info-color
+		color: o-own-or($o-box-info-color, o-state-color("neutral", "bg"), o-state-color("neutral", "text"));
+		margin: 0 0 5px 0;
+	}
+	tr.o_email_todo_row {
+		td:first-child {
+			padding-right: 20px;
+			vertical-align: middle;
+			span {
+				font-size: 30px;
+				border-radius: 50%;
+			}
+		}
+		a {
+			word-break: break-all;
+		}
+		.o_email_todo_icon_open {
+		}
+		.o_email_todo_icon_done {
+			background-color: $o-email-todo-done-bg;
+			color: $o-email-todo-done-color;
+			display: inline-block;
+			text-align: center;
+			line-height: 38px;
+			width: 38px;
+		}
+	}
+}
+}

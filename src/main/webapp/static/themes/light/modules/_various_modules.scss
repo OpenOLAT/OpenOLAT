@@ -1,4 +1,63 @@
 @use "sass:math";
+@use "../config" as *;
+
+/* Colored icons */
+@mixin colored-base-variant($color) {
+	color: $color;
+}
+
+// inspired by button-variant: the tokens --o-{$name}-fg, -bg and -border, and
+// the shade tokens -bg-hover and -border-hover for a label as a link
+@mixin labeled-variant($name) {
+	color: var(--o-#{$name}-fg);
+	background-color: var(--o-#{$name}-bg);
+	border-color: var(--o-#{$name}-border);
+	
+	// .o_empty is a drop down button without a menu
+	&:is(a):not(.o_empty):hover {
+		color: var(--o-#{$name}-fg);
+		background-color: var(--o-#{$name}-bg-hover);
+		border-color: var(--o-#{$name}-border-hover);
+	}
+}
+
+/* Figure cards component */
+// the icon colours (name of the class): the tokens figure-card-icon-{name}
+// and figure-card-icon-{name}-bg, the text and the fill of the tint swatch
+// of a palette hue (_tokens.scss)
+$o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
+
+@mixin o-figure-cards-two-line($n) {
+	grid-template-columns: repeat($n, minmax(0, 1fr));
+	
+	.o_figure_card {
+		padding: $o-figure-card-padding;
+		> span {
+			grid-template-areas: "icon figure ." "label label label";
+		}
+	}
+	.o_figure_card_icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: $o-figure-card-icon-size;
+		height: $o-figure-card-icon-size;
+		border-radius: 50%;
+		font-size: 11px;
+		background-color: var(--o-figure-card-icon-bg);
+	}
+	@each $name in $o-figure-card-icon-names {
+		.o_figure_card_icon_#{$name} {
+			background-color: var(--o-figure-card-icon-#{$name}-bg);
+		}
+	}
+	.o_figure_card_figure {
+		font-size: $o-figure-card-figure-font-size;
+	}
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-various-modules {
 /* HELP, context sensitive */
 a.o_chelp,
 .tox .tox-dialog .tox-form a.o_chelp {
@@ -1823,10 +1882,7 @@ ul.o_assessment_docs>li:last-child {
 }
 
 
-/* Colored icons */
-@mixin colored-base-variant($color) {
-	color: $color;
-}
+
 
 .o_base_blue, %o_base_blue { @include colored-base-variant(var(--o-colored-icon-blue)); }
 .o_base_green, %o_base_green { @include colored-base-variant(var(--o-colored-icon-green)); }
@@ -1835,20 +1891,7 @@ ul.o_assessment_docs>li:last-child {
 
 /* label */
 
-// inspired by button-variant: the tokens --o-{$name}-fg, -bg and -border, and
-// the shade tokens -bg-hover and -border-hover for a label as a link
-@mixin labeled-variant($name) {
-	color: var(--o-#{$name}-fg);
-	background-color: var(--o-#{$name}-bg);
-	border-color: var(--o-#{$name}-border);
-	
-	// .o_empty is a drop down button without a menu
-	&:is(a):not(.o_empty):hover {
-		color: var(--o-#{$name}-fg);
-		background-color: var(--o-#{$name}-bg-hover);
-		border-color: var(--o-#{$name}-border-hover);
-	}
-}
+
 
 %o_labeled,
 .o_labeled,
@@ -2285,40 +2328,9 @@ ul.o_list_narrow {
 	
 }
 
-/* Figure cards component */
-// the icon colours (name of the class): the tokens figure-card-icon-{name}
-// and figure-card-icon-{name}-bg, the text and the fill of the tint swatch
-// of a palette hue (_tokens.scss)
-$o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
 
-@mixin o-figure-cards-two-line($n) {
-	grid-template-columns: repeat($n, minmax(0, 1fr));
-	
-	.o_figure_card {
-		padding: $o-figure-card-padding;
-		> span {
-			grid-template-areas: "icon figure ." "label label label";
-		}
-	}
-	.o_figure_card_icon {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: $o-figure-card-icon-size;
-		height: $o-figure-card-icon-size;
-		border-radius: 50%;
-		font-size: 11px;
-		background-color: var(--o-figure-card-icon-bg);
-	}
-	@each $name in $o-figure-card-icon-names {
-		.o_figure_card_icon_#{$name} {
-			background-color: var(--o-figure-card-icon-#{$name}-bg);
-		}
-	}
-	.o_figure_card_figure {
-		font-size: $o-figure-card-figure-font-size;
-	}
-}
+
+
 
 .o_figure_cards_container {
 	container-type: inline-size;
@@ -2488,4 +2500,5 @@ $o-figure-card-icon-names: "blue", "green", "yellow", "orange", "red", "grey";
 	.o_icon {
 		margin-right: 0.3em;
 	}
+}
 }

@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-forum {
 .o_forum_peekview {
 	.o_quote_wrapper, .b_quote_wrapper { /* keep b_* for legacy posts */
 		display: none;
@@ -184,4 +188,5 @@ blockquote.o_quote, blockquote.b_quote {
 	font-size: $o-forum-quote-font-size; 
 	margin-top: $padding-base-vertical; 
 	padding: 0 $padding-base-horizontal;
+}
 }

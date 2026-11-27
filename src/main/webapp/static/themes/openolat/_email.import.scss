@@ -1,0 +1,17 @@
+@charset "UTF-8";
+
+/*
+	Import-only file of openolat/email.scss (OO-9995): a client theme with
+	@import "openolat/email" loads this file. It keeps the import order of the
+	OpenOLAT theme: the global variables of the client config configure
+	light/config, the values of _openolat_config.scss without !default win.
+	A theme with the module system uses openolat/email.scss.
+*/
+/* Use OpenOLAT configuration to override defaults */
+@import "openolat_config";
+
+/* Add all default config and apply styles from light theme */
+@import "light/email";
+
+/* Override with OpenOLAT customizations */
+@import "openolat_email"; 

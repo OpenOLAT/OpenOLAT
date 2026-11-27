@@ -1,3 +1,7 @@
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-media {
 .media {
   // Proper spacing between instances of .media
   margin-top: 15px;
@@ -63,4 +67,5 @@
 .media-list {
   padding-left: 0;
   list-style: none;
+}
 }

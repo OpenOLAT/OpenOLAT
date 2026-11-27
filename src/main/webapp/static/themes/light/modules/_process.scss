@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-process {
 
 .o_process {
 	position: relative;
@@ -214,4 +218,5 @@
 
 .o_process_assignment {
 	padding-left: 2em;
+}
 }

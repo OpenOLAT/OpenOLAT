@@ -2,6 +2,12 @@
 // -------------------------
 
 // only display content to screen readers
+@use "functions" as *;
+@use "variables" as *;
+@use "mixins" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin fa-rules-screen-reader {
 .sr-only,
 .#{$fa-css-prefix}-sr-only {
   @include fa-sr-only;
@@ -11,4 +17,5 @@
 .sr-only-focusable,
 .#{$fa-css-prefix}-sr-only-focusable {
   @include fa-sr-only-focusable;
+}
 }

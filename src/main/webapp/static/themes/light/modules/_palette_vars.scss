@@ -13,6 +13,10 @@
  * =================================================
  */
 @use "sass:map";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-palette-vars {
 
 :root {
 	@each $hue, $steps in $o-palette {
@@ -29,4 +33,5 @@
 	@each $step, $value in $o-neutral {
 		--o-neutral-#{$step}: #{o-hex($value)};
 	}
+}
 }

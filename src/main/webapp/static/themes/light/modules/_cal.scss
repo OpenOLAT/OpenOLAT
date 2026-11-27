@@ -1,5 +1,20 @@
 @use "sass:map";
 @use "sass:string";
+@use "../config" as *;
+
+/* local helper to create the calendar icons */
+@mixin o-cal-event-icon($iconName) {
+	@include o-add-icon($iconName);
+	@include o-add-icon-font();
+	&:before {
+		float: right;
+		margin-right: 4px;
+		margin-top: 4px;
+	}
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-cal {
 
 /* calender colors for events: must be the last thing in the file !! */
 // Each old calendar class o_cal_<key> (grey, maroon, navy, fuchsia,
@@ -106,16 +121,7 @@
 	}
 }
 
-/* local helper to create the calendar icons */
-@mixin o-cal-event-icon($iconName) {
-	@include o-add-icon($iconName);
-	@include o-add-icon-font();
-	&:before {
-		float: right;
-		margin-right: 4px;
-		margin-top: 4px;
-	}
-}
+
 .fc-daygrid-block-event .fc-event-time, .fc-daygrid-block-event .fc-event-title {
 	padding-right: 1em;
 	@extend %o_nowrap;
@@ -349,4 +355,5 @@ body.o_cal_print {
 	display: flex;
 	margin-top: 4%;
 	flex-direction: column;
+}
 }

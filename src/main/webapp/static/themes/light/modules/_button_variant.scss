@@ -4,8 +4,8 @@
  * Button variant that reads the colour tokens (OO-10043).
  *
  * Replaces the mixin button-variant of Bootstrap (bootstrap/mixins/
- * _buttons.scss) with the same rules, selectors and state colours. Imported
- * after the Bootstrap mixins and before the Bootstrap buttons.
+ * _buttons.scss) with the same rules, selectors and state colours. Part of
+ * light/config: _config.scss forwards it and hides the Bootstrap mixin.
  *
  * Each argument is a colour or a token:
  *
@@ -43,8 +43,9 @@
 @use "sass:map";
 @use "sass:meta";
 @use "sass:string";
+@use "../variables" as *;
 
-// The shade tokens that a rule read before _tokens.scss is imported.
+// The shade tokens that a rule read before _tokens.scss is loaded.
 // _tokens.scss stops the compile when one of them does not exist.
 $o-button-variant-tokens: ();
 
@@ -68,7 +69,7 @@ $o-button-variant-tokens: ();
 		@return o-darker($value, $amount); // o-color-keep(mixin-argument)
 	}
 	$name: "#{$token}-#{$shade}";
-	@if meta.global-variable-exists("o-token-shades") {
+	@if $o-token-shades != null {
 		@if not map.has-key($o-token-shades, $name) {
 			@error "button-variant: the token '#{$token}' has no shade token '#{$name}'. Pass a colour, or use a token with shade tokens ($o-token-shades in _tokens.scss).";
 		}

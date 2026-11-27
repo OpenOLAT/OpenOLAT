@@ -7,6 +7,11 @@
 //
 // Provide a static navbar from which we expand to create full-width, fixed, and
 // other navbar variations.
+@use "forms" as *;
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-navbar {
 
 .navbar {
   position: relative;
@@ -653,4 +658,5 @@
       }
     }
   }
+}
 }

@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-main {
 
 #o_main_wrapper {
 	background: var(--o-main-outer-bg);
@@ -128,4 +132,4 @@ body.o_message #o_main_center_content_inner {
 	padding: 15px;
 	margin:60px auto;
 }
-
+}

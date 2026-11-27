@@ -763,15 +763,19 @@ public class ColorTokensTest {
 	 */
 	@Test
 	public void legacyColorWarning() {
-		String config = read(ThemeColorRatchetTest.LIGHT_MODULES.getParent().resolve("_config.scss"));
+		// _config_base.scss declares the old state colours null before the defaults:
+		// a value is the value of the client config (module system, OO-9995)
+		String config = read(ThemeColorRatchetTest.LIGHT_MODULES.getParent().resolve("_config_base.scss"));
 		Assert.assertTrue(config.contains("$o-legacy-color-warning: true !default;"));
 		for (String name : List.of("brand-danger", "brand-warning", "brand-success", "brand-info")) {
-			Assert.assertTrue(name, config.contains("meta.global-variable-exists(\"" + name + "\")"));
+			Assert.assertTrue(name, config.contains("$" + name + ": null !default;"));
+			Assert.assertTrue(name, config.contains("\"" + name + "\": $" + name));
 		}
 		for (String state : List.of("danger", "warning", "success", "info")) {
 			for (String role : List.of("text", "bg", "border")) {
 				String name = "state-" + state + "-" + role;
-				Assert.assertTrue(name, config.contains("meta.global-variable-exists(\"" + name + "\")"));
+				Assert.assertTrue(name, config.contains("$" + name + ": null !default;"));
+				Assert.assertTrue(name, config.contains("\"" + name + "\": $" + name));
 				Assert.assertTrue(name, config.contains("\"" + name + "\": #"));
 			}
 		}
@@ -783,8 +787,9 @@ public class ColorTokensTest {
 		Assert.assertTrue(message, message.contains("themes.README"));
 		Assert.assertTrue(message, message.contains("$o-legacy-color-warning: false;"));
 		Assert.assertFalse(message, message.contains("exception"));
-		// email.css does not import _tokens.scss: no warning there
+		// email.css does not load _tokens.scss: no warning there
 		Assert.assertFalse(read(ThemeColorRatchetTest.LIGHT_MODULES.getParent().resolve("email.scss")).contains("tokens"));
+		Assert.assertFalse(read(ThemeColorRatchetTest.LIGHT_MODULES.getParent().resolve("_email_modules.scss")).contains("modules/tokens"));
 	}
 
 	/**
@@ -1112,7 +1117,7 @@ public class ColorTokensTest {
 		Assert.assertTrue(css.contains("var(--o-not-available-light)"));
 		Assert.assertFalse("Old colours of the immunity proof shadows", css.contains("rgba(50,50,93") || css.contains("rgba(10,37,64"));
 		// the dead block of _config.scss
-		String config = read(ThemeColorRatchetTest.LIGHT_MODULES.getParent().resolve("_config.scss"));
+		String config = readConfig();
 		Assert.assertFalse(config.contains("@if contrast($brand-primary, #FFF) < 4.5"));
 	}
 
@@ -1214,7 +1219,7 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_cns_details .o_cns_descriptions", "border-top:1px solid var(--o-course-style-border)");
 		Assert.assertEquals("var(--o-border)", tokens.get("course-style-border"));
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
-		String config = ThemeColorRatchetTest.withoutComments(read(light.resolve("_config.scss")));
+		String config = ThemeColorRatchetTest.withoutComments(readConfig());
 		Assert.assertFalse("_config.scss declares the removed shorthand $o-cn-style-border",
 				Pattern.compile("\\$o-cn-style-border\\s*:").matcher(config).find());
 		// the state fills use the function "state" of o-token-shade(), the
@@ -1460,10 +1465,11 @@ public class ColorTokensTest {
 		assertSourceLacks(modules.resolve("_folder.scss"), "1px solid 1px solid");
 		assertSourceLacks(modules.resolve("_topicbroker.scss"), "1px solid 1px solid");
 		assertSourceLacks(modules.resolve("_curriculum.scss"), "$o-curriculum-widget-template-label-border");
-		assertSourceLacks(PaletteTest.LIGHT_THEME_CSS.getParent().resolve("_config.scss"), "$o-curriculum-widget-template-label-border");
+		Assert.assertFalse("The config has $o-curriculum-widget-template-label-border",
+				ThemeColorRatchetTest.withoutComments(readConfig()).contains("$o-curriculum-widget-template-label-border"));
 		Assert.assertFalse("The compiled theme has a selectus status class b_*", css.contains(".b_preparation") || css.contains(".b_closed"));
 		assertSourceHas(modules.resolve("_portfolio_v2.scss"), "pink");
-		assertSourceHas(PaletteTest.LIGHT_THEME_CSS.getParent().resolve("_config.scss"), "$o-video-controls-selected", "$o-video-controls-bg");
+		assertConfigHas("$o-video-controls-selected", "$o-video-controls-bg");
 	}
 
 	/**
@@ -1614,11 +1620,17 @@ public class ColorTokensTest {
 		// colour, the fill step 50 of the brand ramp
 		Assert.assertEquals("var(--o-primary)", tokens.get("radio-card-checked-border"));
 		Assert.assertEquals(resolve("theme1-50"), resolve("radio-card-checked-bg"));
-		// the existence of $input-border-focus is read before the Bootstrap defaults
+		// $input-border-focus of the client config is read before the Bootstrap defaults:
+		// _config_bootstrap.scss declares it null, _variables.scss loads that file
+		// before the Bootstrap variables (module system, OO-9995)
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
-		String config = read(light.resolve("_config.scss"));
-		int check = config.indexOf("meta.global-variable-exists(\"input-border-focus\")");
-		int bootstrap = config.indexOf("@import \"../../bootstrap/stylesheets/bootstrap/variables\"");
+		String config = read(light.resolve("_config_bootstrap.scss"));
+		Assert.assertTrue("$input-border-focus is not declared null",
+				Pattern.compile("\\$input-border-focus\\s*:\\s*null !default;").matcher(config).find());
+		Assert.assertTrue(config.contains("$o-focus-color-from-input-border: $input-border-focus != null;"));
+		String variables = read(light.resolve("_variables.scss"));
+		int check = variables.indexOf("@forward \"config_bootstrap\";");
+		int bootstrap = variables.indexOf("@forward \"../../bootstrap/stylesheets/bootstrap/variables\";");
 		Assert.assertTrue("$input-border-focus is not checked before the Bootstrap defaults", check > 0 && check < bootstrap);
 		// no literal of the old focus colour in the theme modules, except in comments
 		Pattern literal = Pattern.compile("(?i)66afe9|102,\\s*175,\\s*233");
@@ -1727,7 +1739,7 @@ public class ColorTokensTest {
 				"border:1px solid var(--o-table-details-container-border)");
 		assertRuleReads(css, ".o_login .o_login_form p.o_login_username", "border:1px solid var(--o-login-border)");
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
-		String config = ThemeColorRatchetTest.withoutComments(read(light.resolve("_config.scss")));
+		String config = ThemeColorRatchetTest.withoutComments(readConfig());
 		for (String shorthand : List.of("$o-card-border", "$o-widget-border", "$o-fact-sheet-border",
 				"$o-fact-sheet-separator-border", "$o-dashboard-widget-border", "$o-table-details-container-border",
 				"$o-activity-add-border", "$o-activity-modify-border", "$o-activity-remove-border",
@@ -1736,7 +1748,7 @@ public class ColorTokensTest {
 			Assert.assertFalse("_config.scss defines the removed shorthand " + shorthand,
 					Pattern.compile(Pattern.quote(shorthand) + "\\s*:").matcher(config).find());
 		}
-		assertSourceHas(light.resolve("_config.scss"), "$o-login-border", "@function o-login-border()");
+		assertConfigHas("$o-login-border", "@function o-login-border()");
 		assertSourceHas(light.resolve("modules/_tokens.scss"), "$o-token-removed-shorthands", "@function o-token-is-mix(");
 		// part B: QTI, page editor, practice, video, video task
 		assertRuleReads(css, "#o_qti_run_infos #o_qti_scoreinfo .progress-bar",
@@ -1804,7 +1816,7 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_curriculum_element_outline .o_curriculum_element_outline_lead",
 				"border-top:1px solid var(--o-curriculum-widget-border)");
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
-		String config = ThemeColorRatchetTest.withoutComments(read(light.resolve("_config.scss")));
+		String config = ThemeColorRatchetTest.withoutComments(readConfig());
 		for (String shorthand : List.of("$o-empty-border-color", "$o-icon-panel-border", "$o-lp-border",
 				"$o-curriculum-widget-border", "$o-curriculum-widget-card-border", "$o-assessment-inspection-border-color",
 				"$o-hs-podium-border", "$o-users-portrait-img-border", "$o-user-info-portrait-border", "$o-user-info-border",
@@ -1890,7 +1902,7 @@ public class ColorTokensTest {
 		Assert.assertEquals(0, ThemeColorRatchetTest.countOldColorReferences(".a { width: $o-qti-textEntryInteraction-width; }"));
 		// the gradient by default, the token without it; the old variable stays valid
 		Path light = PaletteTest.LIGHT_THEME_CSS.getParent();
-		assertSourceHas(light.resolve("_config.scss"), "$o-hs-position-title-gradient", "@function o-hs-position-title-gradient()",
+		assertConfigHas("$o-hs-position-title-gradient", "@function o-hs-position-title-gradient()",
 				"@function o-hs-position-title-color()");
 		assertSourceHas(light.resolve("modules/_highscore.scss"), "@if o-hs-position-title-gradient()", "var(--o-highscore-position-title)");
 		Assert.assertEquals("var(--o-text)", tokens.get("highscore-position-title"));
@@ -1899,7 +1911,7 @@ public class ColorTokensTest {
 		assertRuleReads(css, ".o_ac_billing_address", "border:1px solid var(--o-ac-billing-address-border)");
 		assertRuleReads(css, "body .o_swiper_buttons .swiper-button-next", "border:1px solid var(--o-swiper-button-border)");
 		assertRuleReads(css, ".o_tb_weighting .o_tb_weighting_slider_grid_top", "border-top:1px solid var(--o-topicbroker-weighting-grid-border)");
-		String config = ThemeColorRatchetTest.withoutComments(read(light.resolve("_config.scss")));
+		String config = ThemeColorRatchetTest.withoutComments(readConfig());
 		for (String shorthand : List.of("$o-step-border", "$o-ac-ba-border", "$o-folder-row-thumbnail-image-border",
 				"$o-swiper-button-border", "$o-tb-details-separator-border-bottom", "$o-tb-topic-card-title-abbr-border",
 				"$o-tb-topic-placeholder-title-abbr-border", "$o-tb-weighting-grid-border")) {
@@ -2608,7 +2620,7 @@ public class ColorTokensTest {
 		// the Sass defaults: one function, the scale of the focus colour, the
 		// two steps in one place
 		Path light = Path.of("src/main/webapp/static/themes/light");
-		assertSourceHas(light.resolve("_config.scss"),
+		assertConfigHas(
 				"$o-selection-step				: 100 !default;",
 				"$o-selection-hover-step			: 200 !default;",
 				"$table-bg-hover					: o-scale-tint($o-focus-color, $o-selection-hover-step) !default;",
@@ -3091,6 +3103,37 @@ public class ColorTokensTest {
 			tokens.putIfAbsent(m.group(1), m.group(2).trim());
 		}
 		return tokens;
+	}
+
+	/**
+	 * The variables of the light theme configuration: _config.scss forwards the
+	 * variables of these files (module system, OO-9995). The removed variables
+	 * of _config_removed.scss are not part of it: they are declared null for the
+	 * warning only.
+	 */
+	private static final List<String> CONFIG_FILES = List.of("_config.scss", "_config_base.scss",
+			"_config_bootstrap.scss", "_config_modules.scss");
+
+	/**
+	 * @return The text of the configuration files of the light theme
+	 */
+	private static String readConfig() {
+		Path light = ThemeColorRatchetTest.LIGHT_MODULES.getParent();
+		StringBuilder sb = new StringBuilder();
+		for (String file : CONFIG_FILES) {
+			sb.append(read(light.resolve(file))).append('\n');
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * @param snippets Text that the configuration files hold outside of a comment
+	 */
+	private static void assertConfigHas(String... snippets) {
+		String code = ThemeColorRatchetTest.withoutComments(readConfig());
+		for (String snippet : snippets) {
+			Assert.assertTrue("The config files have no " + snippet, code.contains(snippet));
+		}
 	}
 
 	private static String read(Path file) {

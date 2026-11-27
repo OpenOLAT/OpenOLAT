@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-scope {
 .o_scopes {
 	list-style: none;
 	padding: 0;
@@ -96,4 +100,5 @@ dialog .o_scopes_dropdown {
 	>div:has(.o_scopes) {
 		flex: 1;
 	}
+}
 }

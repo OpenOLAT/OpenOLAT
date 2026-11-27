@@ -4,6 +4,10 @@
 
 
 // Base class
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-wells {
 .well {
   min-height: 20px;
   padding: 19px;
@@ -26,4 +30,5 @@
 .well-sm {
   padding: 9px;
   border-radius: $border-radius-small;
+}
 }

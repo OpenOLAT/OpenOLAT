@@ -1,4 +1,8 @@
 /* ---------- smilies / emoticons used in tinymce, content.scss and else where ------------------------ */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-emoticons {
 img.o_emoticons_angel     {background : url(#{$o-images-path}emoticons/smiley-angel.png); width: 16px; height: 16px;}
 img.o_emoticons_angry     {background : url(#{$o-images-path}emoticons/smiley-mad.png); width: 16px; height: 16px;}
 img.o_emoticons_blushing  {background : url(#{$o-images-path}emoticons/smiley-red.png); width: 16px; height: 16px;}
@@ -19,4 +23,4 @@ img.o_emoticons_wink      {background : url(#{$o-images-path}emoticons/smiley-wi
 img.o_emoticons_worried   {background : url(#{$o-images-path}emoticons/smiley-roll-blue.png); width: 16px; height: 16px;}
 img.o_emoticons_up   	  {background : url(#{$o-images-path}emoticons/thumb-up.png); width: 16px; height: 16px;}
 img.o_emoticons_down   	  {background : url(#{$o-images-path}emoticons/thumb.png); width: 16px; height: 16px;}
-
+}

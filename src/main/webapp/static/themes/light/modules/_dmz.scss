@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-dmz {
 body.o_dmz {
 	background: transparent;
 	#o_bg {
@@ -543,4 +547,5 @@ body.o_dmz {
 		}
 	}
 
+}
 }

@@ -6,6 +6,53 @@
 */
 @use "sass:map";
 @use "sass:math";
+@use "../config" as *;
+@use "tinymce" as *;
+
+// A table with a coloured fill: the names of the tokens of the fill, of the
+// cell border, of the fill of the even rows and of the header cells
+// $line: the lines of the striped (even) rows, default the cell fill
+@mixin o-make-colored-table-tokens($bg, $border, $stripe-bg, $header-bg, $line: $bg){
+	border-collapse: collapse;
+	td, th {
+		padding: $table-cell-padding;
+		background: var(--o-#{$bg});
+		border: 1px solid var(--o-#{$border});
+	}
+	thead td, th {
+		background: var(--o-#{$header-bg});
+		font-weight: bold;
+	}
+	tbody tr:nth-child(even) td {
+		background: var(--o-#{$stripe-bg});
+		border: 1px solid var(--o-#{$line});
+	}
+	&.b_no_stripes tbody tr:nth-child(even) td {
+		background: var(--o-#{$bg});
+		border: 1px solid var(--o-#{$border});
+	}
+
+	@media print {
+		td, th {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background: var(--o-#{$bg}) !important;
+		}
+		thead td, th {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background: var(--o-#{$header-bg}) !important;
+		}
+		tbody tr:nth-child(even) td {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background: var(--o-#{$stripe-bg}) !important;
+		}
+	}
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-content-embedded {
 
 .o_user_content_block {
 	/* In some cases links in content area don't have same color as in app.
@@ -71,47 +118,7 @@ div.b_scrollblock {
 	@extend %o_scrollblock;
 }
 
-// A table with a coloured fill: the names of the tokens of the fill, of the
-// cell border, of the fill of the even rows and of the header cells
-// $line: the lines of the striped (even) rows, default the cell fill
-@mixin o-make-colored-table-tokens($bg, $border, $stripe-bg, $header-bg, $line: $bg){
-	border-collapse: collapse;
-	td, th {
-		padding: $table-cell-padding;
-		background: var(--o-#{$bg});
-		border: 1px solid var(--o-#{$border});
-	}
-	thead td, th {
-		background: var(--o-#{$header-bg});
-		font-weight: bold;
-	}
-	tbody tr:nth-child(even) td {
-		background: var(--o-#{$stripe-bg});
-		border: 1px solid var(--o-#{$line});
-	}
-	&.b_no_stripes tbody tr:nth-child(even) td {
-		background: var(--o-#{$bg});
-		border: 1px solid var(--o-#{$border});
-	}
 
-	@media print {
-		td, th {
-			-webkit-print-color-adjust: exact;
-			color-adjust: exact;
-			background: var(--o-#{$bg}) !important;
-		}
-		thead td, th {
-			-webkit-print-color-adjust: exact;
-			color-adjust: exact;
-			background: var(--o-#{$header-bg}) !important;
-		}
-		tbody tr:nth-child(even) td {
-			-webkit-print-color-adjust: exact;
-			color-adjust: exact;
-			background: var(--o-#{$stripe-bg}) !important;
-		}
-	}
-}
 
 /* nice table formatting */
 table {
@@ -416,4 +423,5 @@ figcaption,
 
 
 /* tinymce specific css classes for alignment, figures etc.*/
-@import "tinymce";
+@include o-rules-tinymce;
+}

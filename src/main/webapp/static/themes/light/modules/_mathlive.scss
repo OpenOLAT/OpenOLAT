@@ -1,4 +1,8 @@
 /* MathLive z-index of keyboard over Tiny */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-mathlive {
 .ML__keyboard {
     --keyboard-zindex: 3400;
 }
@@ -29,4 +33,5 @@ dialog math-field::part(menu-toggle) {
 }
 dialog math-field::part(virtual-keyboard-toggle) {
 	display: none;
+}
 }

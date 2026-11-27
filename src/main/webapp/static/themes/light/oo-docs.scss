@@ -15,13 +15,10 @@
  *	 also read themes.README!
  *  =================================================
  */
-@use "sass:color";
-@use "sass:math";
-
-@import "functions";
-@import "palette";
-@import "config";
-@import "modules/mixins";
+@use "config" as *;
+@use "modules/icons" as *;
+@use "modules/palette_vars" as *;
+@use "modules/tokens" as *;
 
 /* Serve every icon font from a sibling fonts/ folder so this bundle is portable and can be copied as-is into OpenOLAT-docs. */
 $fa-font-path: "fonts";
@@ -36,8 +33,8 @@ $fa-font-path: "fonts";
 	font-style: normal;
 }
 
-@import "modules/icons"; /* provides the o_icon base and all o_icon_* / o_*_icon classes */
+@include o-rules-icons; /* provides the o_icon base and all o_icon_* / o_*_icon classes */
 
 /* the icons read their colours from the tokens: palette and tokens (OO-10043) */
-@import "modules/palette_vars";
-@import "modules/tokens";
+@include o-rules-palette-vars;
+@include o-rules-tokens;

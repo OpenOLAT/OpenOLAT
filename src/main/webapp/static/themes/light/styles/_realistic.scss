@@ -37,12 +37,16 @@
 
 	To use this style, import it after the light theme and before the own
 	rules of your theme. See the openolat theme for an example. To change the
-	depth, set the variables below in your theme config.
+	depth, set the variables below in your theme config. A theme with the
+	module system loads it with @use "light/styles/realistic" after
+	@use "light/theme" and sets the variables with
+	@use "light/styles/realistic" with ($o-realistic-radius: 4px, ...).
 */
 @use "sass:color";
 @use "sass:list";
 @use "sass:map";
 @use "sass:meta";
+@use "../config" as *;
 
 // The corner radius of a button (small and extra small buttons: three
 // quarters of it)

@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-dialog-coursenode {
 .o_dialog_cards {
   display: flex;
   flex-wrap: wrap;
@@ -267,4 +271,5 @@ div.panel.o_dialog_file_overview {
 
 .o_dialog_new_button_right {
   padding-bottom: 10px;
+}
 }

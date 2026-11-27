@@ -1,6 +1,7 @@
 // Responsive image
 //
 // Keep images from scaling beyond the width of their parents.
+@use "../../../../themes/light/variables" as *;
 @mixin img-responsive($display: block) {
   display: $display;
   max-width: 100%; // Part 1: Set a maximum relative to the parent

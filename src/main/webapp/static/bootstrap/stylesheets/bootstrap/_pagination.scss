@@ -1,6 +1,10 @@
 //
 // Pagination (multiple pages)
 // --------------------------------------------------
+@use "../../../themes/light/config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin bootstrap-rules-pagination {
 .pagination {
   display: inline-block;
   padding-left: 0;
@@ -83,4 +87,5 @@
 // Small
 .pagination-sm {
   @include pagination-size($padding-small-vertical, $padding-small-horizontal, $font-size-small, $line-height-small, $border-radius-small);
+}
 }

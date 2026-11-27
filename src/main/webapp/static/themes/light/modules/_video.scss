@@ -1,5 +1,19 @@
 @use "sass:math";
 @use "sass:list";
+@use "../config" as *;
+
+/* different breakpoints for various typical video resolutions in full-screen mode
+   2% font size relative to video width, overriding fancy (wrong) calculated size from mediaelement
+ */
+@mixin videSubtitleSize($videoWidth) {
+	@media (max-width: $videoWidth) { 
+		font-size: math.floor($videoWidth * 0.025) !important; 
+		line-height: math.floor($videoWidth * 0.03) !important;
+	}
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-video {
 
 .o_video_poster {
 	position: relative;
@@ -434,15 +448,7 @@
 	}
 }
 
-/* different breakpoints for various typical video resolutions in full-screen mode
-   2% font size relative to video width, overriding fancy (wrong) calculated size from mediaelement
- */
-@mixin videSubtitleSize($videoWidth) {
-	@media (max-width: $videoWidth) { 
-		font-size: math.floor($videoWidth * 0.025) !important; 
-		line-height: math.floor($videoWidth * 0.03) !important;
-	}
-}
+
 .mejs__fullscreen .mejs__captions-layer {
 	.mejs__captions-position {
 		bottom: 6rem !important;
@@ -1232,4 +1238,5 @@
 			}
 		}
 	}
+}
 }

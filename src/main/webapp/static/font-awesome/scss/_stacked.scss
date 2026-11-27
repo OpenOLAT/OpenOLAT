@@ -1,5 +1,11 @@
 // stacking icons
 // -------------------------
+@use "functions" as *;
+@use "variables" as *;
+@use "mixins" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin fa-rules-stacked {
 
 .#{$fa-css-prefix}-stack {
   display: inline-block;
@@ -29,4 +35,5 @@
 
 .#{$fa-css-prefix}-inverse {
   color: var(--#{$fa-css-prefix}-inverse, #{$fa-inverse});
+}
 }

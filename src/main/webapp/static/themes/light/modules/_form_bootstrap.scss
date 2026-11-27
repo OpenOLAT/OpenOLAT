@@ -16,6 +16,10 @@
    of _focus.scss: border in the colour of the token focus, no halo, the
    focus ring on :focus-visible (OO-10043). */
 /* ---- Transitions for modern behavior ---- */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-form-bootstrap {
 @media (prefers-reduced-motion: no-preference) {
 	.form-control {
 		transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -97,4 +101,5 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 }
 .form-horizontal .radio-inline.btn {
 	margin-right: 0;
+}
 }

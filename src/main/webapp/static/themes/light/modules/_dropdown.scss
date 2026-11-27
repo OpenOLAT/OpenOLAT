@@ -11,6 +11,10 @@
  * =================================================
  */
 /* Dropdown menus: elevated with shadow */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-dropdown {
 .dropdown-menu {
  	box-shadow: $o-dropdown-box-shadow; 
 }
@@ -61,4 +65,5 @@
    .dropdown-toggle:focus has outline 0 (OO-10043) */
 .dropdown-toggle:focus-visible {
 	@include o-focus-ring;
+}
 }

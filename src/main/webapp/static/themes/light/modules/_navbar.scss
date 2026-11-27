@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-navbar {
 #o_navbar_wrapper {
 	z-index: $o-navbar-z-index;
 	border-top: 1px solid var(--o-navbar-border);
@@ -736,4 +740,5 @@ body.o_dmz {
 			display: none;
 		}
 	}
+}
 }

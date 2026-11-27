@@ -1,3 +1,4 @@
+@use "../../../../themes/light/variables" as *;
 @mixin reset-text() {
   font-family: $font-family-base;
   // We deliberately do NOT reset font-size.

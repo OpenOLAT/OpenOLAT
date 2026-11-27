@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-citation {
 .o_cit {
 	position: relative;
 	margin: $o-forum-quote-padding 0;
@@ -129,4 +133,5 @@
 		    page-break-inside: avoid;
 		}
 	}
+}
 }

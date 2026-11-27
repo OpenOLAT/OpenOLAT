@@ -31,7 +31,7 @@
  * solid fill, Java reads the fill step from it.
  *
  * Needs Dart Sass 1.97.1 or later (colour spaces, OO-10000, and CSS if() syntax).
- * Imported by _config.scss after $brand-primary.
+ * Loaded after _config_base.scss, which sets $brand-primary.
  * =================================================
  */
 @use "sass:color";
@@ -39,6 +39,9 @@
 @use "sass:map";
 @use "sass:math";
 @use "sass:meta";
+@use "functions" as *;
+@use "palette" as *;
+@use "config_base" as *;
 
 @if not meta.function-exists("to-space", "color") {
 	@error "The theme colours need Dart Sass 1.97.1 or later (colour spaces, CSS if() syntax), see OO-10000 and themes.README.";

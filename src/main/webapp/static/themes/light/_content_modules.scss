@@ -1,0 +1,79 @@
+@charset "UTF-8";
+
+/*
+ *  =================================================
+ *
+ *   The modules of content.css in their order: the mixin o-content
+ *   writes the rules of content.css. light/content.scss includes it,
+ *   and light/_content.import.scss for a theme with
+ *   @import "light/content".
+ *
+ *   @author gnaegi, www.frentix.com
+ *   @date April 2014
+ *
+ *	 also read themes.README!
+ *  =================================================
+ */
+@use "config" as *;
+@use "license" as *;
+@use "../../bootstrap/stylesheets/bootstrap/normalize" as *;
+@use "../../bootstrap/stylesheets/bootstrap/print" as *;
+@use "../../bootstrap/stylesheets/bootstrap/scaffolding" as *;
+@use "../../bootstrap/stylesheets/bootstrap/type" as *;
+@use "modules/icons" as *;
+@use "modules/helpers" as *;
+@use "modules/dialog" as *;
+@use "modules/emoticons" as *;
+@use "modules/edusharing" as *;
+@use "modules/qti21content" as *;
+@use "modules/content" as *;
+@use "modules/print" as *;
+@use "modules/palette_vars" as *;
+@use "modules/tokens" as *;
+
+@mixin o-content {
+@include o-rules-license;
+
+/* 
+	Bootstrap includes for base element styling. The Bootstrap mixins, the
+	button variant, the state mixins and the focus ring are part of
+	light/config.
+*/
+@include bootstrap-rules-normalize;
+@include bootstrap-rules-print;
+
+@include bootstrap-rules-scaffolding;
+// The Bootstrap rules of .text-*, .bg-* and mark read the state tokens, as in
+// modules/_bootstrap.scss (OO-10043). The Sass variables keep the token: no
+// rule after the import reads them.
+$state-success-text: var(--o-state-success-text) !global;
+$state-success-bg: var(--o-state-success-soft-bg) !global;
+$state-info-text: var(--o-state-neutral-text) !global;
+$state-info-bg: var(--o-state-neutral-soft-bg) !global;
+$state-warning-text: var(--o-state-warning-text) !global;
+$state-warning-bg: var(--o-state-warning-soft-bg) !global;
+$state-danger-text: var(--o-state-danger-text) !global;
+$state-danger-bg: var(--o-state-danger-soft-bg) !global;
+@include bootstrap-rules-type;
+
+
+/* 
+	OpenOLAT includes 
+*/
+@include o-rules-icons; /* must be second include - provides classes used as extensions */
+@include o-rules-helpers;
+@include o-rules-dialog;
+@include o-rules-emoticons;
+@include o-rules-edusharing;
+@include o-rules-qti21content;
+
+// finally add the real content styles
+@include o-rules-content;
+
+@include o-rules-print;
+
+/* palette primitives --o-{hue}-{step} */
+@include o-rules-palette-vars;
+/* base, semantic and state tokens --o-base-*, --o-text, --o-state-* (OO-9994) */
+@include o-rules-tokens;
+}

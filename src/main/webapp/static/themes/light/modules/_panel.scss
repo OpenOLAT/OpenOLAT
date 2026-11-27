@@ -11,6 +11,10 @@
  * =================================================
  */
 /* Panels: very subtle depth */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-panel {
 .panel {
 	box-shadow: 0 1px 2px color-mix(in srgb, var(--o-shadow-color) 4%, transparent);
 }
@@ -23,4 +27,5 @@
 /* collapsible panels must have pointer cursor to indicate clickable space*/	
 .panel .panel-heading[data-toggle="collapse"] {
 	cursor: pointer;
+}
 }

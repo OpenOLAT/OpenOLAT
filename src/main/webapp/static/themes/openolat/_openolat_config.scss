@@ -1,4 +1,13 @@
 @use "sass:color";
+/*
+	The configuration of the OpenOLAT theme: it configures the light theme
+	with @forward "light/config" with (...). theme.scss, content.scss and
+	email.scss load this file before the light theme; the rules of the theme
+	read the configured light theme with @use "light/config" as *. A value
+	with !default is a default of this theme that a theme on top of it can
+	change. See themes.README (OO-9995).
+*/
+
 /* OpenOLAT colors */
 $o-brand-chocolate				: rgb(52,44,36);
 $o-brand-sprout					: rgb(178,207,66);
@@ -12,81 +21,81 @@ $o-brand-green					: rgb(120,190,32);
 $o-brand-yellow					: rgb(254,219,0);
 $o-brand-black					: rgb(45,41,38);
 
+@forward "light/config" with (
+	/* General colors */
+	$brand-primary 					: $o-brand-sea,
 
-/* General colors */
-$brand-primary 					: $o-brand-sea; 		
+	/* Theme colours: the brand colours the colour choosers offer after the 15
+	   hues of the palette, as "Theme 1" ... "Theme 4" (light/_palette_theme.scss).
+	   Dark teal and Forest are left out, they are shades of Sea; Chocolate is a
+	   near neutral for text. */
+	$o-theme-colors					: ($o-brand-sea, $o-brand-peach, $o-brand-berry, $o-brand-sprout),
+	$text-color						: $o-brand-black,
+	$link-color						: $o-brand-sea,
+	$link-hover-color				: color.adjust($o-brand-sea, $lightness: -10%),
+	$o-content-link-color			: $o-brand-sea,
+	$o-content-link-hover-color		: color.adjust($o-brand-sea, $lightness: -10%),
+	$o-content-link-decoration		: underline,
 
-/* Theme colours: the brand colours the colour choosers offer after the 15
-   hues of the palette, as "Theme 1" ... "Theme 4" (light/_palette_theme.scss).
-   Dark teal and Forest are left out, they are shades of Sea; Chocolate is a
-   near neutral for text. */
-$o-theme-colors					: ($brand-primary, $o-brand-peach, $o-brand-berry, $o-brand-sprout);
-$text-color						: $o-brand-black;
-$link-color						: $o-brand-sea;
-$link-hover-color				: color.adjust($o-brand-sea, $lightness: -10%);
-$o-content-link-color			: $link-color;
-$o-content-link-hover-color		: $link-hover-color;
-$o-content-link-decoration		: underline;
+	$headings-color					: $o-brand-chocolate,
+	$o-content-header-base-color	: $o-brand-chocolate,
+	$o-content-fieldset-legend-color: $o-brand-chocolate,
+	$o-dialog-header-color			: $o-brand-chocolate,
+	$jumbotron-heading-color		: $o-brand-chocolate,
+	$o-login-header-color			: $o-brand-chocolate,
+	$o-coursesite-meta-title-color	: $o-brand-chocolate,
 
-$headings-color					: $o-brand-chocolate;
-$o-content-header-base-color	: $headings-color;
-$o-content-fieldset-legend-color: $headings-color;
-$o-dialog-header-color			: $headings-color;
-$jumbotron-heading-color		: $headings-color;
-$o-login-header-color			: $headings-color;
-$o-coursesite-meta-title-color	: $headings-color;
-
-$o-bookmark-color				: $o-brand-berry;
-$o-button-dirty-color			: $text-color;
-$o-button-dirty-bg				: $o-brand-peach;
-
-
-/* Modern border radius */
-$border-radius-base				: 8px !default;
-$border-radius-large			: 10px !default;
-$border-radius-small			: 6px !default;
+	$o-bookmark-color				: $o-brand-berry,
+	$o-button-dirty-color			: $o-brand-black,
+	$o-button-dirty-bg				: $o-brand-peach,
 
 
-/* Login screen */
-$o-login-form-align				: left;
-$o-login-form-bg-img			: "images/sunrise-surge.jpg"; 
-$o-login-form-bg-gradient-steps	: rgba(255,255,255,0) 0.2%, rgba(255,255,255,0.3) 60%, rgba(255,255,255,0.5) 100%;
-$o-login-border-radius			: 20px;
-$o-login-bg-color				: rgba(255,255,255,0.92);
-$o-login-box-shadow				: none;
+	/* Modern border radius */
+	$border-radius-base				: 8px !default,
+	$border-radius-large			: 10px !default,
+	$border-radius-small			: 6px !default,
 
-/* Course site start button */
-$o-coursesite-start-color		: #fff; 
-$o-coursesite-start-bg			: $o-brand-sea; 
-$o-coursesite-book-color		: #fff; 
-$o-coursesite-book-bg			: $o-brand-sea;
 
-/* Font family */
-$font-family-base				: Roboto, "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-/*
-$headings-font-family			: inherit;
-$font-size-base					: 14px;
-*/
+	/* Login screen */
+	$o-login-form-align				: left,
+	$o-login-form-bg-img			: "images/sunrise-surge.jpg",
+	$o-login-form-bg-gradient-steps	: (rgba(255,255,255,0) 0.2%, rgba(255,255,255,0.3) 60%, rgba(255,255,255,0.5) 100%),
+	$o-login-border-radius			: 20px,
+	$o-login-bg-color				: rgba(255,255,255,0.92),
+	$o-login-box-shadow				: none,
 
-/* Inverted navbar 
-$o-navbar-color						: #777 ;
-$o-navbar-bg						: #222 ;
-$o-navbar-border-color				: darken($o-navbar-bg, 10%) ;
-$o-navbar-link-color				: #777 ;
-$o-navbar-link-hover-color			: #fff ;
-$o-navbar-link-hover-bg 			: transparent ;
-$o-navbar-link-active-color 		: $o-navbar-link-hover-color ;
-$o-navbar-link-active-bg 			: darken($o-navbar-bg, 10%) ;
-$o-navbar-link-disabled-color 		: #444 ;
-$o-navbar-link-disabled-bg 			: transparent ;
-$o-navbar-tools-permanent-color		: #777;
-*/
+	/* Course site start button */
+	$o-coursesite-start-color		: #fff,
+	$o-coursesite-start-bg			: $o-brand-sea,
+	$o-coursesite-book-color		: #fff,
+	$o-coursesite-book-bg			: $o-brand-sea,
 
-/* Inverted footer 
-$o-footer-outer-bg 					: $o-navbar-bg;
-$o-footer-inner-bg 					: $o-navbar-bg;
-$o-footer-default-color 			: $o-navbar-link-color;
-$o-footer-default-link-color 		: $o-navbar-link-color;
-$o-footer-default-link-hover-color 	: $o-navbar-link-hover-color;
-*/
+	/* Font family */
+	$font-family-base				: (Roboto, "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif),
+	/*
+	$headings-font-family			: inherit,
+	$font-size-base					: 14px,
+	*/
 
+	/* Inverted navbar
+	$o-navbar-color						: #777,
+	$o-navbar-bg						: #222,
+	$o-navbar-border-color				: #111,
+	$o-navbar-link-color				: #777,
+	$o-navbar-link-hover-color			: #fff,
+	$o-navbar-link-hover-bg 			: transparent,
+	$o-navbar-link-active-color 		: #fff,
+	$o-navbar-link-active-bg 			: #111,
+	$o-navbar-link-disabled-color 		: #444,
+	$o-navbar-link-disabled-bg 			: transparent,
+	$o-navbar-tools-permanent-color		: #777,
+	*/
+
+	/* Inverted footer
+	$o-footer-outer-bg 					: #222,
+	$o-footer-inner-bg 					: #222,
+	$o-footer-default-color 			: #777,
+	$o-footer-default-link-color 		: #777,
+	$o-footer-default-link-hover-color 	: #fff,
+	*/
+);

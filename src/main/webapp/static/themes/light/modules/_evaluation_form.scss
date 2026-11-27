@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-evaluation-form {
 .o_evaluation_form {
 	.o_evaluation_block {
 		margin-top: $o-evaluation-block-margin-top;
@@ -784,4 +788,4 @@
 	}
 
 }
-
+}

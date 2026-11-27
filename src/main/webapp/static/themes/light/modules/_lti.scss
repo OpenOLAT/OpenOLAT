@@ -1,4 +1,7 @@
+@use "../config" as *;
 
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-lti {
 .o_lti_contentitem_card {
 	padding: 0 0 5px 0;
 	margin-bottom: 10px;
@@ -64,4 +67,5 @@
 
 iframe.o_lti_select_content {
 	width: 100%;
+}
 }

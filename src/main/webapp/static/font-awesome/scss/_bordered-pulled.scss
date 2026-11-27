@@ -1,5 +1,11 @@
 // bordered + pulled icons
 // -------------------------
+@use "functions" as *;
+@use "variables" as *;
+@use "mixins" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin fa-rules-bordered-pulled {
 
 .#{$fa-css-prefix}-border {
   border-color: var(--#{$fa-css-prefix}-border-color, #{$fa-border-color});
@@ -17,4 +23,5 @@
 .#{$fa-css-prefix}-pull-right {
   float: right;
   margin-left: var(--#{$fa-css-prefix}-pull-margin, #{$fa-pull-margin}); 
+}
 }

@@ -1,0 +1,123 @@
+/*
+ * =================================================
+ *
+ * OpenOLAT theme configuration, part 1 of 3: the OpenOLAT values of the
+ * Bootstrap variables that read only the neutral scale, and the brand colour
+ * $brand-primary. _palette_theme.scss builds the brand ramp from it.
+ *
+ * Part 2 is _config_bootstrap.scss, part 3 _config_modules.scss. A theme
+ * reads and configures all of them through _config.scss, see themes.README.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date April 2014
+ * =================================================
+ */
+@use "sass:math";
+@use "sass:color";
+@use "sass:map";
+@use "sass:meta";
+@use "sass:list";
+@use "functions" as *;
+// the colour variables below read the palette swatches
+@use "palette" as *;
+// the neutral scale: the defaults below read its steps with o-neutral()
+@use "palette_neutral" as *;
+
+// Compile warning for the old state colours (OO-10043). The rules of theme.css
+// and content.css read the state tokens (modules/_tokens.scss), not the
+// Bootstrap variables $brand-danger, $brand-warning, $brand-success,
+// $brand-info and $state-{danger,warning,success,info}-{text,bg,border}. A
+// client config sets them before this file. When one of them differs from the
+// default of the light theme, modules/_tokens.scss prints one warning per
+// stylesheet (theme.css and content.css, not email.css). The warning never
+// stops the compile. To silence it, set in the client config:
+//   $o-legacy-color-warning: false;
+// See themes.README.
+$o-legacy-color-warning: true !default;
+// The defaults of the light theme: _config_bootstrap.scss and the Bootstrap _variables.scss
+$o-legacy-color-defaults: (
+	"brand-danger": #D6001C, "brand-warning": #F2AF40, "brand-success": #5CB85C, "brand-info": #2B78E4,
+	"state-danger-text": #A94442, "state-danger-bg": #F2DEDE, "state-danger-border": #EBCCD1,
+	"state-warning-text": #8A6D3B, "state-warning-bg": #FCF8E3, "state-warning-border": #FAEBCC,
+	"state-success-text": #3C763D, "state-success-bg": #DFF0D8, "state-success-border": #D6E9C6,
+	"state-info-text": #31708F, "state-info-bg": #D9EDF7, "state-info-border": #BCE8F1
+);
+// The variables are declared null here: a value is the value of the client
+// config. _config_bootstrap.scss and the Bootstrap _variables.scss set the
+// defaults afterwards.
+$brand-danger: null !default;
+$brand-warning: null !default;
+$brand-success: null !default;
+$brand-info: null !default;
+$state-danger-text: null !default;
+$state-danger-bg: null !default;
+$state-danger-border: null !default;
+$state-warning-text: null !default;
+$state-warning-bg: null !default;
+$state-warning-border: null !default;
+$state-success-text: null !default;
+$state-success-bg: null !default;
+$state-success-border: null !default;
+$state-info-text: null !default;
+$state-info-bg: null !default;
+$state-info-border: null !default;
+// The values of the client config: only the variables that the config sets
+$o-legacy-color-values: ();
+@each $name, $value in ("brand-danger": $brand-danger, "brand-warning": $brand-warning, "brand-success": $brand-success, "brand-info": $brand-info, "state-danger-text": $state-danger-text, "state-danger-bg": $state-danger-bg, "state-danger-border": $state-danger-border, "state-warning-text": $state-warning-text, "state-warning-bg": $state-warning-bg, "state-warning-border": $state-warning-border, "state-success-text": $state-success-text, "state-success-bg": $state-success-bg, "state-success-border": $state-success-border, "state-info-text": $state-info-text, "state-info-bg": $state-info-bg, "state-info-border": $state-info-border) {
+	@if $value != null {
+		$o-legacy-color-values: map.merge($o-legacy-color-values, ($name: $value));
+	}
+}
+
+/* To add place for the scroll bar */
+$modal-lg						: 920px !default;
+$modal-md                    	: auto !default;
+$modal-content-border-color		: o-neutral(150) !default;
+
+
+/* bootstrap default is very white, use just a little bit more than just white */
+$btn-default-color				: o-neutral(750) !default;
+$btn-default-bg					: o-neutral(0) !default;
+$btn-default-border				: o-neutral(500) !default;
+$btn-default-hover-border		: o-neutral(500) !default;
+$btn-default-disabled-color		: #1B293C !default;
+$dropdown-bg					: o-neutral(0) !default;
+$panel-bg						: o-neutral(0) !default;
+$pagination-bg					: o-neutral(0) !default;
+$pagination-active-color 		: o-neutral(0) !default;
+$pagination-hover-border		: $btn-default-border !default;
+$list-group-bg					: o-neutral(0) !default;
+
+$input-bg						: o-neutral(0) !default;
+$input-border					: o-neutral(250) !default;
+$input-bg-disabled				: o-neutral(25) !default;
+$input-group-addon-bg			: o-neutral(50) !default;
+$input-group-addon-border-color	: $input-border !default;
+
+/* pagination is must a special button, same style */
+$pagination-color				: $btn-default-color !default;
+$pagination-bg					: $btn-default-bg !default;
+$pagination-border				: $btn-default-border !default;
+$pagination-disabled-border		: $btn-default-border !default;
+
+/* a11y optimizations */
+$text-color						: o-neutral(750) !default;
+$navbar-default-link-color		: o-neutral(600) !default;
+$badge-bg						: o-neutral(500) !default;
+$text-muted						: o-neutral(500) !default;
+
+// The brand colour. A theme config that sets $brand-primary sets its own brand
+// colour: the shades of the brand ramp then stay computed (o-scale-has() in
+// _functions_scale.scss). The declaration with null takes the value of the
+// config; $o-brand-primary-from-theme records whether there is one.
+$brand-primary					: null !default;
+$o-brand-primary-from-theme: $brand-primary != null;
+@if not $o-brand-primary-from-theme {
+	/* Modern primary blue */
+	$brand-primary: #2E6BBF;
+}
+
+// Client overrides of tokens (modules/_tokens.scss): name without "--o-" ->
+// token name, palette step or colour. Here and not in _tokens.scss: the
+// functions of _functions_scale.scss read it too.
+$o-tokens: () !default;

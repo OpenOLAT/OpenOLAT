@@ -1,0 +1,33 @@
+/*
+ * =================================================
+ *
+ * All variables and functions of the light theme, without the mixins. The
+ * mixin files read this module (they are part of _config.scss and cannot read
+ * it). A theme reads _config.scss, see themes.README.
+ *
+ * The order is the order of the definitions: a file reads the files above
+ * it. The first file that declares a variable with !default takes the value
+ * of the theme config; a later !default declaration of the same variable
+ * keeps it (the Bootstrap defaults keep the values of _config_base.scss and
+ * _config_bootstrap.scss).
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ * =================================================
+ */
+@forward "functions";
+@forward "palette";
+@forward "palette_neutral";
+@forward "config_base";
+@forward "palette_theme";
+@forward "functions_scale";
+@forward "config_bootstrap";
+@forward "../../bootstrap/stylesheets/bootstrap/variables";
+@forward "config_modules";
+@forward "config_removed";
+@forward "../../font-awesome/scss/functions";
+// Font Awesome: the icon fonts of the light theme and the class prefix of the icons
+@forward "../../font-awesome/scss/variables" with (
+	$fa-font-path: "../../font-awesome/webfonts" !default,
+	$fa-css-prefix: "o_icon" !default
+);

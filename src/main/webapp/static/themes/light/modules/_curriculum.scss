@@ -1,5 +1,10 @@
 @use "sass:map";
 @use "sass:math";
+@use "various_modules" as *;
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-curriculum {
 .o_curriculum_el_listing {
 	tr.o_curriculum_element_inactive, tr.o_curriculum_element_inactive td, tr.o_curriculum_element_inactive td span, tr.o_curriculum_element_inactive td a {
 		color: var(--o-curriculum-element-inactive);
@@ -870,4 +875,5 @@ a.o_validation_open_results {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 	gap: 10px;
+}
 }

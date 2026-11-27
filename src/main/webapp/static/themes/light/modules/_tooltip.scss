@@ -10,6 +10,10 @@
  * @date November 2026
  * =================================================
  */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-tooltip {
 body div.tooltip-inner, dialog div.tooltip-inner {
 	max-width: 400px;
 	min-width: 400px;
@@ -87,4 +91,5 @@ body dialog.popover-title {
 		border-radius: 5px;
 		border: 2px solid var(--o-gloss-tooltip-border);
 	}
+}
 }

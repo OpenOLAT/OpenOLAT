@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-autocomplete {
 .tt-input {
 	width: $o-autocomplete-width;
 }
@@ -36,4 +40,5 @@
 .o_form:not(.form-inline) .tt-input {
 	width: 100%;
 	display: block !important;
+}
 }

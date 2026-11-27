@@ -1,4 +1,8 @@
 /* SCORM module */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-scorm {
 .badge {
 	/* badge color */
 	&.o_scorm_org {}
@@ -128,4 +132,5 @@ body.o_scorm_inner_frame {
 			}
 		}
 	}
+}
 }

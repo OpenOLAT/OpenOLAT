@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-edusharing {
 .o_edusharing_selection{
 	iFrame {
 		width: 100%;
@@ -298,4 +302,5 @@
 	100% {
 		transform: scale(1);
 	}
+}
 }

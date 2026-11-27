@@ -1,4 +1,19 @@
 @use "sass:math";
+@use "../config" as *;
+
+/* Create the path renderings for each status with this mixin */
+@mixin alert-tree-path-variant($iconcolor, $icon, $strokecolor, $stroke, $iconsolid) {
+	&:before {
+		border-left: $o-lp-path-width $stroke $strokecolor;
+	}	
+	&:after {
+		color: $iconcolor;
+	}
+	@include o-add-icon(#{$icon}, $iconsolid, false); 
+}
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-course {
 /* Course styles */
 .o_colcat_nocolor.o_square {
 	background-image: repeating-linear-gradient(135deg, transparent 0%, transparent 47%, var(--o-red-500), transparent 53%, transparent 100%);
@@ -304,16 +319,7 @@
 		background: var(--o-lp-bg);
 	}
 	
-	/* Create the path renderings for each status with this mixin */
-	@mixin alert-tree-path-variant($iconcolor, $icon, $strokecolor, $stroke, $iconsolid) {
-		&:before {
-			border-left: $o-lp-path-width $stroke $strokecolor;
-		}	
-		&:after {
-			color: $iconcolor;
-		}
-		@include o-add-icon(#{$icon}, $iconsolid, false); 
-	}
+	
 
 	li.o_lp_status {
 		position: relative;
@@ -1377,4 +1383,5 @@ div.o_correction_navigation {
 			white-space: nowrap;
 		}
 	}
+}
 }

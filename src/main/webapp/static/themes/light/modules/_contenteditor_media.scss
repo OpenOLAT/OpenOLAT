@@ -1,4 +1,8 @@
 /* media positioning and sizes */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-contenteditor-media {
 .o_media {
 	&.o_media_right,
 	&.o_media_right_large {
@@ -464,4 +468,5 @@
 			margin-left: 10px;
 		}
 	}
+}
 }

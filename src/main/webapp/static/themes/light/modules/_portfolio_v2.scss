@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-portfolio-v2 {
 
 .o_portfolio {
 	div#o_main_toolbar.o_toolbar {
@@ -719,4 +723,5 @@
 
 .o_ce_edit_wrapper .o_portfolio_reference_warning .alert {
 	margin-bottom: 10px;
+}
 }

@@ -1,6 +1,10 @@
 //
 // Common form header
 //
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-video-edit {
 
 $label_right_margin: 10px;
 $label_right_margin_dialog: 5px;
@@ -815,4 +819,5 @@ $label_right_margin_dialog: 5px;
 			transform: translateY(10%);
 		}
 	}
+}
 }

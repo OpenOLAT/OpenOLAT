@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-tree {
 .o_tree {
 	position: relative;
 	display: block;
@@ -313,4 +317,5 @@
 	.o_tree {
 		border: 0;
 	}
+}
 }

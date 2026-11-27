@@ -1,4 +1,8 @@
 /* Unified search element (SearchElement) */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-search {
 .o_search {
 	/* Takes the place of the .form-control cell so the reset button can overlap the input's right edge. */
 	.o_search_input_wrapper {
@@ -139,4 +143,5 @@
 	.o_table_toolbar .o_table_search .o_search {
 		max-width: 170px;
 	}
+}
 }

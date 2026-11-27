@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-type {
 h1 { 
 	color: var(--o-content-h1);
 }
@@ -27,4 +31,5 @@ fieldset legend {
 // dt of the next pair starts below the same margin as its dd.
 dd:has(+ dt) {
 	margin-bottom: ($line-height-computed * 0.5);
+}
 }

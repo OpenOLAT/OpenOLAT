@@ -2,6 +2,8 @@
 @use "sass:math";
 @use "sass:color";
 @use "sass:string";
+@use "../variables" as *;
+@use "../../../font-awesome/scss/mixins" as *;
 
 // $color: the border and the icon; $iconcolor: another colour for the icon
 @mixin o-make-message-box($bgcolor, $color, $boxicon:false, $iconcolor:null){

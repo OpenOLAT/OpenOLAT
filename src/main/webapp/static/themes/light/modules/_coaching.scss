@@ -1,4 +1,8 @@
 /* Coaching */
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-coaching {
 .o_coaching div#o_main_toolbar.o_toolbar {
 	margin-top: 0px;
 }
@@ -131,4 +135,5 @@
 	&.o_icon_repo_status_closed {
 		color: var(--o-state-finished-text);
 	}
+}
 }

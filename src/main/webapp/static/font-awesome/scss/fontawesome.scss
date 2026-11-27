@@ -1,3 +1,19 @@
+@use "functions" as *;
+@use "variables" as *;
+@use "mixins" as *;
+@use "core" as *;
+@use "sizing" as *;
+@use "fixed-width" as *;
+@use "list" as *;
+@use "bordered-pulled" as *;
+@use "animated" as *;
+@use "rotated-flipped" as *;
+@use "stacked" as *;
+@use "icons" as *;
+@use "screen-reader" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin fa-rules-fontawesome {
 /*!
  * Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
@@ -6,16 +22,14 @@
 // Font Awesome core compile (Web Fonts-based)
 // -------------------------
 
-@import 'functions';
-@import 'variables';
-@import 'mixins';
-@import 'core';
-@import 'sizing';
-@import 'fixed-width';
-@import 'list';
-@import 'bordered-pulled';
-@import 'animated';
-@import 'rotated-flipped';
-@import 'stacked';
-@import 'icons';
-@import 'screen-reader';
+@include fa-rules-core;
+@include fa-rules-sizing;
+@include fa-rules-fixed-width;
+@include fa-rules-list;
+@include fa-rules-bordered-pulled;
+@include fa-rules-animated;
+@include fa-rules-rotated-flipped;
+@include fa-rules-stacked;
+@include fa-rules-icons;
+@include fa-rules-screen-reader;
+}

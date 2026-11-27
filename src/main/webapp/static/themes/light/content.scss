@@ -12,60 +12,8 @@
  *	 also read themes.README!
  *  =================================================
  */
-@import "license";
-@import "functions";
-@import "palette";
+// The configuration is light/_config.scss, the modules are listed in
+// light/_content_modules.scss
+@use "content_modules" as *;
 
-/* 	
-	Configuration 
-*/
-@import "config";
-
-/* 
-	Bootstrap includes for base element styling 
-*/
-@import "../../bootstrap/stylesheets/bootstrap/mixins";
-// button-variant that reads the colour tokens, replaces the Bootstrap mixin (OO-10043)
-@import "modules/button_variant";
-// the state mixins (.text-*, .bg-*, ...) that read the colour tokens (OO-10043)
-@import "modules/state_variant";
-// the focus ring: tab-focus and form-control-focus replace the Bootstrap mixins (OO-10043)
-@import "modules/focus";
-@import "../../bootstrap/stylesheets/bootstrap/normalize";
-@import "../../bootstrap/stylesheets/bootstrap/print";
-
-@import "../../bootstrap/stylesheets/bootstrap/scaffolding"; 
-// The Bootstrap rules of .text-*, .bg-* and mark read the state tokens, as in
-// modules/_bootstrap.scss (OO-10043). The Sass variables keep the token: no
-// rule after the import reads them.
-$state-success-text: var(--o-state-success-text);
-$state-success-bg: var(--o-state-success-soft-bg);
-$state-info-text: var(--o-state-neutral-text);
-$state-info-bg: var(--o-state-neutral-soft-bg);
-$state-warning-text: var(--o-state-warning-text);
-$state-warning-bg: var(--o-state-warning-soft-bg);
-$state-danger-text: var(--o-state-danger-text);
-$state-danger-bg: var(--o-state-danger-soft-bg);
-@import "../../bootstrap/stylesheets/bootstrap/type";
-
-
-/* 
-	OpenOLAT includes 
-*/
-@import "modules/mixins";
-@import "modules/icons"; /* must be second include - provides classes used as extensions */
-@import "modules/helpers";
-@import "modules/dialog";
-@import "modules/emoticons";
-@import "modules/edusharing";
-@import "modules/qti21content";
-
-// finally add the real content styles
-@import "modules/content";
-
-@import "modules/print";
-
-/* palette primitives --o-{hue}-{step} */
-@import "modules/palette_vars";
-/* base, semantic and state tokens --o-base-*, --o-text, --o-state-* (OO-9994) */
-@import "modules/tokens";
+@include o-content;

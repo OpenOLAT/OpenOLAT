@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-dialog {
 /* Info and other dialog boxes, displayed inline in content */
 .o_info, %o_info { 
 	@include o-make-message-box(var(--o-box-info-bg), var(--o-box-info-border));
@@ -391,4 +395,5 @@ body .modal-body.alert {
 }
 .o-modal-alert-danger {
 	@include o-alert-variant(var(--o-box-error-bg), var(--o-box-error-text), 'circle-xmark');
+}
 }

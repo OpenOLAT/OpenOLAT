@@ -1,4 +1,8 @@
 @use "sass:math";
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-vertical-timeline {
 
 .o_vertical_timeline {
     .o_vertical_timeline_header {
@@ -179,4 +183,5 @@
     border-radius: $o-coursesite-sidecol-radius;
     background: var(--o-coursesite-sidecol-bg);
     padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
+}
 }

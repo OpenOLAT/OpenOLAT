@@ -1,3 +1,7 @@
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-imscp {
 @media print, screen {
 	div.o_offline_cp, div.o_offline_cp * {
 		-webkit-print-color-adjust: exact;
@@ -30,4 +34,5 @@
    	.o_offline_cp_logo {
    		display: none;
    	}
+}
 }

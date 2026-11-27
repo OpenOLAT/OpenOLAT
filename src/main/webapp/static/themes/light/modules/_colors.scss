@@ -16,6 +16,10 @@
 // Solid fill, e.g. the colour picker swatch and room management building.
 // The border colour applies only to an element with a border width, e.g. a
 // label (o_labeled o_color_background o_color_<key>) in the swatch colour.
+@use "../config" as *;
+
+// The rules of this file, included where the file was imported before (OO-9995)
+@mixin o-rules-colors {
 #{o-swatch-alias-selector("o_color_", ".o_color_background")},
 #{o-swatch-selector(".o_color_background")} {
 	background-color: var(--o-sw-bg);
@@ -61,4 +65,5 @@
 #{o-swatch-alias-selector("o_color_", ".o_color_text_on_background")},
 #{o-swatch-selector(".o_color_text_on_background")} {
 	color: var(--o-sw-fg);
+}
 }
