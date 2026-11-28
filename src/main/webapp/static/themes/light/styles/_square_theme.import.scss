@@ -1,0 +1,10 @@
+/*
+	Import-only file of light/styles/_square_theme.scss (OO-9995): a client
+	theme with @import "light/styles/square_theme" loads this file. The rules
+	of the square style go into the stylesheet of the theme after the rules of
+	the light theme. A theme with the module system includes the mixin
+	o-square-theme, see _square_theme.scss.
+*/
+@use "square_theme" as *;
+
+@include o-square-theme;

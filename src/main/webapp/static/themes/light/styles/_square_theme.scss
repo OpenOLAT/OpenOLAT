@@ -1,100 +1,112 @@
 /*
 	The square style can be added to the light theme to remove any round borders
 	from the light theme.
-	
-	To use this style, include both square_config and square_theme.
-	Config must be loaded before the light theme. Theme must be loaded after.
-	See the theme boilerplate for an example.
+
+	To use this style, use both square_config and square_theme. The theme
+	config forwards "light/styles/square_config" instead of "light/config", see
+	_square_config.scss. The theme includes the rules of this file after the
+	rules of the light theme, in the same stylesheet, so that the @extend rules
+	of the light theme reach them (OO-9995):
+
+		@use "light/modules" as *;
+		@use "light/styles/square_theme" as *;
+		@include o-theme;
+		@include o-square-theme;
+
+	A theme with @import "light/styles/square_theme" loads
+	_square_theme.import.scss. See the theme boilerplate for an example.
 */
 
-/* bootstrap theme overrides */
-.carousel-indicators {
-  li {
-    border-radius: 0px;
-  }
-}
+@mixin o-square-theme {
+	/* bootstrap theme overrides */
+	.carousel-indicators {
+	  li {
+	    border-radius: 0px;
+	  }
+	}
 
-.label {
-  border-radius: 0px;
-}
+	.label {
+	  border-radius: 0px;
+	}
 
-.navbar-toggle {
-  .icon-bar {
-    border-radius: 0px;
-  }
-}
+	.navbar-toggle {
+	  .icon-bar {
+	    border-radius: 0px;
+	  }
+	}
 
-/* buttons */
-.btn {
-	&:active,
-	&.active {
-		box-shadow: none;
-	}	
-}
+	/* buttons */
+	.btn {
+		&:active,
+		&.active {
+			box-shadow: none;
+		}	
+	}
 
 
-/* light theme overrides */
-a.o_dev { 
-	border-radius: 0px;
-}
-
-.o_navbar-toggle {
-  	.icon-bar {
-		border-radius: 0px;
-  	}
-}
-
-.o_eportfolio_maps {
-	h4 {
+	/* light theme overrides */
+	a.o_dev { 
 		border-radius: 0px;
 	}
-}
 
-.o_eportfolio_map {
-	border-radius: 0px;
-}
+	.o_navbar-toggle {
+	  	.icon-bar {
+			border-radius: 0px;
+	  	}
+	}
 
-.o_eportfolio_map ul.nav-tabs li:not(.active) a {
-	border-radius: 0px;
-}
-
-.o_eportfolio_edit {
-	border-radius: 0px;
-}
-
-wizard {
-	border-radius: 0px;
-	ul {
-		li:first-child {
+	.o_eportfolio_maps {
+		h4 {
 			border-radius: 0px;
 		}
 	}
-}
 
-/* fullcalendar */
-
-/* 
- * fullcalendar bootstrapify
- */
-.fc-button {
-	box-shadow: none;
-	border-radius: 0px;
-	
-	&.fc-state-default {
-		background-image: none;
-	}
-	&.fc-state-active {
-	}
-	&.fc-corner-left, &.fc-corner-right {
+	.o_eportfolio_map {
 		border-radius: 0px;
 	}
-}
 
-.fc-ltr .fc-event-hori.fc-event-start, .fc-ltr .fc-event-hori.fc-event-end {
-	border-radius: 0px;
-}
+	.o_eportfolio_map ul.nav-tabs li:not(.active) a {
+		border-radius: 0px;
+	}
 
-/* contact tracing */
-.o_ct_confirmation_wrapper {
-	border-radius: 0;
+	.o_eportfolio_edit {
+		border-radius: 0px;
+	}
+
+	wizard {
+		border-radius: 0px;
+		ul {
+			li:first-child {
+				border-radius: 0px;
+			}
+		}
+	}
+
+	/* fullcalendar */
+
+	/* 
+	 * fullcalendar bootstrapify
+	 */
+	.fc-button {
+		box-shadow: none;
+		border-radius: 0px;
+
+		&.fc-state-default {
+			background-image: none;
+		}
+		&.fc-state-active {
+		}
+		&.fc-corner-left, &.fc-corner-right {
+			border-radius: 0px;
+		}
+	}
+
+	.fc-ltr .fc-event-hori.fc-event-start, .fc-ltr .fc-event-hori.fc-event-end {
+		border-radius: 0px;
+	}
+
+	/* contact tracing */
+	.o_ct_confirmation_wrapper {
+		border-radius: 0;
+	}
 }

@@ -35,12 +35,19 @@
 	The ghost button and the light buttons stay flat. No text has a text
 	shadow.
 
-	To use this style, import it after the light theme and before the own
-	rules of your theme. See the openolat theme for an example. To change the
-	depth, set the variables below in your theme config. A theme with the
-	module system loads it with @use "light/styles/realistic" after
-	@use "light/theme" and sets the variables with
-	@use "light/styles/realistic" with ($o-realistic-radius: 4px, ...).
+	To use this style, include its rules after the rules of the light theme
+	and before the own rules of your theme, in the same stylesheet, so that
+	the @extend rules of the light theme reach them (OO-9995):
+
+		@use "light/modules" as *;
+		@use "light/styles/realistic" as *;
+		@include o-theme;
+		@include o-realistic;
+
+	To change the depth, set the variables below with
+	@use "light/styles/realistic" as * with ($o-realistic-radius: 4px, ...).
+	A theme with @import "light/styles/realistic" loads
+	_realistic.import.scss and sets the variables in its config.
 */
 @use "sass:color";
 @use "sass:list";
@@ -173,25 +180,6 @@ $o-realistic-buttons: (
 	".o_coursetable .o_book": ("coursesite-book", false)
 );
 
-/* Buttons. The radius: the Bootstrap rules of the button groups and the
-   input groups set the inner corners to 0 with a higher specificity. */
-.btn {
-	border-radius: $o-realistic-radius;
-	&:active,
-	&.active {
-		background-image: none;
-	}
-}
-.btn-lg,
-.btn-group-lg > .btn {
-	border-radius: $o-realistic-radius + 2px;
-}
-.btn-sm,
-.btn-group-sm > .btn,
-.btn-xs,
-.btn-group-xs > .btn {
-	border-radius: $o-realistic-radius * 0.75;
-}
 // The border of a raised button with a coloured fill blends into the fill
 // ($o-realistic-border-blend): a transparent border in every state, so the
 // border area shows the fill of the state
@@ -219,39 +207,6 @@ $o-realistic-buttons: (
 			&.focus {
 				border-color: transparent;
 			}
-		}
-	}
-}
-
-@each $selector, $button in $o-realistic-buttons {
-	#{$selector} {
-		@if list.nth($button, 2) {
-			@include o-realistic-raised;
-			@if $selector != ".btn-default" {
-				@include o-realistic-border-blend;
-			}
-		}
-		@if o-realistic-light-text(list.nth($button, 1)) {
-			@include o-realistic-body;
-		} @else {
-			background-image: none;
-		}
-	}
-}
-
-/* The ghost button and the light buttons: flat. The colours are the tokens
-   of _helpers.scss. */
-.btn {
-	&.o_button_ghost,
-	&.o_button_primary_light,
-	&.o_button_danger_light {
-		&,
-		&:hover,
-		&:focus,
-		&:active,
-		&.active {
-			background-image: none;
-			box-shadow: none;
 		}
 	}
 }
@@ -289,43 +244,6 @@ $o-realistic-button-color-layer: 0.25;
 	}
 }
 
-/* The login buttons of other products have the colour of that product */
-.o_login {
-	.o_login_social {
-		.btn-default {
-			&.o_sel_auth_facebook {
-				@include o-realistic-button-color(#4568b2);
-			}
-			&.o_sel_auth_twitter {
-				@include o-realistic-button-color(#2cc5ff);
-			}
-			&.o_sel_auth_google {
-				@include o-realistic-button-color(#e15f4f);
-			}
-			&.o_sel_auth_linkedin {
-				@include o-realistic-button-color(#0181bd);
-			}
-			&.o_sel_auth_adfs {
-				@include o-realistic-button-color(#1a1a1a);
-			}
-			&.o_sel_auth_azureAdfs {
-				@include o-realistic-button-color(#016ab4);
-			}
-			&.o_sel_auth_keycloak {
-				@include o-realistic-button-color(#e46e87);
-			}
-		}
-	}
-}
-
-/* no realistic buttons for video task */
-.o_videotask_categories {
-	.btn-default {
-		background-image: none;
-		box-shadow: none;
-	}
-}
-
 /* The mixin btn-styles for the own rules of a theme with a literal colour,
    e.g. a button in the colour of the client: the depth of a raised control,
    and the black layer over the fill when white has the better contrast on
@@ -342,107 +260,199 @@ $o-realistic-button-color-layer: 0.25;
 	}
 }
 
-/* Thumbnails */
-.thumbnail,
-.img-thumbnail {
-	box-shadow: $o-realistic-elevation-1;
-}
-
-/* Dropdowns: the menu floats; the active item has the black layer under a
-   light text */
-.dropdown-menu {
-	box-shadow: $o-realistic-elevation-3;
-}
-@if o-realistic-light-pair("dropdown-link-active", "dropdown-link-active-bg") {
-	.dropdown-menu > .active > a {
-		&,
-		&:hover,
-		&:focus {
-			@include o-realistic-body;
-		}
-	}
-}
-
-/* Navbar of Bootstrap. The navigation bar of OpenOlat (.o_navbar) has no
-   depth. */
-.navbar-static-top,
-.navbar-fixed-top,
-.navbar-fixed-bottom {
-	border-radius: 0;
-}
-
-/* Alerts */
-.alert {
-	box-shadow: o-realistic-soft-top(), $o-realistic-elevation-1;
-}
-
-/* Progress bars: the track is recessed, the bar raised, with the black
-   layer under a light text. A striped bar keeps its stripes. */
-.progress {
-	box-shadow: $o-realistic-sunken;
-}
-.progress-bar {
-	box-shadow: o-realistic-soft-top(), o-realistic-soft-bottom();
-}
-@each $selector, $tokens in (".progress-bar": ("progress-bar-fg", "progress-bar-bg"),
-		".progress-bar-success": ("state-success-fg", "state-success-bg"),
-		".progress-bar-info": ("state-neutral-fg", "state-neutral-bg"),
-		".progress-bar-warning": ("state-warning-fg", "state-warning-bg"),
-		".progress-bar-danger": ("state-danger-fg", "state-danger-bg")) {
-	#{$selector} {
-		@if o-realistic-light-pair(list.nth($tokens, 1), list.nth($tokens, 2)) {
-			@include o-realistic-body;
-		} @else {
+@mixin o-realistic {
+	/* Buttons. The radius: the Bootstrap rules of the button groups and the
+	   input groups set the inner corners to 0 with a higher specificity. */
+	.btn {
+		border-radius: $o-realistic-radius;
+		&:active,
+		&.active {
 			background-image: none;
 		}
 	}
-}
-.progress-striped .progress-bar,
-.progress-bar-striped {
-	@include gradient-striped;
-}
-
-/* List groups */
-.list-group {
-	border-radius: $border-radius-base;
-	box-shadow: $o-realistic-elevation-1;
-}
-.list-group-item.active,
-.list-group-item.active:hover,
-.list-group-item.active:focus {
-	box-shadow: o-realistic-soft-top(), o-realistic-soft-bottom();
-	@include o-realistic-body;
-}
-
-/* Panels: the panel sits on the page; the heading has the light edge at
-   the top and the flat fill, the primary heading the black layer under its
-   white text */
-.panel {
-	box-shadow: $o-realistic-elevation-1;
-}
-.panel > .panel-heading {
-	box-shadow: o-realistic-soft-top();
-}
-// the white text of the primary panel heading: the black layer
-.panel-primary > .panel-heading {
-	@include o-realistic-body;
-}
-
-/* Wells: recessed */
-.well {
-	box-shadow: $o-realistic-sunken;
-}
-
-/* Toolbar with integrated bread crumb */
-.o_toolbar {
-	box-shadow: $o-realistic-elevation-1;
-	.o_tool_next,
-	.o_tool_previous {
-		@include o-realistic-raised;
+	.btn-lg,
+	.btn-group-lg > .btn {
+		border-radius: $o-realistic-radius + 2px;
 	}
-}
+	.btn-sm,
+	.btn-group-sm > .btn,
+	.btn-xs,
+	.btn-group-xs > .btn {
+		border-radius: $o-realistic-radius * 0.75;
+	}
 
-/* Menu tree */
-.o_tree {
-	box-shadow: $o-realistic-elevation-1;
+	@each $selector, $button in $o-realistic-buttons {
+		#{$selector} {
+			@if list.nth($button, 2) {
+				@include o-realistic-raised;
+				@if $selector != ".btn-default" {
+					@include o-realistic-border-blend;
+				}
+			}
+			@if o-realistic-light-text(list.nth($button, 1)) {
+				@include o-realistic-body;
+			} @else {
+				background-image: none;
+			}
+		}
+	}
+
+	/* The ghost button and the light buttons: flat. The colours are the tokens
+	   of _helpers.scss. */
+	.btn {
+		&.o_button_ghost,
+		&.o_button_primary_light,
+		&.o_button_danger_light {
+			&,
+			&:hover,
+			&:focus,
+			&:active,
+			&.active {
+				background-image: none;
+				box-shadow: none;
+			}
+		}
+	}
+
+	/* The login buttons of other products have the colour of that product */
+	.o_login {
+		.o_login_social {
+			.btn-default {
+				&.o_sel_auth_facebook {
+					@include o-realistic-button-color(#4568b2);
+				}
+				&.o_sel_auth_twitter {
+					@include o-realistic-button-color(#2cc5ff);
+				}
+				&.o_sel_auth_google {
+					@include o-realistic-button-color(#e15f4f);
+				}
+				&.o_sel_auth_linkedin {
+					@include o-realistic-button-color(#0181bd);
+				}
+				&.o_sel_auth_adfs {
+					@include o-realistic-button-color(#1a1a1a);
+				}
+				&.o_sel_auth_azureAdfs {
+					@include o-realistic-button-color(#016ab4);
+				}
+				&.o_sel_auth_keycloak {
+					@include o-realistic-button-color(#e46e87);
+				}
+			}
+		}
+	}
+
+	/* no realistic buttons for video task */
+	.o_videotask_categories {
+		.btn-default {
+			background-image: none;
+			box-shadow: none;
+		}
+	}
+
+	/* Thumbnails */
+	.thumbnail,
+	.img-thumbnail {
+		box-shadow: $o-realistic-elevation-1;
+	}
+
+	/* Dropdowns: the menu floats; the active item has the black layer under a
+	   light text */
+	.dropdown-menu {
+		box-shadow: $o-realistic-elevation-3;
+	}
+	@if o-realistic-light-pair("dropdown-link-active", "dropdown-link-active-bg") {
+		.dropdown-menu > .active > a {
+			&,
+			&:hover,
+			&:focus {
+				@include o-realistic-body;
+			}
+		}
+	}
+
+	/* Navbar of Bootstrap. The navigation bar of OpenOlat (.o_navbar) has no
+	   depth. */
+	.navbar-static-top,
+	.navbar-fixed-top,
+	.navbar-fixed-bottom {
+		border-radius: 0;
+	}
+
+	/* Alerts */
+	.alert {
+		box-shadow: o-realistic-soft-top(), $o-realistic-elevation-1;
+	}
+
+	/* Progress bars: the track is recessed, the bar raised, with the black
+	   layer under a light text. A striped bar keeps its stripes. */
+	.progress {
+		box-shadow: $o-realistic-sunken;
+	}
+	.progress-bar {
+		box-shadow: o-realistic-soft-top(), o-realistic-soft-bottom();
+	}
+	@each $selector, $tokens in (".progress-bar": ("progress-bar-fg", "progress-bar-bg"),
+			".progress-bar-success": ("state-success-fg", "state-success-bg"),
+			".progress-bar-info": ("state-neutral-fg", "state-neutral-bg"),
+			".progress-bar-warning": ("state-warning-fg", "state-warning-bg"),
+			".progress-bar-danger": ("state-danger-fg", "state-danger-bg")) {
+		#{$selector} {
+			@if o-realistic-light-pair(list.nth($tokens, 1), list.nth($tokens, 2)) {
+				@include o-realistic-body;
+			} @else {
+				background-image: none;
+			}
+		}
+	}
+	.progress-striped .progress-bar,
+	.progress-bar-striped {
+		@include gradient-striped;
+	}
+
+	/* List groups */
+	.list-group {
+		border-radius: $border-radius-base;
+		box-shadow: $o-realistic-elevation-1;
+	}
+	.list-group-item.active,
+	.list-group-item.active:hover,
+	.list-group-item.active:focus {
+		box-shadow: o-realistic-soft-top(), o-realistic-soft-bottom();
+		@include o-realistic-body;
+	}
+
+	/* Panels: the panel sits on the page; the heading has the light edge at
+	   the top and the flat fill, the primary heading the black layer under its
+	   white text */
+	.panel {
+		box-shadow: $o-realistic-elevation-1;
+	}
+	.panel > .panel-heading {
+		box-shadow: o-realistic-soft-top();
+	}
+	// the white text of the primary panel heading: the black layer
+	.panel-primary > .panel-heading {
+		@include o-realistic-body;
+	}
+
+	/* Wells: recessed */
+	.well {
+		box-shadow: $o-realistic-sunken;
+	}
+
+	/* Toolbar with integrated bread crumb */
+	.o_toolbar {
+		box-shadow: $o-realistic-elevation-1;
+		.o_tool_next,
+		.o_tool_previous {
+			@include o-realistic-raised;
+		}
+	}
+
+	/* Menu tree */
+	.o_tree {
+		box-shadow: $o-realistic-elevation-1;
+	}
 }

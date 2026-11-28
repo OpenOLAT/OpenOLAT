@@ -1,0 +1,14 @@
+/*
+	Import-only file of light/styles/_realistic.scss (OO-9995): a client theme
+	with @import "light/styles/realistic" loads this file. The global
+	variables $o-realistic-* that the theme config sets before the import
+	configure the style, the rules go into the stylesheet of the theme after
+	the rules of the light theme, and the variables, functions and mixins of
+	the style are available to the files of the theme after the import. A
+	theme with the module system includes the mixin o-realistic, see
+	_realistic.scss.
+*/
+@forward "realistic";
+@use "realistic" as *;
+
+@include o-realistic;

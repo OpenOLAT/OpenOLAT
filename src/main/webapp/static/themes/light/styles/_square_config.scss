@@ -11,7 +11,8 @@
 
 		@forward "light/styles/square_config" with ($brand-primary: #126365, ...);
 
-	and the theme loads @use "light/styles/square_theme" after light/theme.
+	and the theme includes the mixin o-square-theme of light/styles/square_theme
+	after the rules of the light theme (@include o-theme), see _square_theme.scss.
 	The variables of the light theme that follow these values keep them:
 	the border radius of inputs, the navbar, nav pills, alerts, list groups,
 	panels and thumbnails follows $border-radius-base (Bootstrap), and the

@@ -1,0 +1,44 @@
+/*
+ * =================================================
+ *
+ * OpenOLAT theme functions o-lighter() and o-darker(). The module has no
+ * variable, so a theme config can load it before it configures light/config:
+ *
+ *   @use "light/functions_lightness" as *;
+ *   @forward "light/config" with ($link-hover-color: o-darker(#126365, 10%), ...);
+ *
+ * A config must not load light/functions for this: that module has the
+ * variable $o-contrast-check, and a module that is already loaded cannot be
+ * configured any more. _functions.scss forwards this module, so the rules of a
+ * theme get the two functions with @use "light/config" as *.
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date November 2026
+ */
+@use "sass:color";
+
+/* The colour lighter or darker by an amount of HSL lightness, as the former
+ * global lighten() and darken(): the lightness stays within 0% and 100%.
+ * color.adjust() alone keeps a lightness beyond these limits, a colour out of
+ * gamut instead of white or black. Within the limits the result is the one of
+ * color.adjust().
+ *
+ * @param {Color} $color - The colour
+ * @param {Number} $amount - The amount in percent, 0% to 100%
+ * @return {Color}
+ */
+@function o-lighter($color, $amount) {
+	$lightness: color.channel($color, "lightness", $space: hsl) + $amount;
+	@if $lightness >= 100% {
+		@return color.change($color, $lightness: 100%, $space: hsl);
+	}
+	@return color.adjust($color, $lightness: $amount);
+}
+
+@function o-darker($color, $amount) {
+	$lightness: color.channel($color, "lightness", $space: hsl) - $amount;
+	@if $lightness <= 0% {
+		@return color.change($color, $lightness: 0%, $space: hsl);
+	}
+	@return color.adjust($color, $lightness: -$amount);
+}

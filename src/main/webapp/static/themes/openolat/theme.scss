@@ -13,12 +13,13 @@
 /* Add all default config and apply styles from light theme */
 @use "light/theme";
 
-/* Modify styles for square ui (no rounded borders)
-@use "light/styles/square_theme";
+/* Modify styles for square ui (no rounded borders): the mixin o-square-theme of
+   "light/styles/square_theme". It goes into the stylesheet of the light theme
+   rules, after @include o-theme, see the theme boilerplate and themes.README
 */
 
-/* Add styles from bootstrap theme (nice buttons etc) 
-@use "light/styles/realistic";
+/* Add styles from bootstrap theme (nice buttons etc): the mixin o-realistic of
+   "light/styles/realistic", after @include o-theme, see the theme boilerplate
 */
 
 /* Override with OpenOLAT customizations */
